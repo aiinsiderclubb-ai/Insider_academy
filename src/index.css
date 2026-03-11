@@ -1,0 +1,268 @@
+:root {
+  /* Тёмная тема */
+  --bg: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-elevated: #1a1a24;
+  --bg-pill: rgba(30, 30, 40, 0.95);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-accent: rgba(168, 85, 247, 0.5);
+  --text: #f5f5fa;
+  --text-muted: #a8b4c8;
+  --font: 'Manrope', -apple-system, sans-serif;
+  --gradient-primary: linear-gradient(135deg, #f43f5e 0%, #ec4899 30%, #a855f7 70%, #6366f1 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #fb7185 0%, #f472b6 30%, #c084fc 70%, #818cf8 100%);
+  --glow-pink: #f472b6;
+  --glow-pink-dim: rgba(244, 114, 182, 0.35);
+  --glow-purple: #c084fc;
+  --glow-purple-dim: rgba(168, 85, 247, 0.3);
+  --glow-violet: rgba(139, 92, 246, 0.4);
+  --accent: #e879f9;
+  --accent-dim: rgba(168, 85, 247, 0.2);
+  --success: #34d399;
+  --success-dim: rgba(52, 211, 153, 0.2);
+  --radius: 12px;
+  --radius-pill: 999px;
+  --header-bg: rgba(10, 10, 15, 0.9);
+  --footer-bg: var(--bg-card);
+  --promo-bg: linear-gradient(135deg, rgba(30, 20, 50, 0.95) 0%, rgba(15, 10, 25, 0.98) 100%);
+}
+
+/* Светлая тема — больше розово-фиолетовых акцентов */
+[data-theme="light"] {
+  --bg: #f5f3ff;
+  --bg-card: #ffffff;
+  --bg-elevated: #faf8ff;
+  --bg-pill: rgba(255, 255, 255, 0.98);
+  --border: rgba(139, 92, 246, 0.15);
+  --border-accent: rgba(168, 85, 247, 0.5);
+  --text: #1e1b2e;
+  --text-muted: #5b5569;
+  --glow-pink: #ec4899;
+  --glow-pink-dim: rgba(236, 72, 153, 0.25);
+  --glow-purple: #8b5cf6;
+  --glow-purple-dim: rgba(139, 92, 246, 0.28);
+  --accent: #a855f7;
+  --accent-dim: rgba(168, 85, 247, 0.2);
+  --success-dim: rgba(52, 211, 153, 0.25);
+  --header-bg: rgba(255, 255, 255, 0.92);
+  --footer-bg: #ede9fe;
+  --promo-bg: linear-gradient(135deg, rgba(250, 245, 255, 0.98) 0%, rgba(237, 233, 254, 0.95) 100%);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* Фон с нейронами: яркие блики и сетка точек */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 80% 20%, var(--glow-pink-dim) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 20% 80%, var(--glow-purple-dim) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.15) 0%, transparent 0.8%),
+    radial-gradient(circle at 60% 70%, rgba(236, 72, 153, 0.12) 0%, transparent 0.6%),
+    radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 0.7%),
+    radial-gradient(circle at 40% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 0.5%);
+  background-size: 120px 120px, 180px 180px, 100px 100px, 150px 150px;
+  background-position: 0 0, 40px 60px, 80px 20px, 20px 100px;
+  pointer-events: none;
+  z-index: 0;
+  animation: neuronPulse 8s ease-in-out infinite;
+}
+
+[data-theme="light"] body::before {
+  background:
+    radial-gradient(ellipse 80% 60% at 80% 20%, var(--glow-pink-dim) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 20% 80%, var(--glow-purple-dim) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
+  opacity: 1;
+}
+
+[data-theme="light"] body::after {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.12) 0%, transparent 0.6%),
+    radial-gradient(circle at 60% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 0.5%),
+    radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 0.55%),
+    radial-gradient(circle at 40% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 0.5%),
+    radial-gradient(circle at 70% 40%, rgba(236, 72, 153, 0.08) 0%, transparent 0.45%),
+    radial-gradient(circle at 30% 60%, rgba(139, 92, 246, 0.09) 0%, transparent 0.5%);
+  background-size: 100px 100px, 140px 140px, 90px 90px, 130px 130px, 110px 110px, 150px 150px;
+  background-position: 0 0, 30px 40px, 60px 10px, 10px 80px, 70px 50px, 40px 20px;
+  opacity: 1;
+  animation: neuronFloat 12s ease-in-out infinite;
+}
+
+@keyframes neuronFloat {
+  0%, 100% { background-position: 0 0, 30px 40px, 60px 10px, 10px 80px, 70px 50px, 40px 20px; opacity: 1; }
+  33% { background-position: 15px 20px, 45px 60px, 75px 25px, 25px 95px, 85px 65px, 55px 35px; opacity: 0.92; }
+  66% { background-position: 5px 35px, 20px 25px, 45px 30px, 30px 60px, 55px 40px, 25px 50px; opacity: 0.98; }
+}
+
+@keyframes neuronPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Обёртка контента поверх фоновых бликов */
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Кнопка с градиентом розовый–фиолетовый (как на референсе) */
+.btn-gradient {
+  background: var(--gradient-primary);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px 24px;
+  transition: filter 0.2s, box-shadow 0.2s;
+}
+.btn-gradient:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 30px var(--glow-pink-dim), 0 0 50px var(--glow-purple-dim);
+}
+
+/* Метка-таблетка с фиолетовой рамкой и точками */
+.pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-pill);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--glow-purple);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pill-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--glow-purple);
+  box-shadow: 0 0 8px var(--glow-purple);
+}
+
+/* Блок с зелёной галочкой (преимущества) */
+.benefit-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+.benefit-check::before {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--success-dim);
+  color: var(--success);
+  font-weight: 700;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.neuron-glow {
+  box-shadow: 0 0 60px var(--glow-purple-dim), 0 0 100px var(--glow-pink-dim);
+}
+
+/* Анимации появления и акценты */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-in {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-fade {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Утилиты */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}

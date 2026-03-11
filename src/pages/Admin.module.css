@@ -1,0 +1,593 @@
+.page {
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 24px;
+}
+
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.loginCard {
+  max-width: 360px;
+  margin: 80px auto 0;
+  padding: 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: 16px;
+}
+
+.loginTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.loginDesc {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loginError {
+  padding: 12px;
+  background: rgba(239, 68, 68, 0.15);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  color: #fca5a5;
+}
+
+.loginInput {
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.loginInput:focus {
+  outline: none;
+  border-color: var(--glow-purple);
+}
+
+.loginBtn {
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: var(--font);
+  color: #fff;
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.loginBtn:hover {
+  filter: brightness(1.1);
+}
+
+.loginHint {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.tabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.tabBtn:hover {
+  border-color: var(--border-accent);
+  color: var(--text);
+}
+
+.tabBtnActive {
+  background: var(--accent-dim);
+  border-color: var(--border-accent);
+  color: var(--glow-purple);
+}
+
+.tabBadge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--glow-pink);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backLink {
+  font-size: 0.9375rem;
+  color: var(--glow-purple);
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.logoutBtn {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-family: var(--font);
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.logoutBtn:hover {
+  border-color: var(--border-accent);
+  color: var(--text);
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.sectionDesc {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.subSectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.statsGrid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.statCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  min-width: 160px;
+}
+
+.statValue {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--glow-purple);
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.discountList {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.9375rem;
+}
+
+.courseActions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.addBtn {
+  padding: 10px 18px;
+  font-size: 0.9375rem;
+  font-family: var(--font);
+  background: var(--gradient-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.addBtn:hover {
+  filter: brightness(1.1);
+}
+
+.restoreBtn {
+  padding: 10px 18px;
+  font-size: 0.9375rem;
+  font-family: var(--font);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.restoreBtn:hover {
+  border-color: var(--border-accent);
+  color: var(--text);
+}
+
+.editForm {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.editForm h3 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+
+.editForm label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.editForm label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.editFullWidth {
+  grid-column: 1 / -1;
+}
+
+.editTextarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 4px;
+  padding: 8px 12px;
+  font-size: 0.9375rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  resize: vertical;
+}
+
+.editSubtitle {
+  font-size: 1rem;
+  margin: 16px 0 8px;
+}
+
+.lessonRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.lessonNum {
+  font-weight: 600;
+  min-width: 60px;
+}
+
+.hwCommentInput {
+  width: 100%;
+  min-width: 260px;
+  min-height: 110px;
+  padding: 6px 10px;
+  font-size: 0.875rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  resize: vertical;
+  white-space: pre-wrap;
+}
+
+.scoreInput {
+  width: 72px;
+  padding: 6px 10px;
+  font-size: 0.875rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.cellClip {
+  max-width: 240px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.editInput {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin-top: 4px;
+  padding: 8px 12px;
+  font-size: 0.9375rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.editFormActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.saveEditBtn {
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-family: var(--font);
+  background: var(--gradient-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cancelBtn {
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-family: var(--font);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.smallBtn {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  margin-right: 8px;
+  font-family: var(--font);
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.smallBtn:hover {
+  border-color: var(--border-accent);
+}
+
+.smallBtnDanger {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  font-family: var(--font);
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.smallBtnDanger:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+}
+
+.table {
+  width: 100%;
+  min-width: 1320px;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.table th,
+.table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: var(--bg-elevated);
+}
+
+.table tbody tr.unseenRow {
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.table tbody tr.unseenRow:hover {
+  background: rgba(168, 85, 247, 0.18);
+}
+
+.empty {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 24px !important;
+}
+
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.actionStack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.fragmentCell {
+  min-width: 180px;
+}
+
+.fileCell {
+  min-width: 140px;
+}
+
+.statusCell {
+  min-width: 90px;
+}
+
+.scoreCell {
+  min-width: 84px;
+}
+
+.commentCell {
+  min-width: 280px;
+}
+
+.actionsCell {
+  min-width: 140px;
+}
+
+.inlineBtn,
+.inlineLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-accent);
+  color: var(--glow-purple);
+  background: transparent;
+  font-family: var(--font);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.inlineBtn:hover,
+.inlineLink:hover {
+  background: var(--accent-dim);
+}
+
+.fileActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fileName,
+.fileHint {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.previewRow td {
+  background: var(--bg-elevated);
+}
+
+.previewBox {
+  padding: 16px 0;
+}
+
+.previewImage {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.previewFrame {
+  width: 100%;
+  min-height: 480px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
