@@ -6,9 +6,11 @@ import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { recordCertificate, trackCourseClick, recordHomeworkSubmission, getHomeworkByUserAndLesson } from '../api/adminStore'
+import { api } from '../api/client'
 import { VideoPlayer } from '../components/VideoPlayer'
 import { IconChevronDown } from '../components/Icons'
 import { LessonTest } from '../components/LessonTest'
+import { CourseReviews } from '../components/CourseReviews'
 import styles from './Course.module.css'
 
 function readFileAsDataUrl(file) {
@@ -25,7 +27,7 @@ export function Course() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { getCourseBySlug } = useCourses()
   const course = getCourseBySlug(slug)
-  const { user, hasPurchased } = useAuth()
+  const { user, hasPurchased, apiMode } = useAuth()
   const { getProgress, submitHomework, getPercent, markWatched } = useProgress()
   const { t, lang } = useLanguage()
   const lessonFromUrl = parseInt(searchParams.get('lesson'), 10)
@@ -128,6 +130,7 @@ export function Course() {
           name: file.name,
           type: file.type || 'application/octet-stream',
           dataUrl,
+          raw: file,
         },
       }))
       setHwError((prev) => ({ ...prev, [index]: '' }))
@@ -139,9 +142,9 @@ export function Course() {
     }
   }
 
-  const handleHomeworkSubmit = (index) => {
+  const handleHomeworkSubmit = async (index) => {
     const file = hwFile[index]
-    if (!file?.dataUrl) {
+    if (!file?.dataUrl && !file?.raw) {
       setHwError((prev) => ({
         ...prev,
         [index]: lang === 'ru' ? 'Добавьте файл перед отправкой ДЗ.' : 'Please attach a file before submitting homework.',
@@ -152,18 +155,36 @@ export function Course() {
     submitHomework(course.id, index)
     if (user?.email) {
       const les = lessonsList[index]
-      recordHomeworkSubmission({
-        email: user.email,
-        name: user.name || user.email,
-        courseId: course.id,
-        courseTitle: getCourseField(course, 'title', lang),
-        lessonIndex: index,
-        lessonTitle: les ? (lang === 'en' && les.titleEn ? les.titleEn : les.title) : '',
-        content: hwText[index] ?? '',
-        fileName: file.name,
-        fileType: file.type,
-        fileDataUrl: file.dataUrl,
-      })
+      const lessonTitle = les ? (lang === 'en' && les.titleEn ? les.titleEn : les.title) : ''
+      const courseTitle = getCourseField(course, 'title', lang)
+      try {
+        if (apiMode && file.raw) {
+          const fd = new FormData()
+          fd.append('file', file.raw)
+          fd.append('courseId', course.id)
+          fd.append('courseTitle', courseTitle)
+          fd.append('lessonIndex', String(index))
+          fd.append('lessonTitle', lessonTitle)
+          fd.append('content', hwText[index] ?? '')
+          await api.submitHomeworkForm(fd)
+        } else {
+          recordHomeworkSubmission({
+            email: user.email,
+            name: user.name || user.email,
+            courseId: course.id,
+            courseTitle,
+            lessonIndex: index,
+            lessonTitle,
+            content: hwText[index] ?? '',
+            fileName: file.name,
+            fileType: file.type,
+            fileDataUrl: file.dataUrl,
+          })
+        }
+      } catch {
+        setHwError((prev) => ({ ...prev, [index]: lang === 'ru' ? 'Ошибка отправки.' : 'Submit failed.' }))
+        return
+      }
     }
     setHwError((prev) => ({ ...prev, [index]: '' }))
   }
@@ -269,7 +290,8 @@ export function Course() {
               )}
               {showTestAfterLesson0 && (
                 <LessonTest
-                  courseId={course.id}
+                  questions={lessonsList[0]?.quiz}
+                  lang={lang}
                   onPass={() => submitHomework(course.id, 0)}
                 />
               )}
@@ -433,6 +455,7 @@ export function Course() {
             </div>
           </aside>
         </div>
+        <CourseReviews courseId={course.id} />
       </div>
     </div>
   )

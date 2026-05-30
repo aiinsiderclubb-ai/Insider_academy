@@ -292,3 +292,18 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.payMethods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.payOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}

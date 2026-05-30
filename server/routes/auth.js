@@ -1,0 +1,113 @@
+import { Router } from 'express'
+import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
+import { getDb } from '../db.js'
+import { signUserToken } from '../middleware/auth.js'
+import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.js'
+
+const router = Router()
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase()
+}
+
+function createToken() {
+  return crypto.randomBytes(32).toString('hex')
+}
+
+router.post('/register', async (req, res) => {
+  const db = getDb()
+  const email = normalizeEmail(req.body.email)
+  const password = String(req.body.password || '')
+  const name = String(req.body.name || email).trim()
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Invalid email' })
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' })
+  }
+  const exists = await db.get('SELECT id FROM users WHERE email = ?', [email])
+  if (exists) return res.status(409).json({ error: 'User already exists' })
+
+  const hash = bcrypt.hashSync(password, 10)
+  const inserted = await db.get(
+    'INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?) RETURNING id',
+    [email, hash, name]
+  )
+  const userId = inserted.id
+  const user = { id: userId, email, name, emailVerified: false }
+
+  await db.run('INSERT INTO registrations (id, email, name, date) VALUES (?, ?, ?, ?)', [
+    `reg-${Date.now()}`, email, name, new Date().toISOString(),
+  ])
+
+  const token = createToken()
+  const expires = new Date(Date.now() + 86400000).toISOString()
+  await db.run('INSERT INTO email_tokens (id, email, token, type, expires_at) VALUES (?, ?, ?, ?, ?)', [
+    `et-${Date.now()}`, email, token, 'verify', expires,
+  ])
+  sendVerificationEmail(email, token).catch(() => {})
+
+  const jwt = signUserToken(user)
+  res.status(201).json({ token: jwt, user })
+})
+
+router.post('/login', async (req, res) => {
+  const db = getDb()
+  const email = normalizeEmail(req.body.email)
+  const password = String(req.body.password || '')
+  const row = await db.get('SELECT id, email, password_hash, name, email_verified FROM users WHERE email = ?', [email])
+  if (!row || !bcrypt.compareSync(password, row.password_hash)) {
+    return res.status(401).json({ error: 'Invalid email or password' })
+  }
+  const user = { id: row.id, email: row.email, name: row.name, emailVerified: Boolean(row.email_verified) }
+  res.json({ token: signUserToken(user), user })
+})
+
+router.post('/verify-email', async (req, res) => {
+  const db = getDb()
+  const { token } = req.body
+  const row = await db.get(
+    'SELECT * FROM email_tokens WHERE token = ? AND type = ? AND used = 0',
+    [token, 'verify']
+  )
+  if (!row || new Date(row.expires_at) < new Date()) {
+    return res.status(400).json({ error: 'Invalid or expired token' })
+  }
+  await db.run('UPDATE users SET email_verified = 1 WHERE email = ?', [row.email])
+  await db.run('UPDATE email_tokens SET used = 1 WHERE id = ?', [row.id])
+  res.json({ ok: true })
+})
+
+router.post('/forgot-password', async (req, res) => {
+  const db = getDb()
+  const email = normalizeEmail(req.body.email)
+  const user = await db.get('SELECT id FROM users WHERE email = ?', [email])
+  if (!user) return res.json({ ok: true })
+  const token = createToken()
+  await db.run('INSERT INTO email_tokens (id, email, token, type, expires_at) VALUES (?, ?, ?, ?, ?)', [
+    `et-${Date.now()}`, email, token, 'reset', new Date(Date.now() + 3600000).toISOString(),
+  ])
+  sendPasswordResetEmail(email, token).catch(() => {})
+  res.json({ ok: true })
+})
+
+router.post('/reset-password', async (req, res) => {
+  const db = getDb()
+  const { token, password } = req.body
+  if (!password || password.length < 6) return res.status(400).json({ error: 'Password too short' })
+  const row = await db.get(
+    'SELECT * FROM email_tokens WHERE token = ? AND type = ? AND used = 0',
+    [token, 'reset']
+  )
+  if (!row || new Date(row.expires_at) < new Date()) {
+    return res.status(400).json({ error: 'Invalid or expired token' })
+  }
+  const hash = bcrypt.hashSync(password, 10)
+  await db.run('UPDATE users SET password_hash = ? WHERE email = ?', [hash, row.email])
+  await db.run('UPDATE email_tokens SET used = 1 WHERE id = ?', [row.id])
+  res.json({ ok: true })
+})
+
+export default router

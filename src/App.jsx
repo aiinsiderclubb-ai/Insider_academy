@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
+import { ApiProvider } from './context/ApiContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import { LoadingSpinner } from './components/LoadingSpinner'
 import { ProgressProvider } from './context/ProgressContext'
 import { LanguageProvider } from './context/LanguageContext'
 import { ThemeProvider } from './context/ThemeContext'
@@ -15,12 +17,15 @@ import { Blog } from './pages/Blog'
 import { BlogPost } from './pages/BlogPost'
 import { Calendar } from './pages/Calendar'
 import { Login } from './pages/Login'
+import { VerifyEmail } from './pages/VerifyEmail'
+import { ForgotPassword } from './pages/ForgotPassword'
+import { ResetPassword } from './pages/ResetPassword'
 import { Admin } from './pages/Admin'
-import { useAuth } from './context/AuthContext'
-
 function ProtectedRoute({ children }) {
-  const { user } = useAuth()
-  if (!user) return <Navigate to="/" replace />
+  const { user, loading } = useAuth()
+  const location = useLocation()
+  if (loading) return <LoadingSpinner fullPage />
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />
   return children
 }
 
@@ -45,6 +50,9 @@ function AppContent() {
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -61,7 +69,9 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <ApiProvider>
+        <AppContent />
+      </ApiProvider>
     </BrowserRouter>
   )
 }

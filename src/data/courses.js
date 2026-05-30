@@ -41,7 +41,13 @@ export const courses = [
     forAudienceEn: ['freelancers', 'marketers', 'entrepreneurs', 'automation developers'],
     releaseSchedule: { daysOfWeek: [1, 2], time: '19:30' },
     lessons: [
-      { id: 'c1', title: 'Введение: n8n и OpenAI', titleEn: 'Intro: n8n and OpenAI', duration: '15 мин', durationEn: '15 min', videoUrl: '' },
+      { id: 'c1', title: 'Введение: n8n и OpenAI', titleEn: 'Intro: n8n and OpenAI', duration: '15 мин', durationEn: '15 min', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        quiz: [
+          { question: 'Что такое n8n?', questionEn: 'What is n8n?', options: ['База данных', 'No-code платформа автоматизации', 'Язык программирования', 'CRM'], optionsEn: ['Database', 'No-code automation platform', 'Programming language', 'CRM'], correct: 1 },
+          { question: 'Зачем подключать OpenAI к боту?', questionEn: 'Why connect OpenAI to a bot?', options: ['Только для картинок', 'Для умных текстовых ответов', 'Для хостинга', 'Для email'], optionsEn: ['Images only', 'Smart text replies', 'Hosting', 'Email'], correct: 1 },
+          { question: 'Telegram-бот в курсе используется как…', questionEn: 'Telegram bot in the course is used as…', options: ['Канал продаж', 'Интерфейс для пользователя', 'Платёжная система', 'База данных'], optionsEn: ['Sales channel', 'User interface', 'Payment system', 'Database'], correct: 1 },
+        ],
+      },
       { id: 'c2', title: 'Первый чат-бот за 30 минут', titleEn: 'First chatbot in 30 minutes', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
       { id: 'c3', title: 'Подключение Telegram и сайта', titleEn: 'Connecting Telegram and website', duration: '32 мин', durationEn: '32 min', videoUrl: '' },
       { id: 'c4', title: 'Сценарии и диалоги', titleEn: 'Scenarios and dialogues', duration: '25 мин', durationEn: '25 min', videoUrl: '' },

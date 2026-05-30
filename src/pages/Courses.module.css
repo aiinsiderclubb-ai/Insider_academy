@@ -17,8 +17,66 @@
 
 .desc {
   color: var(--text-muted);
-  margin-bottom: 40px;
+  margin-bottom: 24px;
   max-width: 560px;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.search {
+  width: 100%;
+  max-width: 420px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font: inherit;
+}
+
+.search:focus {
+  outline: none;
+  border-color: var(--border-accent);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filterBtn {
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.filterBtn:hover {
+  border-color: var(--border-accent);
+  color: var(--text);
+}
+
+.filterBtnActive {
+  background: var(--accent-dim);
+  border-color: var(--border-accent);
+  color: var(--text);
+}
+
+.empty {
+  color: var(--text-muted);
+  padding: 48px 0;
+  text-align: center;
 }
 
 .grid {

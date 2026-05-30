@@ -1,31 +1,44 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react'
-import { getCourses } from '../api/courseStore'
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
+import { getCourses as getLocalCourses } from '../api/courseStore'
+import { api, checkApiOnline } from '../api/client'
 
 const CoursesContext = createContext(null)
 
 export function CoursesProvider({ children }) {
-  const [courses, setCoursesState] = useState(getCourses)
+  const [courses, setCoursesState] = useState(getLocalCourses)
+  const [loading, setLoading] = useState(true)
 
-  const refreshCourses = useMemo(
-    () => () => setCoursesState(getCourses()),
-    []
-  )
+  const refreshCourses = useCallback(async () => {
+    try {
+      const online = await checkApiOnline()
+      if (online) {
+        const list = await api.getCourses()
+        setCoursesState(list)
+        return list
+      }
+    } catch (_) {}
+    const local = getLocalCourses()
+    setCoursesState(local)
+    return local
+  }, [])
 
   useEffect(() => {
-    const handler = () => setCoursesState(getCourses())
+    refreshCourses().finally(() => setLoading(false))
+    const handler = () => refreshCourses()
     window.addEventListener('lms-courses-updated', handler)
     return () => window.removeEventListener('lms-courses-updated', handler)
-  }, [])
+  }, [refreshCourses])
 
   const value = useMemo(
     () => ({
       courses,
+      loading,
       freeTrialCourses: courses.filter((c) => c.isFreeTrial === true),
       getCourseBySlug: (slug) => courses.find((c) => c.slug === slug) || null,
       getCourseById: (id) => courses.find((c) => c.id === id) || null,
       refreshCourses,
     }),
-    [courses, refreshCourses]
+    [courses, loading, refreshCourses]
   )
 
   return (

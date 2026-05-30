@@ -1,0 +1,10 @@
+.wrap { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+.title { font-size: 1.25rem; margin-bottom: 12px; }
+.avg { color: var(--accent); margin-bottom: 16px; }
+.list { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+.item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.stars { color: #fbbf24; margin-right: 8px; }
+.form { display: flex; flex-direction: column; gap: 12px; max-width: 480px; }
+.form textarea, .form select { padding: 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font: inherit; }
+.form button { align-self: flex-start; padding: 10px 20px; border-radius: var(--radius-pill); border: none; background: var(--gradient-primary); color: #fff; cursor: pointer; font-weight: 600; }
+.msg { color: var(--success); font-size: 0.875rem; }

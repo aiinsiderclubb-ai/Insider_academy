@@ -16,9 +16,11 @@ import {
   markAdminItemSeen,
   markAdminItemsSeen,
 } from '../api/adminStore'
-import { getCourses, setCourses } from '../api/courseStore'
+import { getCourses, setCourses as persistCourses } from '../api/courseStore'
 import { getBlogPosts, setBlogPosts } from '../api/blogStore'
 import { getCalendarEvents, setCalendarEvents } from '../api/calendarStore'
+import { api, setAdminToken, getAdminToken } from '../api/client'
+import { useApi } from '../context/ApiContext'
 import { courses as defaultCourses } from '../data/courses'
 import { blogPosts as defaultBlog } from '../data/blog'
 import styles from './Admin.module.css'
@@ -83,6 +85,7 @@ const emptyCourse = () => ({
 })
 
 export function Admin() {
+  const { online } = useApi()
   const [password, setPassword] = useState('')
   const [authenticated, setAuthenticated] = useState(false)
   const [error, setError] = useState('')
@@ -110,8 +113,30 @@ export function Admin() {
 
   useEffect(() => {
     const saved = localStorage.getItem('lms_admin_auth')
-    if (saved === ADMIN_PASSWORD) setAuthenticated(true)
+    const token = getAdminToken()
+    if (saved === ADMIN_PASSWORD || token) setAuthenticated(true)
   }, [])
+
+  const loadDashboardFromApi = async () => {
+    if (!online || !getAdminToken()) return false
+    try {
+      const data = await api.adminDashboard()
+      setDashData(data)
+      if (data.courses?.length) setCoursesState(data.courses)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  const [dashData, setDashData] = useState(null)
+
+  useEffect(() => {
+    if (!authenticated) return
+    loadDashboardFromApi().then((ok) => {
+      if (!ok) setDashData(null)
+    })
+  }, [authenticated, refresh, online])
 
   useEffect(() => {
     if (authenticated) setCoursesState(getCourses())
@@ -128,9 +153,21 @@ export function Admin() {
     }
   }, [courses, newCertificate.email, newCertificate.courseId])
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
+    if (online) {
+      try {
+        const { token } = await api.adminLogin(password)
+        setAdminToken(token)
+        localStorage.setItem('lms_admin_auth', 'api')
+        setAuthenticated(true)
+        return
+      } catch {
+        setError('Неверный пароль')
+        return
+      }
+    }
     if (password === ADMIN_PASSWORD) {
       localStorage.setItem('lms_admin_auth', password)
       setAuthenticated(true)
@@ -141,14 +178,21 @@ export function Admin() {
 
   const handleLogout = () => {
     localStorage.removeItem('lms_admin_auth')
+    setAdminToken(null)
     setAuthenticated(false)
     setPassword('')
   }
 
-  const saveCourses = (next) => {
-    setCourses(next)
+  const saveCourses = async (next) => {
+    persistCourses(next)
     setCoursesState(next)
     setEditingIndex(null)
+    if (online && getAdminToken()) {
+      try {
+        await api.adminSaveCourses(next)
+        window.dispatchEvent(new CustomEvent('lms-courses-updated'))
+      } catch (_) {}
+    }
   }
 
   const handleAddCourse = () => {
@@ -228,7 +272,7 @@ export function Admin() {
 
   const restoreDefaults = () => {
     if (!window.confirm('Восстановить курсы по умолчанию? Текущие изменения будут потеряны.')) return
-    setCourses(defaultCourses)
+    persistCourses(defaultCourses)
     setCoursesState(defaultCourses)
     setEditingIndex(null)
   }
@@ -257,12 +301,12 @@ export function Admin() {
     )
   }
 
-  const registrations = getRegistrations()
-  const certificates = getCertificates()
-  const purchases = getPurchases()
-  const analytics = getAnalyticsData()
-  const referrals = getReferrals()
-  const homeworkList = getHomeworkSubmissions()
+  const registrations = dashData?.registrations ?? getRegistrations()
+  const certificates = dashData?.certificates ?? getCertificates()
+  const purchases = dashData?.purchases ?? getPurchases()
+  const analytics = dashData?.analytics ?? getAnalyticsData()
+  const referrals = dashData?.referrals ?? getReferrals()
+  const homeworkList = dashData?.homework ?? getHomeworkSubmissions()
   const normalizedCertificateEmail = newCertificate.email.trim().toLowerCase()
   const availableCertificateCourses = courses.filter((course) =>
     certificates.some(
@@ -274,7 +318,7 @@ export function Admin() {
     map[p.email].push(p.courseTitle)
     return map
   }, {})
-  const discounts = getDiscounts()
+  const discounts = dashData?.discounts ?? getDiscounts()
   const topCourseClicks = Object.entries(analytics.courseClicks || {})
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)

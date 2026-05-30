@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lms
+      POSTGRES_PASSWORD: lms
+      POSTGRES_DB: lms
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lms"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://lms:lms@postgres:5432/lms
+      CORS_ORIGIN: http://localhost
+      APP_URL: http://localhost
+      JWT_SECRET: ${JWT_SECRET:-change-me}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-change-admin}
+    volumes:
+      - uploads:/app/server/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "3001"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    depends_on:
+      - api
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - web
+      - api
+
+volumes:
+  pgdata:
+  uploads:

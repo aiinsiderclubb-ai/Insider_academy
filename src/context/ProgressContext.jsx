@@ -1,8 +1,10 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
+import { useAuth } from './AuthContext'
+import { api } from '../api/client'
 
 const STORAGE_KEY = 'lms_progress'
 
-function load() {
+function loadLocal() {
   try {
     const data = localStorage.getItem(STORAGE_KEY)
     return data ? JSON.parse(data) : {}
@@ -11,24 +13,48 @@ function load() {
   }
 }
 
-function save(state) {
+function saveLocal(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
 }
 
 const ProgressContext = createContext(null)
 
 export function ProgressProvider({ children }) {
-  const [state, setState] = useState(load)
+  const { user, apiMode, loading: authLoading } = useAuth()
+  const [state, setState] = useState(loadLocal)
+  const syncTimer = useRef(null)
+
+  useEffect(() => {
+    if (authLoading || !apiMode || !user) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const me = await api.getMe()
+        if (!cancelled && me.progress) setState(me.progress)
+      } catch (_) {}
+    })()
+    return () => { cancelled = true }
+  }, [user, apiMode, authLoading])
+
+  const syncToApi = useCallback((courseId, data) => {
+    if (!apiMode || !user) return
+    clearTimeout(syncTimer.current)
+    syncTimer.current = setTimeout(() => {
+      api.saveProgress(courseId, data).catch(() => {})
+    }, 400)
+  }, [apiMode, user])
 
   const setProgress = useCallback((courseId, updater) => {
     setState((prev) => {
       const next = { ...prev }
       const course = next[courseId] || { watched: [], homeworkSubmitted: [], homeworkChecked: [] }
-      next[courseId] = updater(course)
-      save(next)
+      const updated = updater(course)
+      next[courseId] = updated
+      if (!apiMode) saveLocal(next)
+      else syncToApi(courseId, updated)
       return next
     })
-  }, [])
+  }, [apiMode, syncToApi])
 
   const markWatched = useCallback((courseId, lessonIndex) => {
     setProgress(courseId, (c) => {
@@ -69,8 +95,7 @@ export function ProgressProvider({ children }) {
 
   const getPercent = useCallback((courseId, totalLessons) => {
     if (!totalLessons) return 0
-    const n = getCompletedCount(courseId, totalLessons)
-    return Math.round((n / totalLessons) * 100)
+    return Math.round((getCompletedCount(courseId, totalLessons) / totalLessons) * 100)
   }, [getCompletedCount])
 
   const isLessonAvailable = useCallback((courseId, lessonIndex, unlockBySchedule, homeworkUnlock) => {

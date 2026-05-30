@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { getCourseField } from '../data/courses'
-import { getBlogPosts } from '../api/blogStore'
+import { getBlogPosts, fetchBlogPosts } from '../api/blogStore'
 import { NeuronGlow } from '../components/NeuronGlow'
 import styles from './Home.module.css'
 
@@ -15,7 +15,15 @@ export function Home() {
   const { t, lang } = useLanguage()
   const { courses, freeTrialCourses } = useCourses()
   const featured = courses.filter((c) => !c.isFreeTrial).slice(0, 4)
-  const blogPreview = [...getBlogPosts()].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3)
+  const [blogPreview, setBlogPreview] = useState(() =>
+    [...getBlogPosts()].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3)
+  )
+
+  useEffect(() => {
+    fetchBlogPosts().then((posts) => {
+      setBlogPreview([...posts].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3))
+    })
+  }, [])
 
   const getPostTitle = (post) => (lang === 'en' && post.titleEn ? post.titleEn : post.title)
   const getPostExcerpt = (post) => (lang === 'en' && post.excerptEn ? post.excerptEn : post.excerpt)
@@ -57,6 +65,29 @@ export function Home() {
           <a href="https://t.me/your_channel" target="_blank" rel="noreferrer noopener" className={styles.telegramCta}>
             {t('home.telegramSubscribe')}
           </a>
+        </div>
+      </section>
+
+      <section className={styles.statsStrip}>
+        <div className={styles.container}>
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <span className={styles.statValue}>{courses.length}</span>
+              <span className={styles.statLabel}>{lang === 'ru' ? 'Курсов в каталоге' : 'Courses'}</span>
+            </div>
+            <div className={styles.statCard}>
+              <span className={styles.statValue}>{freeTrialCourses.length}</span>
+              <span className={styles.statLabel}>{lang === 'ru' ? 'Бесплатных пробных' : 'Free trials'}</span>
+            </div>
+            <div className={styles.statCard}>
+              <span className={styles.statValue}>24/7</span>
+              <span className={styles.statLabel}>{lang === 'ru' ? 'Доступ к материалам' : 'Access to materials'}</span>
+            </div>
+            <div className={styles.statCard}>
+              <span className={styles.statValue}>RU/EN</span>
+              <span className={styles.statLabel}>{lang === 'ru' ? 'Два языка платформы' : 'Two languages'}</span>
+            </div>
+          </div>
         </div>
       </section>
 

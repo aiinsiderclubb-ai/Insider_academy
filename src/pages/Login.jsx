@@ -7,7 +7,7 @@ import styles from './Login.module.css'
 
 export function Login() {
   const { user, login } = useAuth()
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname || '/cabinet'
@@ -21,7 +21,7 @@ export function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
@@ -44,16 +44,14 @@ export function Login() {
     }
 
     setLoading(true)
-    setTimeout(() => {
-      try {
-        login(emailTrim)
-        navigate(from, { replace: true })
-      } catch (err) {
-        setError(t('login.errorGeneric'))
-      } finally {
-        setLoading(false)
-      }
-    }, 400)
+    try {
+      await login(emailTrim, password)
+      navigate(from, { replace: true })
+    } catch {
+      setError(t('login.errorGeneric'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (user) return null
@@ -130,6 +128,9 @@ export function Login() {
             </form>
 
             <p className={styles.demoHint}>{t('login.demoHint')}</p>
+            <Link to="/forgot-password" className={styles.backLink} style={{ marginTop: 12, display: 'inline-block' }}>
+              {lang === 'ru' ? 'Забыли пароль?' : 'Forgot password?'}
+            </Link>
           </div>
         </div>
       </div>

@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { trackVisit, getNotifications, getUnreadCount, markNotificationRead } from '../api/adminStore'
+import { api, checkApiOnline } from '../api/client'
+import { ApiStatusBanner } from './ApiStatusBanner'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
@@ -48,7 +50,10 @@ export function Layout({ children }) {
 
   const [searchParams] = useSearchParams()
   useEffect(() => {
-    trackVisit()
+    checkApiOnline().then((ok) => {
+      if (ok) api.trackVisit().catch(() => {})
+      else trackVisit()
+    })
   }, [])
   useEffect(() => {
     const ref = searchParams.get('ref')
@@ -115,6 +120,7 @@ export function Layout({ children }) {
 
   return (
     <div className={`${styles.wrapper} ${!user ? styles.guestLayout : ''} ${isAdminPage ? styles.adminLayout : ''}`}>
+      <ApiStatusBanner />
       {user && !isAdminPage && (
       <aside className={styles.sidebar}>
         <Link to="/" className={styles.sidebarLogo}>
