@@ -120,7 +120,6 @@ export function Layout({ children }) {
 
   return (
     <div className={`${styles.wrapper} ${!user ? styles.guestLayout : ''} ${isAdminPage ? styles.adminLayout : ''}`}>
-      <ApiStatusBanner />
       {user && !isAdminPage && (
       <aside className={styles.sidebar}>
         <Link to="/" className={styles.sidebarLogo}>
@@ -146,6 +145,7 @@ export function Layout({ children }) {
       )}
 
       <div className={styles.mainWrap}>
+        <ApiStatusBanner />
         <div className={styles.neuronBg} aria-hidden><NeuronGlow /></div>
         <header className={styles.header}>
           <Link to="/" className={styles.logo}>AI Insider Academy</Link>
