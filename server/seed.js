@@ -11,7 +11,7 @@ import {
 import { ensurePersonalId } from './services/personalId.js'
 
 /** Keep in sync with src/data/catalogVersion.js */
-const CATALOG_VERSION = 12
+const CATALOG_VERSION = 13
 
 async function getCatalogVersion(db) {
   const row = await db.get('SELECT value FROM analytics WHERE key = ?', ['catalog_version'])
