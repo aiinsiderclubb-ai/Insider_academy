@@ -69,13 +69,20 @@
   max-width: 420px;
 }
 
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
 .backLink {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-size: 0.9375rem;
   color: var(--text-muted);
-  margin-bottom: 32px;
   transition: color 0.2s;
 }
 
@@ -249,6 +256,58 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+.registerTopBtn {
+  padding: 10px 18px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--gradient-primary);
+  border-radius: var(--radius);
+  white-space: nowrap;
+  transition: filter 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.registerTopBtn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 20px var(--glow-purple-dim);
+  transform: translateY(-1px);
+}
+
+.loginTopBtn {
+  padding: 10px 18px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius);
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.loginTopBtn:hover {
+  color: var(--glow-purple);
+  border-color: var(--glow-purple);
+  box-shadow: 0 0 16px var(--glow-purple-dim);
+}
+
+.footerAuth {
+  margin-top: 20px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.footerAuthLink {
+  color: var(--glow-purple);
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.footerAuthLink:hover {
+  color: var(--glow-pink, #ec4899);
 }
 
 .demoHint {

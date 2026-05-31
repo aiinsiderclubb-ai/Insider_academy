@@ -249,7 +249,10 @@ export function Layout({ children }) {
                 )}
               </div>
             ) : (
-              <Link to="/login" className={styles.avatarLink}>{t('nav.login')}</Link>
+              <div className={styles.authLinks}>
+                <Link to="/register" className={styles.registerLink}>{t('nav.register')}</Link>
+                <Link to="/login" className={styles.avatarLink}>{t('nav.login')}</Link>
+              </div>
             )}
           </div>
         </header>

@@ -460,6 +460,29 @@
   transition: background 0.2s;
 }
 
+.authLinks {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.registerLink {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  background: var(--gradient-primary);
+  white-space: nowrap;
+  transition: filter 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.registerLink:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 20px var(--glow-purple-dim);
+  transform: translateY(-1px);
+}
+
 .avatarLink:hover {
   background: var(--glow-purple-dim);
 }

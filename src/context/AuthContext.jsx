@@ -137,14 +137,6 @@ export function AuthProvider({ children }) {
         await applyReferral(emailTrim)
         return u
       } catch (err) {
-        if (err.status === 401 && !isTestAccountEmail(emailTrim)) {
-          const { token, user: u } = await api.register(emailTrim, passwordTrim, name || emailTrim)
-          setToken(token)
-          setUserState(u)
-          setPurchases([])
-          await applyReferral(emailTrim)
-          return u
-        }
         if (err.status === 401 && isTestAccountEmail(emailTrim)) {
           const hint = new Error('Invalid test account password')
           hint.status = 401
@@ -175,6 +167,28 @@ export function AuthProvider({ children }) {
     const u = { email: emailTrim, name: name || emailTrim }
     setUser(u)
     recordRegistration({ email: emailTrim, name: u.name })
+    await applyReferral(emailTrim)
+    return u
+  }, [apiMode, setUser, applyReferral])
+
+  const register = useCallback(async (email, password, name) => {
+    const emailTrim = email.trim()
+    const passwordTrim = String(password || '').trim()
+    const nameTrim = String(name || emailTrim).trim()
+
+    if (apiMode) {
+      const { token, user: u } = await api.register(emailTrim, passwordTrim, nameTrim)
+      setToken(token)
+      setUserState(u)
+      setPurchases([])
+      savePurchasesLocal([])
+      await applyReferral(emailTrim)
+      return u
+    }
+
+    const u = { email: emailTrim, name: nameTrim }
+    setUser(u)
+    recordRegistration({ email: emailTrim, name: nameTrim })
     await applyReferral(emailTrim)
     return u
   }, [apiMode, setUser, applyReferral])
@@ -241,6 +255,7 @@ export function AuthProvider({ children }) {
       value={{
         user,
         login,
+        register,
         logout,
         purchaseCourse,
         hasPurchased,

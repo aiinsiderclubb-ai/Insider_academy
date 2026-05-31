@@ -9,6 +9,7 @@
     "calendar": "Calendar",
     "myCourses": "My Courses",
     "login": "Log in",
+    "register": "Sign up",
     "logout": "Log out",
     "cabinet": "Dashboard",
     "messages": "Messages",
@@ -174,6 +175,30 @@
     "errorPassword": "Please enter your password.",
     "errorPasswordShort": "Password must be at least 6 characters.",
     "errorGeneric": "Login failed. Please try again.",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Sign up",
     "demoHint": "Test account (all courses): test@ai-insider.academy / TestAll2026! · Offline demo: any email and password (min 6 characters)."
+  },
+  "register": {
+    "title": "Sign up",
+    "subtitle": "Create an account to access courses and track your progress.",
+    "name": "Name",
+    "namePlaceholder": "How should we address you",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "submit": "Sign up",
+    "topBtn": "Sign up",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Log in",
+    "successHint": "Check your inbox — we sent a verification email.",
+    "errorName": "Please enter your name.",
+    "errorEmail": "Please enter your email.",
+    "errorEmailInvalid": "Please enter a valid email.",
+    "errorPassword": "Please enter a password.",
+    "errorPasswordShort": "Password must be at least 6 characters.",
+    "errorPasswordMatch": "Passwords do not match.",
+    "errorExists": "This email is already registered. Log in or reset your password.",
+    "errorGeneric": "Registration failed. Please try again."
   }
 }

@@ -9,6 +9,7 @@
     "calendar": "Календарь",
     "myCourses": "Мои курсы",
     "login": "Войти",
+    "register": "Регистрация",
     "logout": "Выйти",
     "cabinet": "Личный кабинет",
     "messages": "Сообщения",
@@ -174,6 +175,30 @@
     "errorPassword": "Введите пароль.",
     "errorPasswordShort": "Пароль должен быть не менее 6 символов.",
     "errorGeneric": "Ошибка входа. Попробуйте снова.",
+    "noAccount": "Нет аккаунта?",
+    "registerLink": "Зарегистрироваться",
     "demoHint": "Тестовый аккаунт (все курсы): test@ai-insider.academy / TestAll2026! · Offline-демо: любой email и пароль от 6 символов."
+  },
+  "register": {
+    "title": "Регистрация",
+    "subtitle": "Создайте аккаунт для доступа к курсам и отслеживания прогресса.",
+    "name": "Имя",
+    "namePlaceholder": "Как к вам обращаться",
+    "email": "Email",
+    "password": "Пароль",
+    "confirmPassword": "Подтвердите пароль",
+    "submit": "Зарегистрироваться",
+    "topBtn": "Регистрация",
+    "hasAccount": "Уже есть аккаунт?",
+    "loginLink": "Войти",
+    "successHint": "Проверьте почту — мы отправили письмо для подтверждения email.",
+    "errorName": "Введите имя.",
+    "errorEmail": "Введите email.",
+    "errorEmailInvalid": "Введите корректный email.",
+    "errorPassword": "Введите пароль.",
+    "errorPasswordShort": "Пароль должен быть не менее 6 символов.",
+    "errorPasswordMatch": "Пароли не совпадают.",
+    "errorExists": "Этот email уже зарегистрирован. Войдите или восстановите пароль.",
+    "errorGeneric": "Ошибка регистрации. Попробуйте снова."
   }
 }

@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
-import { isTestAccountEmail } from '../data/testAccount'
 import { NeuronGlow } from '../components/NeuronGlow'
 import styles from './Login.module.css'
 
-export function Login() {
-  const { user, login, loading: authLoading } = useAuth()
+export function Register() {
+  const { user, register, loading: authLoading } = useAuth()
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
@@ -17,8 +16,10 @@ export function Login() {
     if (user) navigate(from, { replace: true })
   }, [user, from, navigate])
 
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -26,35 +27,45 @@ export function Login() {
     e.preventDefault()
     setError('')
 
+    const nameTrim = name.trim()
     const emailTrim = email.trim()
+
+    if (!nameTrim) {
+      setError(t('register.errorName'))
+      return
+    }
     if (!emailTrim) {
-      setError(t('login.errorEmail'))
+      setError(t('register.errorEmail'))
       return
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
-      setError(t('login.errorEmailInvalid'))
+      setError(t('register.errorEmailInvalid'))
       return
     }
     if (!password) {
-      setError(t('login.errorPassword'))
+      setError(t('register.errorPassword'))
       return
     }
     if (password.length < 6) {
-      setError(t('login.errorPasswordShort'))
+      setError(t('register.errorPasswordShort'))
+      return
+    }
+    if (password !== confirmPassword) {
+      setError(t('register.errorPasswordMatch'))
       return
     }
 
     setLoading(true)
     try {
-      await login(emailTrim, password.trim())
+      await register(emailTrim, password.trim(), nameTrim)
       navigate(from, { replace: true })
     } catch (err) {
-      if (err?.code === 'TEST_ACCOUNT_PASSWORD' || (isTestAccountEmail(emailTrim) && err?.status === 401)) {
-        setError(lang === 'ru'
-          ? 'Неверный пароль тестового аккаунта. Используйте: TestAll2026!'
-          : 'Wrong test account password. Use: TestAll2026!')
+      if (err?.status === 409) {
+        setError(t('register.errorExists'))
+      } else if (err?.status === 400) {
+        setError(err.message || t('register.errorGeneric'))
       } else {
-        setError(t('login.errorGeneric'))
+        setError(t('register.errorGeneric'))
       }
     } finally {
       setLoading(false)
@@ -88,11 +99,11 @@ export function Login() {
             {t('login.back')}
           </Link>
           <Link
-            to="/register"
+            to="/login"
             state={{ from: location.state?.from }}
-            className={styles.registerTopBtn}
+            className={styles.loginTopBtn}
           >
-            {t('register.topBtn')}
+            {t('register.loginLink')}
           </Link>
         </div>
 
@@ -102,8 +113,8 @@ export function Login() {
             <div className={styles.logoWrap}>
               <span className={styles.logoText}>AI Insider Academy</span>
             </div>
-            <h1 className={styles.title}>{t('login.title')}</h1>
-            <p className={styles.subtitle}>{t('login.subtitle')}</p>
+            <h1 className={styles.title}>{t('register.title')}</h1>
+            <p className={styles.subtitle}>{t('register.subtitle')}</p>
 
             <form onSubmit={handleSubmit} className={styles.form}>
               {error && (
@@ -113,7 +124,21 @@ export function Login() {
               )}
 
               <label className={styles.label}>
-                <span className={styles.labelText}>{t('login.email')}</span>
+                <span className={styles.labelText}>{t('register.name')}</span>
+                <input
+                  type="text"
+                  name="name"
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('register.namePlaceholder')}
+                  className={styles.input}
+                  disabled={loading}
+                />
+              </label>
+
+              <label className={styles.label}>
+                <span className={styles.labelText}>{t('register.email')}</span>
                 <input
                   type="email"
                   name="email"
@@ -127,13 +152,27 @@ export function Login() {
               </label>
 
               <label className={styles.label}>
-                <span className={styles.labelText}>{t('login.password')}</span>
+                <span className={styles.labelText}>{t('register.password')}</span>
                 <input
                   type="password"
                   name="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className={styles.input}
+                  disabled={loading}
+                />
+              </label>
+
+              <label className={styles.label}>
+                <span className={styles.labelText}>{t('register.confirmPassword')}</span>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   className={styles.input}
                   disabled={loading}
@@ -148,26 +187,21 @@ export function Login() {
                 {loading ? (
                   <span className={styles.spinner} aria-hidden />
                 ) : (
-                  t('login.submit')
+                  t('register.submit')
                 )}
               </button>
             </form>
 
             <p className={styles.footerAuth}>
-              {t('login.noAccount')}{' '}
+              {t('register.hasAccount')}{' '}
               <Link
-                to="/register"
+                to="/login"
                 state={{ from: location.state?.from }}
                 className={styles.footerAuthLink}
               >
-                {t('login.registerLink')}
+                {t('register.loginLink')}
               </Link>
             </p>
-
-            <p className={styles.demoHint}>{t('login.demoHint')}</p>
-            <Link to="/forgot-password" className={styles.backLink} style={{ marginTop: 12, display: 'inline-block' }}>
-              {lang === 'ru' ? 'Забыли пароль?' : 'Forgot password?'}
-            </Link>
           </div>
         </div>
       </div>
