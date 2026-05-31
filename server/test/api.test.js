@@ -40,7 +40,7 @@ test('SQLite schema creates all required tables', async () => {
     'registrations', 'purchase_log', 'certificates', 'homework', 'notifications',
     'referrals', 'referral_discounts', 'analytics', 'webhook_events', 'admin_seen',
     'email_tokens', 'payments', 'reviews', 'teams', 'team_members',
-    'user_achievements', 'lesson_reminders',
+    'user_achievements', 'lesson_reminders', 'accelerator_applications',
   ]
 
   for (const t of required) assert.ok(tables.includes(t), `missing table ${t}`)

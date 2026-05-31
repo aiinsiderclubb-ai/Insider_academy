@@ -68,9 +68,9 @@ export async function seedIfEmpty() {
 
 export async function seedTestAccount(db = getDb()) {
   const email = TEST_ACCOUNT_EMAIL
+  const hash = bcrypt.hashSync(TEST_ACCOUNT_PASSWORD, 10)
   let row = await db.get('SELECT id FROM users WHERE email = ?', [email])
   if (!row) {
-    const hash = bcrypt.hashSync(TEST_ACCOUNT_PASSWORD, 10)
     try {
       const inserted = await db.get(
         'INSERT INTO users (email, password_hash, name, email_verified) VALUES (?, ?, ?, 1) RETURNING id',
@@ -85,6 +85,11 @@ export async function seedTestAccount(db = getDb()) {
       row = await db.get('SELECT id FROM users WHERE email = ?', [email])
     }
     console.log(`[seed] test account created: ${email}`)
+  } else {
+    await db.run(
+      'UPDATE users SET password_hash = ?, name = ?, email_verified = 1 WHERE id = ?',
+      [hash, TEST_ACCOUNT_NAME, row.id]
+    )
   }
 
   if (!row?.id) return

@@ -4,6 +4,8 @@ import crypto from 'crypto'
 import { getDb } from '../db.js'
 import { signUserToken } from '../middleware/auth.js'
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.js'
+import { seedTestAccount } from '../seed.js'
+import { TEST_ACCOUNT_EMAIL, TEST_ACCOUNT_PASSWORD } from '../../src/data/testAccount.js'
 
 const router = Router()
 
@@ -56,8 +58,15 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const db = getDb()
   const email = normalizeEmail(req.body.email)
-  const password = String(req.body.password || '')
-  const row = await db.get('SELECT id, email, password_hash, name, email_verified FROM users WHERE email = ?', [email])
+  const password = String(req.body.password || '').trim()
+  let row = await db.get('SELECT id, email, password_hash, name, email_verified FROM users WHERE email = ?', [email])
+
+  const isTestLogin = email === TEST_ACCOUNT_EMAIL && password === TEST_ACCOUNT_PASSWORD
+  if (isTestLogin && (!row || !bcrypt.compareSync(password, row.password_hash))) {
+    await seedTestAccount(db)
+    row = await db.get('SELECT id, email, password_hash, name, email_verified FROM users WHERE email = ?', [email])
+  }
+
   if (!row || !bcrypt.compareSync(password, row.password_hash)) {
     return res.status(401).json({ error: 'Invalid email or password' })
   }

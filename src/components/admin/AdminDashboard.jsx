@@ -4,6 +4,7 @@ import { adminRecommendations } from '../../data/adminRoadmap'
 import styles from '../../pages/Admin.module.css'
 import { AdminCharts } from './AdminCharts'
 import { canAccessTab } from '../../utils/adminAuth'
+import { ACCELERATOR_ADMIN_TAB } from '../../data/acceleratorApplication'
 
 function StatCard({ label, value, suffix = '', trend, accent }) {
   const animated = useAnimatedNumber(value)
@@ -113,6 +114,7 @@ export function AdminDashboard({
   }, [pendingHw, pendingCerts])
 
   const quickActions = [
+    canAccessTab(adminRole, ACCELERATOR_ADMIN_TAB) && { label: 'Отборочный курс', tab: ACCELERATOR_ADMIN_TAB, badge: unreadByTab[ACCELERATOR_ADMIN_TAB] },
     canAccessTab(adminRole, 'homework') && { label: 'Проверить ДЗ', tab: 'homework', badge: unreadByTab.homework },
     canAccessTab(adminRole, 'certificates') && { label: 'Выдать сертификат', tab: 'certificates', badge: unreadByTab.certificates },
     canAccessTab(adminRole, 'courses') && { label: 'Добавить курс', tab: 'courses' },

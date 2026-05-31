@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { getAcceleratorApplicationUrl } from '../data/promo'
+import { ACCELERATOR_APPLY_PATH } from '../data/acceleratorApplication'
 import styles from './BundleCourseActions.module.css'
 
 export function BundleCourseActions({
@@ -9,12 +9,8 @@ export function BundleCourseActions({
   variant = 'default',
   className = '',
 }) {
-  const applyUrl = getAcceleratorApplicationUrl()
   const learnLabel = lang === 'ru' ? 'Узнать детальнее' : 'Learn more'
   const applyLabel = lang === 'ru' ? 'Подать заявку' : 'Apply'
-  const applyTitle = !applyUrl
-    ? (lang === 'ru' ? 'Ссылка на анкету скоро будет доступна' : 'Application link coming soon')
-    : undefined
 
   return (
     <div className={`${styles.wrap} ${styles[variant] || ''} ${className}`.trim()}>
@@ -23,20 +19,9 @@ export function BundleCourseActions({
           {learnLabel}
         </Link>
       )}
-      {applyUrl ? (
-        <a
-          href={applyUrl}
-          className={styles.applyBtn}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {applyLabel} →
-        </a>
-      ) : (
-        <span className={`${styles.applyBtn} ${styles.applyBtnDisabled}`} title={applyTitle}>
-          {applyLabel} →
-        </span>
-      )}
+      <Link to={ACCELERATOR_APPLY_PATH} className={styles.applyBtn}>
+        {applyLabel} →
+      </Link>
     </div>
   )
 }

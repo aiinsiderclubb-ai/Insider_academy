@@ -117,33 +117,49 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password, name) => {
     const emailTrim = email.trim()
+    const passwordTrim = String(password || '').trim()
     if (apiMode) {
       try {
-        const { token, user: u } = await api.login(emailTrim, password)
+        const { token, user: u } = await api.login(emailTrim, passwordTrim)
         setToken(token)
         setUserState(u)
-        const me = await api.getMe()
-        setPurchases(me.purchases || [])
-        savePurchasesLocal(me.purchases || [])
+        try {
+          const me = await api.getMe()
+          setPurchases(me.purchases || [])
+          savePurchasesLocal(me.purchases || [])
+        } catch {
+          if (isTestAccountEmail(emailTrim)) {
+            const testPurchases = getTestAccountPurchases()
+            setPurchases(testPurchases)
+            savePurchasesLocal(testPurchases)
+          }
+        }
         await applyReferral(emailTrim)
         return u
       } catch (err) {
-        if (err.status === 401) {
-          const { token, user: u } = await api.register(emailTrim, password, name || emailTrim)
+        if (err.status === 401 && !isTestAccountEmail(emailTrim)) {
+          const { token, user: u } = await api.register(emailTrim, passwordTrim, name || emailTrim)
           setToken(token)
           setUserState(u)
           setPurchases([])
           await applyReferral(emailTrim)
           return u
         }
+        if (err.status === 401 && isTestAccountEmail(emailTrim)) {
+          const hint = new Error('Invalid test account password')
+          hint.status = 401
+          hint.code = 'TEST_ACCOUNT_PASSWORD'
+          throw hint
+        }
         throw err
       }
     }
 
     if (isTestAccountEmail(emailTrim)) {
-      if (password !== TEST_ACCOUNT_PASSWORD) {
+      if (passwordTrim !== TEST_ACCOUNT_PASSWORD) {
         const err = new Error('Invalid credentials')
         err.status = 401
+        err.code = 'TEST_ACCOUNT_PASSWORD'
         throw err
       }
       const u = { email: emailTrim, name: TEST_ACCOUNT_NAME }

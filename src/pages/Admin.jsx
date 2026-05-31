@@ -9,6 +9,7 @@ import {
   getDiscounts,
   getHomeworkSubmissions,
   getReviewSubmissions,
+  getAcceleratorApplications,
   updateHomeworkSubmission,
   addNotification,
   recordCertificate,
@@ -22,12 +23,14 @@ import { getBlogPosts, setBlogPosts } from '../api/blogStore'
 import { getCalendarEvents, setCalendarEvents } from '../api/calendarStore'
 import { api, setAdminToken, getAdminToken } from '../api/client'
 import { useApi } from '../context/ApiContext'
+import { ACCELERATOR_ADMIN_TAB } from '../data/acceleratorApplication'
 import { courses as defaultCourses } from '../data/courses'
 import { blogPosts as defaultBlog } from '../data/blog'
 import { AdminSidebar } from '../components/admin/AdminSidebar'
 import { AdminDashboard } from '../components/admin/AdminDashboard'
 import { AdminRoadmap } from '../components/admin/AdminRoadmap'
 import { AdminReviewsPanel } from '../components/admin/AdminReviewsPanel'
+import { AdminApplicationsPanel } from '../components/admin/AdminApplicationsPanel'
 import { AdminToast } from '../components/admin/AdminToast'
 import { AdminSearchBar, matchesSearch } from '../components/admin/AdminSearchBar'
 import { AdminBlogEditor } from '../components/admin/AdminBlogEditor'
@@ -40,7 +43,7 @@ import styles from './Admin.module.css'
 
 const ADMIN_PASSWORD = 'admin123'
 
-const SEARCH_TABS = new Set(['registrations', 'purchases', 'homework', 'reviews', 'certificates', 'referrals', 'courses', 'blog'])
+const SEARCH_TABS = new Set(['registrations', 'purchases', 'homework', 'reviews', ACCELERATOR_ADMIN_TAB, 'certificates', 'referrals', 'courses', 'blog'])
 
 function exportCsv(filename, rows, headers) {
   const escape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
@@ -199,6 +202,12 @@ export function Admin() {
       if (!ok) setDashData(null)
     })
   }, [authenticated, refresh, online])
+
+  useEffect(() => {
+    if (!authenticated || activeTab !== ACCELERATOR_ADMIN_TAB || !online) return undefined
+    const id = setInterval(() => setRefresh((r) => r + 1), 30000)
+    return () => clearInterval(id)
+  }, [authenticated, activeTab, online])
 
   useEffect(() => {
     if (authenticated) setCoursesState(getCourses())
@@ -422,6 +431,9 @@ export function Admin() {
   const reviewsList = useServerData
     ? (dashData?.reviews ?? [])
     : (dashData?.reviews ?? (canAccessTab(adminRole, 'reviews') ? getReviewSubmissions() : []))
+  const applicationsList = useServerData
+    ? (dashData?.applications ?? [])
+    : (dashData?.applications ?? (canAccessTab(adminRole, ACCELERATOR_ADMIN_TAB) ? getAcceleratorApplications() : []))
   const blogPostsList = dashData?.blog ?? getBlogPosts()
   const normalizedCertificateEmail = newCertificate.email.trim().toLowerCase()
   const availableCertificateCourses = courses.filter((course) =>
@@ -466,6 +478,7 @@ export function Admin() {
     certificates: getUnseenCount('certificates', certificates),
     homework: getUnseenCount('homework', homeworkList),
     reviews: reviewsList.filter((r) => (r.status || 'pending') === 'pending').length,
+    [ACCELERATOR_ADMIN_TAB]: applicationsList.filter((a) => (a.status || 'new') === 'new').length,
   }
 
   const handleHomeworkDecision = async (submission, status) => {
@@ -584,6 +597,15 @@ export function Admin() {
   const filteredPurchases = purchases.filter((p) => matchesSearch(searchQuery, p.email, p.courseTitle))
   const filteredHomework = homeworkList.filter((h) => matchesSearch(searchQuery, h.email, h.name, h.courseTitle))
   const filteredReviews = reviewsList.filter((r) => matchesSearch(searchQuery, r.email, r.contactEmail, r.userName, r.text, r.courseId))
+  const filteredApplications = applicationsList.filter((a) => matchesSearch(
+    searchQuery,
+    a.email,
+    a.firstName,
+    a.lastName,
+    a.telegram,
+    a.country,
+    a.motivation,
+  ))
   const filteredCertificates = certificates.filter((c) => matchesSearch(searchQuery, c.email, c.courseTitle))
   const filteredReferrals = referrals.filter((r) => matchesSearch(searchQuery, r.referrerEmail, r.referredEmail))
   const filteredCourses = courses.filter((c) => matchesSearch(searchQuery, c.title, c.slug, c.id))
@@ -597,6 +619,7 @@ export function Admin() {
     certificates: 'Сертификаты',
     homework: 'Домашние задания',
     reviews: 'Отзывы',
+    [ACCELERATOR_ADMIN_TAB]: 'Отборочный курс',
     courses: 'Курсы',
     blog: 'Блог',
     calendar: 'Календарь',
@@ -866,6 +889,18 @@ export function Admin() {
             reviews={searchQuery ? filteredReviews : reviewsList}
             online={useServerData}
             courses={courses}
+            onUpdated={() => setRefresh((r) => r + 1)}
+            showToast={showToast}
+          />
+        </section>
+        )}
+
+        {activeTab === ACCELERATOR_ADMIN_TAB && canAccessTab(adminRole, ACCELERATOR_ADMIN_TAB) && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Отборочный курс — AI Insider Accelerator</h2>
+          <AdminApplicationsPanel
+            applications={searchQuery ? filteredApplications : applicationsList}
+            online={useServerData}
             onUpdated={() => setRefresh((r) => r + 1)}
             showToast={showToast}
           />

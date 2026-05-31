@@ -5,6 +5,7 @@ import { sendHomeworkFeedbackEmail } from '../services/email.js'
 import { getFileUrl } from '../services/storage.js'
 import { config } from '../config.js'
 import { nowIso } from '../db/time.js'
+import { mapApplication } from './applications.js'
 
 const router = Router()
 
@@ -62,6 +63,7 @@ router.get('/dashboard', async (req, res) => {
       referrals: await db.all('SELECT * FROM referrals ORDER BY date DESC LIMIT 500'),
       discounts: Object.fromEntries((await db.all('SELECT email, percent FROM referral_discounts')).map((r) => [r.email, r.percent])),
       reviews: (await db.all('SELECT * FROM reviews ORDER BY date DESC LIMIT 200')).map(mapReview),
+      applications: (await db.all('SELECT * FROM accelerator_applications ORDER BY date DESC LIMIT 300')).map(mapApplication),
       teams: await db.all('SELECT * FROM teams ORDER BY created_at DESC LIMIT 50'),
     })
   }
@@ -153,6 +155,25 @@ router.patch('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, res
     )
   }
   res.json({ ok: true, review: mapReview(await db.get('SELECT * FROM reviews WHERE id = ?', [req.params.id])) })
+})
+
+router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const { status, adminNote } = req.body
+  if (status && !['new', 'reviewed', 'accepted', 'rejected'].includes(status)) {
+    return res.status(400).json({ error: 'Invalid status' })
+  }
+  const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
+  if (!row) return res.status(404).json({ error: 'Not found' })
+  await db.run(
+    `UPDATE accelerator_applications
+     SET status = COALESCE(?, status),
+         admin_note = COALESCE(?, admin_note),
+         updated_at = ?
+     WHERE id = ?`,
+    [status ?? null, adminNote ?? null, nowIso(), req.params.id]
+  )
+  res.json({ ok: true, application: mapApplication(await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])) })
 })
 
 router.post('/certificates', requireAdmin('admin', 'moderator'), async (req, res) => {

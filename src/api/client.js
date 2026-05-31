@@ -76,6 +76,7 @@ export const api = {
   chat: (messages) => apiRequest('/chat', { method: 'POST', body: { messages } }),
   getReviews: (courseId) => apiRequest(`/reviews/${courseId}`, { auth: false }),
   postReview: (courseId, payload) => apiRequest(`/reviews/${courseId}`, { method: 'POST', body: payload }),
+  submitAcceleratorApplication: (payload) => apiRequest('/applications/accelerator', { method: 'POST', body: payload }),
   getTeam: () => apiRequest('/teams/my'),
   createTeam: (name) => apiRequest('/teams/create', { method: 'POST', body: { name } }),
   joinTeam: (inviteCode) => apiRequest('/teams/join', { method: 'POST', body: { inviteCode } }),
@@ -91,6 +92,7 @@ export const api = {
   adminSaveCalendar: (events) => apiRequest('/admin/calendar', { method: 'PUT', body: { events }, admin: true }),
   adminUpdateHomework: (id, payload) => apiRequest(`/admin/homework/${id}`, { method: 'PATCH', body: payload, admin: true }),
   adminUpdateReview: (id, payload) => apiRequest(`/admin/reviews/${id}`, { method: 'PATCH', body: payload, admin: true }),
+  adminUpdateApplication: (id, payload) => apiRequest(`/admin/applications/${id}`, { method: 'PATCH', body: payload, admin: true }),
   adminAddCertificate: (payload) => apiRequest('/admin/certificates', { method: 'POST', body: payload, admin: true }),
 }
 

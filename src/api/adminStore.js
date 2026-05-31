@@ -397,6 +397,7 @@ export function getUnreadCount(email) {
 
 // ——— Отзывы ———
 const KEY_REVIEWS = 'lms_reviews'
+const KEY_APPLICATIONS = 'lms_accelerator_applications'
 
 export function getReviewSubmissions() {
   return getJson(KEY_REVIEWS)
@@ -455,5 +456,34 @@ export function updateReviewSubmission(id, { status }) {
   if (idx < 0) return null
   if (status) list[idx].status = status
   setJson(KEY_REVIEWS, list)
+  return list[idx]
+}
+
+export function getAcceleratorApplications() {
+  return getJson(KEY_APPLICATIONS)
+}
+
+export function recordAcceleratorApplication(payload) {
+  const list = getAcceleratorApplications()
+  const item = {
+    id: createId('app'),
+    status: 'new',
+    date: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    ...payload,
+  }
+  list.unshift(item)
+  setJson(KEY_APPLICATIONS, list.slice(0, 500))
+  return item
+}
+
+export function updateAcceleratorApplication(id, { status, adminNote }) {
+  const list = getAcceleratorApplications()
+  const idx = list.findIndex((a) => a.id === id)
+  if (idx < 0) return null
+  if (status) list[idx].status = status
+  if (adminNote !== undefined) list[idx].adminNote = adminNote
+  list[idx].updatedAt = new Date().toISOString()
+  setJson(KEY_APPLICATIONS, list)
   return list[idx]
 }

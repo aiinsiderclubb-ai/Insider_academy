@@ -27,6 +27,19 @@ export function requireUser(req, res, next) {
   }
 }
 
+export function optionalUser(req, _res, next) {
+  const header = req.headers.authorization || ''
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null
+  if (token) {
+    try {
+      const payload = jwt.verify(token, JWT_SECRET)
+      req.userId = payload.sub
+      req.userEmail = payload.email
+    } catch (_) {}
+  }
+  next()
+}
+
 export function verifyAdminToken(token) {
   const payload = jwt.verify(token, ADMIN_JWT_SECRET)
   if (!ADMIN_ROLES.includes(payload.role)) throw new Error('invalid role')

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
+import { isTestAccountEmail } from '../data/testAccount'
 import { NeuronGlow } from '../components/NeuronGlow'
 import styles from './Login.module.css'
 
@@ -45,10 +46,16 @@ export function Login() {
 
     setLoading(true)
     try {
-      await login(emailTrim, password)
+      await login(emailTrim, password.trim())
       navigate(from, { replace: true })
-    } catch {
-      setError(t('login.errorGeneric'))
+    } catch (err) {
+      if (err?.code === 'TEST_ACCOUNT_PASSWORD' || (isTestAccountEmail(emailTrim) && err?.status === 401)) {
+        setError(lang === 'ru'
+          ? 'Неверный пароль тестового аккаунта. Используйте: TestAll2026!'
+          : 'Wrong test account password. Use: TestAll2026!')
+      } else {
+        setError(t('login.errorGeneric'))
+      }
     } finally {
       setLoading(false)
     }

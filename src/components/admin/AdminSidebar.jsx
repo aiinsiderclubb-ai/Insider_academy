@@ -1,5 +1,6 @@
 import styles from '../../pages/Admin.module.css'
 import { canAccessTab } from '../../utils/adminAuth'
+import { ACCELERATOR_ADMIN_TAB } from '../../data/acceleratorApplication'
 
 const navGroups = [
   {
@@ -9,6 +10,13 @@ const navGroups = [
       { id: 'roadmap', label: 'Роадмап', icon: '🗺️', roles: ['admin'] },
       { id: 'analytics', label: 'Аналитика', icon: '📈', roles: ['admin'] },
       { id: 'settings', label: 'Настройки', icon: '⚙️', roles: ['admin'] },
+    ],
+  },
+  {
+    label: 'Отбор',
+    roles: ['admin', 'moderator'],
+    items: [
+      { id: ACCELERATOR_ADMIN_TAB, label: 'Отборочный курс', icon: '🏁' },
     ],
   },
   {

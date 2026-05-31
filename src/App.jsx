@@ -23,6 +23,7 @@ import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { Club } from './pages/Club'
 import { Admin } from './pages/Admin'
+import { AcceleratorApply } from './pages/AcceleratorApply'
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   const location = useLocation()
@@ -47,6 +48,7 @@ function AppContent() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/club" element={<Club />} />
           <Route path="/learning-map" element={<Navigate to="/" replace />} />
+          <Route path="/courses/ai-insider-accelerator/apply" element={<AcceleratorApply />} />
           <Route path="/courses/:slug" element={<Course />} />
           <Route path="/courses/:slug/buy" element={<CourseBuy />} />
           <Route path="/cabinet" element={<ProtectedRoute><Cabinet /></ProtectedRoute>} />

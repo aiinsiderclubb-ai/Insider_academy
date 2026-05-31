@@ -12,6 +12,7 @@ import paymentsRoutes from './routes/payments.js'
 import webhooksRoutes, { handleStripeWebhook, handleTributeWebhook } from './routes/webhooks.js'
 import chatRoutes from './routes/chat.js'
 import reviewsRoutes from './routes/reviews.js'
+import applicationsRoutes from './routes/applications.js'
 import teamsRoutes from './routes/teams.js'
 import telegramRoutes from './routes/telegram.js'
 import filesRoutes from './routes/files.js'
@@ -28,7 +29,11 @@ export async function createApp() {
   await seedIfEmpty()
 
   const app = express()
-  app.use(cors({ origin: config.corsOrigin, credentials: true }))
+  const corsOrigins = String(config.corsOrigin || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
+  app.use(cors({ origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins, credentials: true }))
 
   app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook)
   app.post('/api/webhooks/tribute', express.raw({ type: 'application/json' }), handleTributeWebhook)
@@ -62,6 +67,7 @@ export async function createApp() {
   app.use('/api/admin', adminRoutes)
   app.use('/api/chat', chatRoutes)
   app.use('/api/reviews', reviewsRoutes)
+  app.use('/api/applications', applicationsRoutes)
   app.use('/api/teams', teamsRoutes)
   app.use('/api/telegram', telegramRoutes)
   app.use('/api/files', filesRoutes)

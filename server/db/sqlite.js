@@ -230,6 +230,27 @@ CREATE TABLE IF NOT EXISTS lesson_reminders (
   remind_at TEXT NOT NULL,
   sent INTEGER DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS accelerator_applications (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER,
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  age INTEGER,
+  country TEXT,
+  telegram TEXT,
+  email TEXT NOT NULL,
+  current_activity TEXT,
+  ai_experience TEXT,
+  interests TEXT,
+  source TEXT,
+  motivation TEXT,
+  future_goal TEXT,
+  status TEXT NOT NULL DEFAULT 'new',
+  admin_note TEXT,
+  date TEXT NOT NULL,
+  updated_at TEXT
+);
 `
 
 export function createSqliteDb() {
