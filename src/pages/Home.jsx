@@ -160,20 +160,31 @@ export function Home() {
 
       <section className={styles.whatIncluded}>
         <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>{t('home.whatIncludedTitle')}</h2>
+          <div className={styles.whatIncludedHead}>
+            <span className={styles.sectionPill}>{lang === 'ru' ? 'Learning flow' : 'Learning flow'}</span>
+            <h2 className={styles.sectionTitle}>{t('home.whatIncludedTitle')}</h2>
+            <p className={styles.sectionDesc}>
+              {lang === 'ru'
+                ? 'От урока к практике, проверке и сертификату — всё собрано в понятный путь обучения.'
+                : 'From lesson to practice, review and certificate — a clear learning path in one place.'}
+            </p>
+          </div>
           <div className={styles.whatIncludedGrid}>
-            <div className={styles.whatIncludedCard}>
-              <span className={styles.whatIncludedIcon}>🕐</span>
+            <div className={`${styles.whatIncludedCard} ${styles.whatIncludedCardActive}`}>
+              <span className={`${styles.whatIncludedIcon} ${styles.whatIncludedIconSupport}`} aria-hidden />
+              <span className={styles.flowStep}>01</span>
               <h3 className={styles.whatIncludedCardTitle}>{t('home.support247')}</h3>
               <p className={styles.whatIncludedCardText}>{t('home.support247Desc')}</p>
             </div>
             <div className={styles.whatIncludedCard}>
-              <span className={styles.whatIncludedIcon}>✓</span>
+              <span className={`${styles.whatIncludedIcon} ${styles.whatIncludedIconCheck}`} aria-hidden />
+              <span className={styles.flowStep}>02</span>
               <h3 className={styles.whatIncludedCardTitle}>{t('home.checkingTasks')}</h3>
               <p className={styles.whatIncludedCardText}>{t('home.checkingTasksDesc')}</p>
             </div>
             <div className={styles.whatIncludedCard}>
-              <span className={styles.whatIncludedIcon}>📜</span>
+              <span className={`${styles.whatIncludedIcon} ${styles.whatIncludedIconCertificate}`} aria-hidden />
+              <span className={styles.flowStep}>03</span>
               <h3 className={styles.whatIncludedCardTitle}>{t('home.certificates')}</h3>
               <p className={styles.whatIncludedCardText}>{t('home.certificatesDesc')}</p>
             </div>

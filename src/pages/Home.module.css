@@ -351,45 +351,233 @@
 .whatIncluded {
   padding: 80px 0;
   border-top: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.whatIncluded::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 24%, rgba(168, 85, 247, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 62%, rgba(236, 72, 153, 0.09), transparent 28%);
+  pointer-events: none;
+}
+
+.whatIncluded .container {
+  position: relative;
+}
+
+.whatIncludedHead {
+  max-width: 680px;
+  margin: 0 auto 42px;
+  text-align: center;
 }
 
 .whatIncludedGrid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 24px;
 }
 
+.whatIncludedGrid::before {
+  content: '';
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 54px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent-primary) 65%, transparent),
+    color-mix(in srgb, var(--glow-pink) 50%, transparent),
+    transparent
+  );
+  opacity: 0.75;
+  animation: flowLine 3.4s ease-in-out infinite;
+}
+
 .whatIncludedCard {
-  background: var(--bg-card);
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01)),
+    var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 22px;
   padding: 28px;
   text-align: center;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+  backdrop-filter: blur(var(--glass-blur));
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  animation: floatCard 5.5s ease-in-out infinite;
+}
+
+.whatIncludedCard:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.whatIncludedCard:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+.whatIncludedCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent-primary) 14%, transparent), transparent 44%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.whatIncludedCardActive::before,
+.whatIncludedCard:hover::before {
+  opacity: 1;
 }
 
 .whatIncludedCard:hover {
   border-color: var(--border-accent);
   box-shadow: 0 0 30px var(--glow-purple-dim);
+  transform: translateY(-4px);
 }
 
 .whatIncludedIcon {
-  display: inline-block;
-  font-size: 2rem;
-  margin-bottom: 16px;
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent),
+    var(--gradient-primary);
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--accent-primary) 35%, transparent),
+    inset 0 0 18px rgba(255, 255, 255, 0.08);
+  animation: iconPulse 2.8s ease-in-out infinite;
+}
+
+.whatIncludedIcon::before,
+.whatIncludedIcon::after {
+  content: '';
+  position: absolute;
+}
+
+.whatIncludedIconSupport::before {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+
+.whatIncludedIconSupport::after {
+  width: 10px;
+  height: 2px;
+  background: #fff;
+  transform: translate(5px, -2px) rotate(-45deg);
+  transform-origin: left center;
+}
+
+.whatIncludedIconCheck::before {
+  width: 20px;
+  height: 10px;
+  border-left: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+  transform: rotate(-45deg) translate(1px, -2px);
+}
+
+.whatIncludedIconCertificate::before {
+  width: 22px;
+  height: 26px;
+  border: 2px solid #fff;
+  border-radius: 4px;
+}
+
+.whatIncludedIconCertificate::after {
+  width: 12px;
+  height: 2px;
+  background: #fff;
+  box-shadow: 0 7px 0 rgba(255, 255, 255, 0.85);
+}
+
+.flowStep {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  color: var(--accent-primary);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  opacity: 0.7;
 }
 
 .whatIncludedCardTitle {
+  position: relative;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 800;
   margin-bottom: 8px;
+  letter-spacing: -0.01em;
 }
 
 .whatIncludedCardText {
+  position: relative;
   font-size: 0.9375rem;
   color: var(--text-muted);
   line-height: 1.5;
   margin: 0;
+}
+
+@keyframes flowLine {
+  0%, 100% {
+    opacity: 0.35;
+    filter: blur(0);
+  }
+  50% {
+    opacity: 0.95;
+    filter: blur(1px);
+  }
+}
+
+@keyframes floatCard {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 22px color-mix(in srgb, var(--accent-primary) 30%, transparent),
+      inset 0 0 18px rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow:
+      0 0 34px color-mix(in srgb, var(--glow-pink) 38%, transparent),
+      inset 0 0 18px rgba(255, 255, 255, 0.1);
+  }
+}
+
+@media (max-width: 900px) {
+  .whatIncludedGrid::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whatIncludedCard,
+  .whatIncludedIcon,
+  .whatIncludedGrid::before {
+    animation: none;
+  }
 }
 
 .teamSection {
