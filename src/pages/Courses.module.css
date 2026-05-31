@@ -21,6 +21,49 @@
   max-width: 560px;
 }
 
+.segmentRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.segmentBtn {
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.segmentBtn:hover {
+  border-color: var(--border-accent);
+  color: var(--text);
+}
+
+.segmentBtnActive {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: #fff;
+}
+
+.clubLink {
+  margin-left: auto;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--glow-purple);
+}
+
+.clubLink:hover {
+  text-decoration: underline;
+}
+
 .toolbar {
   display: flex;
   flex-direction: column;
@@ -106,6 +149,25 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.card:hover .cardImage {
+  transform: scale(1.05);
+}
+
+.cardImageWrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, transparent 55%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.card:hover .cardImageWrap::after {
+  opacity: 1;
 }
 
 .cardCategory {
@@ -113,10 +175,13 @@
   top: 12px;
   left: 12px;
   font-size: 0.75rem;
-  font-weight: 500;
-  background: rgba(0, 0, 0, 0.7);
+  font-weight: 600;
+  background: var(--course-accent-soft);
+  color: var(--course-accent);
+  border: 1px solid color-mix(in srgb, var(--course-accent) 35%, transparent);
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-pill);
+  backdrop-filter: blur(8px);
 }
 
 .cardPercent {
@@ -124,7 +189,7 @@
   bottom: 8px;
   right: 8px;
   padding: 4px 10px;
-  background: var(--glow-purple);
+  background: var(--course-gradient);
   color: #fff;
   font-size: 0.75rem;
   font-weight: 600;
@@ -137,6 +202,18 @@
   left: 8px;
   padding: 4px 10px;
   background: var(--success);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+}
+
+.cardBundleBadge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 4px 10px;
+  background: var(--gradient-primary);
   color: #fff;
   font-size: 0.75rem;
   font-weight: 600;
@@ -167,8 +244,8 @@
 }
 
 .cardPrice {
-  color: var(--glow-purple);
-  font-weight: 600;
+  color: var(--course-accent);
+  font-weight: 700;
 }
 
 .cardPriceFree {
@@ -177,7 +254,9 @@
 }
 
 .card:hover {
-  border-color: var(--border-accent);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px var(--glow-purple-dim);
+  border-color: color-mix(in srgb, var(--course-accent) 45%, var(--border));
+  transform: translateY(-6px);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.35),
+    0 0 32px var(--course-accent-soft);
 }

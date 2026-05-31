@@ -4,17 +4,28 @@ import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
-import { getCourseField } from '../data/courses'
 import { getBlogPosts, fetchBlogPosts } from '../api/blogStore'
+import { SOCIAL_PROOF } from '../data/courseLanding'
+import { api, checkApiOnline } from '../api/client'
 import { NeuronGlow } from '../components/NeuronGlow'
+import { ScrollReveal } from '../components/ScrollReveal'
+import { TelegramWidget } from '../components/TelegramWidget'
+import { ThemePreview } from '../components/ThemePreview'
+import { CourseCatalogCard } from '../components/CourseCatalogCard'
+import { useTheme } from '../context/ThemeContext'
+import { HomeSuperOffer } from '../components/HomeSuperOffer'
+import { HomeClubSection } from '../components/HomeClubSection'
+import { HomeCertificatesSection } from '../components/HomeCertificatesSection'
+import { IconStar, IconUsers, IconAward } from '../components/Icons'
 import styles from './Home.module.css'
 
 export function Home() {
   const { user, hasPurchased } = useAuth()
   const { getPercent } = useProgress()
   const { t, lang } = useLanguage()
-  const { courses, freeTrialCourses } = useCourses()
-  const featured = courses.filter((c) => !c.isFreeTrial).slice(0, 4)
+  const { theme } = useTheme()
+  const { courses, freeCourses, paidCourses, acceleratorCourse, loading } = useCourses()
+  const [userStats, setUserStats] = useState(null)
   const [blogPreview, setBlogPreview] = useState(() =>
     [...getBlogPosts()].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3)
   )
@@ -24,6 +35,16 @@ export function Home() {
       setBlogPreview([...posts].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3))
     })
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    checkApiOnline().then(async (ok) => {
+      if (!ok) return
+      try {
+        setUserStats(await api.getStats())
+      } catch (_) {}
+    })
+  }, [user])
 
   const getPostTitle = (post) => (lang === 'en' && post.titleEn ? post.titleEn : post.title)
   const getPostExcerpt = (post) => (lang === 'en' && post.excerptEn ? post.excerptEn : post.excerpt)
@@ -41,10 +62,14 @@ export function Home() {
             <span className={styles.heroTitleAccent}>{t('home.heroTitle2')}</span>
           </h1>
           <p className={styles.heroDesc}>{t('home.heroDesc')}</p>
+          <p className={styles.heroDescNote}>{t('home.heroDescNote')}</p>
           <div className={styles.heroActions}>
             <Link to="/courses" className={styles.ctaPrimary}>
-              {t('home.learnMore')}
+              {t('home.toCatalog')}
               <span className={styles.ctaArrow} aria-hidden>→</span>
+            </Link>
+            <Link to="/courses" className={styles.ctaSecondary}>
+              {t('home.learnMore')}
             </Link>
             {!user && (
               <Link to="/login" className={styles.ctaSecondary}>
@@ -68,30 +93,67 @@ export function Home() {
         </div>
       </section>
 
+      <HomeSuperOffer course={acceleratorCourse} lang={lang} />
+
       <section className={styles.statsStrip}>
         <div className={styles.container}>
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>
+              <IconUsers />
+              <span className={styles.statValue}>{SOCIAL_PROOF.students}+</span>
+              <span className={styles.statLabel}>{lang === 'ru' ? 'Студентов' : 'Students'}</span>
+            </div>
+            <div className={styles.statCard}>
+              <IconStar />
+              <span className={styles.statValue}>{SOCIAL_PROOF.rating}</span>
+              <span className={styles.statLabel}>{lang === 'ru' ? 'Средний рейтинг' : 'Avg. rating'}</span>
+            </div>
+            <div className={styles.statCard}>
+              <IconAward />
+              <span className={styles.statValue}>{SOCIAL_PROOF.certificates}+</span>
+              <span className={styles.statLabel}>{lang === 'ru' ? 'Сертификатов' : 'Certificates'}</span>
+            </div>
+            <div className={styles.statCard}>
               <span className={styles.statValue}>{courses.length}</span>
-              <span className={styles.statLabel}>{lang === 'ru' ? 'Курсов в каталоге' : 'Courses'}</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statValue}>{freeTrialCourses.length}</span>
-              <span className={styles.statLabel}>{lang === 'ru' ? 'Бесплатных пробных' : 'Free trials'}</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statValue}>24/7</span>
-              <span className={styles.statLabel}>{lang === 'ru' ? 'Доступ к материалам' : 'Access to materials'}</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statValue}>RU/EN</span>
-              <span className={styles.statLabel}>{lang === 'ru' ? 'Два языка платформы' : 'Two languages'}</span>
+              <span className={styles.statLabel}>{lang === 'ru' ? 'Курсов' : 'Courses'}</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section className={`${styles.whatIncluded} ${styles.animateSection}`}>
+      {user && userStats && (
+        <ScrollReveal>
+          <section className={styles.userStatsSection}>
+            <div className={styles.container}>
+              <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Ваш прогресс' : 'Your progress'}</h2>
+              <div className={styles.userStatsGrid}>
+                {userStats.streak && (
+                  <div className={styles.userStatCard}>
+                    <span className={styles.userStatValue}>{userStats.streak.current}</span>
+                    <span className={styles.userStatLabel}>{lang === 'ru' ? 'дней подряд' : 'day streak'}</span>
+                  </div>
+                )}
+                {userStats.achievements?.length > 0 && (
+                  <div className={styles.userStatCard}>
+                    <span className={styles.userStatValue}>{userStats.achievements.length}</span>
+                    <span className={styles.userStatLabel}>{lang === 'ru' ? 'наград' : 'achievements'}</span>
+                  </div>
+                )}
+                {userStats.chart?.length > 0 && (
+                  <div className={styles.userStatCard}>
+                    <span className={styles.userStatValue}>
+                      {Math.round(userStats.chart.reduce((s, r) => s + r.percent, 0) / userStats.chart.length)}%
+                    </span>
+                    <span className={styles.userStatLabel}>{lang === 'ru' ? 'средний прогресс' : 'avg. progress'}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
+      )}
+
+      <section className={styles.whatIncluded}>
         <div className={styles.container}>
           <h2 className={styles.sectionTitle}>{t('home.whatIncludedTitle')}</h2>
           <div className={styles.whatIncludedGrid}>
@@ -114,82 +176,52 @@ export function Home() {
         </div>
       </section>
 
-      <section className={`${styles.promotions} ${styles.animateSection}`}>
-        <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>{t('home.promo')}</h2>
-          <div className={styles.promoCards}>
-            <div className={styles.promoCard}>
-              <span className={styles.promoCardTag}>{t('home.promoDiscount')}</span>
-              <h3 className={styles.promoCardTitle}>{t('home.promoDiscountTitle')}</h3>
-              <p className={styles.promoCardText}>{t('home.promoDiscountText')}</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeCertificatesSection lang={lang} />
+
+      <HomeClubSection lang={lang} />
 
       <section className={`${styles.tryNow} ${styles.animateSection}`}>
         <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>{t('home.tryNowTitle')}</h2>
+          <div className={styles.sectionHead}>
+            <span className={styles.sectionPill}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>
+            <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Начните бесплатно' : 'Start for free'}</h2>
+          </div>
           <p className={styles.sectionDesc}>{t('home.tryNowDesc')}</p>
           <div className={styles.cards}>
-            {freeTrialCourses.map((course) => {
-              const title = getCourseField(course, 'title', lang)
-              const shortDesc = getCourseField(course, 'shortDescription', lang)
-              const category = getCourseField(course, 'category', lang)
-              const duration = getCourseField(course, 'duration', lang)
-              return (
-                <Link
-                  to={`/courses/${course.slug}`}
-                  key={course.id}
-                  className={styles.card}
-                >
-                  <div className={styles.cardImageWrap}>
-                    <img src={course.image} alt="" className={styles.cardImage} />
-                    <span className={styles.cardCategory}>{category}</span>
-                    <span className={styles.cardFreeBadge}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>
-                  </div>
-                  <h3 className={styles.cardTitle}>{title}</h3>
-                  <p className={styles.cardDesc}>{shortDesc}</p>
-                  <div className={styles.cardMeta}>
-                    <span>{duration}</span>
-                    <span className={styles.tryNowLink}>{t('home.tryNowWatch')}</span>
-                  </div>
-                </Link>
-              )
-            })}
+            {(loading ? [] : freeCourses).map((course) => (
+              <CourseCatalogCard
+                key={course.id}
+                course={course}
+                lang={lang}
+                theme={theme}
+                actionLabel={t('home.tryNowWatch')}
+              />
+            ))}
           </div>
         </div>
       </section>
 
       <section className={`${styles.courses} ${styles.animateSection}`}>
         <div className={styles.container}>
-          <div className={styles.coursesHeader}>
-            <h2 className={styles.sectionTitle}>{t('home.catalogTitle')}</h2>
+          <div className={styles.sectionHead}>
+            <span className={styles.sectionPillPaid}>{lang === 'ru' ? 'Pro' : 'Pro'}</span>
+            <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Платные программы' : 'Paid programs'}</h2>
           </div>
+          <p className={styles.sectionDesc}>
+            {lang === 'ru' ? 'Видео, домашние задания и сертификат.' : 'Video lessons, homework, and certificate.'}
+          </p>
           <div className={styles.cards}>
-            {featured.map((course) => {
-              const purchased = hasPurchased(course.id)
-              const percent = getPercent(course.id, course.lessons?.length ?? 0)
-              const title = getCourseField(course, 'title', lang)
-              const shortDesc = getCourseField(course, 'shortDescription', lang)
-              const category = getCourseField(course, 'category', lang)
-              const duration = getCourseField(course, 'duration', lang)
-              return (
-                <Link to={`/courses/${course.slug}`} key={course.id} className={styles.card}>
-                  <div className={styles.cardImageWrap}>
-                    <img src={course.image} alt="" className={styles.cardImage} />
-                    <span className={styles.cardCategory}>{category}</span>
-                    {purchased && <span className={styles.cardPercent}>{percent}% {t('courses.completed')}</span>}
-                  </div>
-                  <h3 className={styles.cardTitle}>{title}</h3>
-                  <p className={styles.cardDesc}>{shortDesc}</p>
-                  <div className={styles.cardMeta}>
-                    <span>{duration}</span>
-                    <span className={styles.cardPrice}>{(course.priceEur ?? Math.round(course.price / 100))} €</span>
-                  </div>
-                </Link>
-              )
-            })}
+            {(loading ? [] : paidCourses).map((course) => (
+              <CourseCatalogCard
+                key={course.id}
+                course={course}
+                lang={lang}
+                theme={theme}
+                purchased={hasPurchased(course.id)}
+                percent={getPercent(course.id, course.lessons?.length ?? 0)}
+                completedLabel={t('courses.completed')}
+              />
+            ))}
           </div>
           <div className={styles.moreWrap}>
             <Link to="/courses" className={styles.moreLink}>
@@ -242,7 +274,12 @@ export function Home() {
         </div>
       </section>
 
-      <section className={`${styles.ctaBlock} ${styles.animateSection}`}>
+      <div className={styles.container}>
+        <TelegramWidget lang={lang} />
+      </div>
+
+      <ScrollReveal>
+      <section className={styles.ctaBlock}>
         <div className={styles.container}>
           <h2 className={styles.ctaTitle}>{t('home.ctaTitle')}</h2>
           <p className={styles.ctaText}>{t('home.ctaText')}</p>
@@ -251,6 +288,7 @@ export function Home() {
           </Link>
         </div>
       </section>
+      </ScrollReveal>
     </>
   )
 }

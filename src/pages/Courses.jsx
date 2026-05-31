@@ -5,25 +5,43 @@ import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { getCourseField } from '../data/courses'
-import { LoadingSpinner } from '../components/LoadingSpinner'
+import { useTheme } from '../context/ThemeContext'
+import { CourseGridSkeleton } from '../components/SkeletonLoader'
+import { CourseCatalogCard } from '../components/CourseCatalogCard'
 import styles from './Courses.module.css'
+
+const SEGMENTS = [
+  { id: 'all', ru: 'Все', en: 'All' },
+  { id: 'free', ru: 'Бесплатные', en: 'Free' },
+  { id: 'paid', ru: 'Платные', en: 'Paid' },
+  { id: 'bundle', ru: 'Набор', en: 'Bundle' },
+]
 
 export function Courses() {
   const { hasPurchased } = useAuth()
   const { getPercent } = useProgress()
   const { t, lang } = useLanguage()
-  const { courses, loading } = useCourses()
+  const { theme } = useTheme()
+  const { courses, freeCourses, paidCourses, acceleratorCourse, loading } = useCourses()
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
+  const [segment, setSegment] = useState('all')
+
+  const segmentCourses = useMemo(() => {
+    if (segment === 'free') return freeCourses
+    if (segment === 'paid') return paidCourses
+    if (segment === 'bundle') return acceleratorCourse ? [acceleratorCourse] : []
+    return courses
+  }, [segment, courses, freeCourses, paidCourses, acceleratorCourse])
 
   const categories = useMemo(() => {
-    const set = new Set(courses.map((c) => getCourseField(c, 'category', lang)).filter(Boolean))
+    const set = new Set(segmentCourses.map((c) => getCourseField(c, 'category', lang)).filter(Boolean))
     return ['all', ...set]
-  }, [courses, lang])
+  }, [segmentCourses, lang])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return courses.filter((course) => {
+    return segmentCourses.filter((course) => {
       const cat = getCourseField(course, 'category', lang)
       if (category !== 'all' && cat !== category) return false
       if (!q) return true
@@ -31,13 +49,29 @@ export function Courses() {
       const desc = getCourseField(course, 'shortDescription', lang).toLowerCase()
       return title.includes(q) || desc.includes(q)
     })
-  }, [courses, query, category, lang])
+  }, [segmentCourses, query, category, lang])
 
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
         <h1 className={styles.title}>{t('courses.title')}</h1>
         <p className={styles.desc}>{t('courses.desc')}</p>
+
+        <div className={styles.segmentRow}>
+          {SEGMENTS.map((seg) => (
+            <button
+              key={seg.id}
+              type="button"
+              className={`${styles.segmentBtn} ${segment === seg.id ? styles.segmentBtnActive : ''}`}
+              onClick={() => { setSegment(seg.id); setCategory('all') }}
+            >
+              {lang === 'en' ? seg.en : seg.ru}
+            </button>
+          ))}
+          <Link to="/club" className={styles.clubLink}>
+            {lang === 'ru' ? 'AI Insider Club →' : 'AI Insider Club →'}
+          </Link>
+        </div>
 
         <div className={styles.toolbar}>
           <input
@@ -62,40 +96,22 @@ export function Courses() {
         </div>
 
         {loading ? (
-          <LoadingSpinner label={lang === 'ru' ? 'Загружаем каталог…' : 'Loading catalog…'} />
+          <CourseGridSkeleton count={6} />
         ) : filtered.length === 0 ? (
           <p className={styles.empty}>{lang === 'ru' ? 'Курсы не найдены' : 'No courses found'}</p>
         ) : (
           <div className={styles.grid}>
-            {filtered.map((course) => {
-              const purchased = hasPurchased(course.id)
-              const isFreeTrial = course.isFreeTrial === true
-              const percent = getPercent(course.id, course.lessons?.length ?? 0)
-              const title = getCourseField(course, 'title', lang)
-              const shortDesc = getCourseField(course, 'shortDescription', lang)
-              const catLabel = getCourseField(course, 'category', lang)
-              const duration = getCourseField(course, 'duration', lang)
-              return (
-                <Link to={`/courses/${course.slug}`} key={course.id} className={styles.card}>
-                  <div className={styles.cardImageWrap}>
-                    <img src={course.image} alt="" className={styles.cardImage} loading="lazy" />
-                    <span className={styles.cardCategory}>{catLabel}</span>
-                    {isFreeTrial && <span className={styles.cardFreeBadge}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>}
-                    {purchased && !isFreeTrial && <span className={styles.cardPercent}>{percent}% {t('courses.completed')}</span>}
-                  </div>
-                  <h2 className={styles.cardTitle}>{title}</h2>
-                  <p className={styles.cardDesc}>{shortDesc}</p>
-                  <div className={styles.cardMeta}>
-                    <span>{duration}</span>
-                    {isFreeTrial ? (
-                      <span className={styles.cardPriceFree}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>
-                    ) : (
-                      <span className={styles.cardPrice}>{(course.priceEur ?? Math.round(course.price / 100))} €</span>
-                    )}
-                  </div>
-                </Link>
-              )
-            })}
+            {filtered.map((course) => (
+              <CourseCatalogCard
+                key={course.id}
+                course={course}
+                lang={lang}
+                theme={theme}
+                purchased={hasPurchased(course.id)}
+                percent={getPercent(course.id, course.lessons?.length ?? 0)}
+                completedLabel={t('courses.completed')}
+              />
+            ))}
           </div>
         )}
       </div>

@@ -59,7 +59,7 @@ router.get('/dashboard', async (req, res) => {
       homework: (await db.all('SELECT * FROM homework ORDER BY updated_at DESC LIMIT 300')).map(mapHw),
       referrals: await db.all('SELECT * FROM referrals ORDER BY date DESC LIMIT 500'),
       discounts: Object.fromEntries((await db.all('SELECT email, percent FROM referral_discounts')).map((r) => [r.email, r.percent])),
-      reviews: await db.all('SELECT * FROM reviews ORDER BY date DESC LIMIT 100'),
+      reviews: (await db.all('SELECT * FROM reviews ORDER BY date DESC LIMIT 200')).map(mapReview),
       teams: await db.all('SELECT * FROM teams ORDER BY created_at DESC LIMIT 50'),
     })
   }
@@ -133,6 +133,24 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, re
     }).catch(() => {})
   }
   res.json({ ok: true, homework: mapHw(await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])) })
+})
+
+router.patch('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const { status } = req.body
+  if (!['approved', 'rejected', 'pending'].includes(status)) {
+    return res.status(400).json({ error: 'status must be approved, rejected, or pending' })
+  }
+  const row = await db.get('SELECT * FROM reviews WHERE id = ?', [req.params.id])
+  if (!row) return res.status(404).json({ error: 'Not found' })
+  await db.run('UPDATE reviews SET status = ? WHERE id = ?', [status, req.params.id])
+  if (status === 'approved' && row.user_id) {
+    await db.run(
+      'INSERT OR IGNORE INTO user_achievements (user_id, achievement_id, unlocked_at) VALUES (?, ?, ?)',
+      [row.user_id, 'reviewer', new Date().toISOString()]
+    )
+  }
+  res.json({ ok: true, review: mapReview(await db.get('SELECT * FROM reviews WHERE id = ?', [req.params.id])) })
 })
 
 router.post('/certificates', requireAdmin('admin', 'moderator'), async (req, res) => {
@@ -209,6 +227,21 @@ function mapHw(row) {
     content: row.content, fileName: row.file_name, fileType: row.file_type, fileDataUrl: row.file_path,
     status: row.status, score: row.score, adminComment: row.admin_comment,
     date: row.date, updatedAt: row.updated_at,
+  }
+}
+
+function mapReview(row) {
+  return {
+    id: row.id,
+    courseId: row.course_id,
+    userId: row.user_id,
+    email: row.email,
+    contactEmail: row.contact_email || row.email,
+    userName: row.user_name,
+    rating: row.rating,
+    text: row.text,
+    status: row.status || 'pending',
+    date: row.date,
   }
 }
 

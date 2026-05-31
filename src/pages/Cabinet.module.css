@@ -17,7 +17,21 @@
 .pageTitle {
   font-size: 1.5rem;
   font-weight: 700;
+  margin-bottom: 0;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 24px;
+}
+
+.ringLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-primary);
 }
 
 .discountBadge {
@@ -622,8 +636,8 @@
 .chart { display: flex; flex-direction: column; gap: 12px; }
 .chartRow { display: grid; grid-template-columns: 1fr 2fr auto; gap: 12px; align-items: center; }
 .chartLabel { font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.chartBar { height: 8px; background: var(--bg-elevated); border-radius: 999px; overflow: hidden; }
-.chartBar div { height: 100%; background: var(--gradient-primary); border-radius: 999px; }
+.chartBar { height: 8px; background: var(--progress-track); border-radius: 999px; overflow: hidden; }
+.chartBar div { height: 100%; background: var(--progress-fill); border-radius: 999px; transition: width 0.5s ease-out; }
 .chartPct { font-size: 0.8125rem; color: var(--text-muted); min-width: 36px; text-align: right; }
 
 .awardsGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }

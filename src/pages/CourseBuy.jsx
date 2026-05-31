@@ -1,12 +1,39 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useCourses } from '../context/CoursesContext'
 import { getCourseField } from '../data/courses'
+import { getCourseThemeStyle } from '../data/courseThemes'
 import { useAuth } from '../context/AuthContext'
 import { getUserDiscountPercent } from '../api/adminStore'
 import { useLanguage } from '../context/LanguageContext'
+import { useTheme } from '../context/ThemeContext'
+import { ComparePlans } from '../components/ComparePlans'
+import { ScrollReveal } from '../components/ScrollReveal'
+import { CourseHero } from '../components/CourseHero'
+import { BUY_FAQ } from '../data/courseLanding'
+import { IconChevronDown } from '../components/Icons'
 import { api, checkApiOnline } from '../api/client'
 import styles from './CourseBuy.module.css'
+
+const PAY_METHODS = [
+  { id: 'tribute', label: 'Tribute', descRu: 'Карта, СБП, Stars, TON', descEn: 'Card, SBP, Stars, TON', icon: '✦' },
+  { id: 'stripe', label: 'Stripe', descRu: 'Visa, Mastercard', descEn: 'Visa, Mastercard', icon: '◈' },
+  { id: 'liqpay', label: 'LiqPay', descRu: 'Украина', descEn: 'Ukraine', icon: '◉' },
+  { id: 'demo', label: 'Demo', descRu: 'Тестовая оплата', descEn: 'Test payment', icon: '◇' },
+]
+
+const BENEFITS_RU = [
+  'Пожизненный доступ ко всем урокам',
+  'Проверка домашних заданий',
+  'Сертификат после прохождения',
+  'Готовые шаблоны и материалы',
+]
+const BENEFITS_EN = [
+  'Lifetime access to all lessons',
+  'Homework review included',
+  'Certificate upon completion',
+  'Ready-made templates & materials',
+]
 
 export function CourseBuy() {
   const { slug } = useParams()
@@ -15,13 +42,27 @@ export function CourseBuy() {
   const course = getCourseBySlug(slug)
   const { user, hasPurchased, login, purchaseCourse, apiMode } = useAuth()
   const { t, lang } = useLanguage()
+  const { theme } = useTheme()
 
   const [name, setName] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [method, setMethod] = useState('demo')
+  const [method, setMethod] = useState('tribute')
+  const [tributeEnabled, setTributeEnabled] = useState(false)
+  const [openFaq, setOpenFaq] = useState(null)
+
+  useEffect(() => {
+    checkApiOnline().then(async (ok) => {
+      if (!ok) return
+      try {
+        const status = await api.tributeStatus()
+        setTributeEnabled(Boolean(status.enabled))
+        if (status.enabled) setMethod('tribute')
+      } catch (_) {}
+    })
+  }, [])
 
   if (!course) {
     return (
@@ -43,8 +84,9 @@ export function CourseBuy() {
   const fullPriceEur = Math.round(priceEur * 1.15)
   const discount = fullPriceEur - priceAfterReferral
   const courseTitle = getCourseField(course, 'title', lang)
-  const shortDesc = getCourseField(course, 'shortDescription', lang)
-  const duration = getCourseField(course, 'duration', lang)
+  const goalsList = getCourseField(course, 'goals', lang) || []
+  const benefits = lang === 'ru' ? BENEFITS_RU : BENEFITS_EN
+  const themeStyle = getCourseThemeStyle(course.id, theme)
 
   const ensureAuth = async () => {
     if (user) return
@@ -70,6 +112,13 @@ export function CourseBuy() {
       await ensureAuth()
       const payload = { courseId: course.id, courseTitle, amount: priceAfterReferral, slug: course.slug }
 
+      if (method === 'tribute') {
+        const result = await api.tributeCheckout(payload)
+        const payUrl = result.url || result.webappUrl
+        if (!payUrl) throw new Error(lang === 'ru' ? 'Tribute не вернул ссылку на оплату' : 'No payment URL from Tribute')
+        window.location.href = payUrl
+        return
+      }
       if (method === 'stripe') {
         const { url } = await api.stripeCheckout(payload)
         window.location.href = url
@@ -96,49 +145,188 @@ export function CourseBuy() {
 
   if (purchased) {
     return (
-      <div className={styles.wrap}>
+      <div className={styles.wrap} style={themeStyle}>
         <div className={styles.container}>
-          <p>{lang === 'ru' ? 'Курс уже куплен.' : 'Course already purchased.'}</p>
-          <Link to={`/courses/${course.slug}`}>{lang === 'ru' ? 'Перейти к курсу' : 'Go to course'}</Link>
+          <div className={styles.purchasedCard}>
+            <div className={styles.purchasedIcon}>✓</div>
+            <h2 className={styles.purchasedTitle}>
+              {lang === 'ru' ? 'Курс уже куплен' : 'Course already purchased'}
+            </h2>
+            <p className={styles.purchasedDesc}>{courseTitle}</p>
+            <Link to={`/courses/${course.slug}`} className={styles.submit}>
+              {lang === 'ru' ? 'Перейти к курсу →' : 'Go to course →'}
+            </Link>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} style={themeStyle}>
       <div className={styles.container}>
-        <Link to={`/courses/${course.slug}`} className={styles.back}>← {courseTitle}</Link>
-        <div className={styles.grid}>
-          <div className={styles.summary}>
-            <img src={course.image} alt="" className={styles.image} />
-            <h1 className={styles.title}>{courseTitle}</h1>
-            <p className={styles.desc}>{shortDesc}</p>
-            <p className={styles.meta}>{duration}</p>
-            <div className={styles.priceBlock}>
-              {discount > 0 && <span className={styles.oldPrice}>{fullPriceEur} €</span>}
-              <span className={styles.price}>{priceAfterReferral} €</span>
-            </div>
-          </div>
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <h2 className={styles.formTitle}>{lang === 'ru' ? 'Оформление' : 'Checkout'}</h2>
-            {error && <div className={styles.error}>{error}</div>}
-            {!user && (
-              <>
-                <label className={styles.label}>{lang === 'ru' ? 'Имя' : 'Name'}<input value={name} onChange={(e) => setName(e.target.value)} className={styles.input} /></label>
-                <label className={styles.label}>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} required /></label>
-                <label className={styles.label}>{lang === 'ru' ? 'Пароль' : 'Password'}<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} required minLength={6} /></label>
-              </>
+        <CourseHero
+          course={course}
+          lang={lang}
+          backTo={`/courses/${course.slug}`}
+          backLabel={courseTitle}
+          compact
+        />
+
+        <div className={styles.layout}>
+          <div className={styles.leftCol}>
+            <section className={styles.sectionCard}>
+              <h2 className={styles.sectionTitle}>
+                {lang === 'ru' ? 'Что входит в курс' : 'What\'s included'}
+              </h2>
+              <ul className={styles.benefitsList}>
+                {benefits.map((item) => (
+                  <li key={item} className={styles.benefitItem}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            {goalsList.length > 0 && (
+              <section className={styles.sectionCard}>
+                <h2 className={styles.sectionTitle}>
+                  {lang === 'ru' ? 'После курса вы' : 'After this course you will'}
+                </h2>
+                <ul className={styles.goalsList}>
+                  {goalsList.slice(0, 4).map((goal, i) => (
+                    <li key={i} className={styles.goalItem}>{goal}</li>
+                  ))}
+                </ul>
+              </section>
             )}
-            <div className={styles.payMethods}>
-              <label className={styles.payOption}><input type="radio" name="pay" checked={method === 'demo'} onChange={() => setMethod('demo')} /> Demo</label>
-              <label className={styles.payOption}><input type="radio" name="pay" checked={method === 'stripe'} onChange={() => setMethod('stripe')} /> Stripe</label>
-              <label className={styles.payOption}><input type="radio" name="pay" checked={method === 'liqpay'} onChange={() => setMethod('liqpay')} /> LiqPay</label>
+
+            <div className={styles.trustRow}>
+              <span className={styles.trustBadge}>🔒 {lang === 'ru' ? 'Безопасная оплата' : 'Secure payment'}</span>
+              <span className={styles.trustBadge}>⚡ {lang === 'ru' ? 'Мгновенный доступ' : 'Instant access'}</span>
             </div>
-            <button type="submit" className={styles.submit} disabled={loading}>
-              {loading ? '...' : (lang === 'ru' ? `Оплатить ${priceAfterReferral} €` : `Pay ${priceAfterReferral} €`)}
-            </button>
-          </form>
+
+            <ComparePlans course={course} lang={lang} coursePriceEur={priceAfterReferral} />
+
+            <ScrollReveal>
+              <section className={styles.faqSection}>
+                <h2 className={styles.sectionTitle}>FAQ</h2>
+                <div className={styles.faqList}>
+                  {BUY_FAQ.map((item, i) => {
+                    const open = openFaq === i
+                    return (
+                      <div key={i} className={styles.faqItem}>
+                        <button
+                          type="button"
+                          className={styles.faqQuestion}
+                          onClick={() => setOpenFaq(open ? null : i)}
+                          aria-expanded={open}
+                        >
+                          {lang === 'ru' ? item.q : item.qEn}
+                          <span className={`${styles.faqChevron} ${open ? styles.faqChevronOpen : ''}`}>
+                            <IconChevronDown />
+                          </span>
+                        </button>
+                        {open && (
+                          <p className={styles.faqAnswer}>{lang === 'ru' ? item.a : item.aEn}</p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            </ScrollReveal>
+          </div>
+
+          <aside className={styles.checkoutCol}>
+            <form className={styles.checkoutCard} onSubmit={handleSubmit}>
+              <div className={styles.checkoutHeader}>
+                <h2 className={styles.checkoutTitle}>
+                  {lang === 'ru' ? 'Оформление' : 'Checkout'}
+                </h2>
+                <div className={styles.priceBlock}>
+                  {discount > 0 && (
+                    <span className={styles.oldPrice}>{fullPriceEur} €</span>
+                  )}
+                  <span className={styles.price}>{priceAfterReferral} €</span>
+                </div>
+              </div>
+
+              {referralDiscountPercent > 0 && (
+                <div className={styles.discountBanner}>
+                  {lang === 'ru' ? `Скидка ${referralDiscountPercent}% по реферальной программе` : `${referralDiscountPercent}% referral discount`}
+                </div>
+              )}
+
+              {error && <div className={styles.error} role="alert">{error}</div>}
+
+              {!user && (
+                <div className={styles.authFields}>
+                  <label className={styles.label}>
+                    {lang === 'ru' ? 'Имя' : 'Name'}
+                    <input value={name} onChange={(e) => setName(e.target.value)} className={styles.input} autoComplete="name" />
+                  </label>
+                  <label className={styles.label}>
+                    Email
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} required autoComplete="email" />
+                  </label>
+                  <label className={styles.label}>
+                    {lang === 'ru' ? 'Пароль' : 'Password'}
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} required minLength={6} autoComplete="new-password" />
+                  </label>
+                </div>
+              )}
+
+              <p className={styles.payLabel}>{lang === 'ru' ? 'Способ оплаты' : 'Payment method'}</p>
+              <div className={styles.payMethods}>
+                {PAY_METHODS.map((pm) => {
+                  const disabled = pm.id === 'tribute' && !tributeEnabled
+                  return (
+                    <button
+                      key={pm.id}
+                      type="button"
+                      className={`${styles.payCard} ${method === pm.id ? styles.payCardActive : ''} ${disabled ? styles.payCardDisabled : ''}`}
+                      onClick={() => !disabled && setMethod(pm.id)}
+                      disabled={disabled}
+                      aria-pressed={method === pm.id}
+                    >
+                      <span className={styles.payIcon} aria-hidden>{pm.icon}</span>
+                      <span className={styles.payInfo}>
+                        <span className={styles.payName}>
+                          {pm.label}
+                          {pm.id === 'tribute' && !tributeEnabled && (
+                            <span className={styles.payNote}> ({lang === 'ru' ? 'скоро' : 'soon'})</span>
+                          )}
+                        </span>
+                        <span className={styles.payDesc}>{lang === 'ru' ? pm.descRu : pm.descEn}</span>
+                      </span>
+                      <span className={styles.payRadio} aria-hidden />
+                    </button>
+                  )
+                })}
+              </div>
+
+              {tributeEnabled && method === 'tribute' && (
+                <p className={styles.tributeHint}>
+                  {lang === 'ru'
+                    ? 'Оплата через Tribute: карта, СБП, Telegram Stars, TON'
+                    : 'Pay via Tribute: card, SBP, Telegram Stars, TON'}
+                </p>
+              )}
+
+              <button type="submit" className={styles.submit} disabled={loading}>
+                {loading ? (
+                  <span className={styles.spinner} aria-hidden />
+                ) : (
+                  lang === 'ru' ? `Оплатить ${priceAfterReferral} €` : `Pay ${priceAfterReferral} €`
+                )}
+              </button>
+
+              <p className={styles.secureNote}>
+                {lang === 'ru'
+                  ? 'Нажимая «Оплатить», вы соглашаетесь с условиями доступа к курсу'
+                  : 'By clicking Pay, you agree to the course access terms'}
+              </p>
+            </form>
+          </aside>
         </div>
       </div>
     </div>

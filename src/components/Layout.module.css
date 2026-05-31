@@ -6,7 +6,9 @@
 .sidebar {
   width: 220px;
   flex-shrink: 0;
-  background: var(--bg);
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   padding: 20px 0;
@@ -57,12 +59,13 @@
 }
 
 .sidebarLinkActive {
-  background: var(--glow-purple-dim);
-  color: var(--glow-purple);
+  background: var(--accent-dim);
+  color: var(--accent-primary);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);
 }
 
 .sidebarLinkActive .sidebarIcon {
-  color: var(--glow-purple);
+  color: var(--accent-primary);
 }
 
 .sidebarIcon {
@@ -343,24 +346,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: var(--gradient-primary);
+  background: transparent;
   color: #fff;
   border: none;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.15s;
+  transition: transform 0.15s;
+  padding: 0;
 }
 
 .avatar:hover {
-  box-shadow: 0 0 20px var(--glow-purple-dim);
   transform: scale(1.05);
 }
 
 .avatarInitial {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 700;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gradient-primary);
 }
 
 .cabinetDropdown {

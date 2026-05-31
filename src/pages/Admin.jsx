@@ -8,6 +8,7 @@ import {
   getReferrals,
   getDiscounts,
   getHomeworkSubmissions,
+  getReviewSubmissions,
   updateHomeworkSubmission,
   addNotification,
   recordCertificate,
@@ -23,21 +24,36 @@ import { api, setAdminToken, getAdminToken } from '../api/client'
 import { useApi } from '../context/ApiContext'
 import { courses as defaultCourses } from '../data/courses'
 import { blogPosts as defaultBlog } from '../data/blog'
+import { AdminSidebar } from '../components/admin/AdminSidebar'
+import { AdminDashboard } from '../components/admin/AdminDashboard'
+import { AdminRoadmap } from '../components/admin/AdminRoadmap'
+import { AdminReviewsPanel } from '../components/admin/AdminReviewsPanel'
+import { AdminToast } from '../components/admin/AdminToast'
+import { AdminSearchBar, matchesSearch } from '../components/admin/AdminSearchBar'
+import { AdminBlogEditor } from '../components/admin/AdminBlogEditor'
+import { AdminSettings } from '../components/admin/AdminSettings'
+import { AdminCharts } from '../components/admin/AdminCharts'
+import { LessonDragList } from '../components/admin/LessonDragList'
+import { useAdminPushNotifications, requestAdminNotificationPermission } from '../hooks/useAdminPushNotifications'
+import { getAdminRole, setAdminRole, canAccessTab, resolveLocalRole, ROLE_LABELS } from '../utils/adminAuth'
 import styles from './Admin.module.css'
 
 const ADMIN_PASSWORD = 'admin123'
 
-const adminTabs = [
-  { id: 'analytics', label: 'Аналитика' },
-  { id: 'registrations', label: 'Регистрации' },
-  { id: 'purchases', label: 'Покупки' },
-  { id: 'certificates', label: 'Сертификаты' },
-  { id: 'homework', label: 'ДЗ' },
-  { id: 'courses', label: 'Курсы' },
-  { id: 'blog', label: 'Блог' },
-  { id: 'calendar', label: 'Календарь' },
-  { id: 'referrals', label: 'Рефералы' },
-]
+const SEARCH_TABS = new Set(['registrations', 'purchases', 'homework', 'reviews', 'certificates', 'referrals', 'courses', 'blog'])
+
+function exportCsv(filename, rows, headers) {
+  const escape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const lines = [headers.map(escape).join(',')]
+  rows.forEach((row) => lines.push(row.map(escape).join(',')))
+  const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -96,7 +112,11 @@ export function Admin() {
     image: '', shortDescription: '', shortDescriptionEn: '', fullDescription: '', fullDescriptionEn: '',
     goals: [], goalsEn: [], lessons: [{ id: 'l1', title: '', titleEn: '', duration: '', durationEn: '', videoUrl: '' }],
   })
-  const [activeTab, setActiveTab] = useState('analytics')
+  const [activeTab, setActiveTab] = useState('dashboard')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [toast, setToast] = useState({ message: '', type: 'success' })
+  const [adminRole, setAdminRoleState] = useState(() => getAdminRole())
   const [hwComment, setHwComment] = useState({})
   const [hwScore, setHwScore] = useState({})
   const [refresh, setRefresh] = useState(0)
@@ -110,12 +130,30 @@ export function Admin() {
     fileDataUrl: '',
   })
   const [certificateError, setCertificateError] = useState('')
+  const [dashData, setDashData] = useState(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem('lms_admin_auth')
     const token = getAdminToken()
-    if (saved === ADMIN_PASSWORD || token) setAuthenticated(true)
+    const saved = localStorage.getItem('lms_admin_auth')
+    if (token) {
+      setAuthenticated(true)
+      return
+    }
+    const localRole = saved
+      ? (resolveLocalRole(saved) || (['admin', 'editor', 'moderator'].includes(saved) ? saved : null))
+      : null
+    if (localRole) {
+      setAdminRoleState(localRole)
+      setAuthenticated(true)
+    }
   }, [])
+
+  useEffect(() => {
+    if (dashData?.role) {
+      setAdminRoleState(dashData.role)
+      setAdminRole(dashData.role)
+    }
+  }, [dashData?.role])
 
   const loadDashboardFromApi = async () => {
     if (!online || !getAdminToken()) return false
@@ -124,12 +162,13 @@ export function Admin() {
       setDashData(data)
       if (data.courses?.length) setCoursesState(data.courses)
       return true
-    } catch {
+    } catch (err) {
+      if (err?.status === 401) {
+        handleLogout()
+      }
       return false
     }
   }
-
-  const [dashData, setDashData] = useState(null)
 
   useEffect(() => {
     if (!authenticated) return
@@ -158,27 +197,34 @@ export function Admin() {
     setError('')
     if (online) {
       try {
-        const { token } = await api.adminLogin(password)
+        const { token, role } = await api.adminLogin(password)
         setAdminToken(token)
+        setAdminRole(role || 'admin')
+        setAdminRoleState(role || 'admin')
         localStorage.setItem('lms_admin_auth', 'api')
         setAuthenticated(true)
         return
       } catch {
-        setError('Неверный пароль')
-        return
+        // API недоступен или другой пароль на сервере — пробуем локальные роли
       }
     }
-    if (password === ADMIN_PASSWORD) {
-      localStorage.setItem('lms_admin_auth', password)
+    const localRole = resolveLocalRole(password)
+    if (localRole) {
+      setAdminToken(null)
+      setAdminRole(localRole)
+      setAdminRoleState(localRole)
+      localStorage.setItem('lms_admin_auth', localRole)
       setAuthenticated(true)
     } else {
-      setError('Неверный пароль')
+      setError(online ? 'Неверный пароль (admin123 / editor123 / moderator123)' : 'Неверный пароль')
     }
   }
 
   const handleLogout = () => {
     localStorage.removeItem('lms_admin_auth')
     setAdminToken(null)
+    setAdminRole(null)
+    setAdminRoleState('admin')
     setAuthenticated(false)
     setPassword('')
   }
@@ -270,6 +316,28 @@ export function Admin() {
     saveCourses(next)
   }
 
+  const saveBlogPostsList = async (posts) => {
+    setBlogPosts(posts)
+    if (online && getAdminToken()) {
+      try {
+        await api.adminSaveBlog(posts)
+        showToast('Блог сохранён на сервере')
+      } catch {
+        showToast('Ошибка сохранения блога', 'error')
+      }
+    }
+    setRefresh((r) => r + 1)
+  }
+
+  const changeTab = (tab) => {
+    if (!canAccessTab(adminRole, tab)) {
+      showToast('Нет доступа к этому разделу', 'error')
+      return
+    }
+    setActiveTab(tab)
+    setSearchQuery('')
+  }
+
   const restoreDefaults = () => {
     if (!window.confirm('Восстановить курсы по умолчанию? Текущие изменения будут потеряны.')) return
     persistCourses(defaultCourses)
@@ -277,36 +345,54 @@ export function Admin() {
     setEditingIndex(null)
   }
 
+  const showToast = (message, type = 'success') => setToast({ message, type })
+
+  const homeworkListPreview = authenticated
+    ? (dashData?.homework ?? (canAccessTab(adminRole, 'homework') ? getHomeworkSubmissions() : []))
+    : []
+  const pendingHwCount = homeworkListPreview.filter((h) => h.status === 'pending').length
+  useAdminPushNotifications(pendingHwCount, authenticated && canAccessTab(adminRole, 'homework'))
+
   if (!authenticated) {
     return (
-      <div className={styles.page}>
+      <div className={styles.loginPage}>
+        <div className={styles.loginGlow} aria-hidden />
         <div className={styles.loginCard}>
+          <div className={styles.loginBrand}>
+            <span className={styles.loginLogo}>IA</span>
+            <span>Insider Academy</span>
+          </div>
           <h1 className={styles.loginTitle}>Админ-панель</h1>
-          <p className={styles.loginDesc}>Введите пароль для доступа</p>
+          <p className={styles.loginDesc}>Управление курсами, пользователями и контентом</p>
           <form onSubmit={handleLogin} className={styles.loginForm}>
             {error && <div className={styles.loginError}>{error}</div>}
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Пароль"
+              placeholder="Пароль администратора"
               className={styles.loginInput}
               autoFocus
             />
-            <button type="submit" className={styles.loginBtn}>Войти</button>
+            <button type="submit" className={styles.loginBtn}>Войти в панель</button>
           </form>
-          <p className={styles.loginHint}>Демо: пароль admin123</p>
+          <p className={styles.loginHint}>
+            {online ? 'API: admin123 · editor123 · moderator123' : 'Локально: admin123 / editor123 / moderator123'}
+          </p>
         </div>
       </div>
     )
   }
 
-  const registrations = dashData?.registrations ?? getRegistrations()
-  const certificates = dashData?.certificates ?? getCertificates()
-  const purchases = dashData?.purchases ?? getPurchases()
+  const registrations = dashData?.registrations ?? (canAccessTab(adminRole, 'registrations') ? getRegistrations() : [])
+  const certificates = dashData?.certificates ?? (canAccessTab(adminRole, 'certificates') ? getCertificates() : [])
+  const purchases = dashData?.purchases ?? (canAccessTab(adminRole, 'purchases') ? getPurchases() : [])
   const analytics = dashData?.analytics ?? getAnalyticsData()
-  const referrals = dashData?.referrals ?? getReferrals()
-  const homeworkList = dashData?.homework ?? getHomeworkSubmissions()
+  const charts = dashData?.charts ?? null
+  const referrals = dashData?.referrals ?? (canAccessTab(adminRole, 'referrals') ? getReferrals() : [])
+  const homeworkList = dashData?.homework ?? (canAccessTab(adminRole, 'homework') ? getHomeworkSubmissions() : [])
+  const reviewsList = dashData?.reviews ?? (canAccessTab(adminRole, 'reviews') ? getReviewSubmissions() : [])
+  const blogPostsList = dashData?.blog ?? getBlogPosts()
   const normalizedCertificateEmail = newCertificate.email.trim().toLowerCase()
   const availableCertificateCourses = courses.filter((course) =>
     certificates.some(
@@ -349,9 +435,10 @@ export function Admin() {
     purchases: getUnseenCount('purchases', purchases),
     certificates: getUnseenCount('certificates', certificates),
     homework: getUnseenCount('homework', homeworkList),
+    reviews: reviewsList.filter((r) => (r.status || 'pending') === 'pending').length,
   }
 
-  const handleHomeworkDecision = (submission, status) => {
+  const handleHomeworkDecision = async (submission, status) => {
     const comment = hwComment[submission.id] ?? submission.adminComment ?? ''
     const rawScore = hwScore[submission.id] ?? submission.score ?? ''
     const parsedScore = rawScore === '' ? null : Number(rawScore)
@@ -359,11 +446,22 @@ export function Admin() {
       window.alert('Укажите оценку от 1 до 10 перед принятием ДЗ.')
       return
     }
-    updateHomeworkSubmission(submission.id, {
+    const payload = {
       status,
       adminComment: comment || null,
       score: parsedScore >= 1 && parsedScore <= 10 ? parsedScore : null,
-    })
+    }
+    if (online && getAdminToken()) {
+      try {
+        await api.adminUpdateHomework(submission.id, payload)
+        showToast(status === 'accepted' ? 'ДЗ принято (сервер)' : 'Отправлено на доработку (сервер)')
+        setRefresh((r) => r + 1)
+        return
+      } catch {
+        showToast('Ошибка API — сохранено локально', 'error')
+      }
+    }
+    updateHomeworkSubmission(submission.id, payload)
     addNotification({
       email: submission.email,
       type: 'homework_feedback',
@@ -399,7 +497,7 @@ export function Admin() {
     }
   }
 
-  const handleCreateCertificate = () => {
+  const handleCreateCertificate = async () => {
     const email = newCertificate.email.trim()
     const course = courses.find((item) => item.id === newCertificate.courseId)
     const score = getCourseAverageScore(email, course?.id)
@@ -414,6 +512,27 @@ export function Admin() {
     if (!newCertificate.fileDataUrl) {
       setCertificateError('Загрузите файл сертификата.')
       return
+    }
+
+    if (online && getAdminToken()) {
+      try {
+        await api.adminAddCertificate({
+          email,
+          courseId: course.id,
+          courseTitle: course.title,
+          fileName: newCertificate.fileName,
+          fileType: newCertificate.fileType,
+          fileDataUrl: newCertificate.fileDataUrl,
+          score,
+        })
+        showToast('Сертификат выдан')
+        setNewCertificate({ email: '', courseId: '', fileName: '', fileType: '', fileDataUrl: '' })
+        setCertificateError('')
+        setRefresh((r) => r + 1)
+        return
+      } catch {
+        showToast('Ошибка API — сохранено локально', 'error')
+      }
     }
 
     recordCertificate({
@@ -431,35 +550,99 @@ export function Admin() {
     setRefresh((r) => r + 1)
   }
 
+  const filteredRegistrations = registrations.filter((r) => matchesSearch(searchQuery, r.email, r.name))
+  const filteredPurchases = purchases.filter((p) => matchesSearch(searchQuery, p.email, p.courseTitle))
+  const filteredHomework = homeworkList.filter((h) => matchesSearch(searchQuery, h.email, h.name, h.courseTitle))
+  const filteredReviews = reviewsList.filter((r) => matchesSearch(searchQuery, r.email, r.contactEmail, r.userName, r.text, r.courseId))
+  const filteredCertificates = certificates.filter((c) => matchesSearch(searchQuery, c.email, c.courseTitle))
+  const filteredReferrals = referrals.filter((r) => matchesSearch(searchQuery, r.referrerEmail, r.referredEmail))
+  const filteredCourses = courses.filter((c) => matchesSearch(searchQuery, c.title, c.slug, c.id))
+
+  const tabTitles = {
+    dashboard: 'Дашборд',
+    roadmap: 'Роадмап',
+    analytics: 'Аналитика',
+    registrations: 'Регистрации',
+    purchases: 'Покупки',
+    certificates: 'Сертификаты',
+    homework: 'Домашние задания',
+    reviews: 'Отзывы',
+    courses: 'Курсы',
+    blog: 'Блог',
+    calendar: 'Календарь',
+    settings: 'Настройки',
+    referrals: 'Рефералы',
+  }
+
   return (
     <div className={styles.page}>
-      <div className={styles.wrap}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>Админ-панель</h1>
-          <div className={styles.headerActions}>
-            <Link to="/" className={styles.backLink}>← На сайт</Link>
-            <button type="button" onClick={handleLogout} className={styles.logoutBtn}>Выйти</button>
-          </div>
-        </header>
+      <AdminToast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'success' })} />
+      <div className={styles.shell}>
+        <AdminSidebar
+          activeTab={activeTab}
+          onTabChange={changeTab}
+          unreadByTab={unreadByTab}
+          online={online}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+          adminRole={adminRole}
+          roleLabel={ROLE_LABELS[adminRole]}
+        />
 
-        <div className={styles.tabs}>
-          {adminTabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`${styles.tabBtn} ${activeTab === tab.id ? styles.tabBtnActive : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-              {unreadByTab[tab.id] > 0 && <span className={styles.tabBadge}>{unreadByTab[tab.id]}</span>}
-            </button>
-          ))}
-        </div>
+        <main className={styles.main}>
+          <header className={styles.header}>
+            <div>
+              <h1 className={styles.title}>{tabTitles[activeTab] || 'Админ'}</h1>
+              <p className={styles.headerSub}>{online ? 'Синхронизация с API активна' : 'Данные из localStorage'}</p>
+            </div>
+            <div className={styles.headerActions}>
+              <button type="button" className={styles.refreshBtn} onClick={() => { setRefresh((r) => r + 1); showToast('Данные обновлены') }} title="Обновить">
+                ↻
+              </button>
+              <Link to="/" className={styles.backLink}>← На сайт</Link>
+              <button type="button" onClick={handleLogout} className={styles.logoutBtn}>Выйти</button>
+            </div>
+          </header>
 
-        {activeTab === 'analytics' && (
+          {SEARCH_TABS.has(activeTab) && (
+            <AdminSearchBar value={searchQuery} onChange={setSearchQuery} />
+          )}
+
+          {activeTab === 'dashboard' && (
+            <AdminDashboard
+              analytics={analytics}
+              charts={charts}
+              registrations={registrations}
+              purchases={purchases}
+              homeworkList={homeworkList}
+              certificates={certificates}
+              courses={courses}
+              referrals={referrals}
+              unreadByTab={unreadByTab}
+              onTabChange={changeTab}
+              formatDate={formatDate}
+              adminRole={adminRole}
+            />
+          )}
+
+          {activeTab === 'settings' && canAccessTab(adminRole, 'settings') && (
+            <AdminSettings
+              settings={dashData?.settings}
+              webhookLog={dashData?.webhookLog}
+              onCopy={(url) => { navigator.clipboard?.writeText(url); showToast('URL скопирован') }}
+              onEnablePush={() => requestAdminNotificationPermission().then((p) => showToast(p === 'granted' ? 'Push включены' : `Статус: ${p}`))}
+            />
+          )}
+
+          {activeTab === 'roadmap' && (
+            <AdminRoadmap onToast={(msg) => showToast(msg)} />
+          )}
+
+          {activeTab === 'analytics' && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Аналитика</h2>
-          <div className={styles.statsGrid}>
+          <AdminCharts charts={charts} analytics={analytics} registrations={registrations} purchases={purchases} />
+          <div className={styles.statsGrid} style={{ marginTop: 24 }}>
             <div className={styles.statCard}>
               <span className={styles.statValue}>{analytics.visits || 0}</span>
               <span className={styles.statLabel}>Заходов на сайт</span>
@@ -510,10 +693,10 @@ export function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {referrals.length === 0 ? (
+                {filteredReferrals.length === 0 ? (
                   <tr><td colSpan={4} className={styles.empty}>Нет данных</td></tr>
                 ) : (
-                  referrals.map((r, i) => (
+                  filteredReferrals.map((r, i) => (
                     <tr key={i}>
                       <td>{r.referrerEmail}</td>
                       <td>{r.referredEmail}</td>
@@ -560,10 +743,10 @@ export function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {homeworkList.length === 0 ? (
+                {filteredHomework.length === 0 ? (
                   <tr><td colSpan={8} className={styles.empty}>Нет сданных ДЗ</td></tr>
                 ) : (
-                  homeworkList.map((h) => {
+                  filteredHomework.map((h) => {
                     const unseen = !isAdminItemSeen('homework', h)
                     const previewOpen = previewHomeworkId === h.id && canPreviewFile(h.fileType)
                     return (
@@ -643,37 +826,34 @@ export function Admin() {
         </section>
         )}
 
-        {activeTab === 'blog' && (
+        {activeTab === 'reviews' && canAccessTab(adminRole, 'reviews') && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Модерация отзывов</h2>
+          <p className={styles.sectionDesc}>
+            Одобренные отзывы публикуются на странице курса. Email для связи виден полностью только здесь.
+          </p>
+          <AdminReviewsPanel
+            reviews={searchQuery ? filteredReviews : reviewsList}
+            online={online}
+            courses={courses}
+            onUpdated={() => setRefresh((r) => r + 1)}
+            showToast={showToast}
+          />
+        </section>
+        )}
+
+        {activeTab === 'blog' && canAccessTab(adminRole, 'blog') && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Блог</h2>
-          <p className={styles.sectionDesc}>Редактирование, добавление, удаление. Подгрузка с <a href="https://www.aiinsider.it.com/uk/blog" target="_blank" rel="noreferrer">aiinsider.it.com/uk/blog</a> — через бэкенд (в демо данные из хранилища).</p>
+          <p className={styles.sectionDesc}>Создание, редактирование и удаление статей. Изменения синхронизируются с API.</p>
           <div className={styles.courseActions}>
-            <button type="button" onClick={() => { setBlogPosts(defaultBlog); setRefresh((r) => r + 1); }} className={styles.restoreBtn}>Сбросить к данным по умолчанию</button>
+            <button type="button" onClick={() => { saveBlogPostsList(defaultBlog); showToast('Сброшено к данным по умолчанию') }} className={styles.restoreBtn}>Сбросить к данным по умолчанию</button>
           </div>
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Название</th>
-                  <th>Slug</th>
-                  <th>Дата</th>
-                  <th>Действия</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(getBlogPosts() || []).slice(0, 20).map((post) => (
-                  <tr key={post.id}>
-                    <td>{post.title?.slice(0, 50)}…</td>
-                    <td>{post.slug}</td>
-                    <td>{post.date}</td>
-                    <td>
-                      <button type="button" className={styles.smallBtnDanger} onClick={() => { const list = getBlogPosts().filter((p) => p.id !== post.id); setBlogPosts(list); setRefresh((r) => r + 1); }}>Удалить</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AdminBlogEditor
+            posts={blogPostsList}
+            onSave={saveBlogPostsList}
+            onDelete={(id) => saveBlogPostsList(blogPostsList.filter((p) => p.id !== id))}
+          />
         </section>
         )}
 
@@ -741,18 +921,12 @@ export function Admin() {
                 <label className={styles.editFullWidth}>Цели (EN, с новой строки) <textarea value={(editForm.goalsEn || []).join('\n')} onChange={(e) => setEditForm((f) => ({ ...f, goalsEn: e.target.value.split('\n').filter(Boolean) }))} className={styles.editTextarea} rows={3} /></label>
                 <label className={styles.editFullWidth}><input type="checkbox" checked={editForm.isFreeTrial} onChange={(e) => setEditForm((f) => ({ ...f, isFreeTrial: e.target.checked }))} /> Бесплатный пробный</label>
               </div>
-              <h4 className={styles.editSubtitle}>Уроки (ролики, названия)</h4>
-              {(editForm.lessons || []).map((les, idx) => (
-                <div key={idx} className={styles.lessonRow}>
-                  <span className={styles.lessonNum}>Урок {idx + 1}</span>
-                  <input placeholder="Название RU" value={les.title} onChange={(e) => setLesson(idx, 'title', e.target.value)} className={styles.editInput} />
-                  <input placeholder="Название EN" value={les.titleEn} onChange={(e) => setLesson(idx, 'titleEn', e.target.value)} className={styles.editInput} />
-                  <input placeholder="Длительность" value={les.duration} onChange={(e) => setLesson(idx, 'duration', e.target.value)} className={styles.editInput} />
-                  <input placeholder="URL видео" value={les.videoUrl} onChange={(e) => setLesson(idx, 'videoUrl', e.target.value)} className={styles.editInput} />
-                  <button type="button" onClick={() => removeLesson(idx)} className={styles.smallBtnDanger}>×</button>
-                </div>
-              ))}
-              <button type="button" onClick={addLesson} className={styles.smallBtn}>+ Урок</button>
+              <LessonDragList
+                lessons={editForm.lessons || []}
+                onChange={(lessons) => setEditForm((f) => ({ ...f, lessons }))}
+                onRemove={removeLesson}
+                onAdd={addLesson}
+              />
               <div className={styles.editFormActions}>
                 <button type="button" onClick={saveEdit} className={styles.saveEditBtn}>Сохранить и применить</button>
                 <button type="button" onClick={() => setEditingIndex(null)} className={styles.cancelBtn}>Отмена</button>
@@ -771,21 +945,24 @@ export function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {courses.length === 0 ? (
+                {filteredCourses.length === 0 ? (
                   <tr><td colSpan={5} className={styles.empty}>Нет курсов</td></tr>
                 ) : (
-                  courses.map((c, i) => (
+                  filteredCourses.map((c, i) => {
+                    const origIndex = courses.indexOf(c)
+                    return (
                     <tr key={c.id || i}>
                       <td>{c.id}</td>
                       <td>{c.title}</td>
                       <td>{c.slug}</td>
                       <td>{c.isFreeTrial ? 'Бесплатно' : `${c.priceEur ?? c.price} €`}</td>
                       <td>
-                        <button type="button" onClick={() => startEdit(i)} className={styles.smallBtn}>Изменить</button>
-                        <button type="button" onClick={() => handleDeleteCourse(i)} className={styles.smallBtnDanger}>Удалить</button>
+                        <button type="button" onClick={() => startEdit(origIndex)} className={styles.smallBtn}>Изменить</button>
+                        <button type="button" onClick={() => handleDeleteCourse(origIndex)} className={styles.smallBtnDanger}>Удалить</button>
                       </td>
                     </tr>
-                  ))
+                    )
+                  })
                 )}
               </tbody>
             </table>
@@ -798,6 +975,7 @@ export function Admin() {
           <h2 className={styles.sectionTitle}>Регистрации</h2>
           <div className={styles.courseActions}>
             <button type="button" className={styles.restoreBtn} onClick={() => { markAdminItemsSeen('registrations', registrations); setRefresh((r) => r + 1) }}>Отметить все как увиденные</button>
+            <button type="button" className={styles.exportBtn} onClick={() => exportCsv('registrations.csv', filteredRegistrations.map((r) => [r.email, r.name, r.date]), ['Email', 'Имя', 'Дата'])}>Экспорт CSV</button>
           </div>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
@@ -810,10 +988,10 @@ export function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {registrations.length === 0 ? (
+                {filteredRegistrations.length === 0 ? (
                   <tr><td colSpan={4} className={styles.empty}>Нет данных</td></tr>
                 ) : (
-                  registrations.map((r, i) => {
+                  filteredRegistrations.map((r, i) => {
                     const unseen = !isAdminItemSeen('registrations', r)
                     return (
                       <tr key={r.id || i} className={unseen ? styles.unseenRow : ''}>
@@ -896,10 +1074,10 @@ export function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {certificates.length === 0 ? (
+                {filteredCertificates.length === 0 ? (
                   <tr><td colSpan={7} className={styles.empty}>Нет данных</td></tr>
                 ) : (
-                  certificates.map((c, i) => {
+                  filteredCertificates.map((c, i) => {
                     const unseen = !isAdminItemSeen('certificates', c)
                     const score = c.score ?? getCourseAverageScore(c.email, c.courseId)
                     return (
@@ -935,6 +1113,7 @@ export function Admin() {
           <h2 className={styles.sectionTitle}>Покупки курсов</h2>
           <div className={styles.courseActions}>
             <button type="button" className={styles.restoreBtn} onClick={() => { markAdminItemsSeen('purchases', purchases); setRefresh((r) => r + 1) }}>Отметить все как увиденные</button>
+            <button type="button" className={styles.exportBtn} onClick={() => exportCsv('purchases.csv', filteredPurchases.map((p) => [p.email, p.courseTitle, p.amount, p.date]), ['Email', 'Курс', 'Сумма €', 'Дата'])}>Экспорт CSV</button>
           </div>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
@@ -948,10 +1127,10 @@ export function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {purchases.length === 0 ? (
+                {filteredPurchases.length === 0 ? (
                   <tr><td colSpan={5} className={styles.empty}>Нет данных</td></tr>
                 ) : (
-                  purchases.map((p, i) => {
+                  filteredPurchases.map((p, i) => {
                     const unseen = !isAdminItemSeen('purchases', p)
                     return (
                       <tr key={p.id || i} className={unseen ? styles.unseenRow : ''}>
@@ -971,6 +1150,7 @@ export function Admin() {
           </div>
         </section>
         )}
+        </main>
       </div>
     </div>
   )

@@ -1,0 +1,206 @@
+.section {
+  padding: 0 0 56px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hotStrip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: linear-gradient(90deg, #6d28d9 0%, #7c3aed 35%, #8b5cf6 70%, #6d28d9 100%);
+  background-size: 200% 100%;
+  animation: hotStripFlow 3s linear infinite;
+  overflow: hidden;
+}
+
+@keyframes hotStripFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.hotFlame {
+  font-size: 1.125rem;
+  animation: flameBounce 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes flameBounce {
+  from { transform: scale(1) rotate(-6deg); }
+  to { transform: scale(1.15) rotate(6deg); }
+}
+
+.hotText {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+.hotPulse {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  animation: hotShimmer 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes hotShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 32px;
+  align-items: start;
+  padding: 28px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 35%, var(--border));
+  background:
+    radial-gradient(ellipse 80% 60% at 0% 0%, rgba(168, 85, 247, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, var(--glow-purple-dim) 0%, transparent 50%),
+    var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 0 32px rgba(168, 85, 247, 0.1);
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(168, 85, 247, 0); }
+  50% { box-shadow: 0 0 16px rgba(168, 85, 247, 0.45); }
+}
+
+.tag {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.8125rem;
+  color: var(--glow-purple);
+  font-weight: 600;
+}
+
+.title {
+  margin: 0 0 12px;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.desc {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.9375rem;
+}
+
+.selection {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 40%, var(--border));
+  background: color-mix(in srgb, var(--glow-purple) 10%, var(--bg-card));
+}
+
+.selectionIcon {
+  font-size: 1.125rem;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.selectionText {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.program {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--glow-purple-dim);
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.875rem;
+}
+
+.outcome {
+  margin: 0 0 16px;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.outcome strong {
+  color: var(--glow-purple);
+}
+
+.perks {
+  margin: 0 0 28px;
+  padding-left: 18px;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.9375rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-weight: 600;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.ctaPrimary:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .hotText {
+    font-size: 0.6875rem;
+    text-align: center;
+  }
+}

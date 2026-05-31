@@ -69,6 +69,8 @@ export const api = {
   trackVisit: () => apiRequest('/analytics/visit', { method: 'POST', auth: false }),
   trackCourseClick: (courseId) => apiRequest('/analytics/course-click', { method: 'POST', body: { courseId }, auth: false }),
   stripeCheckout: (payload) => apiRequest('/payments/stripe/checkout', { method: 'POST', body: payload }),
+  tributeCheckout: (payload) => apiRequest('/payments/tribute/checkout', { method: 'POST', body: payload }),
+  tributeStatus: () => apiRequest('/payments/tribute/status', { auth: false }),
   liqpayCreate: (payload) => apiRequest('/payments/liqpay/create', { method: 'POST', body: payload }),
   demoPurchase: (payload) => apiRequest('/payments/demo', { method: 'POST', body: payload }),
   chat: (messages) => apiRequest('/chat', { method: 'POST', body: { messages } }),
@@ -82,14 +84,31 @@ export const api = {
   setReminder: (payload) => apiRequest('/telegram/reminder', { method: 'POST', body: payload }),
   telegramBotInfo: () => apiRequest('/telegram/bot-info', { auth: false }),
   adminLogin: (password) => apiRequest('/admin/login', { method: 'POST', body: { password }, auth: false }),
+  adminMe: () => apiRequest('/admin/me', { admin: true }),
   adminDashboard: () => apiRequest('/admin/dashboard', { admin: true }),
   adminSaveCourses: (courses) => apiRequest('/admin/courses', { method: 'PUT', body: { courses }, admin: true }),
   adminSaveBlog: (posts) => apiRequest('/admin/blog', { method: 'PUT', body: { posts }, admin: true }),
   adminSaveCalendar: (events) => apiRequest('/admin/calendar', { method: 'PUT', body: { events }, admin: true }),
   adminUpdateHomework: (id, payload) => apiRequest(`/admin/homework/${id}`, { method: 'PATCH', body: payload, admin: true }),
+  adminUpdateReview: (id, payload) => apiRequest(`/admin/reviews/${id}`, { method: 'PATCH', body: payload, admin: true }),
   adminAddCertificate: (payload) => apiRequest('/admin/certificates', { method: 'POST', body: payload, admin: true }),
 }
 
 export async function checkApiOnline() {
-  try { await api.health(); return true } catch { return false }
+  try {
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 2500)
+    const res = await fetch(`${getApiBase()}/health`, { signal: ctrl.signal })
+    clearTimeout(timer)
+    if (!res.ok) return false
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** API доступен и пользователь авторизован JWT-токеном */
+export async function canUseAuthenticatedApi() {
+  if (!getToken()) return false
+  return checkApiOnline()
 }

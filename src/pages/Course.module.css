@@ -68,14 +68,219 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 32px;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
   align-items: start;
 }
 
 @media (max-width: 900px) {
   .grid {
     grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .sidebar {
+    position: static;
+    top: auto;
+  }
+
+  .priceCard {
+    position: static;
+    z-index: auto;
+  }
+
+  .priceCardInner {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .programSidebar {
+    max-height: none;
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 20px;
+}
+
+.progressWrap {
+  margin-bottom: 20px;
+  animation: courseFadeIn 0.4s ease-out;
+}
+
+.progressTrack {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gradient-primary);
+  transition: width 0.5s ease;
+}
+
+.progressMeta {
+  margin: 8px 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.lessonHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+  animation: lessonSlideIn 0.35s ease-out;
+}
+
+@keyframes lessonSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lessonHeadNum {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.lessonHeadText {
+  min-width: 0;
+}
+
+.lessonHeadTitle {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.lessonHeadMeta {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.videoActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.lessonDetail {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-glass);
+  animation: lessonSlideIn 0.35s ease-out;
+}
+
+.lessonDetailRow {
+  margin: 0 0 10px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.lessonDetailRow:last-child {
+  margin-bottom: 0;
+}
+
+.lessonDetailSkills {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lessonDetail strong {
+  color: var(--text);
+}
+
+.programSidebar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  max-height: min(520px, calc(100vh - 280px));
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 0;
+}
+
+.programSidebarHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.programSidebarHead .sectionTitle {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.programCount {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+}
+
+.programSidebar .programScheduleHint {
+  padding: 10px 16px;
+  margin: 0;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.programSidebarBody {
+  overflow-y: auto;
+  padding: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: static;
+  }
+
+  .programSidebar {
+    max-height: none;
+  }
+
+  .priceCard {
+    position: static;
+  }
+
+  .priceCardInner {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   }
 }
 
@@ -226,6 +431,40 @@
   margin-bottom: 12px;
 }
 
+.weekDetail {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-glass);
+}
+
+.weekDetailGoal,
+.weekDetailOutcome {
+  margin: 0 0 10px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.weekDetailOutcome {
+  margin-bottom: 0;
+}
+
+.weekDetailSkills {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weekDetail strong {
+  color: var(--text);
+}
+
 .watchedBtn {
   padding: 8px 16px;
   background: var(--bg-elevated);
@@ -337,8 +576,8 @@
 }
 
 .programItemActive {
-  background: var(--glow-purple-dim);
-  color: var(--glow-purple);
+  background: var(--course-accent-soft);
+  color: var(--course-accent);
 }
 
 .programItemDisabled {
@@ -362,7 +601,7 @@
 
 .programItemActive .programNum {
   color: #fff;
-  background: var(--gradient-primary);
+  background: var(--course-gradient);
 }
 
 .programContent {
@@ -376,6 +615,16 @@
 .programTitle {
   font-weight: 600;
   font-size: 1rem;
+}
+
+.programWeekMeta {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .programDate {
@@ -544,23 +793,30 @@
 }
 
 .priceCard {
-  position: sticky;
-  top: 88px;
+  /* Без вложенного sticky — иначе «Программа курса» уезжает под карточку цены */
+  position: relative;
+  z-index: 1;
 }
 
 .priceCardInner {
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--course-accent) 25%, var(--border));
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2), 0 0 30px var(--course-accent-soft);
+  transition: box-shadow 0.3s, border-color 0.3s;
+}
+
+.priceCardInner:hover {
+  border-color: color-mix(in srgb, var(--course-accent) 45%, var(--border));
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.25), 0 0 40px var(--course-accent-soft);
 }
 
 .priceCardIcon {
   width: 48px;
   height: 48px;
   border-radius: var(--radius);
-  background: var(--success);
+  background: var(--course-gradient);
   color: #fff;
   display: flex;
   align-items: center;
@@ -653,19 +909,22 @@
 .priceBtn {
   width: 100%;
   padding: 16px 24px;
-  background: var(--gradient-primary);
+  background: var(--course-gradient);
   color: #fff;
   font-weight: 600;
   font-size: 1rem;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: filter 0.2s, box-shadow 0.2s;
+  transition: filter 0.2s, box-shadow 0.2s, transform 0.15s;
+  text-align: center;
+  display: block;
 }
 
 .priceBtn:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 25px var(--glow-purple-dim);
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--course-accent-soft);
 }
 
 .success {

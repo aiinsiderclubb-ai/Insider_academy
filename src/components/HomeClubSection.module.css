@@ -1,0 +1,103 @@
+.section {
+  padding: 24px 0 48px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 28px;
+  align-items: center;
+  padding: 28px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-accent);
+  color: var(--glow-purple);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.tagline {
+  margin: 0 0 10px;
+  color: var(--glow-purple);
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.desc {
+  margin: 0 0 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.9375rem;
+}
+
+.list {
+  margin: 0 0 18px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.price {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.priceNote {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.cta {
+  display: inline-flex;
+  padding: 11px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border-accent);
+  background: var(--glow-purple-dim);
+  color: var(--glow-purple);
+  font-weight: 600;
+}
+
+.cta:hover {
+  background: var(--gradient-primary);
+  color: #fff;
+  border-color: transparent;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+}

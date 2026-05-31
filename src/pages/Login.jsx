@@ -6,7 +6,7 @@ import { NeuronGlow } from '../components/NeuronGlow'
 import styles from './Login.module.css'
 
 export function Login() {
-  const { user, login } = useAuth()
+  const { user, login, loading: authLoading } = useAuth()
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
@@ -52,6 +52,16 @@ export function Login() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.content}>
+          <p className={styles.subtitle}>{lang === 'ru' ? 'Загрузка…' : 'Loading…'}</p>
+        </div>
+      </div>
+    )
   }
 
   if (user) return null

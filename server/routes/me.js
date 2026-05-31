@@ -170,6 +170,7 @@ router.get('/homework/:courseId/:lessonIndex', async (req, res) => {
 router.post('/homework', upload.single('file'), async (req, res) => {
   const db = getDb()
   const user = await db.get('SELECT email, name FROM users WHERE id = ?', [req.userId])
+  if (!user?.email) return res.status(404).json({ error: 'User not found' })
   const { courseId, courseTitle, lessonIndex, lessonTitle, content } = req.body
   const now = new Date().toISOString()
   const existing = await db.get(

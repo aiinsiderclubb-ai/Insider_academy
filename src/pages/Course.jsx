@@ -1,16 +1,28 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useCourses } from '../context/CoursesContext'
-import { getCourseField } from '../data/courses'
+import { getCourseField, getLessonDisplayTitle } from '../data/courses'
 import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { recordCertificate, trackCourseClick, recordHomeworkSubmission, getHomeworkByUserAndLesson } from '../api/adminStore'
-import { api } from '../api/client'
+import { api, canUseAuthenticatedApi } from '../api/client'
 import { VideoPlayer } from '../components/VideoPlayer'
-import { IconChevronDown } from '../components/Icons'
-import { LessonTest } from '../components/LessonTest'
+import { CourseProgramPanel } from '../components/CourseProgramPanel'
+import { CourseHomeworkPanel } from '../components/CourseHomeworkPanel'
+import { CourseOverviewSection } from '../components/CourseOverviewSection'
 import { CourseReviews } from '../components/CourseReviews'
+import { LessonTest } from '../components/LessonTest'
+import { CourseHero } from '../components/CourseHero'
+import { CourseLandingSections } from '../components/CourseLandingSections'
+import { Confetti } from '../components/Confetti'
+import { OnboardingBanner } from '../components/OnboardingBanner'
+import { getHomeworkForLesson } from '../data/courseHomework'
+import { getCourseThemeStyle } from '../data/courseThemes'
+import { isAcceleratorCourse } from '../data/courseCatalog'
+import { ACCELERATOR_OFFER } from '../data/promo'
+import { BundleCourseActions } from '../components/BundleCourseActions'
+import { useTheme } from '../context/ThemeContext'
 import styles from './Course.module.css'
 
 function readFileAsDataUrl(file) {
@@ -30,9 +42,18 @@ export function Course() {
   const { user, hasPurchased, apiMode } = useAuth()
   const { getProgress, submitHomework, getPercent, markWatched } = useProgress()
   const { t, lang } = useLanguage()
+  const { theme } = useTheme()
   const lessonFromUrl = parseInt(searchParams.get('lesson'), 10)
   const [selectedLesson, setSelectedLesson] = useState(Number.isFinite(lessonFromUrl) && lessonFromUrl >= 0 ? lessonFromUrl : 0)
   const certificateRecorded = useRef(false)
+  const [showOnboarding, setShowOnboarding] = useState(searchParams.get('paid') === '1')
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [hwText, setHwText] = useState({})
+  const [hwFile, setHwFile] = useState({})
+  const [hwError, setHwError] = useState({})
+  const [homeworkMap, setHomeworkMap] = useState({})
+
+  const lessonCount = course?.lessons?.length ?? 0
 
   useEffect(() => {
     if (course && Number.isFinite(lessonFromUrl) && lessonFromUrl >= 0 && (course.lessons || []).length > 0 && lessonFromUrl < (course.lessons || []).length) {
@@ -42,10 +63,34 @@ export function Course() {
   useEffect(() => {
     if (course?.id) trackCourseClick(course.id)
   }, [course?.id])
-  const [expandedProgram, setExpandedProgram] = useState(true)
-  const [hwText, setHwText] = useState({})
-  const [hwFile, setHwFile] = useState({})
-  const [hwError, setHwError] = useState({})
+
+  useEffect(() => {
+    if (!course?.id || !user?.email || lessonCount === 0) {
+      setHomeworkMap({})
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const next = {}
+      if (await canUseAuthenticatedApi()) {
+        await Promise.all(
+          Array.from({ length: lessonCount }, (_, index) => index).map(async (index) => {
+            try {
+              const hw = await api.getHomework(course.id, index)
+              if (hw) next[index] = hw
+            } catch (_) {}
+          })
+        )
+      } else {
+        for (let index = 0; index < lessonCount; index += 1) {
+          const hw = getHomeworkByUserAndLesson(user.email, course.id, index)
+          if (hw) next[index] = hw
+        }
+      }
+      if (!cancelled) setHomeworkMap(next)
+    })()
+    return () => { cancelled = true }
+  }, [course?.id, user?.email, lessonCount, apiMode])
 
   if (!course) {
     return (
@@ -61,13 +106,14 @@ export function Course() {
   const progress = getProgress(course.id)
   const purchased = hasPurchased(course.id)
   const isFreeTrial = course.isFreeTrial === true
+  const isBundle = isAcceleratorCourse(course)
 
   const lessonsList = Array.isArray(course.lessons) ? course.lessons : []
   const safeSelectedLesson = Math.min(Math.max(selectedLesson ?? 0, 0), Math.max(lessonsList.length - 1, 0))
   const currentLesson = lessonsList[safeSelectedLesson]
-  const lessonTitle = currentLesson && (lang === 'en' && currentLesson.titleEn ? currentLesson.titleEn : currentLesson.title)
+  const lessonTitle = getLessonDisplayTitle(currentLesson, lang)
   const homeworkEntriesByLesson = lessonsList.reduce((map, _, index) => {
-    map[index] = user?.email ? getHomeworkByUserAndLesson(user.email, course.id, index) : null
+    map[index] = homeworkMap[index] ?? null
     return map
   }, {})
 
@@ -76,6 +122,9 @@ export function Course() {
     if (isFreeTrial) return true
     if (index === 0) return true
     if (!purchased) return false
+    if (course.hasHomework) {
+      return homeworkEntriesByLesson[index - 1]?.status === 'accepted'
+    }
     if (index === 1) return true
     return homeworkEntriesByLesson[index - 1]?.status === 'accepted'
   }
@@ -83,7 +132,14 @@ export function Course() {
   const lessonStatus = (index) => {
     if (isFreeTrial) return 'open'
     if (index === 0) return 'open'
-    if (index === 1 && purchased) return 'open'
+    if (!purchased) return 'lock'
+    if (course.hasHomework || index > 1) {
+      const prevStatus = homeworkEntriesByLesson[index - 1]?.status
+      if (prevStatus === 'accepted') return 'open'
+      if (prevStatus === 'pending') return 'review'
+      return 'homework'
+    }
+    if (index === 1) return 'open'
     const prevStatus = homeworkEntriesByLesson[index - 1]?.status
     if (prevStatus === 'accepted') return 'open'
     if (prevStatus === 'pending') return 'review'
@@ -103,17 +159,32 @@ export function Course() {
   const isAutomation = course.id === 'ai-automation-builder'
   const showTestAfterLesson0 = !isFreeTrial && isAutomation && progress.watched.includes(0) && !progress.homeworkSubmitted.includes(0)
   const courseTitle = getCourseField(course, 'title', lang)
-  const fullDesc = getCourseField(course, 'fullDescription', lang) || getCourseField(course, 'description', lang) || getCourseField(course, 'shortDescription', lang)
-  const goalsList = getCourseField(course, 'goals', lang)
-  const duration = getCourseField(course, 'duration', lang)
+  const currentHomework = currentLesson ? getHomeworkForLesson(currentLesson, course) : null
+  const hwLessonStartIndex = course.hasHomework ? 0 : 1
+  const currentHwEntry = homeworkEntriesByLesson[safeSelectedLesson]
+  const showHwForm =
+    !isFreeTrial
+    && purchased
+    && safeSelectedLesson >= hwLessonStartIndex
+    && lessonAvailable(safeSelectedLesson)
+    && (!currentHwEntry || currentHwEntry.status === 'resubmit')
+
+  const selectLesson = (index) => {
+    setSelectedLesson(index)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (index > 0) next.set('lesson', String(index))
+      else next.delete('lesson')
+      return next
+    }, { replace: true })
+  }
 
   const handleWatch = () => {
     if (!(purchased || isFreeTrial) || !currentLesson) return
     markWatched(course.id, safeSelectedLesson)
     if (isFreeTrial && lessonsList.length > 0 && safeSelectedLesson + 1 < lessonsList.length) {
       const next = safeSelectedLesson + 1
-      setSelectedLesson(next)
-      setSearchParams({ lesson: String(next) })
+      selectLesson(next)
     }
   }
 
@@ -152,23 +223,33 @@ export function Course() {
       return
     }
 
-    submitHomework(course.id, index)
-    if (user?.email) {
-      const les = lessonsList[index]
-      const lessonTitle = les ? (lang === 'en' && les.titleEn ? les.titleEn : les.title) : ''
-      const courseTitle = getCourseField(course, 'title', lang)
-      try {
-        if (apiMode && file.raw) {
-          const fd = new FormData()
-          fd.append('file', file.raw)
-          fd.append('courseId', course.id)
-          fd.append('courseTitle', courseTitle)
-          fd.append('lessonIndex', String(index))
-          fd.append('lessonTitle', lessonTitle)
-          fd.append('content', hwText[index] ?? '')
-          await api.submitHomeworkForm(fd)
-        } else {
-          recordHomeworkSubmission({
+    if (!user?.email) {
+      setHwError((prev) => ({
+        ...prev,
+        [index]: lang === 'ru' ? 'Войдите в аккаунт для отправки ДЗ.' : 'Sign in to submit homework.',
+      }))
+      return
+    }
+
+    const les = lessonsList[index]
+    const lessonTitle = getLessonDisplayTitle(les, lang)
+    const courseTitle = getCourseField(course, 'title', lang)
+
+    try {
+      let entry = null
+      if (await canUseAuthenticatedApi() && file.raw) {
+        const fd = new FormData()
+        fd.append('file', file.raw)
+        fd.append('courseId', course.id)
+        fd.append('courseTitle', courseTitle)
+        fd.append('lessonIndex', String(index))
+        fd.append('lessonTitle', lessonTitle)
+        fd.append('content', hwText[index] ?? '')
+        const result = await api.submitHomeworkForm(fd)
+        entry = await api.getHomework(course.id, index)
+        if (!entry) {
+          entry = {
+            id: result.id,
             email: user.email,
             name: user.name || user.email,
             courseId: course.id,
@@ -178,31 +259,72 @@ export function Course() {
             content: hwText[index] ?? '',
             fileName: file.name,
             fileType: file.type,
-            fileDataUrl: file.dataUrl,
-          })
+            status: 'pending',
+            date: new Date().toISOString(),
+          }
         }
-      } catch {
-        setHwError((prev) => ({ ...prev, [index]: lang === 'ru' ? 'Ошибка отправки.' : 'Submit failed.' }))
-        return
+      } else {
+        recordHomeworkSubmission({
+          email: user.email,
+          name: user.name || user.email,
+          courseId: course.id,
+          courseTitle,
+          lessonIndex: index,
+          lessonTitle,
+          content: hwText[index] ?? '',
+          fileName: file.name,
+          fileType: file.type,
+          fileDataUrl: file.dataUrl,
+        })
+        entry = getHomeworkByUserAndLesson(user.email, course.id, index)
       }
+
+      submitHomework(course.id, index)
+      setHomeworkMap((prev) => ({ ...prev, [index]: entry }))
+      setHwFile((prev) => ({ ...prev, [index]: null }))
+      setHwError((prev) => ({ ...prev, [index]: '' }))
+    } catch {
+      setHwError((prev) => ({
+        ...prev,
+        [index]: lang === 'ru' ? 'Ошибка отправки. Проверьте вход в аккаунт.' : 'Submit failed. Check that you are signed in.',
+      }))
     }
-    setHwError((prev) => ({ ...prev, [index]: '' }))
   }
 
   const isCourseComplete = percent === 100 && lessonsList.length > 0
-  if (isCourseComplete && user && !certificateRecorded.current) {
-    certificateRecorded.current = true
-    recordCertificate({
-      email: user.email,
-      courseId: course.id,
-      courseTitle: lang === 'en' && course.titleEn ? course.titleEn : course.title,
-    })
+
+  useEffect(() => {
+    if (isCourseComplete && user && !certificateRecorded.current) {
+      certificateRecorded.current = true
+      setShowConfetti(true)
+      recordCertificate({
+        email: user.email,
+        courseId: course.id,
+        courseTitle: lang === 'en' && course.titleEn ? course.titleEn : course.title,
+      })
+    }
+  }, [isCourseComplete, user, course.id, course.title, course.titleEn, lang])
+
+  const dismissOnboarding = () => {
+    setShowOnboarding(false)
+    searchParams.delete('paid')
+    setSearchParams(searchParams, { replace: true })
   }
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} style={getCourseThemeStyle(course.id, theme)}>
+      <Confetti active={showConfetti} />
       <div className={styles.container}>
-        <Link to="/courses" className={styles.back}>{t('course.backToCourses')}</Link>
+        <CourseHero
+          course={course}
+          lang={lang}
+          backTo="/courses"
+          backLabel={t('course.backToCourses')}
+        />
+
+        {showOnboarding && purchased && (
+          <OnboardingBanner course={course} lang={lang} onDismiss={dismissOnboarding} />
+        )}
 
         {isCourseComplete && (
           <div className={styles.completionBanner} role="alert">
@@ -224,37 +346,32 @@ export function Course() {
 
         <div className={styles.grid}>
           <div className={styles.main}>
-            <h1 className={styles.title}>{courseTitle}</h1>
-            <p className={styles.desc}>
-              {fullDesc || (lang === 'ru' ? 'Описание курса.' : 'Course description.')}
-            </p>
-
-            {goalsList && goalsList.length > 0 && (
-              <section className={styles.goalsSection}>
-                <h2 className={styles.sectionTitle}>{t('course.goals')}</h2>
-                <ul className={styles.goalsList}>
-                  {goalsList.map((goal, i) => (
-                    <li key={i} className={styles.goalItem}>{goal}</li>
-                  ))}
-                </ul>
-              </section>
+            {(purchased || isFreeTrial) && lessonsList.length > 0 && (
+              <div className={styles.progressWrap}>
+                <div className={styles.progressTrack}>
+                  <div className={styles.progressFill} style={{ width: `${percent}%` }} />
+                </div>
+                <p className={styles.progressMeta}>
+                  {percent}% · {lang === 'ru' ? 'Урок' : 'Lesson'} {safeSelectedLesson + 1}/{lessonsList.length}
+                </p>
+              </div>
             )}
 
-            <div className={styles.badges}>
-              {isFreeTrial && (
-                <span className={styles.badgeFreeTrial}>{lang === 'ru' ? 'Бесплатный пробный курс' : 'Free trial course'}</span>
-              )}
-              {course.level && (
-                <span className={styles.badge}><span className={styles.badgeIcon}>↑</span> {t('course.level')} {course.level}</span>
-              )}
-              <span className={styles.badge}><span className={styles.badgeIcon}>📚</span> {lessonsList.length} {t('course.lessons')}</span>
-              <span className={styles.badge}><span className={styles.badgeIcon}>📅</span> {duration}</span>
-              {(purchased || isFreeTrial) && (
-                <span className={styles.badgeProgress}>{t('course.completed')}: {percent}%</span>
-              )}
-            </div>
+            <CourseOverviewSection course={course} lang={lang} />
 
             <section className={styles.videoSection}>
+              {currentLesson && (
+                <header className={styles.lessonHead} key={currentLesson.id}>
+                  <span className={styles.lessonHeadNum}>{safeSelectedLesson + 1}</span>
+                  <div className={styles.lessonHeadText}>
+                    <h2 className={styles.lessonHeadTitle}>{lessonTitle}</h2>
+                    {currentLesson.duration && (
+                      <span className={styles.lessonHeadMeta}>{currentLesson.duration}</span>
+                    )}
+                  </div>
+                </header>
+              )}
+
               <VideoPlayer
                 lesson={currentLesson}
                 title={lessonTitle}
@@ -262,32 +379,49 @@ export function Course() {
                 lockedMessage={safeSelectedLesson > 0 && !purchased ? t('course.lockedMessage') : undefined}
                 onEnded={isFreeTrial ? handleWatch : undefined}
               />
-              <div className={styles.videoNav}>
+
+              {currentLesson && currentHomework && (
+                <CourseHomeworkPanel
+                  lang={lang}
+                  t={t}
+                  lessonIndex={safeSelectedLesson}
+                  homework={currentHomework}
+                  hwText={hwText[safeSelectedLesson]}
+                  hwFile={hwFile[safeSelectedLesson]}
+                  hwError={hwError[safeSelectedLesson]}
+                  homeworkEntry={currentHwEntry}
+                  showForm={showHwForm}
+                  canSubmit={showHwForm}
+                  onTextChange={(v) => setHwText((prev) => ({ ...prev, [safeSelectedLesson]: v }))}
+                  onFileChange={(file) => handleHomeworkFileChange(safeSelectedLesson, file)}
+                  onSubmit={() => handleHomeworkSubmit(safeSelectedLesson)}
+                />
+              )}
+
+              <div className={styles.videoActions}>
                 <button
                   type="button"
                   className={styles.videoNavBtn}
                   disabled={safeSelectedLesson === 0}
-                  onClick={() => setSelectedLesson((s) => s - 1)}
-                  aria-label={t('course.prevLesson')}
+                  onClick={() => selectLesson(safeSelectedLesson - 1)}
                 >
                   {t('course.prevLesson')}
                 </button>
+                {lessonAvailable(safeSelectedLesson) && (purchased || isFreeTrial || safeSelectedLesson === 0) && (
+                  <button type="button" className={styles.watchedBtn} onClick={handleWatch}>
+                    {t('course.markWatched')}
+                  </button>
+                )}
                 <button
                   type="button"
                   className={styles.videoNavBtn}
                   disabled={safeSelectedLesson >= lessonsList.length - 1 || !lessonAvailable(safeSelectedLesson + 1)}
-                  onClick={() => setSelectedLesson((s) => s + 1)}
-                  aria-label={t('course.nextLesson')}
+                  onClick={() => selectLesson(safeSelectedLesson + 1)}
                 >
                   {t('course.nextLesson')}
                 </button>
               </div>
-              <p className={styles.videoHint}>{isFreeTrial ? (lang === 'ru' ? 'Все уроки пробного курса доступны бесплатно.' : 'All trial lessons are free.') : t('course.videoHint')}</p>
-              {lessonAvailable(safeSelectedLesson) && (purchased || isFreeTrial || safeSelectedLesson === 0) && (
-                <button type="button" className={styles.watchedBtn} onClick={handleWatch}>
-                  {t('course.markWatched')}
-                </button>
-              )}
+
               {showTestAfterLesson0 && (
                 <LessonTest
                   questions={lessonsList[0]?.quiz}
@@ -296,166 +430,110 @@ export function Course() {
                 />
               )}
             </section>
-
-            <section className={styles.programSection} aria-label={lang === 'ru' ? 'Содержание курса' : 'Course content'}>
-              <button
-                type="button"
-                className={styles.programHeader}
-                onClick={() => setExpandedProgram((v) => !v)}
-              >
-                <h2 className={styles.sectionTitle}>{t('course.program')}</h2>
-                <span className={`${styles.chevron} ${expandedProgram ? styles.chevronOpen : ''}`}>
-                  <IconChevronDown />
-                </span>
-              </button>
-              {expandedProgram && (
-                <>
-                  <p className={styles.programScheduleHint}>{isFreeTrial ? (lang === 'ru' ? 'Пробный курс: все 3 урока доступны бесплатно.' : 'Trial course: all 3 lessons are free.') : t('course.programHint')}</p>
-                  {lessonsList.length === 0 ? (
-                    <p className={styles.programEmpty}>{lang === 'ru' ? 'Содержание курса будет добавлено.' : 'Course content will be added.'}</p>
-                  ) : (
-                  <ul className={styles.programList}>
-                    {lessonsList.map((lesson, index) => {
-                      const available = lessonAvailable(index)
-                      const status = lessonStatus(index)
-                      const lesTitle = lang === 'en' && lesson.titleEn ? lesson.titleEn : lesson.title
-                      return (
-                        <li key={lesson.id}>
-                          <button
-                            type="button"
-                            className={`${styles.programItem} ${selectedLesson === index ? styles.programItemActive : ''} ${!canSelectLesson(index) ? styles.programItemDisabled : ''}`}
-                            onClick={() => canSelectLesson(index) && setSelectedLesson(index)}
-                            disabled={!canSelectLesson(index)}
-                          >
-                            <span className={styles.programNum}>{index + 1}</span>
-                            <span className={styles.programContent}>
-                              <span className={styles.programTitle}>{lesTitle}</span>
-                            </span>
-                            <span className={styles.programStatus}>
-                              {isFreeTrial && <span className={styles.statusOpen}>{t('course.open')}</span>}
-                              {!isFreeTrial && index === 0 && <span className={styles.statusFree}>{t('course.free')}</span>}
-                              {!isFreeTrial && index > 0 && !purchased && <span className={styles.statusLock}>{t('course.bySubscription')}</span>}
-                              {!isFreeTrial && purchased && index === 0 && <span className={styles.statusOpen}>{t('course.open')}</span>}
-                              {!isFreeTrial && purchased && index > 0 && status === 'open' && <span className={styles.statusOpen}>{t('course.open')}</span>}
-                              {!isFreeTrial && purchased && index > 0 && status === 'review' && <span className={styles.statusReview}>{t('course.hwReview')}</span>}
-                              {!isFreeTrial && purchased && index > 0 && status === 'homework' && <span className={styles.statusHomework}>{t('course.submitHw')}</span>}
-                            </span>
-                          </button>
-                          {!isFreeTrial && purchased && index >= 1 && available && (!homeworkEntriesByLesson[index] || homeworkEntriesByLesson[index]?.status === 'resubmit') && (
-                            <div className={styles.hwBlock}>
-                              {homeworkEntriesByLesson[index]?.status === 'resubmit' && (
-                                <div className={styles.hwResubmitNote}>
-                                  {lang === 'ru' ? 'Нужно исправить замечания и загрузить файл заново.' : 'Please revise the homework and upload the file again.'}
-                                </div>
-                              )}
-                              <label className={styles.hwLabel}>{t('course.hwLabel')}</label>
-                              <textarea
-                                className={styles.hwTextarea}
-                                placeholder={t('course.hwPlaceholder')}
-                                value={hwText[index] ?? ''}
-                                onChange={(e) => setHwText((prev) => ({ ...prev, [index]: e.target.value }))}
-                                rows={3}
-                              />
-                              <label className={styles.hwLabel}>{t('course.hwFile')}</label>
-                              <input
-                                type="file"
-                                className={styles.hwFileInput}
-                                onChange={(e) => handleHomeworkFileChange(index, e.target.files?.[0])}
-                              />
-                              <span className={styles.hwFileRequired}>
-                                {lang === 'ru' ? 'Файл обязателен для отправки.' : 'A file is required for submission.'}
-                              </span>
-                              {hwFile[index]?.name && <span className={styles.hwFileName}>{hwFile[index].name}</span>}
-                              {hwError[index] && <span className={styles.hwError}>{hwError[index]}</span>}
-                              <button
-                                type="button"
-                                className={styles.hwSubmitBtn}
-                                onClick={() => handleHomeworkSubmit(index)}
-                              >
-                                {t('course.submitHwBtn')}
-                              </button>
-                            </div>
-                          )}
-                          {!isFreeTrial && purchased && homeworkEntriesByLesson[index] && (() => {
-                            const hwFeedback = homeworkEntriesByLesson[index]
-                            const comment = hwFeedback?.adminComment
-                            return (
-                              <div className={styles.hwActions}>
-                                {comment && (
-                                  <div className={styles.hwAdminComment}>
-                                    <strong>{lang === 'ru' ? 'Комментарий проверяющего:' : 'Reviewer feedback:'}</strong>
-                                    <p>{comment}</p>
-                                  </div>
-                                )}
-                                <span className={styles.hwReviewText}>
-                                  {hwFeedback.status === 'accepted'
-                                    ? (lang === 'ru' ? 'ДЗ принято.' : 'Homework accepted.')
-                                    : hwFeedback.status === 'resubmit'
-                                      ? (lang === 'ru' ? 'ДЗ отправлено на доработку.' : 'Homework sent back for revision.')
-                                      : t('course.hwReview')}
-                                </span>
-                              </div>
-                            )
-                          })()}
-                        </li>
-                      )
-                    })}
-                  </ul>
-                  )}
-                </>
-              )}
-            </section>
           </div>
 
-          <aside className={styles.priceCard}>
-            <div className={styles.priceCardInner}>
-              <div className={styles.priceCardIcon}>✓</div>
-              <h3 className={styles.priceCardTitle}>{courseTitle}</h3>
-              {isFreeTrial ? (
-                <div className={styles.priceCardPurchased}>
-                  <span className={styles.priceCardBadge}>{lang === 'ru' ? 'Бесплатный пробный курс' : 'Free trial course'}</span>
-                  <p className={styles.priceCardPercent}>{t('course.completed')}: <strong>{percent}%</strong></p>
-                  <p className={styles.priceCardTrialText}>{lang === 'ru' ? 'Все 3 урока доступны бесплатно.' : 'All 3 lessons are free.'}</p>
-                  <Link to="/courses" className={styles.priceCardWatch}>
-                    {lang === 'ru' ? 'Полный каталог курсов →' : 'Full course catalog →'}
-                  </Link>
-                </div>
-              ) : purchased ? (
-                <div className={styles.priceCardPurchased}>
-                  <span className={styles.priceCardBadge}>{t('course.accessOpen')}</span>
-                  <p className={styles.priceCardPercent}>{t('course.completed')}: <strong>{percent}%</strong></p>
-                  <Link to={`/courses/${course.slug}`} className={styles.priceCardWatch}>
-                    {t('course.watchCourse')}
-                  </Link>
-                </div>
-              ) : (
-                <>
-                  <div className={styles.priceRows}>
-                    <div className={styles.priceRow}>
-                      <span>{t('course.fullPrice')}</span>
-                      <span className={styles.priceOld}>{fullPriceEur} €</span>
-                    </div>
-                    {discount > 0 && (
-                      <div className={styles.priceRow}>
-                        <span>{t('course.discount')}</span>
-                        <span className={styles.priceDiscount}>−{discount} €</span>
-                      </div>
-                    )}
-                    <div className={styles.priceRowHighlight}>
-                      <span>{t('course.priceForYou')}</span>
-                      <span className={styles.priceCurrent}>{priceEur} €</span>
-                    </div>
+          <aside className={styles.sidebar}>
+            <div className={styles.priceCard}>
+              <div className={styles.priceCardInner}>
+                <div className={styles.priceCardIcon}>✓</div>
+                <h3 className={styles.priceCardTitle}>{courseTitle}</h3>
+                {isFreeTrial ? (
+                  <div className={styles.priceCardPurchased}>
+                    <span className={styles.priceCardBadge}>{lang === 'ru' ? 'Бесплатный пробный курс' : 'Free trial course'}</span>
+                    <p className={styles.priceCardPercent}>{t('course.completed')}: <strong>{percent}%</strong></p>
+                    <Link to="/courses" className={styles.priceCardWatch}>
+                      {lang === 'ru' ? 'Полный каталог курсов →' : 'Full course catalog →'}
+                    </Link>
                   </div>
-                  <p className={styles.priceInstallment}>{t('course.installment')}</p>
-                  <Link to={`/courses/${course.slug}/buy`} className={styles.priceBtn}>
-                    {t('course.buyCourse')}
-                  </Link>
-                </>
-              )}
+                ) : purchased ? (
+                  <div className={styles.priceCardPurchased}>
+                    <span className={styles.priceCardBadge}>{t('course.accessOpen')}</span>
+                    <p className={styles.priceCardPercent}>{t('course.completed')}: <strong>{percent}%</strong></p>
+                  </div>
+                ) : isBundle ? (
+                  <>
+                    <span className={styles.priceCardBadge}>
+                      {lang === 'ru' ? 'Набор · по заявке' : 'Bundle · by application'}
+                    </span>
+                    <p className={styles.priceCardTrialText}>
+                      {lang === 'en' ? ACCELERATOR_OFFER.selectionEn : ACCELERATOR_OFFER.selectionRu}
+                    </p>
+                    <BundleCourseActions
+                      courseSlug={course.slug}
+                      lang={lang}
+                      showLearnMore={false}
+                      variant="sidebar"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div className={styles.priceRows}>
+                      <div className={styles.priceRow}>
+                        <span>{t('course.fullPrice')}</span>
+                        <span className={styles.priceOld}>{fullPriceEur} €</span>
+                      </div>
+                      {discount > 0 && (
+                        <div className={styles.priceRow}>
+                          <span>{t('course.discount')}</span>
+                          <span className={styles.priceDiscount}>−{discount} €</span>
+                        </div>
+                      )}
+                      <div className={styles.priceRowHighlight}>
+                        <span>{t('course.priceForYou')}</span>
+                        <span className={styles.priceCurrent}>{priceEur} €</span>
+                      </div>
+                    </div>
+                    <p className={styles.priceInstallment}>{t('course.installment')}</p>
+                    <Link to={`/courses/${course.slug}/buy`} className={styles.priceBtn}>
+                      {t('course.buyCourse')}
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
+
+            <section className={styles.programSidebar} aria-label={lang === 'ru' ? 'Содержание курса' : 'Course content'}>
+              <div className={styles.programSidebarHead}>
+                <h2 className={styles.sectionTitle}>{t('course.program')}</h2>
+                <span className={styles.programCount}>{lessonsList.length}</span>
+              </div>
+              <p className={styles.programScheduleHint}>
+                {course.hasHomework
+                  ? (lang === 'ru'
+                    ? 'Урок 1 бесплатно. Следующий открывается после принятия ДЗ.'
+                    : 'Lesson 1 is free. Next unlocks after homework is accepted.')
+                  : isFreeTrial
+                    ? (lang === 'ru' ? 'Все уроки доступны бесплатно.' : 'All lessons are free.')
+                    : t('course.programHint')}
+              </p>
+              <div className={styles.programSidebarBody}>
+                <CourseProgramPanel
+                  lessons={lessonsList}
+                  lang={lang}
+                  selectedLesson={safeSelectedLesson}
+                  onSelectLesson={selectLesson}
+                  canSelectLesson={canSelectLesson}
+                  lessonStatus={lessonStatus}
+                  lessonAvailable={lessonAvailable}
+                  isFreeTrial={isFreeTrial}
+                  purchased={purchased}
+                />
+              </div>
+            </section>
           </aside>
         </div>
-        <CourseReviews courseId={course.id} />
+
+        <div className={styles.container}>
+          <CourseReviews courseId={course.id} courseTitle={courseTitle} />
+        </div>
+
+        <CourseLandingSections
+          course={course}
+          lang={lang}
+          purchased={purchased}
+          priceEur={priceEur}
+          marketingOnly={!purchased && !isFreeTrial}
+        />
       </div>
     </div>
   )

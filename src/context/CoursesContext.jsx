@@ -1,44 +1,72 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
-import { getCourses as getLocalCourses } from '../api/courseStore'
+import { getCourses as getLocalCourses, setCourses as persistCourses } from '../api/courseStore'
+import { isCatalogStale, syncCoursesWithDefaults } from '../data/catalogSync'
+import { courses as defaultCourses } from '../data/courses'
+import { splitCourses } from '../data/courseCatalog'
 import { api, checkApiOnline } from '../api/client'
 
 const CoursesContext = createContext(null)
 
+function normalizeCourses(list) {
+  if (!Array.isArray(list) || list.length === 0) return defaultCourses
+  return isCatalogStale(list) ? syncCoursesWithDefaults(list) : list
+}
+
 export function CoursesProvider({ children }) {
-  const [courses, setCoursesState] = useState(getLocalCourses)
+  const [courses, setCoursesState] = useState(() => normalizeCourses(getLocalCourses()))
   const [loading, setLoading] = useState(true)
 
   const refreshCourses = useCallback(async () => {
+    let result = normalizeCourses(getLocalCourses())
     try {
       const online = await checkApiOnline()
       if (online) {
         const list = await api.getCourses()
-        setCoursesState(list)
-        return list
+        if (Array.isArray(list) && list.length > 0) {
+          result = normalizeCourses(list)
+        }
       }
     } catch (_) {}
-    const local = getLocalCourses()
-    setCoursesState(local)
-    return local
+    persistCourses(result)
+    setCoursesState(result)
+    return result
   }, [])
 
   useEffect(() => {
-    refreshCourses().finally(() => setLoading(false))
-    const handler = () => refreshCourses()
+    let active = true
+    refreshCourses()
+      .catch(() => {
+        if (active) setCoursesState(defaultCourses)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    const handler = () => { refreshCourses() }
     window.addEventListener('lms-courses-updated', handler)
-    return () => window.removeEventListener('lms-courses-updated', handler)
+    return () => {
+      active = false
+      window.removeEventListener('lms-courses-updated', handler)
+    }
   }, [refreshCourses])
+
+  const { freeCourses, paidCourses, acceleratorCourse } = useMemo(
+    () => splitCourses(courses),
+    [courses]
+  )
 
   const value = useMemo(
     () => ({
       courses,
       loading,
-      freeTrialCourses: courses.filter((c) => c.isFreeTrial === true),
+      freeCourses,
+      paidCourses,
+      acceleratorCourse,
+      freeTrialCourses: freeCourses,
       getCourseBySlug: (slug) => courses.find((c) => c.slug === slug) || null,
       getCourseById: (id) => courses.find((c) => c.id === id) || null,
       refreshCourses,
     }),
-    [courses, loading, refreshCourses]
+    [courses, loading, freeCourses, paidCourses, acceleratorCourse, refreshCourses]
   )
 
   return (

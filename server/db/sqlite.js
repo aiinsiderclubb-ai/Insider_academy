@@ -190,9 +190,11 @@ CREATE TABLE IF NOT EXISTS reviews (
   course_id TEXT NOT NULL,
   user_id INTEGER,
   email TEXT NOT NULL,
+  contact_email TEXT,
   user_name TEXT,
   rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
   text TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
   date TEXT NOT NULL
 );
 
@@ -266,6 +268,10 @@ function migrateColumns(db) {
   if (!cols.includes('telegram_chat_id')) add('ALTER TABLE users ADD COLUMN telegram_chat_id TEXT')
   if (!cols.includes('team_id')) add('ALTER TABLE users ADD COLUMN team_id INTEGER')
   if (!cols.includes('stripe_customer_id')) add('ALTER TABLE users ADD COLUMN stripe_customer_id TEXT')
+
+  const reviewCols = db.prepare('PRAGMA table_info(reviews)').all().map((c) => c.name)
+  if (!reviewCols.includes('status')) add("ALTER TABLE reviews ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'")
+  if (!reviewCols.includes('contact_email')) add('ALTER TABLE reviews ADD COLUMN contact_email TEXT')
 }
 
 export function parseJson(raw, fallback) {

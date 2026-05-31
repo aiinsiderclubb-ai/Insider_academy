@@ -1,5 +1,7 @@
 // Хранение данных для админ-панели (localStorage, без бэкенда)
 
+import { canLeaveCourseReview } from '../data/testAccount.js'
+
 const KEY_REG = 'lms_admin_registrations'
 const KEY_CERT = 'lms_admin_certificates'
 const KEY_PURCH = 'lms_admin_purchases'
@@ -9,6 +11,22 @@ const KEY_DISCOUNTS = 'lms_referral_discounts'
 const KEY_HOMEWORK = 'lms_homework_submissions'
 const KEY_NOTIFICATIONS = 'lms_notifications'
 const KEY_ADMIN_SEEN = 'lms_admin_seen'
+const PURCHASES_KEY = 'lms_purchases'
+
+function loadLocalPurchases() {
+  try {
+    const data = localStorage.getItem(PURCHASES_KEY)
+    if (!data) return []
+    const parsed = JSON.parse(data)
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      if (typeof parsed[0] === 'object' && parsed[0].id != null) return parsed
+      return parsed.map((id) => ({ id, purchasedAt: new Date().toISOString() }))
+    }
+    return []
+  } catch {
+    return []
+  }
+}
 
 function getJson(key, def = []) {
   try {
@@ -375,4 +393,67 @@ export function markNotificationRead(id) {
 export function getUnreadCount(email) {
   const list = getNotifications()
   return list.filter((n) => (n.email === email || n.userId === email) && !n.read).length
+}
+
+// ——— Отзывы ———
+const KEY_REVIEWS = 'lms_reviews'
+
+export function getReviewSubmissions() {
+  return getJson(KEY_REVIEWS)
+}
+
+export function getPublicReviews(courseId) {
+  const list = getReviewSubmissions().filter((r) => r.status === 'approved' && r.courseId === courseId)
+  const count = list.length
+  const average = count ? Math.round((list.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10 : null
+  const mask = (email) => {
+    if (!email?.includes('@')) return ''
+    const [local, domain] = email.split('@')
+    if (local.length <= 1) return `*@${domain}`
+    return `${local[0]}***${local[local.length - 1]}@${domain}`
+  }
+  return {
+    reviews: list.map((r) => ({
+      id: r.id,
+      userName: r.userName,
+      rating: r.rating,
+      text: r.text,
+      date: r.date,
+      emailMasked: mask(r.contactEmail || r.email),
+    })),
+    average,
+    count,
+  }
+}
+
+export function recordReviewSubmission({ courseId, email, contactEmail, userName, rating, text, userId, purchases }) {
+  const owned = purchases ?? loadLocalPurchases()
+  if (!canLeaveCourseReview(courseId, owned)) {
+    throw new Error('Review requires purchasing this course')
+  }
+  const list = getReviewSubmissions()
+  const item = {
+    id: createId('rev'),
+    courseId,
+    email: email || '',
+    contactEmail: contactEmail || email || '',
+    userName: userName || '',
+    userId: userId || null,
+    rating,
+    text: text || '',
+    status: 'pending',
+    date: new Date().toISOString(),
+  }
+  list.unshift(item)
+  setJson(KEY_REVIEWS, list.slice(0, 500))
+  return item
+}
+
+export function updateReviewSubmission(id, { status }) {
+  const list = getReviewSubmissions()
+  const idx = list.findIndex((r) => r.id === id)
+  if (idx < 0) return null
+  if (status) list[idx].status = status
+  setJson(KEY_REVIEWS, list)
+  return list[idx]
 }

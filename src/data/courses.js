@@ -1,418 +1,9 @@
-// Каталог курсов AI Insider Academy
-export const courses = [
-  {
-    id: 'ai-chatbot-engineer',
-    slug: 'ai-chatbot-engineer',
-    title: 'AI ChatBot Engineer',
-    titleEn: 'AI ChatBot Engineer',
-    subtitle: 'Build AI Chatbots with n8n + OpenAI',
-    subtitleEn: 'Build AI Chatbots with n8n + OpenAI',
-    shortDescription: 'Научись создавать умных чат-ботов, которые отвечают клиентам, принимают заявки и автоматизируют общение в бизнесе.',
-    shortDescriptionEn: 'Learn to build smart chatbots that respond to customers, accept requests, and automate business communication.',
-    description: 'На курсе ты соберёшь полноценного AI-бота с нуля, подключишь OpenAI, API и автоматизации, а также научишься внедрять его в разные ниши.',
-    descriptionEn: 'You will build a full AI bot from scratch, connect OpenAI, APIs and automations, and learn to deploy it across different niches.',
-    fullDescription: 'На курсе ты соберёшь полноценного AI-бота с нуля, подключишь OpenAI, API и автоматизации, а также научишься внедрять его в разные ниши. Создашь чат-бота на базе n8n + OpenAI, подключишь Telegram / сайт / CRM, настроишь автоматические ответы и сценарии, получишь готовые шаблоны и разберёшь реальные кейсы внедрения.',
-    fullDescriptionEn: 'You will build a full AI bot from scratch, connect OpenAI, APIs and automations, and learn to deploy it across different niches. Create a chatbot on n8n + OpenAI, connect Telegram / website / CRM, set up automatic responses and scenarios, get ready-made templates and analyze real implementation cases.',
-    duration: '12 уроков',
-    durationEn: '12 lessons',
-    price: 3490,
-    priceEur: 35,
-    image: 'https://images.unsplash.com/photo-1531746795393-6cde9e6b2c6b?w=800&q=80',
-    category: 'Чат-боты',
-    categoryEn: 'Chatbots',
-    level: 'Basic',
-    goals: [
-      'создашь AI чат-бота на базе n8n + OpenAI',
-      'подключишь Telegram / сайт / CRM',
-      'настроишь автоматические ответы и сценарии',
-      'получишь готовые шаблоны ботов',
-      'разберёшь реальные кейсы внедрения',
-      'узнаешь как продавать ботов и зарабатывать',
-    ],
-    goalsEn: [
-      'build an AI chatbot on n8n + OpenAI',
-      'connect Telegram / website / CRM',
-      'set up automatic responses and scenarios',
-      'get ready-made bot templates',
-      'analyze real implementation cases',
-      'learn how to sell bots and earn',
-    ],
-    forAudience: ['фрилансеров', 'маркетологов', 'предпринимателей', 'разработчиков автоматизаций'],
-    forAudienceEn: ['freelancers', 'marketers', 'entrepreneurs', 'automation developers'],
-    releaseSchedule: { daysOfWeek: [1, 2], time: '19:30' },
-    lessons: [
-      { id: 'c1', title: 'Введение: n8n и OpenAI', titleEn: 'Intro: n8n and OpenAI', duration: '15 мин', durationEn: '15 min', videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        quiz: [
-          { question: 'Что такое n8n?', questionEn: 'What is n8n?', options: ['База данных', 'No-code платформа автоматизации', 'Язык программирования', 'CRM'], optionsEn: ['Database', 'No-code automation platform', 'Programming language', 'CRM'], correct: 1 },
-          { question: 'Зачем подключать OpenAI к боту?', questionEn: 'Why connect OpenAI to a bot?', options: ['Только для картинок', 'Для умных текстовых ответов', 'Для хостинга', 'Для email'], optionsEn: ['Images only', 'Smart text replies', 'Hosting', 'Email'], correct: 1 },
-          { question: 'Telegram-бот в курсе используется как…', questionEn: 'Telegram bot in the course is used as…', options: ['Канал продаж', 'Интерфейс для пользователя', 'Платёжная система', 'База данных'], optionsEn: ['Sales channel', 'User interface', 'Payment system', 'Database'], correct: 1 },
-        ],
-      },
-      { id: 'c2', title: 'Первый чат-бот за 30 минут', titleEn: 'First chatbot in 30 minutes', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
-      { id: 'c3', title: 'Подключение Telegram и сайта', titleEn: 'Connecting Telegram and website', duration: '32 мин', durationEn: '32 min', videoUrl: '' },
-      { id: 'c4', title: 'Сценарии и диалоги', titleEn: 'Scenarios and dialogues', duration: '25 мин', durationEn: '25 min', videoUrl: '' },
-      { id: 'c5', title: 'Интеграция с CRM', titleEn: 'CRM integration', duration: '30 мин', durationEn: '30 min', videoUrl: '' },
-      { id: 'c6', title: 'Шаблоны ботов под ниши', titleEn: 'Bot templates by niche', duration: '35 мин', durationEn: '35 min', videoUrl: '' },
-      { id: 'c7', title: 'Кейсы внедрения', titleEn: 'Implementation cases', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
-      { id: 'c8', title: 'Монетизация и продажа ботов', titleEn: 'Monetization and selling bots', duration: '22 мин', durationEn: '22 min', videoUrl: '' },
-      { id: 'c9', title: 'Итоговый проект', titleEn: 'Final project', duration: '40 мин', durationEn: '40 min', videoUrl: '' },
-    ],
-  },
-  {
-    id: 'ai-voice-agent',
-    slug: 'ai-voice-agent',
-    title: 'AI Voice Agent',
-    titleEn: 'AI Voice Agent',
-    subtitle: 'Создание голосового AI-ассистента для бизнеса',
-    subtitleEn: 'Building a voice AI assistant for business',
-    shortDescription: 'Представь ассистента, который сам отвечает на звонки, консультирует клиентов, записывает на встречи и продаёт твой продукт — 24/7 без перерывов.',
-    shortDescriptionEn: 'An assistant that answers calls, consults clients, books meetings and sells your product — 24/7.',
-    description: 'На этом курсе ты создашь реального AI Voice Agent, которого можно сразу внедрять в бизнес.',
-    descriptionEn: 'On this course you will build a real AI Voice Agent ready for business deployment.',
-    fullDescription: 'Представь ассистента, который сам отвечает на звонки, консультирует клиентов, записывает на встречи и продаёт твой продукт — 24/7 без перерывов. На курсе ты создашь реального AI Voice Agent: голосового агента без кода, подключение к телефону или WhatsApp, сценарии продаж и поддержки, интеграция с CRM и отдельный модуль по поиску клиентов и продаже Voice Agents.',
-    fullDescriptionEn: 'An assistant that answers calls, consults clients, books meetings and sells your product — 24/7. You will build a real AI Voice Agent: no-code voice agent, connect to phone or WhatsApp, sales and support scenarios, CRM integration, and a module on finding clients and selling Voice Agents.',
-    duration: '10 уроков',
-    durationEn: '10 lessons',
-    price: 3990,
-    priceEur: 40,
-    image: 'https://images.unsplash.com/photo-1579762599946-9e2c1ee9dc5d?w=800&q=80',
-    category: 'Голос',
-    categoryEn: 'Voice',
-    level: 'Basic',
-    goals: [
-      'создавать голосового AI агента без кода',
-      'подключать его к телефону или WhatsApp',
-      'настраивать сценарии: продажи, поддержка, записи',
-      'интегрировать AI с CRM и автоматизациями',
-      'использовать готовые шаблоны для запуска',
-    ],
-    goalsEn: [
-      'create a voice AI agent without code',
-      'connect it to phone or WhatsApp',
-      'set up scenarios: sales, support, booking',
-      'integrate AI with CRM and automations',
-      'use ready-made templates to launch',
-    ],
-    forAudience: [],
-    forAudienceEn: [],
-    releaseSchedule: { daysOfWeek: [1, 2], time: '19:30' },
-    lessons: [
-      { id: 'v1', title: 'Основы голосовых AI-агентов', titleEn: 'Basics of voice AI agents', duration: '18 мин', durationEn: '18 min', videoUrl: '' },
-      { id: 'v2', title: 'Создание агента без кода', titleEn: 'Building an agent without code', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
-      { id: 'v3', title: 'Подключение телефона и WhatsApp', titleEn: 'Connecting phone and WhatsApp', duration: '30 мин', durationEn: '30 min', videoUrl: '' },
-      { id: 'v4', title: 'Сценарии продаж и поддержки', titleEn: 'Sales and support scenarios', duration: '32 мин', durationEn: '32 min', videoUrl: '' },
-      { id: 'v5', title: 'Интеграция с CRM', titleEn: 'CRM integration', duration: '26 мин', durationEn: '26 min', videoUrl: '' },
-      { id: 'v6', title: 'Модуль: как находить клиентов', titleEn: 'Module: finding clients', duration: '24 мин', durationEn: '24 min', videoUrl: '' },
-      { id: 'v7', title: 'Продажа Voice Agents бизнесу', titleEn: 'Selling Voice Agents to business', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
-      { id: 'v8', title: 'Итоговый проект', titleEn: 'Final project', duration: '35 мин', durationEn: '35 min', videoUrl: '' },
-    ],
-  },
-  {
-    id: 'ai-content-factory',
-    slug: 'ai-content-factory',
-    title: 'AI Content Factory',
-    titleEn: 'AI Content Factory',
-    subtitle: 'Как построить автоматическую фабрику контента',
-    subtitleEn: 'How to build an automatic content factory',
-    shortDescription: 'Научись создавать систему, которая генерирует контент для TikTok, Instagram, Threads и Telegram практически без участия человека.',
-    shortDescriptionEn: 'Learn to build a system that generates content for TikTok, Instagram, Threads and Telegram with minimal human input.',
-    description: 'Ты соберёшь контент-машину, которая будет генерировать идеи, писать тексты, создавать изображения, делать видео и публиковать контент автоматически.',
-    descriptionEn: 'You will build a content machine that generates ideas, writes copy, creates images, makes videos and publishes content automatically.',
-    fullDescription: 'Научись создавать систему, которая генерирует контент для TikTok, Instagram, Threads и Telegram практически без участия человека. Ты соберёшь контент-машину: AI-систему генерации контента, автоматическую публикацию в соцсетях, контент-воронку для роста аудитории и pipeline для TikTok / Instagram / Telegram.',
-    fullDescriptionEn: 'Learn to build a system that generates content for TikTok, Instagram, Threads and Telegram with minimal human input. You will build a content machine: AI content generation system, automatic social publishing, content funnel for audience growth, and pipeline for TikTok / Instagram / Telegram.',
-    duration: '10 уроков',
-    durationEn: '10 lessons',
-    price: 3490,
-    priceEur: 35,
-    image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80',
-    category: 'Контент',
-    categoryEn: 'Content',
-    level: 'Basic',
-    goals: [
-      'AI систему генерации контента',
-      'автоматическую публикацию в соцсетях',
-      'контент-воронку для роста аудитории',
-      'pipeline для TikTok / Instagram / Telegram',
-    ],
-    goalsEn: [
-      'AI content generation system',
-      'automatic social media publishing',
-      'content funnel for audience growth',
-      'pipeline for TikTok / Instagram / Telegram',
-    ],
-    forAudience: [],
-    forAudienceEn: [],
-    releaseSchedule: { daysOfWeek: [1, 2], time: '19:30' },
-    lessons: [
-      { id: 'cf1', title: 'Архитектура контент-фабрики', titleEn: 'Content factory architecture', duration: '20 мин', durationEn: '20 min', videoUrl: '' },
-      { id: 'cf2', title: 'Генерация идей и текстов', titleEn: 'Ideas and copy generation', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
-      { id: 'cf3', title: 'Создание изображений и видео', titleEn: 'Creating images and video', duration: '35 мин', durationEn: '35 min', videoUrl: '' },
-      { id: 'cf4', title: 'Автопубликация в соцсетях', titleEn: 'Auto-publishing to social', duration: '30 мин', durationEn: '30 min', videoUrl: '' },
-      { id: 'cf5', title: 'Воронка и рост аудитории', titleEn: 'Funnel and audience growth', duration: '26 мин', durationEn: '26 min', videoUrl: '' },
-      { id: 'cf6', title: 'TikTok и Instagram pipeline', titleEn: 'TikTok and Instagram pipeline', duration: '32 мин', durationEn: '32 min', videoUrl: '' },
-      { id: 'cf7', title: 'Итоговый проект', titleEn: 'Final project', duration: '40 мин', durationEn: '40 min', videoUrl: '' },
-    ],
-  },
-  {
-    id: 'ai-model-creator',
-    slug: 'ai-model-creator',
-    title: 'AI Model Creator',
-    titleEn: 'AI Model Creator',
-    subtitle: 'Создание AI-персонажей и цифровых моделей',
-    subtitleEn: 'Creating AI characters and digital models',
-    shortDescription: 'Научись создавать реалистичных AI-персонажей, виртуальных моделей и цифровых инфлюенсеров для контента и бизнеса.',
-    shortDescriptionEn: 'Learn to create realistic AI characters, virtual models and digital influencers for content and business.',
-    description: 'На курсе ты узнаешь, как создавать AI персонажей и модели, генерировать реалистичные фото и видео, строить виртуальных инфлюенсеров и использовать их для контента и маркетинга.',
-    descriptionEn: 'You will learn how to create AI characters and models, generate realistic photos and video, build virtual influencers and use them for content and marketing.',
-    fullDescription: 'Научись создавать реалистичных AI-персонажей, виртуальных моделей и цифровых инфлюенсеров, которые можно использовать для контента и бизнеса. На курсе: создание AI персонажей и моделей, генерация реалистичных фото и видео, виртуальные инфлюенсеры, контент и маркетинг, запуск AI-страниц в Instagram / TikTok, монетизация AI моделей.',
-    fullDescriptionEn: 'Learn to create realistic AI characters, virtual models and digital influencers for content and business. On the course: creating AI characters and models, generating realistic photos and video, virtual influencers, content and marketing, launching AI pages on Instagram / TikTok, monetizing AI models.',
-    duration: '9 уроков',
-    durationEn: '9 lessons',
-    price: 3790,
-    priceEur: 38,
-    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80',
-    category: 'AI-персонажи',
-    categoryEn: 'AI characters',
-    level: 'Basic',
-    goals: [
-      'как создавать AI персонажей и модели',
-      'как генерировать реалистичные фото и видео',
-      'как строить виртуальных инфлюенсеров',
-      'как использовать их для контента и маркетинга',
-      'запуск AI-страниц в Instagram / TikTok',
-      'монетизация AI моделей и контента',
-    ],
-    goalsEn: [
-      'how to create AI characters and models',
-      'how to generate realistic photos and video',
-      'how to build virtual influencers',
-      'how to use them for content and marketing',
-      'launching AI pages on Instagram / TikTok',
-      'monetizing AI models and content',
-    ],
-    forAudience: [],
-    forAudienceEn: [],
-    releaseSchedule: { daysOfWeek: [1, 2], time: '19:30' },
-    lessons: [
-      { id: 'm1', title: 'Введение в AI-персонажей', titleEn: 'Intro to AI characters', duration: '18 мин', durationEn: '18 min', videoUrl: '' },
-      { id: 'm2', title: 'Создание цифровых моделей', titleEn: 'Creating digital models', duration: '30 мин', durationEn: '30 min', videoUrl: '' },
-      { id: 'm3', title: 'Генерация фото и видео', titleEn: 'Photo and video generation', duration: '35 мин', durationEn: '35 min', videoUrl: '' },
-      { id: 'm4', title: 'Виртуальные инфлюенсеры', titleEn: 'Virtual influencers', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
-      { id: 'm5', title: 'Контент и маркетинг', titleEn: 'Content and marketing', duration: '26 мин', durationEn: '26 min', videoUrl: '' },
-      { id: 'm6', title: 'Instagram и TikTok', titleEn: 'Instagram and TikTok', duration: '32 мин', durationEn: '32 min', videoUrl: '' },
-      { id: 'm7', title: 'Монетизация', titleEn: 'Monetization', duration: '24 мин', durationEn: '24 min', videoUrl: '' },
-      { id: 'm8', title: 'Итоговый проект', titleEn: 'Final project', duration: '38 мин', durationEn: '38 min', videoUrl: '' },
-    ],
-  },
-  {
-    id: 'ai-automation-builder',
-    slug: 'ai-automation-builder',
-    title: 'AI Automation Builder',
-    titleEn: 'AI Automation Builder',
-    subtitle: 'Автоматизация бизнеса с n8n',
-    subtitleEn: 'Business automation with n8n',
-    shortDescription: 'Научись создавать умные автоматизации, которые заменяют ручную работу и экономят десятки часов.',
-    shortDescriptionEn: 'Learn to build smart automations that replace manual work and save dozens of hours.',
-    description: 'На курсе ты научишься работать с n8n, подключать API сервисов, строить автоматические workflows и соединять AI с бизнес-процессами.',
-    descriptionEn: 'You will learn to work with n8n, connect service APIs, build automatic workflows and connect AI to business processes.',
-    fullDescription: 'Научись создавать умные автоматизации, которые заменяют ручную работу и экономят десятки часов. Работа с n8n, подключение API сервисов, автоматические workflows, соединение AI с бизнес-процессами. Примеры: обработка лидов, AI ответы клиентам, автоматические отчёты, AI ресёрч системы.',
-    fullDescriptionEn: 'Learn to build smart automations that replace manual work and save dozens of hours. Working with n8n, connecting service APIs, automatic workflows, connecting AI to business processes. Examples: lead processing, AI customer responses, automatic reports, AI research systems.',
-    duration: '11 уроков',
-    durationEn: '11 lessons',
-    price: 3290,
-    priceEur: 33,
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
-    category: 'Автоматизация',
-    categoryEn: 'Automation',
-    level: 'Basic',
-    goals: [
-      'работать с n8n',
-      'подключать API сервисов',
-      'строить автоматические workflows',
-      'соединять AI с бизнес-процессами',
-    ],
-    goalsEn: [
-      'work with n8n',
-      'connect service APIs',
-      'build automatic workflows',
-      'connect AI to business processes',
-    ],
-    forAudience: [],
-    forAudienceEn: [],
-    releaseSchedule: { daysOfWeek: [1, 2], time: '19:30' },
-    lessons: [
-      { id: 'a1', title: 'Введение в n8n', titleEn: 'Intro to n8n', duration: '18 мин', durationEn: '18 min', videoUrl: '' },
-      { id: 'a2', title: 'Подключение API', titleEn: 'Connecting APIs', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
-      { id: 'a3', title: 'Первый workflow', titleEn: 'First workflow', duration: '30 мин', durationEn: '30 min', videoUrl: '' },
-      { id: 'a4', title: 'Обработка лидов', titleEn: 'Lead processing', duration: '32 мин', durationEn: '32 min', videoUrl: '' },
-      { id: 'a5', title: 'AI ответы клиентам', titleEn: 'AI customer responses', duration: '26 мин', durationEn: '26 min', videoUrl: '' },
-      { id: 'a6', title: 'Автоматические отчёты', titleEn: 'Automatic reports', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
-      { id: 'a7', title: 'AI ресёрч системы', titleEn: 'AI research systems', duration: '30 мин', durationEn: '30 min', videoUrl: '' },
-      { id: 'a8', title: 'Итоговый проект', titleEn: 'Final project', duration: '40 мин', durationEn: '40 min', videoUrl: '' },
-    ],
-  },
-  {
-    id: 'ai-agent-builder',
-    slug: 'ai-agent-builder',
-    title: 'AI Agent Builder',
-    titleEn: 'AI Agent Builder',
-    subtitle: 'Создание автономных AI-агентов',
-    subtitleEn: 'Building autonomous AI agents',
-    shortDescription: 'Самая горячая тема AI. Научись создавать AI-агентов, которые выполняют задачи вместо человека.',
-    shortDescriptionEn: 'The hottest AI topic. Learn to create AI agents that perform tasks instead of humans.',
-    description: 'Ты узнаешь, как работают AI агенты, как давать им инструменты и память, как строить multi-agent системы. Примеры: research agent, sales agent, automation agent, content agent.',
-    descriptionEn: 'You will learn how AI agents work, how to give them tools and memory, how to build multi-agent systems. Examples: research agent, sales agent, automation agent, content agent.',
-    fullDescription: 'Самая горячая тема AI. На этом курсе ты научишься создавать AI-агентов, которые выполняют задачи вместо человека. Как работают AI агенты, как давать им инструменты и память, как строить multi-agent системы. Примеры агентов: research agent, sales agent, automation agent, content agent.',
-    fullDescriptionEn: 'The hottest AI topic. On this course you will learn to create AI agents that perform tasks instead of humans. How AI agents work, how to give them tools and memory, how to build multi-agent systems. Agent examples: research agent, sales agent, automation agent, content agent.',
-    duration: '10 уроков',
-    durationEn: '10 lessons',
-    price: 3990,
-    priceEur: 40,
-    image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80',
-    category: 'AI-агенты',
-    categoryEn: 'AI agents',
-    level: 'Intermediate',
-    goals: [
-      'как работают AI агенты',
-      'как давать им инструменты и память',
-      'как строить multi-agent системы',
-    ],
-    goalsEn: [
-      'how AI agents work',
-      'how to give them tools and memory',
-      'how to build multi-agent systems',
-    ],
-    forAudience: [],
-    forAudienceEn: [],
-    releaseSchedule: { daysOfWeek: [1, 2], time: '19:30' },
-    lessons: [
-      { id: 'ag1', title: 'Что такое AI-агенты', titleEn: 'What are AI agents', duration: '20 мин', durationEn: '20 min', videoUrl: '' },
-      { id: 'ag2', title: 'Инструменты и память', titleEn: 'Tools and memory', duration: '32 мин', durationEn: '32 min', videoUrl: '' },
-      { id: 'ag3', title: 'Research agent', titleEn: 'Research agent', duration: '35 мин', durationEn: '35 min', videoUrl: '' },
-      { id: 'ag4', title: 'Sales agent', titleEn: 'Sales agent', duration: '30 мин', durationEn: '30 min', videoUrl: '' },
-      { id: 'ag5', title: 'Automation agent', titleEn: 'Automation agent', duration: '28 мин', durationEn: '28 min', videoUrl: '' },
-      { id: 'ag6', title: 'Content agent', titleEn: 'Content agent', duration: '30 мин', durationEn: '30 min', videoUrl: '' },
-      { id: 'ag7', title: 'Multi-agent системы', titleEn: 'Multi-agent systems', duration: '38 мин', durationEn: '38 min', videoUrl: '' },
-      { id: 'ag8', title: 'Итоговый проект', titleEn: 'Final project', duration: '45 мин', durationEn: '45 min', videoUrl: '' },
-    ],
-  },
-  // ——— Бесплатные пробные курсы (3 урока каждый) для раздела «Попробуй прямо сейчас» ———
-  {
-    id: 'try-chatbot-basics',
-    slug: 'try-chatbot-basics',
-    isFreeTrial: true,
-    title: 'Основы AI-чатботов: пробный курс',
-    titleEn: 'AI Chatbot basics: trial course',
-    shortDescription: 'За 3 урока познакомишься с n8n и OpenAI и соберёшь первого простого бота.',
-    shortDescriptionEn: 'In 3 lessons you will get to know n8n and OpenAI and build your first simple bot.',
-    fullDescription: 'Короткий пробный курс для тех, кто хочет попробовать создание чат-ботов без покупки. Три урока: введение в инструменты, первый диалог с AI, подключение к мессенджеру.',
-    fullDescriptionEn: 'A short trial course for those who want to try building chatbots without buying. Three lessons: intro to tools, first AI dialogue, connecting to a messenger.',
-    description: 'За 3 урока познакомишься с n8n и OpenAI и соберёшь первого простого бота.',
-    descriptionEn: 'In 3 lessons you will get to know n8n and OpenAI and build your first simple bot.',
-    duration: '3 урока',
-    durationEn: '3 lessons',
-    price: 0,
-    priceEur: 0,
-    image: 'https://images.unsplash.com/photo-1531746795393-6cde9e6b2c6b?w=800&q=80',
-    category: 'Чат-боты',
-    categoryEn: 'Chatbots',
-    level: 'Starter',
-    goals: ['Познакомиться с n8n и OpenAI', 'Создать первый диалог с ботом', 'Подключить бота к Telegram или сайту'],
-    goalsEn: ['Get to know n8n and OpenAI', 'Create your first bot dialogue', 'Connect the bot to Telegram or a website'],
-    lessons: [
-      { id: 'tb1', title: 'Что такое n8n и как подключить OpenAI', titleEn: 'What is n8n and how to connect OpenAI', duration: '12 мин', durationEn: '12 min', videoUrl: '' },
-      { id: 'tb2', title: 'Первый диалог: бот отвечает на вопросы', titleEn: 'First dialogue: bot answers questions', duration: '15 мин', durationEn: '15 min', videoUrl: '' },
-      { id: 'tb3', title: 'Подключаем бота к Telegram или виджету', titleEn: 'Connecting the bot to Telegram or widget', duration: '18 мин', durationEn: '18 min', videoUrl: '' },
-    ],
-  },
-  {
-    id: 'try-voice-basics',
-    slug: 'try-voice-basics',
-    isFreeTrial: true,
-    title: 'Голосовой AI за 15 минут: пробный курс',
-    titleEn: 'Voice AI in 15 minutes: trial course',
-    shortDescription: 'Три коротких урока: что такое голосовой агент, как он отвечает на звонки, первый тестовый сценарий.',
-    shortDescriptionEn: 'Three short lessons: what a voice agent is, how it answers calls, your first test scenario.',
-    fullDescription: 'Пробный мини-курс по голосовым AI-агентам. Узнаешь, как устроен голосовой ассистент, как он принимает звонки и как настроить простой сценарий приветствия и перевода на человека.',
-    fullDescriptionEn: 'Trial mini-course on voice AI agents. Learn how a voice assistant works, how it handles calls and how to set up a simple greeting and handoff scenario.',
-    description: 'Три коротких урока: что такое голосовой агент, как он отвечает на звонки, первый тестовый сценарий.',
-    descriptionEn: 'Three short lessons: what a voice agent is, how it answers calls, your first test scenario.',
-    duration: '3 урока',
-    durationEn: '3 lessons',
-    price: 0,
-    priceEur: 0,
-    image: 'https://images.unsplash.com/photo-1579762599946-9e2c1ee9dc5d?w=800&q=80',
-    category: 'Голос',
-    categoryEn: 'Voice',
-    level: 'Starter',
-    goals: ['Понять, как устроен голосовой AI', 'Настроить приём звонков', 'Создать простой сценарий приветствия'],
-    goalsEn: ['Understand how voice AI works', 'Set up call handling', 'Create a simple greeting scenario'],
-    lessons: [
-      { id: 'tv1', title: 'Что такое голосовой AI-агент', titleEn: 'What is a voice AI agent', duration: '10 мин', durationEn: '10 min', videoUrl: '' },
-      { id: 'tv2', title: 'Как агент принимает и обрабатывает звонки', titleEn: 'How the agent receives and handles calls', duration: '14 мин', durationEn: '14 min', videoUrl: '' },
-      { id: 'tv3', title: 'Первый сценарий: приветствие и перевод на оператора', titleEn: 'First scenario: greeting and handoff to operator', duration: '16 мин', durationEn: '16 min', videoUrl: '' },
-    ],
-  },
-  {
-    id: 'try-content-basics',
-    slug: 'try-content-basics',
-    isFreeTrial: true,
-    title: 'Контент на AI: старт за 3 урока',
-    titleEn: 'AI content: start in 3 lessons',
-    shortDescription: 'Пробный курс: генерация текстов и идей с помощью AI, подготовка контента для соцсетей.',
-    shortDescriptionEn: 'Trial course: generating text and ideas with AI, preparing content for social media.',
-    fullDescription: 'Три урока для знакомства с AI-генерацией контента: как получать идеи и тексты от нейросети, как адаптировать их под соцсети и как собрать простой пайплайн без кода.',
-    fullDescriptionEn: 'Three lessons to get started with AI content generation: how to get ideas and copy from AI, how to adapt them for social, and how to build a simple no-code pipeline.',
-    description: 'Пробный курс: генерация текстов и идей с помощью AI, подготовка контента для соцсетей.',
-    descriptionEn: 'Trial course: generating text and ideas with AI, preparing content for social media.',
-    duration: '3 урока',
-    durationEn: '3 lessons',
-    price: 0,
-    priceEur: 0,
-    image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80',
-    category: 'Контент',
-    categoryEn: 'Content',
-    level: 'Starter',
-    goals: ['Генерировать идеи и тексты с AI', 'Адаптировать контент под соцсети', 'Запустить простой контент-пайплайн'],
-    goalsEn: ['Generate ideas and copy with AI', 'Adapt content for social', 'Launch a simple content pipeline'],
-    lessons: [
-      { id: 'tc1', title: 'Генерация идей и текстов с помощью ChatGPT', titleEn: 'Generating ideas and copy with ChatGPT', duration: '14 мин', durationEn: '14 min', videoUrl: '' },
-      { id: 'tc2', title: 'Адаптация контента под TikTok и Instagram', titleEn: 'Adapting content for TikTok and Instagram', duration: '12 мин', durationEn: '12 min', videoUrl: '' },
-      { id: 'tc3', title: 'Простый пайплайн: от идеи до поста', titleEn: 'Simple pipeline: from idea to post', duration: '16 мин', durationEn: '16 min', videoUrl: '' },
-    ],
-  },
-  {
-    id: 'try-automation-basics',
-    slug: 'try-automation-basics',
-    isFreeTrial: true,
-    title: 'Первый автоматический сценарий: пробный курс',
-    titleEn: 'Your first automation: trial course',
-    shortDescription: 'Три урока по n8n: триггеры, простые цепочки и автоматическая отправка уведомлений.',
-    shortDescriptionEn: 'Three lessons on n8n: triggers, simple workflows and automatic notifications.',
-    fullDescription: 'Пробный курс по автоматизации в n8n. Настроишь триггер по времени или по действию, соберёшь цепочку из нескольких шагов и автоматизируешь отправку уведомления в Telegram или на почту.',
-    fullDescriptionEn: 'Trial course on n8n automation. Set up a time or action trigger, build a multi-step workflow and automate sending a notification to Telegram or email.',
-    description: 'Три урока по n8n: триггеры, простые цепочки и автоматическая отправка уведомлений.',
-    descriptionEn: 'Three lessons on n8n: triggers, simple workflows and automatic notifications.',
-    duration: '3 урока',
-    durationEn: '3 lessons',
-    price: 0,
-    priceEur: 0,
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
-    category: 'Автоматизация',
-    categoryEn: 'Automation',
-    level: 'Starter',
-    goals: ['Настроить триггер в n8n', 'Собрать цепочку из нескольких шагов', 'Отправить уведомление автоматически'],
-    goalsEn: ['Set up a trigger in n8n', 'Build a multi-step workflow', 'Send a notification automatically'],
-    lessons: [
-      { id: 'ta1', title: 'Триггеры: когда запускается автоматизация', titleEn: 'Triggers: when automation runs', duration: '11 мин', durationEn: '11 min', videoUrl: '' },
-      { id: 'ta2', title: 'Цепочка шагов: от триггера к действию', titleEn: 'Chain of steps: from trigger to action', duration: '15 мин', durationEn: '15 min', videoUrl: '' },
-      { id: 'ta3', title: 'Отправка уведомления в Telegram или на почту', titleEn: 'Sending a notification to Telegram or email', duration: '14 мин', durationEn: '14 min', videoUrl: '' },
-    ],
-  },
-]
+// Каталог AI Insider Academy — асинхронные программы (learning path)
+export { academyCourses as courses, freeTrialCourses } from './academyProgram.js'
+export { ACADEMY_GRADING_STANDARD, getHomework, mergeHomeworkIntoWeeks, getHomeworkForLesson } from './courseHomework.js'
+export { LEARNING_STAGES, getStageForCourse, getCourseOrderInPath, ACADEMY_PRINCIPLES } from './learningMap.js'
 
-// Бесплатные пробные курсы для раздела «Попробуй прямо сейчас» (3 урока каждый)
-export const freeTrialCourses = courses.filter((c) => c.isFreeTrial === true)
+import { academyCourses as courses } from './academyProgram.js'
 
 export function getCourseBySlug(slug) {
   return courses.find((c) => c.slug === slug) || null
@@ -422,7 +13,6 @@ export function getCourseById(id) {
   return courses.find((c) => c.id === id) || null
 }
 
-// Хелпер: взять поле с учётом языка (lang = 'ru' | 'en')
 export function getCourseField(course, field, lang = 'ru') {
   if (!course) return ''
   const enField = field + 'En'
@@ -430,4 +20,41 @@ export function getCourseField(course, field, lang = 'ru') {
     return Array.isArray(course[enField]) ? course[enField] : course[enField]
   }
   return Array.isArray(course[field]) ? course[field] : (course[field] ?? '')
+}
+
+/** Описание для карточки каталога */
+export function getCourseDescription(course, lang = 'ru') {
+  if (!course) return ''
+  const short = getCourseField(course, 'shortDescription', lang)
+  const full = getCourseField(course, 'fullDescription', lang)
+  const idea = getCourseField(course, 'courseIdea', lang)
+  return short || full || idea || ''
+}
+
+/** Длительность для карточек — без «· N недель» */
+export function formatCourseDuration(course, lang = 'ru') {
+  const raw = getCourseField(course, 'duration', lang)
+  if (typeof raw !== 'string') return raw
+  return raw
+    .replace(/\s*·\s*\d+\s+недел[ьяи]/gi, '')
+    .replace(/\s*·\s*\d+\s+weeks?/gi, '')
+    .trim()
+}
+
+export function getLessonDisplayTitle(lesson, lang = 'ru') {
+  if (!lesson) return ''
+  const raw = lang === 'en' && lesson.titleEn ? lesson.titleEn : lesson.title
+  if (typeof raw !== 'string') return raw
+  return raw.replace(/^(Видео|Video)\s+\d+\.\s*/i, '').trim() || raw
+}
+
+export function getWeekDisplayTitle(week, lang = 'ru') {
+  if (!week) return ''
+  const raw = lang === 'en' && week.titleEn ? week.titleEn : week.title
+  if (typeof raw !== 'string') return raw
+  const n = week.number
+  return raw
+    .replace(new RegExp(`^Неделя\\s+${n}\\s*[:—-]\\s*`, 'i'), '')
+    .replace(new RegExp(`^Week\\s+${n}\\s*[:—-]\\s*`, 'i'), '')
+    .trim() || raw
 }

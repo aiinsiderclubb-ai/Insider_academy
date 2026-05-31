@@ -1,0 +1,177 @@
+.panel {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-accent);
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--glow-purple-dim) 0%, var(--bg-glass) 100%);
+  animation: hwFadeIn 0.35s ease-out;
+}
+
+.head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.headIcon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.lockedHint {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  border: 1px dashed var(--border);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.statusBadge {
+  display: inline-flex;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.status_accepted {
+  background: var(--success-dim);
+  color: var(--success);
+}
+
+.status_pending {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.status_resubmit {
+  background: rgba(244, 114, 182, 0.15);
+  color: #f472b6;
+}
+
+@keyframes hwFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.label {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--glow-purple);
+}
+
+.fileInput {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.fileName {
+  font-size: 0.8125rem;
+  color: var(--glow-purple);
+}
+
+.fileRequired {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.error {
+  font-size: 0.8125rem;
+  color: #fca5a5;
+}
+
+.resubmitNote {
+  padding: 10px 12px;
+  background: rgba(244, 114, 182, 0.12);
+  border: 1px solid rgba(244, 114, 182, 0.35);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+}
+
+.submitBtn {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 10px 18px;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.submitBtn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.feedback {
+  margin-top: 12px;
+}
+
+.adminComment {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: var(--accent-dim);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+}
+
+.adminComment strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.adminComment p {
+  margin: 0;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}
+
+.statusText {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}

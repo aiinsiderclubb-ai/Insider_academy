@@ -1,0 +1,113 @@
+.syllabus {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.week {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--bg-glass) 80%, transparent);
+}
+
+.weekHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.weekHead:hover {
+  background: var(--accent-dim);
+}
+
+.weekNum {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--course-accent-soft, var(--accent-dim));
+  color: var(--course-accent, var(--accent-primary));
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.weekTitle {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+
+.chevron {
+  flex-shrink: 0;
+  display: flex;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.weekBody {
+  padding: 0 16px 16px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.goal,
+.outcome {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.goal strong,
+.outcome strong,
+.label {
+  color: var(--text);
+}
+
+.label {
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.skills {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.videoList {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.compact .weekBody {
+  padding-left: 16px;
+}

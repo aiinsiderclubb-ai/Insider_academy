@@ -10,6 +10,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
+    "parse:video-lessons": "node scripts/parse-video-lessons.cjs",
     "postinstall": "npm install --prefix server"
   },
   "dependencies": {

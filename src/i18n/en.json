@@ -1,7 +1,9 @@
 {
   "nav": {
     "home": "Home",
+    "learningMap": "Learning map",
     "catalog": "Catalog",
+    "club": "Club",
     "school": "School",
     "blog": "Blog",
     "calendar": "Calendar",
@@ -20,7 +22,8 @@
     "heroPill": "Video courses for practitioners",
     "heroTitle1": "Automation, chatbots",
     "heroTitle2": "and AI tools",
-    "heroDesc": "Voice agents, chatbot creation, and AI development — no filming or long prep. Access lessons after course purchase.",
+    "heroDesc": "Voice agents, chatbot creation, and AI development — no filming or long prep.",
+    "heroDescNote": "Access lessons after course purchase.",
     "learnMore": "Learn more",
     "enterCabinet": "Log in",
     "myCabinet": "My dashboard",
@@ -171,6 +174,6 @@
     "errorPassword": "Please enter your password.",
     "errorPasswordShort": "Password must be at least 6 characters.",
     "errorGeneric": "Login failed. Please try again.",
-    "demoHint": "Demo: any email and password (min 6 characters)."
+    "demoHint": "Test account (all courses): test@ai-insider.academy / TestAll2026! · Offline demo: any email and password (min 6 characters)."
   }
 }

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { ApiProvider } from './context/ApiContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { LoadingSpinner } from './components/LoadingSpinner'
+import { ScrollToTop } from './components/ScrollToTop'
 import { ProgressProvider } from './context/ProgressContext'
 import { LanguageProvider } from './context/LanguageContext'
 import { ThemeProvider } from './context/ThemeContext'
@@ -20,6 +21,7 @@ import { Login } from './pages/Login'
 import { VerifyEmail } from './pages/VerifyEmail'
 import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
+import { Club } from './pages/Club'
 import { Admin } from './pages/Admin'
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -43,6 +45,8 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/club" element={<Club />} />
+          <Route path="/learning-map" element={<Navigate to="/" replace />} />
           <Route path="/courses/:slug" element={<Course />} />
           <Route path="/courses/:slug/buy" element={<CourseBuy />} />
           <Route path="/cabinet" element={<ProtectedRoute><Cabinet /></ProtectedRoute>} />
@@ -69,6 +73,7 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <ApiProvider>
         <AppContent />
       </ApiProvider>

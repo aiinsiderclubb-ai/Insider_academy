@@ -1,6 +1,13 @@
 import { getDb, parseJson } from './db.js'
+import bcrypt from 'bcryptjs'
 import { courses as defaultCourses } from '../src/data/courses.js'
 import { blogPosts as defaultBlog } from '../src/data/blog.js'
+import {
+  TEST_ACCOUNT_EMAIL,
+  TEST_ACCOUNT_PASSWORD,
+  TEST_ACCOUNT_NAME,
+  TEST_ACCOUNT_PURCHASE_IDS,
+} from '../src/data/testAccount.js'
 
 /** Keep in sync with src/data/catalogVersion.js */
 const CATALOG_VERSION = 5
@@ -54,5 +61,41 @@ export async function seedIfEmpty() {
       'main',
       JSON.stringify({ visits: 0, courseClicks: {} }),
     ])
+  }
+
+  await seedTestAccount(db)
+}
+
+export async function seedTestAccount(db = getDb()) {
+  const email = TEST_ACCOUNT_EMAIL
+  let row = await db.get('SELECT id FROM users WHERE email = ?', [email])
+  if (!row) {
+    const hash = bcrypt.hashSync(TEST_ACCOUNT_PASSWORD, 10)
+    try {
+      const inserted = await db.get(
+        'INSERT INTO users (email, password_hash, name, email_verified) VALUES (?, ?, ?, 1) RETURNING id',
+        [email, hash, TEST_ACCOUNT_NAME]
+      )
+      row = { id: inserted.id }
+    } catch {
+      await db.run(
+        'INSERT INTO users (email, password_hash, name, email_verified) VALUES (?, ?, ?, 1)',
+        [email, hash, TEST_ACCOUNT_NAME]
+      )
+      row = await db.get('SELECT id FROM users WHERE email = ?', [email])
+    }
+    console.log(`[seed] test account created: ${email}`)
+  }
+
+  if (!row?.id) return
+
+  for (const courseId of TEST_ACCOUNT_PURCHASE_IDS) {
+    const exists = await db.get(
+      'SELECT id FROM purchases WHERE user_id = ? AND course_id = ?',
+      [row.id, courseId]
+    )
+    if (!exists) {
+      await db.run('INSERT INTO purchases (user_id, course_id) VALUES (?, ?)', [row.id, courseId])
+    }
   }
 }

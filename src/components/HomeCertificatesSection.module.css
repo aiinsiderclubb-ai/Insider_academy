@@ -1,0 +1,236 @@
+.section {
+  padding: 72px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 80% 40%, rgba(168, 85, 247, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 10% 70%, rgba(244, 114, 182, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.pill {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--glow-purple);
+  background: var(--glow-purple-dim);
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 35%, transparent);
+}
+
+.title {
+  margin: 0 0 16px;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.desc {
+  margin: 0 0 20px;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  max-width: 480px;
+}
+
+.bullets {
+  margin: 0 0 28px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.9375rem;
+  color: var(--text);
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.cta:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+.showcase {
+  position: relative;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glowOrb {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, transparent 70%);
+  filter: blur(40px);
+  animation: orbPulse 4s ease-in-out infinite;
+}
+
+@keyframes orbPulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+.card {
+  position: absolute;
+  margin: 0;
+  width: min(100%, 380px);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.45),
+    0 0 40px rgba(168, 85, 247, 0.15);
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 30%, var(--border));
+  background: var(--bg-card);
+  animation: certFloat 5s ease-in-out infinite;
+  transition: box-shadow 0.3s;
+}
+
+.card:hover {
+  box-shadow:
+    0 32px 70px rgba(0, 0, 0, 0.5),
+    0 0 50px rgba(168, 85, 247, 0.25);
+  z-index: 3 !important;
+}
+
+.cardFront {
+  z-index: 2;
+  transform: rotate(-4deg) translateX(-8%);
+  animation-name: certFloatFront;
+}
+
+.cardBack {
+  z-index: 1;
+  transform: rotate(5deg) translateX(18%) translateY(12%);
+  animation-name: certFloatBack;
+  opacity: 0.92;
+}
+
+@keyframes certFloatFront {
+  0%, 100% {
+    transform: rotate(-4deg) translateX(-8%) translateY(0);
+  }
+  33% {
+    transform: rotate(-3deg) translateX(-7%) translateY(-10px);
+  }
+  66% {
+    transform: rotate(-5deg) translateX(-9%) translateY(6px);
+  }
+}
+
+@keyframes certFloatBack {
+  0%, 100% {
+    transform: rotate(5deg) translateX(18%) translateY(12%);
+  }
+  40% {
+    transform: rotate(6deg) translateX(17%) translateY(4px);
+  }
+  70% {
+    transform: rotate(4deg) translateX(19%) translateY(18px);
+  }
+}
+
+@keyframes certFloat {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+
+.certImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+  font-size: 0.8125rem;
+}
+
+.captionProgram {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.captionLang {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--glow-purple-dim);
+  color: var(--glow-purple);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .showcase {
+    min-height: 300px;
+    margin-top: 8px;
+  }
+
+  .card {
+    width: min(92%, 340px);
+  }
+
+  .cardFront {
+    transform: rotate(-3deg) translateX(-4%);
+  }
+
+  .cardBack {
+    transform: rotate(4deg) translateX(12%) translateY(10%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .glowOrb {
+    animation: none;
+  }
+}

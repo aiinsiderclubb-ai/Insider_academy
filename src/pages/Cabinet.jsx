@@ -4,8 +4,10 @@ import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
-import { getCourseField } from '../data/courses'
-import { getCertificates, getUserDiscountPercent, getCourseAverageScore } from '../api/adminStore'
+import { getCourseField, formatCourseDuration } from '../data/courses'
+import { getCertificates, getUserDiscountPercent, getCourseAverageScore, getReferrals } from '../api/adminStore'
+import { ReferralDashboard } from '../components/ReferralDashboard'
+import { ProgressRing } from '../components/ProgressRing'
 import { api, checkApiOnline } from '../api/client'
 import styles from './Cabinet.module.css'
 
@@ -27,6 +29,12 @@ export function Cabinet() {
     (c) => c.email && user?.email && c.email.toLowerCase() === user.email.toLowerCase()
   )
   const referralLink = user?.email ? `${window.location.origin}/?ref=${btoa(user.email)}` : ''
+  const referralsCount = user?.email
+    ? getReferrals().filter((r) => r.referrerEmail?.toLowerCase() === user.email.toLowerCase()).length
+    : 0
+  const overallProgress = myCourses.length
+    ? Math.round(myCourses.reduce((s, c) => s + getPercent(c.id, c.lessons?.length ?? 0), 0) / myCourses.length)
+    : 0
 
   useEffect(() => {
     if (!user) return
@@ -82,7 +90,12 @@ export function Cabinet() {
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
-        <h1 className={styles.pageTitle}>{t('cabinet.title')}</h1>
+        <div className={styles.headerRow}>
+          <h1 className={styles.pageTitle}>{t('cabinet.title')}</h1>
+          <ProgressRing percent={overallProgress} size={56} stroke={3}>
+            <span className={styles.ringLabel}>{overallProgress}%</span>
+          </ProgressRing>
+        </div>
 
         {stats?.streak && (
           <div className={styles.streakBanner}>
@@ -125,7 +138,7 @@ export function Cabinet() {
             {myCourses.map((course) => {
               const percent = getPercent(course.id, course.lessons?.length ?? 0)
               const title = getCourseField(course, 'title', lang)
-              const duration = getCourseField(course, 'duration', lang)
+              const duration = formatCourseDuration(course, lang)
               const score = getCourseAverageScore(user?.email, course.id)
               return (
                 <Link to={`/courses/${course.slug}`} key={course.id} className={styles.card}>
@@ -207,13 +220,14 @@ export function Cabinet() {
           )}
         </section>
 
-        <section id="invite" className={styles.section}>
-          <h2 className={styles.sectionTitle}>{t('nav.inviteFriend')}</h2>
-          <div className={styles.referralRow}>
-            <input readOnly value={referralLink} className={styles.referralInput} />
-            <button type="button" onClick={copyReferralLink} className={styles.copyBtn}>{copied ? '✓' : (lang === 'ru' ? 'Копировать' : 'Copy')}</button>
-          </div>
-        </section>
+        <ReferralDashboard
+          lang={lang}
+          discount={userDiscount}
+          referralLink={referralLink}
+          copied={copied}
+          onCopy={copyReferralLink}
+          referralsCount={referralsCount}
+        />
       </div>
     </div>
   )

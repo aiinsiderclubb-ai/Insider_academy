@@ -5,17 +5,21 @@ import { api, checkApiOnline } from '../api/client'
 import { ApiStatusBanner } from './ApiStatusBanner'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
-import { useTheme } from '../context/ThemeContext'
 import { useCourses } from '../context/CoursesContext'
+import { useProgress } from '../context/ProgressContext'
 import { IconHome, IconBriefcase, IconVideo, IconCalendar, IconBlog, IconBell, IconMessage, IconUser } from './Icons'
 import { ChatBot } from './ChatBot'
+import { FloatingHotOffer } from './FloatingHotOffer'
 import { NeuronGlow } from './NeuronGlow'
+import { ThemeToggle } from './ThemeToggle'
+import { ProgressRing } from './ProgressRing'
 import styles from './Layout.module.css'
 
 const navItemsKeys = [
   { to: '/', labelKey: 'nav.home', Icon: IconHome },
-  { to: '/courses', labelKey: 'nav.catalog', Icon: IconBriefcase },
-  { to: '/cabinet', labelKey: 'nav.myCourses', Icon: IconVideo, auth: true },
+  { to: '/courses', labelKey: 'nav.catalog', Icon: IconVideo },
+  { to: '/club', labelKey: 'nav.club', Icon: IconUser },
+  { to: '/cabinet', labelKey: 'nav.myCourses', Icon: IconBriefcase, auth: true },
   { to: '/calendar', labelKey: 'nav.calendar', Icon: IconCalendar },
   { to: '/blog', labelKey: 'nav.blog', Icon: IconBlog },
 ]
@@ -29,10 +33,10 @@ const cabinetMenuKeys = [
 ]
 
 export function Layout({ children }) {
-  const { user, logout } = useAuth()
+  const { user, logout, purchases } = useAuth()
   const { t, lang, toggleLang } = useLanguage()
-  const { theme, toggleTheme } = useTheme()
-  const { courses } = useCourses()
+  const { courses, acceleratorCourse } = useCourses()
+  const { getPercent } = useProgress()
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
@@ -82,6 +86,15 @@ export function Layout({ children }) {
       window.removeEventListener('storage', syncAdminData)
     }
   }, [])
+
+  const overallProgress = user && purchases?.length
+    ? Math.round(
+        purchases.reduce((sum, p) => {
+          const c = courses.find((x) => x.id === p.id)
+          return sum + getPercent(p.id, c?.lessons?.length ?? 0)
+        }, 0) / purchases.length
+      )
+    : 0
 
   const isAdminPage = location.pathname === '/admin'
 
@@ -157,16 +170,7 @@ export function Layout({ children }) {
             </nav>
           )}
           <div className={styles.headerRight}>
-            <button
-              type="button"
-              className={styles.themeToggle}
-              onClick={toggleTheme}
-              title={theme === 'dark' ? t('common.themeLight') : t('common.themeDark')}
-              aria-label={theme === 'dark' ? t('common.themeLight') : t('common.themeDark')}
-            >
-              <span className={styles.themeIcon} aria-hidden>{theme === 'dark' ? '☀️' : '🌙'}</span>
-              <span className={styles.themeLabel}>{theme === 'dark' ? t('common.themeLight') : t('common.themeDark')}</span>
-            </button>
+            <ThemeToggle darkLabel={t('common.themeDark')} lightLabel={t('common.themeLight')} />
             <button
               type="button"
               className={styles.langToggle}
@@ -216,8 +220,9 @@ export function Layout({ children }) {
                   aria-expanded={cabinetOpen}
                   aria-haspopup="true"
                 >
-                  <IconUser />
-                  <span className={styles.avatarInitial}>{user.email?.slice(0, 1).toUpperCase()}</span>
+                  <ProgressRing percent={overallProgress} size={40} stroke={2.5}>
+                    <span className={styles.avatarInitial}>{user.email?.slice(0, 1).toUpperCase()}</span>
+                  </ProgressRing>
                 </button>
                 {cabinetOpen && (
                   <div className={styles.cabinetDropdown}>
@@ -267,6 +272,9 @@ export function Layout({ children }) {
         <button type="button" className={styles.callFab} onClick={() => setChatOpen(true)} title={t('chatbot.title')} aria-label={t('chatbot.title')}>
           <span className={styles.callFabIcon} aria-hidden>💬</span>
         </button>
+        {location.pathname !== '/admin' && acceleratorCourse && (
+          <FloatingHotOffer lang={lang} courseSlug={acceleratorCourse.slug} />
+        )}
         <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} />
       </div>
     </div>

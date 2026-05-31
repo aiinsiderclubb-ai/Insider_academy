@@ -7,6 +7,14 @@ import {
   addReferralDiscount,
   markReferredPurchased,
 } from '../api/adminStore'
+import { AI_INSIDER_CLUB, courseUnlockedByClub, hasClubMembership } from '../data/club'
+import {
+  isTestAccountEmail,
+  TEST_ACCOUNT_PASSWORD,
+  TEST_ACCOUNT_NAME,
+  getTestAccountPurchases,
+  canLeaveCourseReview,
+} from '../data/testAccount'
 
 const REF_STORAGE = 'lms_pending_ref'
 const AuthContext = createContext(null)
@@ -81,13 +89,21 @@ export function AuthProvider({ children }) {
           if (cancelled) return
           setUserState(me.user)
           setPurchases(me.purchases || [])
+          savePurchasesLocal(me.purchases || [])
         } catch {
           setUserState(loadUser())
           setPurchases(loadPurchases())
         }
       } else {
-        setUserState(loadUser())
-        setPurchases(loadPurchases())
+        const localUser = loadUser()
+        setUserState(localUser)
+        if (localUser && isTestAccountEmail(localUser.email)) {
+          const testPurchases = getTestAccountPurchases()
+          setPurchases(testPurchases)
+          savePurchasesLocal(testPurchases)
+        } else {
+          setPurchases(loadPurchases())
+        }
       }
       if (!cancelled) setLoading(false)
     })()
@@ -108,6 +124,7 @@ export function AuthProvider({ children }) {
         setUserState(u)
         const me = await api.getMe()
         setPurchases(me.purchases || [])
+        savePurchasesLocal(me.purchases || [])
         await applyReferral(emailTrim)
         return u
       } catch (err) {
@@ -121,6 +138,22 @@ export function AuthProvider({ children }) {
         }
         throw err
       }
+    }
+
+    if (isTestAccountEmail(emailTrim)) {
+      if (password !== TEST_ACCOUNT_PASSWORD) {
+        const err = new Error('Invalid credentials')
+        err.status = 401
+        throw err
+      }
+      const u = { email: emailTrim, name: TEST_ACCOUNT_NAME }
+      const testPurchases = getTestAccountPurchases()
+      setUser(u)
+      setPurchases(testPurchases)
+      savePurchasesLocal(testPurchases)
+      recordRegistration({ email: emailTrim, name: u.name })
+      await applyReferral(emailTrim)
+      return u
     }
 
     const u = { email: emailTrim, name: name || emailTrim }
@@ -146,6 +179,7 @@ export function AuthProvider({ children }) {
         amount: meta.amount,
       })
       setPurchases(result.purchases || [])
+      savePurchasesLocal(result.purchases || [])
       return
     }
 
@@ -166,7 +200,17 @@ export function AuthProvider({ children }) {
     }
   }, [user, apiMode])
 
-  const hasPurchased = useCallback((courseId) => purchases.some((p) => p.id === courseId), [purchases])
+  const hasPurchased = useCallback(
+    (courseId) => courseUnlockedByClub(courseId, purchases) || purchases.some((p) => p.id === courseId),
+    [purchases]
+  )
+
+  const hasClub = useCallback(() => hasClubMembership(purchases), [purchases])
+
+  const canReviewCourse = useCallback(
+    (courseId) => canLeaveCourseReview(courseId, purchases),
+    [purchases]
+  )
 
   const getPurchaseDate = useCallback(
     (courseId) => {
@@ -184,6 +228,8 @@ export function AuthProvider({ children }) {
         logout,
         purchaseCourse,
         hasPurchased,
+        hasClub,
+        canReviewCourse,
         getPurchaseDate,
         purchases,
         loading,
