@@ -3,6 +3,7 @@ import { getDb, parseJson } from '../db.js'
 import { requireAdmin, signAdminToken } from '../middleware/auth.js'
 import { sendHomeworkFeedbackEmail } from '../services/email.js'
 import { config } from '../config.js'
+import { nowIso } from '../db/time.js'
 
 const router = Router()
 
@@ -86,7 +87,7 @@ router.put('/courses', requireAdmin('admin', 'editor'), async (req, res) => {
   const db = getDb()
   await db.run('DELETE FROM courses')
   for (const c of list) {
-    await db.run('INSERT INTO courses (id, data, updated_at) VALUES (?, ?, datetime(\'now\'))', [c.id, JSON.stringify(c)])
+    await db.run('INSERT INTO courses (id, data, updated_at) VALUES (?, ?, ?)', [c.id, JSON.stringify(c), nowIso()])
   }
   res.json({ ok: true, count: list.length })
 })
@@ -117,8 +118,8 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, re
   const nextScore = score !== undefined && score !== null && score !== '' ? Number(score) : null
   await db.run(
     `UPDATE homework SET status = COALESCE(?, status), admin_comment = COALESCE(?, admin_comment),
-     score = COALESCE(?, score), updated_at = datetime('now') WHERE id = ?`,
-    [status ?? null, adminComment ?? null, nextScore, req.params.id]
+     score = COALESCE(?, score), updated_at = ? WHERE id = ?`,
+    [status ?? null, adminComment ?? null, nextScore, nowIso(), req.params.id]
   )
   if (status && row.email) {
     await db.run(

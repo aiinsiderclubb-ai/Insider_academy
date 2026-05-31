@@ -2,27 +2,16 @@ import { Router } from 'express'
 import { getDb } from '../db.js'
 import { constructWebhookEvent } from '../services/stripe.js'
 import { verifyCallback } from '../services/liqpay.js'
+import {
+  verifyTributeSignature,
+  getCourseIdForProduct,
+} from '../services/tribute.js'
+import { grantAccess, logWebhookEvent } from '../services/access.js'
+import { config } from '../config.js'
 
 const router = Router()
 
-async function grantAccess({ userId, email, courseId, courseTitle, amount, provider, externalId }) {
-  const db = getDb()
-  const exists = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [userId, courseId])
-  if (!exists && userId) {
-    await db.run(
-      'INSERT INTO purchases (user_id, course_id, payment_provider, payment_id) VALUES (?, ?, ?, ?)',
-      [userId, courseId, provider, externalId]
-    )
-  }
-  await db.run(
-    'INSERT INTO purchase_log (id, email, course_id, course_title, amount, date) VALUES (?, ?, ?, ?, ?, ?)',
-    [`purchase-${Date.now()}`, email, courseId, courseTitle, amount, new Date().toISOString()]
-  )
-  await db.run(
-    `UPDATE payments SET status = 'completed', completed_at = ? WHERE external_id = ? OR id = ?`,
-    [new Date().toISOString(), externalId, externalId]
-  )
-}
+export { grantAccess }
 
 export async function handleStripeWebhook(req, res) {
   try {
@@ -39,10 +28,12 @@ export async function handleStripeWebhook(req, res) {
         provider: 'stripe',
         externalId: session.id,
       })
+      await logWebhookEvent({ provider: 'stripe', eventName: event.type, status: 'ok', payload: { courseId } })
     }
     res.json({ received: true })
   } catch (err) {
     console.error('[stripe webhook]', err.message)
+    await logWebhookEvent({ provider: 'stripe', eventName: 'error', status: 'error', payload: { message: err.message } })
     res.status(400).send(`Webhook Error: ${err.message}`)
   }
 }
@@ -62,9 +53,145 @@ router.post('/liqpay', async (req, res) => {
         provider: 'liqpay',
         externalId: decoded.order_id,
       })
+      await logWebhookEvent({ provider: 'liqpay', eventName: decoded.status, status: 'ok', payload: { orderId: decoded.order_id } })
     }
   }
   res.json({ ok: true })
 })
+
+export async function handleTributeWebhook(req, res) {
+  const rawBody = req.body
+  const signature = req.headers['trbt-signature']
+  const skipVerify = config.tribute.webhookSkipVerify && process.env.NODE_ENV !== 'production'
+
+  if (!skipVerify && !verifyTributeSignature(rawBody, signature)) {
+    await logWebhookEvent({ provider: 'tribute', eventName: 'auth_failed', status: 'error', payload: {} })
+    return res.status(401).send('Invalid signature')
+  }
+
+  let event
+  try {
+    event = JSON.parse(Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody)
+  } catch {
+    return res.status(400).send('Invalid JSON')
+  }
+
+  const db = getDb()
+  const name = event.name || event.event || 'unknown'
+  const payload = event.payload || event.data || {}
+
+  try {
+    let result = null
+
+    if (name === 'new_digital_product' || name === 'newDigitalProduct' || name === 'digital_product_purchase') {
+      const productId = payload.product_id ?? payload.productId ?? payload.id
+      let courseId = getCourseIdForProduct(productId)
+      let userId = null
+      let email = payload.email || payload.buyer_email || null
+      let courseTitle = payload.product_name || payload.name || courseId
+      let amount = payload.amount ? (payload.amount > 1000 ? payload.amount / 100 : payload.amount) : null
+
+      const pendingByProduct = await db.get(
+        `SELECT user_id, email, course_id, course_title, amount FROM payments
+         WHERE (external_id = ? OR course_id IS NOT NULL) AND provider = 'tribute' AND status = 'pending'
+         ORDER BY created_at DESC LIMIT 1`,
+        [String(productId)]
+      )
+      if (pendingByProduct) {
+        userId = pendingByProduct.user_id
+        email = email || pendingByProduct.email
+        courseId = pendingByProduct.course_id || courseId
+        courseTitle = pendingByProduct.course_title || courseTitle
+        amount = pendingByProduct.amount ?? amount
+      }
+
+      const tgId = String(payload.telegram_user_id ?? payload.telegramUserId ?? '')
+      if (tgId) {
+        const user = await db.get('SELECT id, email FROM users WHERE telegram_chat_id = ?', [tgId])
+        if (user) {
+          userId = user.id
+          email = email || user.email
+        }
+      }
+
+      if (!userId && courseId) {
+        const pending = await db.get(
+          `SELECT user_id, email, course_title, amount FROM payments
+           WHERE course_id = ? AND provider = 'tribute' AND status = 'pending'
+           ORDER BY created_at DESC LIMIT 1`,
+          [courseId]
+        )
+        if (pending) {
+          userId = pending.user_id
+          email = email || pending.email
+          amount = amount ?? pending.amount
+        }
+      }
+
+      if (!courseId && config.tribute.defaultProductId && String(productId) === String(config.tribute.defaultProductId)) {
+        const latestPending = await db.get(
+          `SELECT user_id, email, course_id, course_title, amount FROM payments
+           WHERE provider = 'tribute' AND status = 'pending' ORDER BY created_at DESC LIMIT 1`
+        )
+        if (latestPending) {
+          userId = latestPending.user_id
+          email = email || latestPending.email
+          courseId = latestPending.course_id
+          courseTitle = latestPending.course_title || courseTitle
+          amount = latestPending.amount ?? amount
+        }
+      }
+
+      result = await grantAccess({
+        userId,
+        email,
+        courseId,
+        courseTitle,
+        amount,
+        provider: 'tribute',
+        externalId: `product-${productId}-${Date.now()}`,
+      })
+    }
+
+    const shopEvents = ['shopOrderPaymentReceived', 'shopOrderChargeSuccess', 'shopOrder', 'order_paid']
+    if (shopEvents.includes(name)) {
+      const orderUuid = payload.uuid || payload.orderUuid || payload.order_id
+      const payment = orderUuid
+        ? await db.get('SELECT * FROM payments WHERE external_id = ? AND provider = ?', [orderUuid, 'tribute'])
+        : null
+
+      const customerId = payload.customerId || payload.customer_id
+      const userId = payment?.user_id || (customerId ? Number(customerId) : null)
+      const email = payment?.email || payload.email
+      const courseId = payment?.course_id
+      const status = payload.status || name
+
+      if (courseId && (userId || email) && (status === 'paid' || name.includes('PaymentReceived') || name.includes('ChargeSuccess') || name === 'order_paid')) {
+        result = await grantAccess({
+          userId,
+          email,
+          courseId,
+          courseTitle: payment?.course_title,
+          amount: payment?.amount,
+          provider: 'tribute',
+          externalId: orderUuid,
+        })
+      }
+    }
+
+    await logWebhookEvent({
+      provider: 'tribute',
+      eventName: name,
+      status: result?.ok ? 'ok' : 'processed',
+      payload: { courseId: result?.courseId, userId: result?.userId, productId: payload.product_id },
+    })
+
+    res.json({ ok: true, granted: result?.ok || false })
+  } catch (err) {
+    console.error('[tribute webhook]', err)
+    await logWebhookEvent({ provider: 'tribute', eventName: name, status: 'error', payload: { message: err.message } })
+    res.status(500).json({ error: err.message })
+  }
+}
 
 export default router

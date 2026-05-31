@@ -1,11 +1,91 @@
 import { Router } from 'express'
-import { getDb, parseJson } from '../db.js'
+import { getDb } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
-import { config, isStripeEnabled, isLiqPayEnabled } from '../config.js'
+import { config, isStripeEnabled, isLiqPayEnabled, isTributeEnabled } from '../config.js'
 import { createCheckoutSession } from '../services/stripe.js'
 import { createPaymentPayload } from '../services/liqpay.js'
+import {
+  createShopOrder,
+  getDigitalProduct,
+  getProductIdForCourse,
+} from '../services/tribute.js'
 
 const router = Router()
+
+router.get('/tribute/status', (_req, res) => {
+  res.json({
+    enabled: isTributeEnabled(),
+    shopId: config.tribute.shopId,
+    currency: config.tribute.currency,
+    productMap: config.tribute.productMap,
+  })
+})
+
+router.post('/tribute/checkout', requireUser, async (req, res) => {
+  if (!isTributeEnabled()) {
+    return res.status(503).json({ error: 'Tribute not configured. Set TRIBUTE_API_KEY in server/.env' })
+  }
+
+  const db = getDb()
+  const { courseId, courseTitle, amount, slug } = req.body
+  if (!courseId) return res.status(400).json({ error: 'courseId required' })
+
+  const paymentId = `trib-${Date.now()}`
+  const successUrl = `${config.appUrl}/courses/${slug || courseId}?paid=1&provider=tribute`
+  const failUrl = `${config.appUrl}/courses/${slug || courseId}/buy?cancel=1`
+  const amountCents = Math.round(Number(amount) * 100)
+  const productId = getProductIdForCourse(courseId)
+
+  try {
+    if (config.tribute.shopId) {
+      const order = await createShopOrder({
+        shopId: config.tribute.shopId,
+        amountCents,
+        currency: config.tribute.currency,
+        title: courseTitle || courseId,
+        description: `Course: ${courseTitle || courseId}`,
+        email: req.userEmail,
+        customerId: String(req.userId),
+        successUrl,
+        failUrl,
+        comment: JSON.stringify({ courseId, userId: req.userId }),
+      })
+
+      await db.run(
+        `INSERT INTO payments (id, user_id, email, course_id, course_title, amount, provider, external_id, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, 'tribute', ?, 'pending', ?)`,
+        [paymentId, req.userId, req.userEmail, courseId, courseTitle, amount, order.uuid, new Date().toISOString()]
+      )
+
+      return res.json({
+        url: order.paymentUrl || order.webappPaymentUrl,
+        webappUrl: order.webappPaymentUrl,
+        orderUuid: order.uuid,
+        mode: 'shop',
+      })
+    }
+
+    if (!productId) {
+      return res.status(503).json({
+        error: 'Set TRIBUTE_DEFAULT_PRODUCT_ID or TRIBUTE_PRODUCT_MAP in server/.env',
+      })
+    }
+
+    const product = await getDigitalProduct(productId)
+    const payUrl = product.webLink || product.link
+
+    await db.run(
+      `INSERT INTO payments (id, user_id, email, course_id, course_title, amount, provider, external_id, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, 'tribute', ?, 'pending', ?)`,
+      [paymentId, req.userId, req.userEmail, courseId, courseTitle, amount, String(productId), new Date().toISOString()]
+    )
+
+    return res.json({ url: payUrl, mode: 'product', productId })
+  } catch (err) {
+    console.error('[tribute checkout]', err.message)
+    res.status(502).json({ error: err.message })
+  }
+})
 
 router.post('/stripe/checkout', requireUser, async (req, res) => {
   if (!isStripeEnabled()) return res.status(503).json({ error: 'Stripe not configured' })
@@ -45,7 +125,7 @@ router.post('/liqpay/create', requireUser, async (req, res) => {
     description: courseTitle,
     orderId,
     resultUrl: `${config.appUrl}/courses/${slug || courseId}?paid=1`,
-    serverUrl: `${config.appUrl.replace('5173', '3001')}/api/webhooks/liqpay`,
+    serverUrl: `${(process.env.API_PUBLIC_URL || config.appUrl.replace('5173', '3001'))}/api/webhooks/liqpay`,
   })
   res.json(payload)
 })

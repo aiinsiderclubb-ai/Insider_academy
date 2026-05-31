@@ -3,9 +3,23 @@ import { SCHEMA } from './sqlite.js'
 
 const { Pool } = pg
 
+function normalizeForPostgres(sql) {
+  let s = sql.replace(/datetime\s*\(\s*'now'\s*\)/gi, 'NOW()')
+  if (/INSERT OR IGNORE INTO user_achievements/i.test(s)) {
+    s = s.replace(/INSERT OR IGNORE INTO/i, 'INSERT INTO')
+    if (!/ON CONFLICT/i.test(s)) s += ' ON CONFLICT (user_id, achievement_id) DO NOTHING'
+  }
+  if (/INSERT OR IGNORE INTO team_members/i.test(s)) {
+    s = s.replace(/INSERT OR IGNORE INTO/i, 'INSERT INTO')
+    if (!/ON CONFLICT/i.test(s)) s += ' ON CONFLICT (team_id, user_id) DO NOTHING'
+  }
+  return s
+}
+
 function toPgSql(sql) {
+  const normalized = normalizeForPostgres(sql)
   let i = 0
-  return sql.replace(/\?/g, () => `$${++i}`)
+  return normalized.replace(/\?/g, () => `$${++i}`)
 }
 
 function pgSchema() {
@@ -18,7 +32,13 @@ function pgSchema() {
 }
 
 export async function createPostgresDb(connectionString) {
-  const pool = new Pool({ connectionString, ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : undefined })
+  const useSsl =
+    process.env.PGSSL === 'true' ||
+    /render\.com|sslmode=require/i.test(connectionString)
+  const pool = new Pool({
+    connectionString,
+    ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+  })
   await pool.query(pgSchema())
   return {
     driver: 'postgres',

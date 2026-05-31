@@ -146,6 +146,15 @@ CREATE TABLE IF NOT EXISTS analytics (
   value TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS webhook_events (
+  id TEXT PRIMARY KEY,
+  provider TEXT NOT NULL,
+  event_name TEXT,
+  status TEXT,
+  payload TEXT,
+  created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS admin_seen (
   type TEXT NOT NULL,
   item_key TEXT NOT NULL,
@@ -222,7 +231,7 @@ CREATE TABLE IF NOT EXISTS lesson_reminders (
 `
 
 export function createSqliteDb() {
-  const dbPath = path.join(dataDir, 'lms.sqlite')
+  const dbPath = process.env.LMS_TEST_DB || path.join(dataDir, 'lms.sqlite')
   const db = new Database(dbPath)
   db.pragma('journal_mode = WAL')
   db.pragma('foreign_keys = ON')

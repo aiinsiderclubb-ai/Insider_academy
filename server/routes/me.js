@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { getDb, parseJson } from '../db.js'
+import { nowIso } from '../db/time.js'
 import { requireUser } from '../middleware/auth.js'
 import { upload } from '../middleware/upload.js'
 import { saveUploadedFile, getFileUrl } from '../services/storage.js'
@@ -103,9 +104,9 @@ router.put('/progress/:courseId', async (req, res) => {
   const db = getDb()
   const data = req.body.data || {}
   await db.run(
-    `INSERT INTO progress (user_id, course_id, data, updated_at) VALUES (?, ?, ?, datetime('now'))
+    `INSERT INTO progress (user_id, course_id, data, updated_at) VALUES (?, ?, ?, ?)
      ON CONFLICT(user_id, course_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`,
-    [req.userId, req.params.courseId, JSON.stringify(data)]
+    [req.userId, req.params.courseId, JSON.stringify(data), nowIso()]
   )
   await updateStreak(db, req.userId)
   res.json({ ok: true, data })

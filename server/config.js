@@ -9,6 +9,10 @@ export const config = {
   appUrl: process.env.APP_URL || 'http://localhost:5173',
   jwtSecret: process.env.JWT_SECRET || 'dev-secret',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
+  editorPassword: process.env.EDITOR_PASSWORD || 'editor123',
+  moderatorPassword: process.env.MODERATOR_PASSWORD || 'moderator123',
+  adminEmail: process.env.ADMIN_EMAIL || '',
+  adminDigestEnabled: process.env.ADMIN_DIGEST !== '0',
   adminJwtSecret: process.env.ADMIN_JWT_SECRET || 'dev-admin-secret',
   databaseUrl: process.env.DATABASE_URL || '',
   uploadsDir: process.env.UPLOADS_DIR || path.join(__dirname, 'uploads'),
@@ -48,6 +52,22 @@ export const config = {
     botToken: process.env.TELEGRAM_BOT_TOKEN || '',
     webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || '',
   },
+  tribute: {
+    apiKey: process.env.TRIBUTE_API_KEY || '',
+    shopId: process.env.TRIBUTE_SHOP_ID ? Number(process.env.TRIBUTE_SHOP_ID) : null,
+    defaultProductId: process.env.TRIBUTE_DEFAULT_PRODUCT_ID ? Number(process.env.TRIBUTE_DEFAULT_PRODUCT_ID) : null,
+    currency: (process.env.TRIBUTE_CURRENCY || 'eur').toLowerCase(),
+    webhookSkipVerify: process.env.TRIBUTE_WEBHOOK_SKIP_VERIFY === '1',
+    webhookUrl: process.env.TRIBUTE_WEBHOOK_URL || '',
+    /** JSON map courseId -> tribute product id, e.g. {"ai-chatbot-engineer":456} */
+    productMap: (() => {
+      try {
+        return process.env.TRIBUTE_PRODUCT_MAP ? JSON.parse(process.env.TRIBUTE_PRODUCT_MAP) : {}
+      } catch {
+        return {}
+      }
+    })(),
+  },
 }
 
 export function isStripeEnabled() {
@@ -72,4 +92,8 @@ export function isOpenAIEnabled() {
 
 export function isTelegramEnabled() {
   return Boolean(config.telegram.botToken)
+}
+
+export function isTributeEnabled() {
+  return Boolean(config.tribute.apiKey)
 }

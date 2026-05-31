@@ -3,6 +3,10 @@ import { createSqliteDb } from './sqlite.js'
 
 let db = null
 
+export function resetDatabase() {
+  db = null
+}
+
 export async function initDatabase() {
   if (config.databaseUrl) {
     const { createPostgresDb } = await import('./postgres.js')
