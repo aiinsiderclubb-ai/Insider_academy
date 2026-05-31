@@ -1679,6 +1679,58 @@
   color: var(--text-muted);
 }
 
+.reviewCourseBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--glow-purple) 12%, var(--bg-elevated)), color-mix(in srgb, var(--glow-pink) 6%, var(--bg-elevated)));
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 28%, var(--border));
+}
+
+.reviewCourseLabel {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--glow-purple) 20%, transparent);
+  color: var(--glow-purple);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.reviewCourseInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.reviewCourseTitle {
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+
+.reviewCourseLink {
+  font-size: 0.8125rem;
+  color: var(--glow-purple);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.reviewCourseLink:hover {
+  text-decoration: underline;
+}
+
+.reviewCourseId {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: ui-monospace, monospace;
+}
+
 .reviewAdminStars {
   color: #fbbf24;
   font-size: 0.9375rem;

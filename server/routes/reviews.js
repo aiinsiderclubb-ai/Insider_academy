@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import crypto from 'crypto'
-import { getDb } from '../db.js'
+import { getDb, parseJson } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
 
 const router = Router()
@@ -13,10 +13,49 @@ function maskEmail(email) {
   return `${local[0]}***${local[local.length - 1]}@${domain}`
 }
 
+function mapPublicReview(row, course = null) {
+  const contact = row.contact_email || row.email
+  return {
+    id: row.id,
+    courseId: row.course_id,
+    courseTitle: course?.title || row.course_id,
+    courseTitleEn: course?.titleEn || course?.title || row.course_id,
+    courseSlug: course?.slug || row.course_id,
+    userName: row.user_name,
+    rating: row.rating,
+    text: row.text,
+    date: row.date,
+    emailMasked: maskEmail(contact),
+  }
+}
+
+router.get('/', async (req, res) => {
+  const db = getDb()
+  const limit = Math.min(Math.max(Number(req.query.limit) || 12, 1), 50)
+  const rows = await db.all(
+    `SELECT r.*, c.data AS course_data FROM reviews r
+     LEFT JOIN courses c ON c.id = r.course_id
+     WHERE r.status = 'approved' AND TRIM(COALESCE(r.text, '')) != ''
+     ORDER BY r.date DESC LIMIT ?`,
+    [limit]
+  )
+  const stats = await db.get(
+    "SELECT COUNT(*) AS count, AVG(rating) AS avg FROM reviews WHERE status = 'approved' AND TRIM(COALESCE(text, '')) != ''"
+  )
+  res.json({
+    reviews: rows.map((row) => mapPublicReview(row, parseJson(row.course_data, null))),
+    average: stats?.avg ? Math.round(Number(stats.avg) * 10) / 10 : null,
+    count: Number(stats?.count || 0),
+  })
+})
+
 router.get('/:courseId', async (req, res) => {
   const db = getDb()
   const rows = await db.all(
-    "SELECT * FROM reviews WHERE course_id = ? AND status = 'approved' AND TRIM(COALESCE(text, '')) != '' ORDER BY date DESC LIMIT 50",
+    `SELECT r.*, c.data AS course_data FROM reviews r
+     LEFT JOIN courses c ON c.id = r.course_id
+     WHERE r.course_id = ? AND r.status = 'approved' AND TRIM(COALESCE(r.text, '')) != ''
+     ORDER BY r.date DESC LIMIT 50`,
     [req.params.courseId]
   )
   const stats = await db.get(
@@ -24,7 +63,7 @@ router.get('/:courseId', async (req, res) => {
     [req.params.courseId]
   )
   res.json({
-    reviews: rows.map(mapPublicReview),
+    reviews: rows.map((row) => mapPublicReview(row, parseJson(row.course_data, null))),
     average: stats?.avg ? Math.round(Number(stats.avg) * 10) / 10 : null,
     count: Number(stats?.count || 0),
   })
@@ -68,18 +107,5 @@ router.post('/:courseId', requireUser, async (req, res) => {
     message: 'Review submitted for moderation',
   })
 })
-
-function mapPublicReview(row) {
-  const contact = row.contact_email || row.email
-  return {
-    id: row.id,
-    courseId: row.course_id,
-    userName: row.user_name,
-    rating: row.rating,
-    text: row.text,
-    date: row.date,
-    emailMasked: maskEmail(contact),
-  }
-}
 
 export default router

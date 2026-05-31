@@ -1,0 +1,208 @@
+.section {
+  padding: 56px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background:
+    radial-gradient(ellipse 70% 50% at 0% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 80%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
+    var(--bg);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.pill {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--glow-purple) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 30%, var(--border));
+  color: var(--glow-purple);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0 0 10px;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.desc {
+  margin: 0;
+  max-width: 520px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.9375rem;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 22px;
+  border-radius: 16px;
+  background: var(--glow-purple-dim);
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 30%, var(--border));
+  min-width: 110px;
+}
+
+.scoreValue {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--glow-purple);
+}
+
+.scoreStars {
+  color: #fbbf24;
+  letter-spacing: 2px;
+  margin: 4px 0;
+}
+
+.scoreCount {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--glow-purple) 35%, var(--border));
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.1);
+  transform: translateY(-2px);
+}
+
+.courseBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--glow-purple) 14%, var(--bg)), color-mix(in srgb, var(--glow-pink) 8%, var(--bg)));
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 28%, var(--border));
+  text-decoration: none;
+  color: var(--glow-purple);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.courseBadge:hover {
+  border-color: var(--glow-purple);
+  background: color-mix(in srgb, var(--glow-purple) 18%, var(--bg));
+}
+
+.courseBadgeIcon {
+  flex-shrink: 0;
+  font-size: 0.875rem;
+}
+
+.courseBadgeText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.meta strong {
+  font-size: 0.9375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.stars {
+  flex-shrink: 0;
+  color: #fbbf24;
+  font-size: 0.875rem;
+  letter-spacing: 1px;
+}
+
+.text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

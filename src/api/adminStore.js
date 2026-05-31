@@ -1,6 +1,7 @@
 // Хранение данных для админ-панели (localStorage, без бэкенда)
 
 import { canLeaveCourseReview } from '../data/testAccount.js'
+import { getCourseById } from '../data/courses.js'
 
 const KEY_REG = 'lms_admin_registrations'
 const KEY_CERT = 'lms_admin_certificates'
@@ -403,12 +404,8 @@ export function getReviewSubmissions() {
   return getJson(KEY_REVIEWS)
 }
 
-export function getPublicReviews(courseId) {
-  const list = getReviewSubmissions().filter(
-    (r) => r.status === 'approved' && r.courseId === courseId && String(r.text || '').trim()
-  )
-  const count = list.length
-  const average = count ? Math.round((list.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10 : null
+function mapReviewForPublic(r) {
+  const course = getCourseById(r.courseId)
   const mask = (email) => {
     if (!email?.includes('@')) return ''
     const [local, domain] = email.split('@')
@@ -416,14 +413,41 @@ export function getPublicReviews(courseId) {
     return `${local[0]}***${local[local.length - 1]}@${domain}`
   }
   return {
-    reviews: list.map((r) => ({
-      id: r.id,
-      userName: r.userName,
-      rating: r.rating,
-      text: r.text,
-      date: r.date,
-      emailMasked: mask(r.contactEmail || r.email),
-    })),
+    id: r.id,
+    courseId: r.courseId,
+    courseTitle: course?.title || r.courseId,
+    courseTitleEn: course?.titleEn || course?.title || r.courseId,
+    courseSlug: course?.slug || r.courseId,
+    userName: r.userName,
+    rating: r.rating,
+    text: r.text,
+    date: r.date,
+    emailMasked: mask(r.contactEmail || r.email),
+  }
+}
+
+export function getPublicReviews(courseId) {
+  const list = getReviewSubmissions().filter(
+    (r) => r.status === 'approved' && r.courseId === courseId && String(r.text || '').trim()
+  )
+  const count = list.length
+  const average = count ? Math.round((list.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10 : null
+  return {
+    reviews: list.map(mapReviewForPublic),
+    average,
+    count,
+  }
+}
+
+export function getFeaturedReviews(limit = 12) {
+  const approved = getReviewSubmissions().filter((r) => r.status === 'approved' && String(r.text || '').trim())
+  const list = [...approved].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, limit)
+  const count = approved.length
+  const average = count
+    ? Math.round((approved.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10
+    : null
+  return {
+    reviews: list.map(mapReviewForPublic),
     average,
     count,
   }

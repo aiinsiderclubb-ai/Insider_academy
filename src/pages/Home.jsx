@@ -16,6 +16,7 @@ import { useTheme } from '../context/ThemeContext'
 import { HomeSuperOffer } from '../components/HomeSuperOffer'
 import { HomeClubSection } from '../components/HomeClubSection'
 import { HomeCertificatesSection } from '../components/HomeCertificatesSection'
+import { HomeReviewsSection } from '../components/HomeReviewsSection'
 import { IconStar, IconUsers, IconAward } from '../components/Icons'
 import styles from './Home.module.css'
 
@@ -120,6 +121,8 @@ export function Home() {
           </div>
         </div>
       </section>
+
+      <HomeReviewsSection lang={lang} />
 
       {user && userStats && (
         <ScrollReveal>

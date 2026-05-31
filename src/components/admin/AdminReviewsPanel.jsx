@@ -1,16 +1,31 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../../api/client'
 import {
   getReviewSubmissions,
   updateReviewSubmission,
   deleteReviewSubmission,
 } from '../../api/adminStore'
+import { getCourseById, getCourseField } from '../../data/courses'
 import styles from '../../pages/Admin.module.css'
 
 const STATUS_LABELS = {
   pending: 'На модерации',
   approved: 'Опубликован',
   rejected: 'Отклонён',
+}
+
+function resolveCourse(courseId, courses) {
+  const fromApi = courses.find((c) => c.id === courseId)
+  const course = fromApi || getCourseById(courseId)
+  if (!course) {
+    return { id: courseId, title: courseId, slug: courseId }
+  }
+  return {
+    id: courseId,
+    title: getCourseField(course, 'title', 'ru'),
+    slug: course.slug || courseId,
+  }
 }
 
 export function AdminReviewsPanel({
@@ -30,8 +45,6 @@ export function AdminReviewsPanel({
   }, [online, reviews])
 
   const list = online ? reviews : localReviews
-
-  const courseTitle = (id) => courses.find((c) => c.id === id)?.title || id
 
   const filtered = useMemo(() => {
     if (filter === 'all') return list
@@ -53,7 +66,7 @@ export function AdminReviewsPanel({
         setLocalReviews(getReviewSubmissions())
       }
       showToast(
-        status === 'approved' ? 'Отзыв опубликован на сайте'
+        status === 'approved' ? 'Отзыв опубликован на сайте и главной'
           : status === 'rejected' ? 'Отзыв отклонён'
             : 'Статус обновлён'
       )
@@ -87,7 +100,7 @@ export function AdminReviewsPanel({
   return (
     <div>
       <p className={styles.sectionDesc}>
-        Новые отзывы попадают в «На модерации». После «Опубликовать» они появляются на странице курса в блоке «Отзывы студентов».
+        Новые отзывы попадают в «На модерации». После «Опубликовать» они появляются на странице курса и в блоке «Что говорят студенты» на главной.
       </p>
 
       <div className={styles.filterRow}>
@@ -112,12 +125,31 @@ export function AdminReviewsPanel({
           {filtered.map((r) => {
             const emptyText = !String(r.text || '').trim()
             const disabled = busyId === r.id
+            const course = resolveCourse(r.courseId, courses)
             return (
               <article key={r.id} className={styles.reviewAdminCard}>
+                <div className={styles.reviewCourseBlock}>
+                  <span className={styles.reviewCourseLabel}>Курс</span>
+                  <div className={styles.reviewCourseInfo}>
+                    <strong className={styles.reviewCourseTitle}>{course.title}</strong>
+                    <Link
+                      to={`/courses/${course.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.reviewCourseLink}
+                    >
+                      /courses/{course.slug}
+                    </Link>
+                    {course.title !== course.id && (
+                      <span className={styles.reviewCourseId}>ID: {course.id}</span>
+                    )}
+                  </div>
+                </div>
+
                 <div className={styles.reviewAdminHead}>
                   <div>
                     <strong>{r.userName || 'Студент'}</strong>
-                    <span className={styles.reviewAdminCourse}>{courseTitle(r.courseId)}</span>
+                    <span className={styles.reviewAdminCourse}>{r.contactEmail || r.email}</span>
                   </div>
                   <span className={styles.reviewAdminStars}>{'★'.repeat(Number(r.rating) || 0)}</span>
                 </div>

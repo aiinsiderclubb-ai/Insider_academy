@@ -75,6 +75,7 @@ export const api = {
   demoPurchase: (payload) => apiRequest('/payments/demo', { method: 'POST', body: payload }),
   chat: (messages) => apiRequest('/chat', { method: 'POST', body: { messages } }),
   getReviews: (courseId) => apiRequest(`/reviews/${courseId}`, { auth: false }),
+  getFeaturedReviews: (limit = 12) => apiRequest(`/reviews?limit=${limit}`, { auth: false }),
   postReview: (courseId, payload) => apiRequest(`/reviews/${courseId}`, { method: 'POST', body: payload }),
   submitAcceleratorApplication: (payload) => apiRequest('/applications/accelerator', { method: 'POST', body: payload }),
   getTeam: () => apiRequest('/teams/my'),
