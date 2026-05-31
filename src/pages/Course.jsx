@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useCourses } from '../context/CoursesContext'
 import { getCourseField, getLessonDisplayTitle } from '../data/courses'
+import { applyLessonProgramToCourse } from '../data/courseLessonPrograms'
 import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -38,7 +39,7 @@ export function Course() {
   const { slug } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const { getCourseBySlug } = useCourses()
-  const course = getCourseBySlug(slug)
+  const course = applyLessonProgramToCourse(getCourseBySlug(slug))
   const { user, hasPurchased, apiMode } = useAuth()
   const { getProgress, submitHomework, getPercent, markWatched } = useProgress()
   const { t, lang } = useLanguage()
