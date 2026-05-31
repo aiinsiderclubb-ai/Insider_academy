@@ -420,6 +420,19 @@ export function Admin() {
   }
 
   const registrations = dashData?.registrations ?? (canAccessTab(adminRole, 'registrations') ? getRegistrations() : [])
+  const adminUsers = dashData?.users ?? []
+  const userRows = adminUsers.length > 0
+    ? adminUsers
+    : registrations.map((r) => ({
+        id: r.id,
+        email: r.email,
+        name: r.name,
+        emailVerified: false,
+        hasAvatar: false,
+        registeredAt: r.date,
+        profileUpdatedAt: null,
+        passwordChangedAt: null,
+      }))
   const certificates = dashData?.certificates ?? (canAccessTab(adminRole, 'certificates') ? getCertificates() : [])
   const purchases = dashData?.purchases ?? (canAccessTab(adminRole, 'purchases') ? getPurchases() : [])
   const analytics = dashData?.analytics ?? getAnalyticsData()
@@ -593,7 +606,7 @@ export function Admin() {
     setRefresh((r) => r + 1)
   }
 
-  const filteredRegistrations = registrations.filter((r) => matchesSearch(searchQuery, r.email, r.name))
+  const filteredRegistrations = userRows.filter((r) => matchesSearch(searchQuery, r.email, r.name))
   const filteredPurchases = purchases.filter((p) => matchesSearch(searchQuery, p.email, p.courseTitle))
   const filteredHomework = homeworkList.filter((h) => matchesSearch(searchQuery, h.email, h.name, h.courseTitle))
   const filteredReviews = reviewsList.filter((r) => matchesSearch(searchQuery, r.email, r.contactEmail, r.userName, r.text, r.courseId))
@@ -1037,32 +1050,40 @@ export function Admin() {
 
         {activeTab === 'registrations' && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Регистрации</h2>
+          <h2 className={styles.sectionTitle}>Пользователи и регистрации</h2>
           <div className={styles.courseActions}>
-            <button type="button" className={styles.restoreBtn} onClick={() => { markAdminItemsSeen('registrations', registrations); setRefresh((r) => r + 1) }}>Отметить все как увиденные</button>
-            <button type="button" className={styles.exportBtn} onClick={() => exportCsv('registrations.csv', filteredRegistrations.map((r) => [r.email, r.name, r.date]), ['Email', 'Имя', 'Дата'])}>Экспорт CSV</button>
+            <button type="button" className={styles.restoreBtn} onClick={() => { markAdminItemsSeen('registrations', userRows); setRefresh((r) => r + 1) }}>Отметить все как увиденные</button>
+            <button type="button" className={styles.exportBtn} onClick={() => exportCsv('users.csv', filteredRegistrations.map((r) => [r.email, r.name, r.registeredAt, r.profileUpdatedAt || '', r.passwordChangedAt || '']), ['Email', 'Имя', 'Регистрация', 'Профиль обновлён', 'Пароль изменён'])}>Экспорт CSV</button>
           </div>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
                 <tr>
+                  <th>Фото</th>
                   <th>Email</th>
                   <th>Имя</th>
-                  <th>Дата</th>
+                  <th>Email ✓</th>
+                  <th>Регистрация</th>
+                  <th>Профиль</th>
+                  <th>Пароль</th>
                   <th>Действия</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRegistrations.length === 0 ? (
-                  <tr><td colSpan={4} className={styles.empty}>Нет данных</td></tr>
+                  <tr><td colSpan={8} className={styles.empty}>Нет данных</td></tr>
                 ) : (
                   filteredRegistrations.map((r, i) => {
                     const unseen = !isAdminItemSeen('registrations', r)
                     return (
-                      <tr key={r.id || i} className={unseen ? styles.unseenRow : ''}>
+                      <tr key={r.id || r.email || i} className={unseen ? styles.unseenRow : ''}>
+                        <td>{r.hasAvatar ? '📷' : '—'}</td>
                         <td>{r.email}</td>
-                        <td>{r.name}</td>
-                        <td>{formatDate(r.date)}</td>
+                        <td>{r.name || '—'}</td>
+                        <td>{r.emailVerified ? '✅' : '⏳'}</td>
+                        <td>{formatDate(r.registeredAt || r.date)}</td>
+                        <td>{r.profileUpdatedAt ? formatDate(r.profileUpdatedAt) : '—'}</td>
+                        <td>{r.passwordChangedAt ? formatDate(r.passwordChangedAt) : '—'}</td>
                         <td>
                           {unseen && <button type="button" className={styles.inlineBtn} onClick={() => { markAdminItemSeen('registrations', r); setRefresh((v) => v + 1) }}>Увидено</button>}
                         </td>
@@ -1117,7 +1138,7 @@ export function Admin() {
             {certificateError && <div className={styles.loginError}>{certificateError}</div>}
             <button type="button" className={styles.addBtn} onClick={handleCreateCertificate}>Добавить сертификат</button>
             <datalist id="admin-users">
-              {registrations.map((userItem) => (
+              {userRows.map((userItem) => (
                 <option key={userItem.email} value={userItem.email} />
               ))}
             </datalist>

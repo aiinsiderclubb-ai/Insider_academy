@@ -163,6 +163,30 @@
   color: #fcd34d;
 }
 
+.uploadBtn {
+  margin-top: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-accent);
+  background: transparent;
+  color: var(--glow-purple);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.uploadBtn:hover:not(:disabled) {
+  border-color: var(--glow-purple);
+  box-shadow: 0 0 12px var(--glow-purple-dim);
+}
+
+.uploadBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .form {
   display: flex;
   flex-direction: column;

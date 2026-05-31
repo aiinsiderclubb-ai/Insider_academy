@@ -221,6 +221,7 @@
     "telegramSection": "Telegram",
     "dangerSection": "Session",
     "changePhoto": "Change",
+    "uploadPhoto": "Upload photo",
     "name": "Name",
     "email": "Email",
     "currentPassword": "Current password",

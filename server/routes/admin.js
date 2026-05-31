@@ -6,6 +6,7 @@ import { getFileUrl } from '../services/storage.js'
 import { config } from '../config.js'
 import { nowIso } from '../db/time.js'
 import { mapApplication } from './applications.js'
+import { userSelectFields } from '../services/userProfile.js'
 
 const router = Router()
 
@@ -57,6 +58,9 @@ router.get('/dashboard', async (req, res) => {
     const hwRows = await db.all('SELECT * FROM homework ORDER BY updated_at DESC LIMIT 300')
     Object.assign(payload, {
       registrations: await db.all('SELECT * FROM registrations ORDER BY date DESC LIMIT 500'),
+      users: (await db.all(
+        `SELECT ${userSelectFields()} FROM users ORDER BY COALESCE(profile_updated_at, created_at) DESC LIMIT 500`
+      )).map(mapAdminUser),
       purchases: await db.all('SELECT * FROM purchase_log ORDER BY date DESC LIMIT 500'),
       certificates: (await db.all('SELECT * FROM certificates ORDER BY date DESC LIMIT 500')).map(mapCert),
       homework: await mapHomeworkList(hwRows),
@@ -256,6 +260,20 @@ async function buildChartData(db) {
       conversionReg: totalVisits ? Math.round((totalRegs / totalVisits) * 1000) / 10 : 0,
       conversionPurchase: totalRegs ? Math.round((totalPurchases / totalRegs) * 1000) / 10 : 0,
     },
+  }
+}
+
+function mapAdminUser(row) {
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    emailVerified: Boolean(row.email_verified),
+    hasAvatar: Boolean(row.avatar_url),
+    registeredAt: row.created_at,
+    profileUpdatedAt: row.profile_updated_at || null,
+    passwordChangedAt: row.password_changed_at || null,
+    telegramChatId: row.telegram_chat_id || null,
   }
 }
 

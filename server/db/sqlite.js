@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
   last_activity_date TEXT,
   telegram_chat_id TEXT,
   avatar_url TEXT,
+  profile_updated_at TEXT,
+  password_changed_at TEXT,
   team_id INTEGER,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -291,6 +293,8 @@ function migrateColumns(db) {
   if (!cols.includes('team_id')) add('ALTER TABLE users ADD COLUMN team_id INTEGER')
   if (!cols.includes('stripe_customer_id')) add('ALTER TABLE users ADD COLUMN stripe_customer_id TEXT')
   if (!cols.includes('avatar_url')) add('ALTER TABLE users ADD COLUMN avatar_url TEXT')
+  if (!cols.includes('profile_updated_at')) add('ALTER TABLE users ADD COLUMN profile_updated_at TEXT')
+  if (!cols.includes('password_changed_at')) add('ALTER TABLE users ADD COLUMN password_changed_at TEXT')
 
   try {
     db.exec(`

@@ -5,27 +5,14 @@ import { nowIso } from '../db/time.js'
 import { requireUser } from '../middleware/auth.js'
 import { signUserToken } from '../middleware/auth.js'
 import { upload } from '../middleware/upload.js'
-import { saveUploadedFile, getFileUrl } from '../services/storage.js'
+import { saveUploadedFile } from '../services/storage.js'
+import { isS3Enabled } from '../config.js'
 import { computeAchievements, updateStreak, ACHIEVEMENTS } from '../services/achievements.js'
 import { sendTelegramMessage } from '../services/telegram.js'
+import { mapUserResponse, syncUserRecords, userSelectFields } from '../services/userProfile.js'
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
-}
-
-async function mapUser(db, user) {
-  let avatarUrl = null
-  if (user.avatar_url) {
-    avatarUrl = await getFileUrl(user.avatar_url, 'local')
-  }
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    emailVerified: Boolean(user.email_verified),
-    telegramChatId: user.telegram_chat_id,
-    avatarUrl,
-  }
 }
 
 const router = Router()
@@ -33,7 +20,7 @@ router.use(requireUser)
 
 router.get('/', async (req, res) => {
   const db = getDb()
-  const user = await db.get('SELECT id, email, name, email_verified, streak_count, last_activity_date, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
+  const user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
   if (!user) return res.status(404).json({ error: 'User not found' })
 
   const purchases = await db.all(
@@ -57,7 +44,7 @@ router.get('/', async (req, res) => {
   }
 
   res.json({
-    user: await mapUser(db, user),
+    user: await mapUserResponse(db, user),
     purchases,
     progress,
     discountPercent: discountRow?.percent || 0,
@@ -214,9 +201,13 @@ router.patch('/profile', async (req, res) => {
   const db = getDb()
   const name = String(req.body.name || '').trim()
   if (!name) return res.status(400).json({ error: 'Name required' })
-  await db.run('UPDATE users SET name = ? WHERE id = ?', [name, req.userId])
-  const user = await db.get('SELECT id, email, name, email_verified, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
-  res.json({ user: await mapUser(db, user) })
+  const current = await db.get('SELECT email, name FROM users WHERE id = ?', [req.userId])
+  if (!current) return res.status(404).json({ error: 'User not found' })
+  const now = nowIso()
+  await db.run('UPDATE users SET name = ?, profile_updated_at = ? WHERE id = ?', [name, now, req.userId])
+  await syncUserRecords(db, current.email, { name })
+  const user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
+  res.json({ user: await mapUserResponse(db, user) })
 })
 
 router.patch('/password', async (req, res) => {
@@ -224,13 +215,14 @@ router.patch('/password', async (req, res) => {
   const currentPassword = String(req.body.currentPassword || '')
   const newPassword = String(req.body.newPassword || '')
   if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' })
-  const row = await db.get('SELECT password_hash FROM users WHERE id = ?', [req.userId])
+  const row = await db.get('SELECT password_hash, email FROM users WHERE id = ?', [req.userId])
   if (!row || !bcrypt.compareSync(currentPassword, row.password_hash)) {
     return res.status(401).json({ error: 'Current password is incorrect' })
   }
   const hash = bcrypt.hashSync(newPassword, 10)
-  await db.run('UPDATE users SET password_hash = ? WHERE id = ?', [hash, req.userId])
-  res.json({ ok: true })
+  const now = nowIso()
+  await db.run('UPDATE users SET password_hash = ?, password_changed_at = ?, profile_updated_at = ? WHERE id = ?', [hash, now, now, req.userId])
+  res.json({ ok: true, passwordChangedAt: now })
 })
 
 router.patch('/email', async (req, res) => {
@@ -240,26 +232,43 @@ router.patch('/email', async (req, res) => {
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid email' })
   }
-  const row = await db.get('SELECT id, email, name, password_hash, email_verified, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
+  const row = await db.get(`SELECT ${userSelectFields()}, password_hash FROM users WHERE id = ?`, [req.userId])
   if (!row || !bcrypt.compareSync(currentPassword, row.password_hash)) {
     return res.status(401).json({ error: 'Current password is incorrect' })
   }
   const exists = await db.get('SELECT id FROM users WHERE email = ? AND id != ?', [email, req.userId])
   if (exists) return res.status(409).json({ error: 'Email already in use' })
-  await db.run('UPDATE users SET email = ?, email_verified = 0 WHERE id = ?', [email, req.userId])
-  await db.run('UPDATE notifications SET email = ? WHERE email = ?', [email, row.email]).catch(() => {})
-  const user = await db.get('SELECT id, email, name, email_verified, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
+  const oldEmail = row.email
+  const now = nowIso()
+  await db.run('UPDATE users SET email = ?, email_verified = 0, profile_updated_at = ? WHERE id = ?', [email, now, req.userId])
+  await syncUserRecords(db, oldEmail, { email })
+  const user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
   const token = signUserToken(user)
-  res.json({ token, user: await mapUser(db, user) })
+  res.json({ token, user: await mapUserResponse(db, user) })
 })
 
 router.post('/avatar', upload.single('avatar'), async (req, res) => {
   const db = getDb()
   if (!req.file) return res.status(400).json({ error: 'Avatar file required' })
-  const saved = await saveUploadedFile(req.file, 'avatars')
-  await db.run('UPDATE users SET avatar_url = ? WHERE id = ?', [saved.key, req.userId])
-  const user = await db.get('SELECT id, email, name, email_verified, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
-  res.json({ user: await mapUser(db, user) })
+  if (!req.file.mimetype?.startsWith('image/')) {
+    return res.status(400).json({ error: 'Image file required' })
+  }
+  if (req.file.size > 700 * 1024) {
+    return res.status(400).json({ error: 'Image too large (max 700 KB)' })
+  }
+
+  let avatarValue
+  if (isS3Enabled()) {
+    const saved = await saveUploadedFile(req.file, 'avatars')
+    avatarValue = saved.key
+  } else {
+    avatarValue = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+  }
+
+  const now = nowIso()
+  await db.run('UPDATE users SET avatar_url = ?, profile_updated_at = ? WHERE id = ?', [avatarValue, now, req.userId])
+  const user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
+  res.json({ user: await mapUserResponse(db, user) })
 })
 
 router.get('/support', async (req, res) => {

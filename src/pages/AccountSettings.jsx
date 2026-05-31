@@ -31,6 +31,16 @@ export function AccountSettings() {
     }
   }
 
+  const formatApiError = (err) => {
+    const msg = err?.message || ''
+    if (msg === 'Current password is incorrect') return lang === 'ru' ? 'Неверный текущий пароль' : msg
+    if (msg === 'Name required') return t('account.errorGeneric')
+    if (msg === 'Image too large (max 700 KB)') return lang === 'ru' ? 'Фото слишком большое (макс. 700 КБ)' : msg
+    if (msg === 'Image file required') return lang === 'ru' ? 'Выберите файл изображения' : msg
+    if (msg === 'Email already in use') return lang === 'ru' ? 'Этот email уже занят' : msg
+    return msg || t('account.errorGeneric')
+  }
+
   const handleAvatar = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -39,7 +49,7 @@ export function AccountSettings() {
       await uploadAvatar(file)
       showMsg(t('account.avatarSaved'))
     } catch (err) {
-      showMsg(err.message || t('account.errorGeneric'), true)
+      showMsg(formatApiError(err), true)
     } finally {
       setLoading(false)
       e.target.value = ''
@@ -53,7 +63,7 @@ export function AccountSettings() {
       await updateProfile(name.trim())
       showMsg(t('account.nameSaved'))
     } catch (err) {
-      showMsg(err.message || t('account.errorGeneric'), true)
+      showMsg(formatApiError(err), true)
     } finally {
       setLoading(false)
     }
@@ -67,7 +77,7 @@ export function AccountSettings() {
       setEmailPassword('')
       showMsg(t('account.emailSaved'))
     } catch (err) {
-      showMsg(err.message || t('account.errorGeneric'), true)
+      showMsg(formatApiError(err), true)
     } finally {
       setLoading(false)
     }
@@ -91,7 +101,7 @@ export function AccountSettings() {
       setConfirmPassword('')
       showMsg(t('account.passwordSaved'))
     } catch (err) {
-      showMsg(err.message || t('account.errorGeneric'), true)
+      showMsg(formatApiError(err), true)
     } finally {
       setLoading(false)
     }
@@ -109,7 +119,7 @@ export function AccountSettings() {
         showMsg(t('account.telegramOffline'), true)
       }
     } catch (err) {
-      showMsg(err.message || t('account.errorGeneric'), true)
+      showMsg(formatApiError(err), true)
     } finally {
       setLoading(false)
     }
@@ -146,7 +156,7 @@ export function AccountSettings() {
                 )}
                 <span className={styles.avatarOverlay}>{t('account.changePhoto')}</span>
               </button>
-              <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleAvatar} />
+              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={handleAvatar} />
               <div className={styles.avatarMeta}>
                 <strong>{user?.name || user?.email}</strong>
                 <span>{user?.email}</span>
@@ -155,6 +165,9 @@ export function AccountSettings() {
                 ) : (
                   <span className={styles.badgeWarn}>{t('account.emailNotVerified')}</span>
                 )}
+                <button type="button" className={styles.uploadBtn} onClick={() => fileRef.current?.click()} disabled={loading}>
+                  {t('account.uploadPhoto')}
+                </button>
               </div>
             </div>
 

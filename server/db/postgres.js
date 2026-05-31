@@ -41,6 +41,8 @@ export async function createPostgresDb(connectionString) {
   })
   await pool.query(pgSchema())
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT').catch(() => {})
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_updated_at TEXT').catch(() => {})
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TEXT').catch(() => {})
   await pool.query(`
 CREATE TABLE IF NOT EXISTS support_messages (
   id TEXT PRIMARY KEY,
