@@ -134,6 +134,7 @@ export function Admin() {
   })
   const [certificateError, setCertificateError] = useState('')
   const [dashData, setDashData] = useState(null)
+  const [dataHealth, setDataHealth] = useState(null)
 
   useEffect(() => {
     const token = getAdminToken()
@@ -202,6 +203,13 @@ export function Admin() {
       if (!ok) setDashData(null)
     })
   }, [authenticated, refresh, online])
+
+  useEffect(() => {
+    if (!authenticated || !online || !getAdminToken()) return
+    api.adminDataHealth()
+      .then(setDataHealth)
+      .catch(() => setDataHealth(null))
+  }, [authenticated, online, refresh])
 
   useEffect(() => {
     if (!authenticated || activeTab !== ACCELERATOR_ADMIN_TAB || !online) return undefined
@@ -425,6 +433,7 @@ export function Admin() {
     ? adminUsers
     : registrations.map((r) => ({
         id: r.id,
+        personalId: r.personal_id || r.personalId || null,
         email: r.email,
         name: r.name,
         emailVerified: false,
@@ -606,7 +615,7 @@ export function Admin() {
     setRefresh((r) => r + 1)
   }
 
-  const filteredRegistrations = userRows.filter((r) => matchesSearch(searchQuery, r.email, r.name))
+  const filteredRegistrations = userRows.filter((r) => matchesSearch(searchQuery, r.personalId, r.email, r.name))
   const filteredPurchases = purchases.filter((p) => matchesSearch(searchQuery, p.email, p.courseTitle))
   const filteredHomework = homeworkList.filter((h) => matchesSearch(searchQuery, h.email, h.name, h.courseTitle))
   const filteredReviews = reviewsList.filter((r) => matchesSearch(searchQuery, r.email, r.contactEmail, r.userName, r.text, r.courseId))
@@ -695,6 +704,7 @@ export function Admin() {
             <AdminSettings
               settings={dashData?.settings}
               webhookLog={dashData?.webhookLog}
+              dataHealth={dataHealth}
               onCopy={(url) => { navigator.clipboard?.writeText(url); showToast('URL скопирован') }}
               onEnablePush={() => requestAdminNotificationPermission().then((p) => showToast(p === 'granted' ? 'Push включены' : `Статус: ${p}`))}
             />
@@ -1053,12 +1063,13 @@ export function Admin() {
           <h2 className={styles.sectionTitle}>Пользователи и регистрации</h2>
           <div className={styles.courseActions}>
             <button type="button" className={styles.restoreBtn} onClick={() => { markAdminItemsSeen('registrations', userRows); setRefresh((r) => r + 1) }}>Отметить все как увиденные</button>
-            <button type="button" className={styles.exportBtn} onClick={() => exportCsv('users.csv', filteredRegistrations.map((r) => [r.email, r.name, r.registeredAt, r.profileUpdatedAt || '', r.passwordChangedAt || '']), ['Email', 'Имя', 'Регистрация', 'Профиль обновлён', 'Пароль изменён'])}>Экспорт CSV</button>
+            <button type="button" className={styles.exportBtn} onClick={() => exportCsv('users.csv', filteredRegistrations.map((r) => [r.personalId || '', r.email, r.name, r.registeredAt, r.profileUpdatedAt || '', r.passwordChangedAt || '']), ['ID', 'Email', 'Имя', 'Регистрация', 'Профиль обновлён', 'Пароль изменён'])}>Экспорт CSV</button>
           </div>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
                 <tr>
+                  <th>Личный ID</th>
                   <th>Фото</th>
                   <th>Email</th>
                   <th>Имя</th>
@@ -1071,12 +1082,13 @@ export function Admin() {
               </thead>
               <tbody>
                 {filteredRegistrations.length === 0 ? (
-                  <tr><td colSpan={8} className={styles.empty}>Нет данных</td></tr>
+                  <tr><td colSpan={9} className={styles.empty}>Нет данных</td></tr>
                 ) : (
                   filteredRegistrations.map((r, i) => {
                     const unseen = !isAdminItemSeen('registrations', r)
                     return (
                       <tr key={r.id || r.email || i} className={unseen ? styles.unseenRow : ''}>
+                        <td><code className={styles.personalId}>{r.personalId || '—'}</code></td>
                         <td>{r.hasAvatar ? '📷' : '—'}</td>
                         <td>{r.email}</td>
                         <td>{r.name || '—'}</td>

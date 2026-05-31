@@ -1,10 +1,31 @@
 import styles from '../../pages/Admin.module.css'
 
-export function AdminSettings({ settings, webhookLog, onCopy, onEnablePush }) {
+export function AdminSettings({ settings, webhookLog, dataHealth, onCopy, onEnablePush }) {
   const url = settings?.tributeWebhookUrl || ''
 
   return (
     <div className={styles.settings}>
+      {dataHealth && (
+        <section className={styles.panel}>
+          <h3 className={styles.panelTitle}>Состояние базы данных</h3>
+          <p className={styles.sectionDesc}>
+            Сводка записей на сервере ({dataHealth.db}). Пароли хранятся только как хеш — в админке видна дата смены, не сам пароль.
+          </p>
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.users}</span><span className={styles.statLabel}>Пользователей</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.withPersonalId}</span><span className={styles.statLabel}>С личным ID</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.registrations}</span><span className={styles.statLabel}>Регистраций</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.homework}</span><span className={styles.statLabel}>Домашних заданий</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.reviews?.total ?? 0}</span><span className={styles.statLabel}>Отзывов</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.reviews?.pending ?? 0}</span><span className={styles.statLabel}>На модерации</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.purchases}</span><span className={styles.statLabel}>Покупок</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.certificates}</span><span className={styles.statLabel}>Сертификатов</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.passwordChanges}</span><span className={styles.statLabel}>Смен пароля</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.applications ?? 0}</span><span className={styles.statLabel}>Заявок</span></div>
+          </div>
+        </section>
+      )}
+
       <section className={styles.panel}>
         <h3 className={styles.panelTitle}>Tribute Webhook (production)</h3>
         <p className={styles.sectionDesc}>

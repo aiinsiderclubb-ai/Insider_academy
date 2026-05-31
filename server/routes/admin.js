@@ -55,7 +55,11 @@ router.get('/dashboard', async (req, res) => {
   }
 
   if (req.adminRole === 'admin' || req.adminRole === 'moderator') {
-    const hwRows = await db.all('SELECT * FROM homework ORDER BY updated_at DESC LIMIT 300')
+    const hwRows = await db.all(
+      `SELECT h.*, u.personal_id FROM homework h
+       LEFT JOIN users u ON lower(u.email) = lower(h.email)
+       ORDER BY h.updated_at DESC LIMIT 300`
+    )
     Object.assign(payload, {
       registrations: await db.all('SELECT * FROM registrations ORDER BY date DESC LIMIT 500'),
       users: (await db.all(
@@ -66,7 +70,11 @@ router.get('/dashboard', async (req, res) => {
       homework: await mapHomeworkList(hwRows),
       referrals: await db.all('SELECT * FROM referrals ORDER BY date DESC LIMIT 500'),
       discounts: Object.fromEntries((await db.all('SELECT email, percent FROM referral_discounts')).map((r) => [r.email, r.percent])),
-      reviews: (await db.all('SELECT * FROM reviews ORDER BY date DESC LIMIT 200')).map(mapReview),
+      reviews: (await db.all(
+        `SELECT r.*, u.personal_id FROM reviews r
+         LEFT JOIN users u ON u.id = r.user_id
+         ORDER BY r.date DESC LIMIT 200`
+      )).map(mapReview),
       applications: (await db.all('SELECT * FROM accelerator_applications ORDER BY date DESC LIMIT 300')).map(mapApplication),
       teams: await db.all('SELECT * FROM teams ORDER BY created_at DESC LIMIT 50'),
     })
@@ -87,6 +95,47 @@ router.get('/dashboard', async (req, res) => {
   }
 
   res.json(payload)
+})
+
+router.get('/data-health', requireAdmin('admin'), async (req, res) => {
+  const db = getDb()
+  const count = async (sql, params = []) => Number((await db.get(sql, params))?.c || 0)
+
+  const users = await count('SELECT COUNT(*) AS c FROM users')
+  const registrations = await count('SELECT COUNT(*) AS c FROM registrations')
+  const withPersonalId = await count("SELECT COUNT(*) AS c FROM users WHERE personal_id IS NOT NULL AND personal_id != ''")
+  const homework = await count('SELECT COUNT(*) AS c FROM homework')
+  const reviewsTotal = await count('SELECT COUNT(*) AS c FROM reviews')
+  const reviewsPending = await count("SELECT COUNT(*) AS c FROM reviews WHERE status = 'pending'")
+  const reviewsApproved = await count("SELECT COUNT(*) AS c FROM reviews WHERE status = 'approved'")
+  const purchases = await count('SELECT COUNT(*) AS c FROM purchase_log')
+  const certificates = await count('SELECT COUNT(*) AS c FROM certificates')
+  const referrals = await count('SELECT COUNT(*) AS c FROM referrals')
+  const applications = await count('SELECT COUNT(*) AS c FROM accelerator_applications')
+  let supportMessages = 0
+  try {
+    supportMessages = await count('SELECT COUNT(*) AS c FROM support_messages')
+  } catch {
+    supportMessages = 0
+  }
+  const passwordChanges = await count("SELECT COUNT(*) AS c FROM users WHERE password_changed_at IS NOT NULL AND password_changed_at != ''")
+
+  res.json({
+    db: db.driver || 'sqlite',
+    ok: true,
+    users,
+    registrations,
+    withPersonalId,
+    homework,
+    reviews: { total: reviewsTotal, pending: reviewsPending, approved: reviewsApproved },
+    purchases,
+    certificates,
+    referrals,
+    applications,
+    supportMessages,
+    passwordChanges,
+    note: 'Пароли хранятся только в виде хеша (password_hash). В админке видна дата смены пароля, не сам пароль.',
+  })
 })
 
 router.put('/courses', requireAdmin('admin', 'editor'), async (req, res) => {
@@ -266,6 +315,7 @@ async function buildChartData(db) {
 function mapAdminUser(row) {
   return {
     id: row.id,
+    personalId: row.personal_id || null,
     email: row.email,
     name: row.name,
     emailVerified: Boolean(row.email_verified),
@@ -287,7 +337,7 @@ function mapCert(row) {
 
 function mapHw(row) {
   return {
-    id: row.id, email: row.email, name: row.name, courseId: row.course_id,
+    id: row.id, email: row.email, name: row.name, personalId: row.personal_id || null, courseId: row.course_id,
     courseTitle: row.course_title, lessonIndex: row.lesson_index, lessonTitle: row.lesson_title,
     content: row.content, fileName: row.file_name, fileType: row.file_type, fileDataUrl: null,
     fileUrl: null, status: row.status, score: row.score, adminComment: row.admin_comment,
@@ -312,6 +362,7 @@ function mapReview(row) {
     id: row.id,
     courseId: row.course_id,
     userId: row.user_id,
+    personalId: row.personal_id || null,
     email: row.email,
     contactEmail: row.contact_email || row.email,
     userName: row.user_name,

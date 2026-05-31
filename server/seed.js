@@ -8,6 +8,7 @@ import {
   TEST_ACCOUNT_NAME,
   TEST_ACCOUNT_PURCHASE_IDS,
 } from '../src/data/testAccount.js'
+import { ensurePersonalId } from './services/personalId.js'
 
 /** Keep in sync with src/data/catalogVersion.js */
 const CATALOG_VERSION = 5
@@ -93,6 +94,17 @@ export async function seedTestAccount(db = getDb()) {
   }
 
   if (!row?.id) return
+
+  const personalId = await ensurePersonalId(db, row.id)
+  const regExists = await db.get('SELECT id FROM registrations WHERE email = ?', [email])
+  if (!regExists) {
+    await db.run(
+      'INSERT INTO registrations (id, email, name, personal_id, date) VALUES (?, ?, ?, ?, ?)',
+      [`reg-test-${row.id}`, email, TEST_ACCOUNT_NAME, personalId, new Date().toISOString()]
+    )
+  } else {
+    await db.run('UPDATE registrations SET name = ?, personal_id = ? WHERE email = ?', [TEST_ACCOUNT_NAME, personalId, email]).catch(() => {})
+  }
 
   for (const courseId of TEST_ACCOUNT_PURCHASE_IDS) {
     const exists = await db.get(

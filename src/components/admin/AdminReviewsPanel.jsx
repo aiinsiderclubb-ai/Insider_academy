@@ -149,6 +149,7 @@ export function AdminReviewsPanel({
                 <div className={styles.reviewAdminHead}>
                   <div>
                     <strong>{r.userName || 'Студент'}</strong>
+                    {r.personalId && <span className={styles.reviewAdminCourse}>ID: {r.personalId}</span>}
                     <span className={styles.reviewAdminCourse}>{r.contactEmail || r.email}</span>
                   </div>
                   <span className={styles.reviewAdminStars}>{'★'.repeat(Number(r.rating) || 0)}</span>

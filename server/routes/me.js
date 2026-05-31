@@ -10,6 +10,7 @@ import { isS3Enabled } from '../config.js'
 import { computeAchievements, updateStreak, ACHIEVEMENTS } from '../services/achievements.js'
 import { sendTelegramMessage } from '../services/telegram.js'
 import { mapUserResponse, syncUserRecords, userSelectFields } from '../services/userProfile.js'
+import { ensurePersonalId } from '../services/personalId.js'
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -20,8 +21,12 @@ router.use(requireUser)
 
 router.get('/', async (req, res) => {
   const db = getDb()
-  const user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
+  let user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
   if (!user) return res.status(404).json({ error: 'User not found' })
+  if (!user.personal_id) {
+    await ensurePersonalId(db, req.userId)
+    user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
+  }
 
   const purchases = await db.all(
     'SELECT course_id AS id, purchased_at AS purchasedAt FROM purchases WHERE user_id = ? ORDER BY purchased_at DESC',

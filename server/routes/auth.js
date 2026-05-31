@@ -6,6 +6,7 @@ import { signUserToken } from '../middleware/auth.js'
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.js'
 import { seedTestAccount } from '../seed.js'
 import { TEST_ACCOUNT_EMAIL, TEST_ACCOUNT_PASSWORD } from '../../src/data/testAccount.js'
+import { ensurePersonalId } from '../services/personalId.js'
 
 const router = Router()
 
@@ -38,10 +39,11 @@ router.post('/register', async (req, res) => {
     [email, hash, name]
   )
   const userId = inserted.id
-  const user = { id: userId, email, name, emailVerified: false }
+  const personalId = await ensurePersonalId(db, userId)
+  const user = { id: userId, email, name, emailVerified: false, personalId }
 
-  await db.run('INSERT INTO registrations (id, email, name, date) VALUES (?, ?, ?, ?)', [
-    `reg-${Date.now()}`, email, name, new Date().toISOString(),
+  await db.run('INSERT INTO registrations (id, email, name, personal_id, date) VALUES (?, ?, ?, ?, ?)', [
+    `reg-${Date.now()}`, email, name, personalId, new Date().toISOString(),
   ])
 
   const token = createToken()
@@ -59,18 +61,19 @@ router.post('/login', async (req, res) => {
   const db = getDb()
   const email = normalizeEmail(req.body.email)
   const password = String(req.body.password || '').trim()
-  let row = await db.get('SELECT id, email, password_hash, name, email_verified FROM users WHERE email = ?', [email])
+  let row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id FROM users WHERE email = ?', [email])
 
   const isTestLogin = email === TEST_ACCOUNT_EMAIL && password === TEST_ACCOUNT_PASSWORD
   if (isTestLogin && (!row || !bcrypt.compareSync(password, row.password_hash))) {
     await seedTestAccount(db)
-    row = await db.get('SELECT id, email, password_hash, name, email_verified FROM users WHERE email = ?', [email])
+    row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id FROM users WHERE email = ?', [email])
   }
 
   if (!row || !bcrypt.compareSync(password, row.password_hash)) {
     return res.status(401).json({ error: 'Invalid email or password' })
   }
-  const user = { id: row.id, email: row.email, name: row.name, emailVerified: Boolean(row.email_verified) }
+  const personalId = row.personal_id || await ensurePersonalId(db, row.id)
+  const user = { id: row.id, email: row.email, name: row.name, emailVerified: Boolean(row.email_verified), personalId }
   res.json({ token: signUserToken(user), user })
 })
 
@@ -114,7 +117,7 @@ router.post('/reset-password', async (req, res) => {
     return res.status(400).json({ error: 'Invalid or expired token' })
   }
   const hash = bcrypt.hashSync(password, 10)
-  await db.run('UPDATE users SET password_hash = ? WHERE email = ?', [hash, row.email])
+  await db.run('UPDATE users SET password_hash = ?, password_changed_at = ? WHERE email = ?', [hash, new Date().toISOString(), row.email])
   await db.run('UPDATE email_tokens SET used = 1 WHERE id = ?', [row.id])
   res.json({ ok: true })
 })

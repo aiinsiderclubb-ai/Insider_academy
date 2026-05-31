@@ -94,6 +94,7 @@ export const api = {
   adminLogin: (password) => apiRequest('/admin/login', { method: 'POST', body: { password }, auth: false }),
   adminMe: () => apiRequest('/admin/me', { admin: true }),
   adminDashboard: () => apiRequest('/admin/dashboard', { admin: true }),
+  adminDataHealth: () => apiRequest('/admin/data-health', { admin: true }),
   adminSaveCourses: (courses) => apiRequest('/admin/courses', { method: 'PUT', body: { courses }, admin: true }),
   adminSaveBlog: (posts) => apiRequest('/admin/blog', { method: 'PUT', body: { posts }, admin: true }),
   adminSaveCalendar: (events) => apiRequest('/admin/calendar', { method: 'PUT', body: { events }, admin: true }),

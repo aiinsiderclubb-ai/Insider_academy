@@ -160,6 +160,11 @@ export function AccountSettings() {
               <div className={styles.avatarMeta}>
                 <strong>{user?.name || user?.email}</strong>
                 <span>{user?.email}</span>
+                {user?.personalId && (
+                  <span className={styles.personalIdBadge}>
+                    {t('account.personalId')}: <code>{user.personalId}</code>
+                  </span>
+                )}
                 {user?.emailVerified ? (
                   <span className={styles.badgeOk}>{t('account.emailVerified')}</span>
                 ) : (

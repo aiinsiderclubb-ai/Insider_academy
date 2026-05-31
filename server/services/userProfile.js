@@ -16,6 +16,7 @@ export async function mapUserResponse(db, user) {
   }
   return {
     id: user.id,
+    personalId: user.personal_id || null,
     email: user.email,
     name: user.name,
     emailVerified: Boolean(user.email_verified),
@@ -59,5 +60,5 @@ export async function syncUserRecords(db, oldEmail, updates = {}) {
 }
 
 export function userSelectFields() {
-  return 'id, email, name, email_verified, telegram_chat_id, avatar_url, profile_updated_at, password_changed_at, created_at'
+  return 'id, personal_id, email, name, email_verified, telegram_chat_id, avatar_url, profile_updated_at, password_changed_at, created_at'
 }

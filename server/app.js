@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { initDatabase, getDb } from './db.js'
 import { seedIfEmpty } from './seed.js'
+import { backfillPersonalIds } from './services/personalId.js'
 import { config } from './config.js'
 import authRoutes from './routes/auth.js'
 import coursesRoutes from './routes/courses.js'
@@ -27,6 +28,11 @@ export async function createApp() {
   }
 
   await seedIfEmpty()
+  try {
+    await backfillPersonalIds(getDb())
+  } catch (err) {
+    console.warn('[startup] personal_id backfill:', err.message)
+  }
 
   const app = express()
   const corsOrigins = String(config.corsOrigin || '')

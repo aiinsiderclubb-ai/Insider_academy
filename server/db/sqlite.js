@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
   avatar_url TEXT,
   profile_updated_at TEXT,
   password_changed_at TEXT,
+  personal_id TEXT UNIQUE,
   team_id INTEGER,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -68,6 +69,7 @@ CREATE TABLE IF NOT EXISTS registrations (
   id TEXT PRIMARY KEY,
   email TEXT NOT NULL,
   name TEXT,
+  personal_id TEXT,
   date TEXT NOT NULL
 );
 
@@ -295,6 +297,10 @@ function migrateColumns(db) {
   if (!cols.includes('avatar_url')) add('ALTER TABLE users ADD COLUMN avatar_url TEXT')
   if (!cols.includes('profile_updated_at')) add('ALTER TABLE users ADD COLUMN profile_updated_at TEXT')
   if (!cols.includes('password_changed_at')) add('ALTER TABLE users ADD COLUMN password_changed_at TEXT')
+  if (!cols.includes('personal_id')) add('ALTER TABLE users ADD COLUMN personal_id TEXT')
+
+  const regCols = db.prepare('PRAGMA table_info(registrations)').all().map((c) => c.name)
+  if (!regCols.includes('personal_id')) add('ALTER TABLE registrations ADD COLUMN personal_id TEXT')
 
   try {
     db.exec(`
