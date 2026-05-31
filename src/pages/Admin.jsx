@@ -136,7 +136,20 @@ export function Admin() {
     const token = getAdminToken()
     const saved = localStorage.getItem('lms_admin_auth')
     if (token) {
-      setAuthenticated(true)
+      if (online === false) {
+        setAuthenticated(true)
+        return
+      }
+      api.adminMe()
+        .then((me) => {
+          setAdminRoleState(me.role || 'admin')
+          setAdminRole(me.role || 'admin')
+          setAuthenticated(true)
+        })
+        .catch(() => {
+          setAdminToken(null)
+          localStorage.removeItem('lms_admin_auth')
+        })
       return
     }
     const localRole = saved
@@ -146,7 +159,7 @@ export function Admin() {
       setAdminRoleState(localRole)
       setAuthenticated(true)
     }
-  }, [])
+  }, [online])
 
   useEffect(() => {
     if (dashData?.role) {
