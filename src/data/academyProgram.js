@@ -1,6 +1,6 @@
 import { STAGE_BY_COURSE } from './learningMap.js'
 import { enrichCourseWithCurriculum } from './courseCurriculum.js'
-import { buildCatalogLessons, getLessonCountLabel } from './courseLessonPrograms.js'
+import { buildCatalogLessons, getLessonCountLabel, applyLessonProgramToCourse } from './courseLessonPrograms.js'
 import { applyCourseProfile } from './courseProfiles.js'
 
 const IMAGES = {
@@ -15,17 +15,6 @@ const IMAGES = {
   voice: 'https://images.unsplash.com/photo-1579762599946-9e2c1ee9dc5d?w=800&q=80',
   agent: 'https://images.unsplash.com/photo-1676299085922-a816a3e77c80?w=800&q=80',
   agency: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',
-}
-
-function daysLessons(prefix, count, titleRu, titleEn) {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `${prefix}${i + 1}`,
-    title: `${titleRu} — день ${i + 1}`,
-    titleEn: `${titleEn} — day ${i + 1}`,
-    duration: '15–25 мин',
-    durationEn: '15–25 min',
-    videoUrl: '',
-  }))
 }
 
 function baseCourse({
@@ -170,7 +159,7 @@ const rawAcademyCourses = [
     finalProjectEn: 'Personal AI system for work or business',
     goals: ['Пройти все направления AI', 'Выбрать специализацию', 'Собрать финальный проект'],
     goalsEn: ['Explore all AI tracks', 'Choose specialization', 'Complete capstone project'],
-    lessons: daysLessons('acc', 12, 'Accelerator', 'Accelerator'),
+    lessons: buildCatalogLessons('ai-insider-accelerator'),
   }),
   baseCourse({
     id: 'ai-user-pro',
@@ -230,7 +219,7 @@ const rawAcademyCourses = [
     finalProjectEn: 'Automated lead processing system',
     goals: ['n8n на профи-уровне', 'Интеграции CRM и мессенджеров', 'Продажа автоматизаций'],
     goalsEn: ['Pro-level n8n', 'CRM and messenger integrations', 'Sell automations'],
-    lessons: daysLessons('nc', 12, 'No-Code Automation', 'No-Code Automation'),
+    lessons: buildCatalogLessons('no-code-automation'),
   }),
   baseCourse({
     id: 'ai-chatbot-developer',
@@ -250,7 +239,7 @@ const rawAcademyCourses = [
     finalProjectEn: 'Commercial AI bot',
     goals: ['Сборка бота с нуля', 'CRM и сценарии', 'Монетизация ботов'],
     goalsEn: ['Build bot from scratch', 'CRM and scenarios', 'Monetize bots'],
-    lessons: daysLessons('cb', 12, 'Chatbot Developer', 'Chatbot Developer'),
+    lessons: buildCatalogLessons('ai-chatbot-developer'),
   }),
   baseCourse({
     id: 'ai-voice-developer',
@@ -270,7 +259,7 @@ const rawAcademyCourses = [
     finalProjectEn: 'Voice AI employee',
     goals: ['Голос без кода', 'Телефон и WhatsApp', 'Продажа Voice Agents'],
     goalsEn: ['No-code voice', 'Phone and WhatsApp', 'Sell voice agents'],
-    lessons: daysLessons('vd', 12, 'Voice Developer', 'Voice Developer'),
+    lessons: buildCatalogLessons('ai-voice-developer'),
   }),
   baseCourse({
     id: 'ai-saas-builder',
@@ -336,7 +325,7 @@ const rawAcademyCourses = [
       'Acquire first users',
       'Launch your own AI SaaS product',
     ],
-    lessons: daysLessons('sb', 12, 'SaaS Builder', 'SaaS Builder'),
+    lessons: buildCatalogLessons('ai-saas-builder'),
   }),
   baseCourse({
     id: 'ai-agent-architect',
@@ -408,7 +397,7 @@ const rawAcademyCourses = [
       'Deploy agents to production',
       'Build your own multi-agent AI platform',
     ],
-    lessons: daysLessons('aa', 18, 'Agent Engineer', 'Agent Engineer'),
+    lessons: buildCatalogLessons('ai-agent-architect'),
   }),
   baseCourse({
     id: 'ai-agency-builder',
@@ -468,12 +457,13 @@ const rawAcademyCourses = [
       'Launch your first client acquisition system',
       'Start your own AI agency',
     ],
-    lessons: daysLessons('agb', 10, 'Agency Builder', 'Agency Builder'),
+    lessons: buildCatalogLessons('ai-agency-builder'),
   }),
 ]
 
 export const academyCourses = rawAcademyCourses
   .map(enrichCourseWithCurriculum)
   .map(applyCourseProfile)
+  .map(applyLessonProgramToCourse)
 
 export const freeTrialCourses = academyCourses.filter((c) => c.isFreeTrial && c.id !== 'ai-insider-accelerator')

@@ -23,7 +23,7 @@ import { AccountSettings } from './pages/AccountSettings'
 import { VerifyEmail } from './pages/VerifyEmail'
 import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
-import { Club } from './pages/Club'
+import { Memberships } from './pages/Memberships'
 import { Admin } from './pages/Admin'
 import { AcceleratorApply } from './pages/AcceleratorApply'
 function ProtectedRoute({ children }) {
@@ -48,7 +48,8 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/courses" element={<Courses />} />
-          <Route path="/club" element={<Club />} />
+          <Route path="/memberships" element={<Memberships />} />
+          <Route path="/club" element={<Memberships />} />
           <Route path="/learning-map" element={<Navigate to="/" replace />} />
           <Route path="/courses/ai-insider-accelerator/apply" element={<AcceleratorApply />} />
           <Route path="/courses/:slug" element={<Course />} />

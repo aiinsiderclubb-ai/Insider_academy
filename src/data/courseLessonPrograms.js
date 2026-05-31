@@ -1,10 +1,42 @@
-/** Структурированные программы уроков — синхрон с витриной insiderai.it.com */
+/** Структурированные программы уроков — Academy LMS */
+
+import { getVideoLessons } from './videoLessons.js'
 
 const SHORT = { ru: '10–20 мин', en: '10–20 min' }
 const PRO = { ru: '30–45 мин', en: '30–45 min' }
+const LONG = { ru: '40–50 мин', en: '40–50 min' }
 
 function lesson(num, titleRu, titleEn, descRu, descEn) {
   return { num, titleRu, titleEn, descRu, descEn }
+}
+
+function shortDescFromVideo(v) {
+  if (v.topics) {
+    const first = v.topics.split(';').map((s) => s.trim()).filter(Boolean)[0]
+    if (first && first.length <= 120) return first
+  }
+  if (v.goal && v.goal.length <= 100) return v.goal
+  return `Практический урок: ${v.title}.`
+}
+
+function buildProgramFromVideos(courseId, duration = LONG) {
+  const data = getVideoLessons(courseId)
+  if (!data?.lessons?.length) return null
+  const count = data.lessons.length
+  return {
+    duration,
+    countLabel: {
+      ru: `${count} видеоуроков`,
+      en: `${count} video lessons`,
+    },
+    lessons: data.lessons.map((v) => {
+      const titleRu = String(v.title || '').replace(/^(Урок|Video)\s+\d+\.\s*/i, '').trim() || v.title
+      const titleEn = String(v.titleEn || v.title || titleRu)
+        .replace(/^(Lesson|Video)\s+\d+\.\s*/i, '').trim() || titleRu
+      const desc = shortDescFromVideo(v)
+      return lesson(v.number, titleRu, titleEn, desc, desc)
+    }),
+  }
 }
 
 export const LESSON_PROGRAMS = {
@@ -80,14 +112,139 @@ export const LESSON_PROGRAMS = {
       lesson(8, 'Финальный проект', 'Capstone project', 'Полноценная контент-система.', 'Full content system.'),
     ],
   },
+
+  'ai-insider-accelerator': {
+    duration: PRO,
+    countLabel: { ru: '12 уроков · intake', en: '12 lessons · intake' },
+    lessons: [
+      lesson(1, 'Карта AI-индустрии 2026', 'AI industry map 2026', 'Обзор рынка и ключевых направлений.', 'Market overview and key tracks.'),
+      lesson(2, 'AI для контента и маркетинга', 'AI for content and marketing', 'Как AI меняет контент и продвижение.', 'How AI transforms content and marketing.'),
+      lesson(3, 'Автоматизации и n8n', 'Automations and n8n', 'Логика workflow и первые сценарии.', 'Workflow logic and first scenarios.'),
+      lesson(4, 'Чат-боты для бизнеса', 'Chatbots for business', 'Где боты приносят деньги.', 'Where bots drive revenue.'),
+      lesson(5, 'Голосовые AI-агенты', 'Voice AI agents', 'Сценарии voice agents в продажах и поддержке.', 'Voice agent use cases in sales and support.'),
+      lesson(6, 'AI-агенты и RAG', 'AI agents and RAG', 'От чатбота к автономному агенту.', 'From chatbot to autonomous agent.'),
+      lesson(7, 'Prompt Engineering Pro', 'Prompt Engineering Pro', 'Профессиональные промпты под задачи.', 'Professional prompts for real tasks.'),
+      lesson(8, 'AI для продаж и лидов', 'AI for sales and leads', 'Автоматизация коммуникаций и CRM.', 'Automating comms and CRM.'),
+      lesson(9, 'Монетизация AI-навыков', 'Monetizing AI skills', 'Как зарабатывать на AI-услугах.', 'How to earn from AI services.'),
+      lesson(10, 'Intake-тест и анкета', 'Intake test and application', 'Диагностика уровня и целей.', 'Level and goals assessment.'),
+      lesson(11, 'Выбор специализации', 'Choosing your track', 'Подбор Pro-курса под вашу цель.', 'Matching a Pro track to your goal.'),
+      lesson(12, 'Финальный проект', 'Capstone project', 'Персональная AI-система для работы или бизнеса.', 'Personal AI system for work or business.'),
+    ],
+  },
+
+  'ai-saas-builder': {
+    duration: PRO,
+    countLabel: { ru: '12 уроков', en: '12 lessons' },
+    lessons: [
+      lesson(1, 'Поиск SaaS-идеи с AI', 'Finding a SaaS idea with AI', 'Генерация и первичная валидация идей.', 'Idea generation and initial validation.'),
+      lesson(2, 'Анализ рынка и конкурентов', 'Market and competitor analysis', 'Оценка спроса и конкурентной среды.', 'Demand and competitive landscape.'),
+      lesson(3, 'Проектирование MVP', 'MVP design', 'Scope, UX и ключевые функции продукта.', 'Scope, UX and core product features.'),
+      lesson(4, 'Lovable и Bolt.new', 'Lovable and Bolt.new', 'Быстрый no-code прототип интерфейса.', 'Rapid no-code UI prototype.'),
+      lesson(5, 'Replit для SaaS', 'Replit for SaaS', 'Сборка логики продукта без dev-команды.', 'Building product logic without a dev team.'),
+      lesson(6, 'Supabase и база данных', 'Supabase and database', 'Схема данных и хранение контента.', 'Data schema and content storage.'),
+      lesson(7, 'Регистрация и auth', 'Registration and auth', 'Пользователи, профили и доступ.', 'Users, profiles and access.'),
+      lesson(8, 'Подключение AI API', 'Connecting AI API', 'AI-функция внутри продукта.', 'AI feature inside the product.'),
+      lesson(9, 'Stripe и подписки', 'Stripe and subscriptions', 'Оплата, тарифы и webhooks.', 'Payments, plans and webhooks.'),
+      lesson(10, 'UI/UX и onboarding', 'UI/UX and onboarding', 'Путь пользователя и активация.', 'User journey and activation.'),
+      lesson(11, 'Деплой в production', 'Deploy to production', 'Публикация и мониторинг.', 'Publishing and monitoring.'),
+      lesson(12, 'Финальный проект', 'Capstone project', 'Запущенный AI SaaS с auth, оплатой и первыми пользователями.', 'Launched AI SaaS with auth, billing and first users.'),
+    ],
+  },
+}
+
+const VIDEO_COURSE_DURATIONS = {
+  'no-code-automation': LONG,
+  'ai-chatbot-developer': LONG,
+  'ai-voice-developer': LONG,
+  'ai-agent-architect': LONG,
+  'ai-agency-builder': LONG,
+}
+
+let videoProgramsLoaded = false
+
+function ensureVideoPrograms() {
+  if (videoProgramsLoaded) return
+  videoProgramsLoaded = true
+  Object.entries(VIDEO_COURSE_DURATIONS).forEach(([courseId, duration]) => {
+    if (!LESSON_PROGRAMS[courseId]) {
+      const block = buildProgramFromVideos(courseId, duration)
+      if (block) LESSON_PROGRAMS[courseId] = block
+    }
+  })
 }
 
 const LESSON_PREFIX = {
   'ai-start': 'as',
   'ai-for-productivity': 'ap',
   'first-automation-n8n': 'fn',
+  'ai-insider-accelerator': 'acc',
   'ai-user-pro': 'up',
   'ai-content-creator': 'cc',
+  'no-code-automation': 'nc',
+  'ai-chatbot-developer': 'cb',
+  'ai-voice-developer': 'vd',
+  'ai-saas-builder': 'sb',
+  'ai-agent-architect': 'aa',
+  'ai-agency-builder': 'agb',
+}
+
+export function getLessonProgram(courseId) {
+  ensureVideoPrograms()
+  return LESSON_PROGRAMS[courseId] || buildProgramFromVideos(courseId) || null
+}
+
+function isPlaceholderLessons(lessons) {
+  return (lessons || []).some((l) =>
+    /— день \d+|— day \d+|^Неделя \d+/i.test(l?.title || '')
+  )
+}
+
+export function applyLessonProgramToCourse(course) {
+  const program = getLessonProgram(course?.id)
+  if (!program) return course
+
+  const catalogLessons = buildCatalogLessons(course.id)
+  if (!catalogLessons?.length) return course
+
+  const existing = course.lessons || []
+  const countLabelRu = getLessonCountLabel(course.id, 'ru')
+  const countLabelEn = getLessonCountLabel(course.id, 'en')
+
+  if (isPlaceholderLessons(existing) || !existing.length) {
+    return {
+      ...course,
+      lessons: catalogLessons,
+      ...(countLabelRu ? { duration: countLabelRu, durationEn: countLabelEn } : {}),
+    }
+  }
+
+  if (existing.length === catalogLessons.length) {
+    return {
+      ...course,
+      lessons: existing.map((lesson, i) => {
+        const catalog = catalogLessons[i]
+        return {
+          ...lesson,
+          title: catalog.title,
+          titleEn: catalog.titleEn,
+          description: catalog.description,
+          descriptionEn: catalog.descriptionEn,
+          weekGoal: catalog.description,
+          weekGoalEn: catalog.descriptionEn,
+        }
+      }),
+      ...(countLabelRu ? { duration: countLabelRu, durationEn: countLabelEn } : {}),
+    }
+  }
+
+  return {
+    ...course,
+    lessons: catalogLessons.map((catalog, i) => ({
+      ...(existing[i] || {}),
+      ...catalog,
+    })),
+    ...(countLabelRu ? { duration: countLabelRu, durationEn: countLabelEn } : {}),
+  }
 }
 
 function toVideoLesson(entry, courseLabel, duration) {
@@ -111,7 +268,7 @@ function toVideoLesson(entry, courseLabel, duration) {
 }
 
 export function buildCatalogLessons(courseId) {
-  const program = LESSON_PROGRAMS[courseId]
+  const program = getLessonProgram(courseId)
   const prefix = LESSON_PREFIX[courseId] || courseId.slice(0, 2)
   if (!program) return null
   return program.lessons.map((entry) => ({
@@ -142,7 +299,7 @@ export function buildVideoLessonBlock(courseId, courseLabel) {
 }
 
 export function getLessonCountLabel(courseId, lang = 'ru') {
-  const program = LESSON_PROGRAMS[courseId]
-  if (!program) return null
+  const program = getLessonProgram(courseId)
+  if (!program?.countLabel) return null
   return lang === 'en' ? program.countLabel.en : program.countLabel.ru
 }

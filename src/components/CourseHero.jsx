@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { IconBook, IconClock } from './Icons'
-import { getCourseField, formatCourseDuration } from '../data/courses'
+import { getCourseField, formatCourseDuration, getCourseDescription } from '../data/courses'
 import { getCourseTheme, getCourseThemeStyle } from '../data/courseThemes'
 import { useTheme } from '../context/ThemeContext'
 import styles from './CourseHero.module.css'
@@ -18,7 +18,7 @@ export function CourseHero({
   const accent = getCourseTheme(course.id)
   const title = getCourseField(course, 'title', lang)
   const subtitle = getCourseField(course, 'subtitle', lang)
-  const shortDesc = getCourseField(course, 'shortDescription', lang)
+  const description = getCourseDescription(course, lang)
   const category = getCourseField(course, 'category', lang)
   const duration = formatCourseDuration(course, lang)
   const lessonsCount = course.lessons?.length ?? 0
@@ -64,7 +64,7 @@ export function CourseHero({
           </div>
 
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-          {!compact && shortDesc && <p className={styles.desc}>{shortDesc}</p>}
+          {!compact && description && <p className={styles.desc}>{description}</p>}
 
           <div className={styles.meta}>
             <span className={styles.metaChip}>

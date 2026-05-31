@@ -22,13 +22,13 @@ export function getCourseField(course, field, lang = 'ru') {
   return Array.isArray(course[field]) ? course[field] : (course[field] ?? '')
 }
 
-/** Описание для карточки каталога */
+/** Описание для карточки каталога и hero */
 export function getCourseDescription(course, lang = 'ru') {
   if (!course) return ''
-  const short = getCourseField(course, 'shortDescription', lang)
-  const full = getCourseField(course, 'fullDescription', lang)
   const idea = getCourseField(course, 'courseIdea', lang)
-  return short || full || idea || ''
+  const full = getCourseField(course, 'fullDescription', lang)
+  const short = getCourseField(course, 'shortDescription', lang)
+  return idea || full || short || ''
 }
 
 /** Длительность для карточек — без «· N недель» */

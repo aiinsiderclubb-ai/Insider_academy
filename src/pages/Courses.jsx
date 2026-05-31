@@ -72,8 +72,8 @@ export function Courses() {
               {lang === 'en' ? seg.en : seg.ru}
             </button>
           ))}
-          <Link to="/club" className={styles.clubLink}>
-            {lang === 'ru' ? 'AI Insider Club →' : 'AI Insider Club →'}
+          <Link to="/memberships" className={styles.clubLink}>
+            {lang === 'ru' ? 'Memberships →' : 'Memberships →'}
           </Link>
         </div>
 

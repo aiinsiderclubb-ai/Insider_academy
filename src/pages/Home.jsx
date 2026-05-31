@@ -14,7 +14,7 @@ import { ThemePreview } from '../components/ThemePreview'
 import { CourseCatalogCard } from '../components/CourseCatalogCard'
 import { useTheme } from '../context/ThemeContext'
 import { HomeSuperOffer } from '../components/HomeSuperOffer'
-import { HomeClubSection } from '../components/HomeClubSection'
+import { MembershipsSection } from '../components/MembershipsSection'
 import { HomeCertificatesSection } from '../components/HomeCertificatesSection'
 import { HomeReviewsSection } from '../components/HomeReviewsSection'
 import { PlatformBridge } from '../components/PlatformBridge'
@@ -183,7 +183,7 @@ export function Home() {
 
       <HomeCertificatesSection lang={lang} />
 
-      <HomeClubSection lang={lang} />
+      <MembershipsSection lang={lang} compact />
 
       <section className={`${styles.tryNow} ${styles.animateSection}`}>
         <div className={styles.container}>

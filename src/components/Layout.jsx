@@ -19,7 +19,7 @@ import styles from './Layout.module.css'
 const navItemsKeys = [
   { to: '/', labelKey: 'nav.home', Icon: IconHome },
   { to: '/courses', labelKey: 'nav.catalog', Icon: IconVideo },
-  { to: '/club', labelKey: 'nav.club', Icon: IconUser },
+  { to: '/memberships', labelKey: 'nav.memberships', Icon: IconUser },
   { to: '/cabinet', labelKey: 'nav.myCourses', Icon: IconBriefcase, auth: true },
   { to: '/calendar', labelKey: 'nav.calendar', Icon: IconCalendar },
   { to: '/blog', labelKey: 'nav.blog', Icon: IconBlog },

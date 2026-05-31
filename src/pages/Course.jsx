@@ -532,7 +532,6 @@ export function Course() {
           lang={lang}
           purchased={purchased}
           priceEur={priceEur}
-          marketingOnly={!purchased && !isFreeTrial}
         />
       </div>
     </div>

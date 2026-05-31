@@ -85,13 +85,70 @@
   color: var(--text-muted);
 }
 
-.finalProject {
-  margin: 16px 0 0;
-  padding: 12px 16px;
+.finalProjectBlock {
+  margin: 0;
+  padding: 16px 18px;
   background: var(--course-accent-soft, var(--accent-dim));
+  border-radius: 12px;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.skillsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.skillsList li {
+  padding: 10px 14px;
+  background: var(--bg-elevated);
   border-radius: 10px;
   font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.toolsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.toolChip {
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.certList {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.certList li {
+  padding-left: 1.5rem;
+  position: relative;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
   line-height: 1.5;
+}
+
+.certList li::before {
+  content: '📜';
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
 .gradingGrid {
