@@ -5,7 +5,7 @@ const router = Router()
 
 router.get('/', async (_req, res) => {
   const db = getDb()
-  const rows = await db.all('SELECT data FROM courses ORDER BY rowid')
+  const rows = await db.all('SELECT data FROM courses ORDER BY id')
   res.json(rows.map((r) => parseJson(r.data, null)).filter(Boolean))
 })
 

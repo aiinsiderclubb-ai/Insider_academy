@@ -6,36 +6,81 @@ import { config } from '../config.js'
 
 const router = Router()
 
+function resolveAdminRole(password) {
+  const p = String(password || '')
+  if (p === config.adminPassword) return 'admin'
+  if (p === config.editorPassword) return 'editor'
+  if (p === config.moderatorPassword) return 'moderator'
+  return null
+}
+
 router.post('/login', (req, res) => {
-  if (String(req.body.password || '') !== config.adminPassword) {
-    return res.status(401).json({ error: 'Invalid password' })
-  }
-  res.json({ token: signAdminToken() })
+  const role = resolveAdminRole(req.body.password)
+  if (!role) return res.status(401).json({ error: 'Invalid password' })
+  res.json({ token: signAdminToken(role), role })
 })
 
-router.use(requireAdmin)
-
-router.get('/dashboard', async (_req, res) => {
-  const db = getDb()
-  const mainRow = await db.get('SELECT value FROM analytics WHERE key = ?', ['main'])
-  const discountsRows = await db.all('SELECT email, percent FROM referral_discounts')
+router.get('/me', requireAdmin('admin', 'editor', 'moderator'), (req, res) => {
   res.json({
-    registrations: await db.all('SELECT * FROM registrations ORDER BY date DESC LIMIT 500'),
-    purchases: await db.all('SELECT * FROM purchase_log ORDER BY date DESC LIMIT 500'),
-    certificates: (await db.all('SELECT * FROM certificates ORDER BY date DESC LIMIT 500')).map(mapCert),
-    homework: (await db.all('SELECT * FROM homework ORDER BY updated_at DESC LIMIT 300')).map(mapHw),
-    referrals: await db.all('SELECT * FROM referrals ORDER BY date DESC LIMIT 500'),
-    discounts: Object.fromEntries(discountsRows.map((r) => [r.email, r.percent])),
-    analytics: parseJson(mainRow?.value, { visits: 0, courseClicks: {} }),
-    courses: (await db.all('SELECT data FROM courses ORDER BY rowid')).map((r) => parseJson(r.data, null)).filter(Boolean),
-    blog: (await db.all('SELECT data FROM blog_posts ORDER BY rowid')).map((r) => parseJson(r.data, null)).filter(Boolean),
-    calendar: (await db.all('SELECT data FROM calendar_events ORDER BY rowid')).map((r) => parseJson(r.data, null)).filter(Boolean),
-    reviews: await db.all('SELECT * FROM reviews ORDER BY date DESC LIMIT 100'),
-    teams: await db.all('SELECT * FROM teams ORDER BY created_at DESC LIMIT 50'),
+    role: req.adminRole,
+    webhookUrl: getTributeWebhookUrl(),
+    features: {
+      tribute: Boolean(config.tribute.apiKey),
+      email: Boolean(config.email.smtp.host),
+      digest: config.adminDigestEnabled,
+    },
   })
 })
 
-router.put('/courses', async (req, res) => {
+router.use(requireAdmin('admin', 'editor', 'moderator'))
+
+router.get('/dashboard', async (req, res) => {
+  const db = getDb()
+  const mainRow = await db.get('SELECT value FROM analytics WHERE key = ?', ['main'])
+  const dailyVisitsRow = await db.get('SELECT value FROM analytics WHERE key = ?', ['daily_visits'])
+  const charts = await buildChartData(db)
+
+  const payload = {
+    role: req.adminRole,
+    analytics: parseJson(mainRow?.value, { visits: 0, courseClicks: {} }),
+    dailyVisits: parseJson(dailyVisitsRow?.value, {}),
+    charts,
+    courses: (await db.all('SELECT data FROM courses ORDER BY id')).map((r) => parseJson(r.data, null)).filter(Boolean),
+    blog: (await db.all('SELECT data FROM blog_posts ORDER BY id')).map((r) => parseJson(r.data, null)).filter(Boolean),
+    calendar: (await db.all('SELECT data FROM calendar_events ORDER BY id')).map((r) => parseJson(r.data, null)).filter(Boolean),
+  }
+
+  if (req.adminRole === 'admin' || req.adminRole === 'moderator') {
+    Object.assign(payload, {
+      registrations: await db.all('SELECT * FROM registrations ORDER BY date DESC LIMIT 500'),
+      purchases: await db.all('SELECT * FROM purchase_log ORDER BY date DESC LIMIT 500'),
+      certificates: (await db.all('SELECT * FROM certificates ORDER BY date DESC LIMIT 500')).map(mapCert),
+      homework: (await db.all('SELECT * FROM homework ORDER BY updated_at DESC LIMIT 300')).map(mapHw),
+      referrals: await db.all('SELECT * FROM referrals ORDER BY date DESC LIMIT 500'),
+      discounts: Object.fromEntries((await db.all('SELECT email, percent FROM referral_discounts')).map((r) => [r.email, r.percent])),
+      reviews: await db.all('SELECT * FROM reviews ORDER BY date DESC LIMIT 100'),
+      teams: await db.all('SELECT * FROM teams ORDER BY created_at DESC LIMIT 50'),
+    })
+  }
+
+  if (req.adminRole === 'admin') {
+    try {
+      payload.webhookLog = await db.all(
+        'SELECT id, event_name, status, created_at FROM webhook_events ORDER BY created_at DESC LIMIT 20'
+      )
+    } catch {
+      payload.webhookLog = []
+    }
+    payload.settings = {
+      tributeWebhookUrl: getTributeWebhookUrl(),
+      tributeEnabled: Boolean(config.tribute.apiKey),
+    }
+  }
+
+  res.json(payload)
+})
+
+router.put('/courses', requireAdmin('admin', 'editor'), async (req, res) => {
   const list = req.body.courses
   if (!Array.isArray(list)) return res.status(400).json({ error: 'courses array required' })
   const db = getDb()
@@ -46,7 +91,7 @@ router.put('/courses', async (req, res) => {
   res.json({ ok: true, count: list.length })
 })
 
-router.put('/blog', async (req, res) => {
+router.put('/blog', requireAdmin('admin', 'editor'), async (req, res) => {
   const list = req.body.posts
   if (!Array.isArray(list)) return res.status(400).json({ error: 'posts array required' })
   const db = getDb()
@@ -55,7 +100,7 @@ router.put('/blog', async (req, res) => {
   res.json({ ok: true })
 })
 
-router.put('/calendar', async (req, res) => {
+router.put('/calendar', requireAdmin('admin', 'editor'), async (req, res) => {
   const list = req.body.events
   if (!Array.isArray(list)) return res.status(400).json({ error: 'events array required' })
   const db = getDb()
@@ -64,15 +109,16 @@ router.put('/calendar', async (req, res) => {
   res.json({ ok: true })
 })
 
-router.patch('/homework/:id', async (req, res) => {
+router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, res) => {
   const db = getDb()
   const { status, adminComment, score } = req.body
   const row = await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])
   if (!row) return res.status(404).json({ error: 'Not found' })
+  const nextScore = score !== undefined && score !== null && score !== '' ? Number(score) : null
   await db.run(
     `UPDATE homework SET status = COALESCE(?, status), admin_comment = COALESCE(?, admin_comment),
      score = COALESCE(?, score), updated_at = datetime('now') WHERE id = ?`,
-    [status ?? null, adminComment ?? null, score ?? null, req.params.id]
+    [status ?? null, adminComment ?? null, nextScore, req.params.id]
   )
   if (status && row.email) {
     await db.run(
@@ -85,10 +131,10 @@ router.patch('/homework/:id', async (req, res) => {
       email: row.email, courseTitle: row.course_title, lessonTitle: row.lesson_title, status, comment: adminComment,
     }).catch(() => {})
   }
-  res.json({ ok: true })
+  res.json({ ok: true, homework: mapHw(await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])) })
 })
 
-router.post('/certificates', async (req, res) => {
+router.post('/certificates', requireAdmin('admin', 'moderator'), async (req, res) => {
   const db = getDb()
   const { email, courseId, courseTitle, fileName, fileType, fileDataUrl, score } = req.body
   const id = `cert-${Date.now()}`
@@ -105,6 +151,47 @@ router.post('/certificates', async (req, res) => {
   )
   res.json({ ok: true, id })
 })
+
+function getTributeWebhookUrl() {
+  if (config.tribute.webhookUrl) return config.tribute.webhookUrl
+  const base = config.appUrl.replace(/\/$/, '')
+  if (base.includes('localhost')) return `${base.replace(':5173', ':3001')}/api/webhooks/tribute`
+  return `${base}/api/webhooks/tribute`
+}
+
+async function buildChartData(db) {
+  const purchasesByDay = await db.all(
+    `SELECT date(date) AS day, COALESCE(SUM(amount), 0) AS revenue, COUNT(*) AS count
+     FROM purchase_log WHERE date >= date('now', '-30 days') GROUP BY day ORDER BY day`
+  )
+  const registrationsByDay = await db.all(
+    `SELECT date(date) AS day, COUNT(*) AS count
+     FROM registrations WHERE date >= date('now', '-30 days') GROUP BY day ORDER BY day`
+  )
+  const dailyVisits = parseJson((await db.get('SELECT value FROM analytics WHERE key = ?', ['daily_visits']))?.value, {})
+  const visitDays = Object.entries(dailyVisits)
+    .filter(([day]) => day >= new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10))
+    .map(([day, count]) => ({ day, count }))
+    .sort((a, b) => a.day.localeCompare(b.day))
+
+  const main = parseJson((await db.get('SELECT value FROM analytics WHERE key = ?', ['main']))?.value, { visits: 0 })
+  const totalVisits = main.visits || 0
+  const totalRegs = (await db.get('SELECT COUNT(*) AS c FROM registrations'))?.c || 0
+  const totalPurchases = (await db.get('SELECT COUNT(*) AS c FROM purchase_log'))?.c || 0
+
+  return {
+    purchasesByDay,
+    registrationsByDay,
+    visitsByDay: visitDays,
+    funnel: {
+      visits: totalVisits,
+      registrations: totalRegs,
+      purchases: totalPurchases,
+      conversionReg: totalVisits ? Math.round((totalRegs / totalVisits) * 1000) / 10 : 0,
+      conversionPurchase: totalRegs ? Math.round((totalPurchases / totalRegs) * 1000) / 10 : 0,
+    },
+  }
+}
 
 function mapCert(row) {
   return {

@@ -4,12 +4,12 @@ import { getDb, parseJson } from '../db.js'
 const router = Router()
 
 router.get('/blog', async (_req, res) => {
-  const rows = await getDb().all('SELECT data FROM blog_posts ORDER BY rowid')
+  const rows = await getDb().all('SELECT data FROM blog_posts ORDER BY id')
   res.json(rows.map((r) => parseJson(r.data, null)).filter(Boolean))
 })
 
 router.get('/calendar', async (_req, res) => {
-  const rows = await getDb().all('SELECT data FROM calendar_events ORDER BY rowid')
+  const rows = await getDb().all('SELECT data FROM calendar_events ORDER BY id')
   res.json(rows.map((r) => parseJson(r.data, null)).filter(Boolean))
 })
 
@@ -21,6 +21,14 @@ router.post('/analytics/visit', async (_req, res) => {
   await db.run(
     'INSERT INTO analytics (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
     ['main', JSON.stringify(data)]
+  )
+  const today = new Date().toISOString().slice(0, 10)
+  const dailyRow = await db.get('SELECT value FROM analytics WHERE key = ?', ['daily_visits'])
+  const daily = parseJson(dailyRow?.value, {})
+  daily[today] = (daily[today] || 0) + 1
+  await db.run(
+    'INSERT INTO analytics (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+    ['daily_visits', JSON.stringify(daily)]
   )
   res.json({ ok: true })
 })
