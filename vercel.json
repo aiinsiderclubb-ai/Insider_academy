@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://insider-academy.onrender.com/api/:path*"
+    }
+  ]
+}
