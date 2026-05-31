@@ -155,6 +155,10 @@ export function Admin() {
     const localRole = saved
       ? (resolveLocalRole(saved) || (['admin', 'editor', 'moderator'].includes(saved) ? saved : null))
       : null
+    if (localRole && online) {
+      localStorage.removeItem('lms_admin_auth')
+      return
+    }
     if (localRole) {
       setAdminRoleState(localRole)
       setAuthenticated(true)
@@ -169,7 +173,11 @@ export function Admin() {
   }, [dashData?.role])
 
   const loadDashboardFromApi = async () => {
-    if (!online || !getAdminToken()) return false
+    if (!online) return false
+    if (!getAdminToken()) {
+      setDashData(null)
+      return false
+    }
     try {
       const data = await api.adminDashboard()
       setDashData(data)
@@ -178,6 +186,8 @@ export function Admin() {
     } catch (err) {
       if (err?.status === 401) {
         handleLogout()
+      } else {
+        setToast({ message: 'Не удалось загрузить данные с сервера. Перезайдите в админку.', type: 'error' })
       }
       return false
     }
@@ -218,7 +228,8 @@ export function Admin() {
         setAuthenticated(true)
         return
       } catch {
-        // API недоступен или другой пароль на сервере — пробуем локальные роли
+        setError('Неверный пароль или API недоступен. Проверьте ADMIN_PASSWORD на сервере.')
+        return
       }
     }
     const localRole = resolveLocalRole(password)
@@ -360,8 +371,10 @@ export function Admin() {
 
   const showToast = (message, type = 'success') => setToast({ message, type })
 
+  const useServerData = online && Boolean(getAdminToken())
+
   const homeworkListPreview = authenticated
-    ? (dashData?.homework ?? (canAccessTab(adminRole, 'homework') ? getHomeworkSubmissions() : []))
+    ? (useServerData ? (dashData?.homework ?? []) : (dashData?.homework ?? (canAccessTab(adminRole, 'homework') ? getHomeworkSubmissions() : [])))
     : []
   const pendingHwCount = homeworkListPreview.filter((h) => h.status === 'pending').length
   useAdminPushNotifications(pendingHwCount, authenticated && canAccessTab(adminRole, 'homework'))
@@ -403,8 +416,12 @@ export function Admin() {
   const analytics = dashData?.analytics ?? getAnalyticsData()
   const charts = dashData?.charts ?? null
   const referrals = dashData?.referrals ?? (canAccessTab(adminRole, 'referrals') ? getReferrals() : [])
-  const homeworkList = dashData?.homework ?? (canAccessTab(adminRole, 'homework') ? getHomeworkSubmissions() : [])
-  const reviewsList = dashData?.reviews ?? (canAccessTab(adminRole, 'reviews') ? getReviewSubmissions() : [])
+  const homeworkList = useServerData
+    ? (dashData?.homework ?? [])
+    : (dashData?.homework ?? (canAccessTab(adminRole, 'homework') ? getHomeworkSubmissions() : []))
+  const reviewsList = useServerData
+    ? (dashData?.reviews ?? [])
+    : (dashData?.reviews ?? (canAccessTab(adminRole, 'reviews') ? getReviewSubmissions() : []))
   const blogPostsList = dashData?.blog ?? getBlogPosts()
   const normalizedCertificateEmail = newCertificate.email.trim().toLowerCase()
   const availableCertificateCourses = courses.filter((course) =>
@@ -769,12 +786,12 @@ export function Admin() {
                           <td>{h.courseTitle} — ур. {h.lessonIndex + 1}</td>
                           <td className={`${styles.cellClip} ${styles.fragmentCell}`}>{(h.content || '').slice(0, 120) || '—'}{h.content && h.content.length > 120 ? '…' : ''}</td>
                           <td className={styles.fileCell}>
-                            {h.fileDataUrl ? (
+                            {(h.fileDataUrl || h.fileUrl) ? (
                               <div className={styles.fileActions}>
                                 <span className={styles.fileName}>{h.fileName || 'Файл'}</span>
                                 <div className={styles.inlineActions}>
-                                  <a href={h.fileDataUrl} target="_blank" rel="noreferrer" className={styles.inlineLink}>Открыть</a>
-                                  <a href={h.fileDataUrl} download={h.fileName || 'homework'} className={styles.inlineLink}>Скачать</a>
+                                  <a href={h.fileDataUrl || h.fileUrl} target="_blank" rel="noreferrer" className={styles.inlineLink}>Открыть</a>
+                                  <a href={h.fileDataUrl || h.fileUrl} download={h.fileName || 'homework'} className={styles.inlineLink}>Скачать</a>
                                   {canPreviewFile(h.fileType) && (
                                     <button type="button" className={styles.inlineBtn} onClick={() => setPreviewHomeworkId((prev) => prev === h.id ? null : h.id)}>
                                       {previewOpen ? 'Скрыть' : 'Просмотр'}
@@ -847,7 +864,7 @@ export function Admin() {
           </p>
           <AdminReviewsPanel
             reviews={searchQuery ? filteredReviews : reviewsList}
-            online={online}
+            online={useServerData}
             courses={courses}
             onUpdated={() => setRefresh((r) => r + 1)}
             showToast={showToast}

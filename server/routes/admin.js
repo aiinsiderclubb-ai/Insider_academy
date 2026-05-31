@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { getDb, parseJson } from '../db.js'
 import { requireAdmin, signAdminToken } from '../middleware/auth.js'
 import { sendHomeworkFeedbackEmail } from '../services/email.js'
+import { getFileUrl } from '../services/storage.js'
 import { config } from '../config.js'
 import { nowIso } from '../db/time.js'
 
@@ -52,11 +53,12 @@ router.get('/dashboard', async (req, res) => {
   }
 
   if (req.adminRole === 'admin' || req.adminRole === 'moderator') {
+    const hwRows = await db.all('SELECT * FROM homework ORDER BY updated_at DESC LIMIT 300')
     Object.assign(payload, {
       registrations: await db.all('SELECT * FROM registrations ORDER BY date DESC LIMIT 500'),
       purchases: await db.all('SELECT * FROM purchase_log ORDER BY date DESC LIMIT 500'),
       certificates: (await db.all('SELECT * FROM certificates ORDER BY date DESC LIMIT 500')).map(mapCert),
-      homework: (await db.all('SELECT * FROM homework ORDER BY updated_at DESC LIMIT 300')).map(mapHw),
+      homework: await mapHomeworkList(hwRows),
       referrals: await db.all('SELECT * FROM referrals ORDER BY date DESC LIMIT 500'),
       discounts: Object.fromEntries((await db.all('SELECT email, percent FROM referral_discounts')).map((r) => [r.email, r.percent])),
       reviews: (await db.all('SELECT * FROM reviews ORDER BY date DESC LIMIT 200')).map(mapReview),
@@ -132,7 +134,7 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, re
       email: row.email, courseTitle: row.course_title, lessonTitle: row.lesson_title, status, comment: adminComment,
     }).catch(() => {})
   }
-  res.json({ ok: true, homework: mapHw(await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])) })
+  res.json({ ok: true, homework: (await mapHomeworkList([await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])]))[0] })
 })
 
 router.patch('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, res) => {
@@ -179,13 +181,19 @@ function getTributeWebhookUrl() {
 }
 
 async function buildChartData(db) {
+  const isPg = db.driver === 'postgres'
+  const sinceFilter = isPg
+    ? "(date::timestamptz >= NOW() - INTERVAL '30 days')"
+    : "date >= date('now', '-30 days')"
+  const dayExpr = isPg ? '(date::timestamptz)::date AS day' : 'date(date) AS day'
+
   const purchasesByDay = await db.all(
-    `SELECT date(date) AS day, COALESCE(SUM(amount), 0) AS revenue, COUNT(*) AS count
-     FROM purchase_log WHERE date >= date('now', '-30 days') GROUP BY day ORDER BY day`
+    `SELECT ${dayExpr}, COALESCE(SUM(amount), 0) AS revenue, COUNT(*) AS count
+     FROM purchase_log WHERE ${sinceFilter} GROUP BY day ORDER BY day`
   )
   const registrationsByDay = await db.all(
-    `SELECT date(date) AS day, COUNT(*) AS count
-     FROM registrations WHERE date >= date('now', '-30 days') GROUP BY day ORDER BY day`
+    `SELECT ${dayExpr}, COUNT(*) AS count
+     FROM registrations WHERE ${sinceFilter} GROUP BY day ORDER BY day`
   )
   const dailyVisits = parseJson((await db.get('SELECT value FROM analytics WHERE key = ?', ['daily_visits']))?.value, {})
   const visitDays = Object.entries(dailyVisits)
@@ -195,8 +203,8 @@ async function buildChartData(db) {
 
   const main = parseJson((await db.get('SELECT value FROM analytics WHERE key = ?', ['main']))?.value, { visits: 0 })
   const totalVisits = main.visits || 0
-  const totalRegs = (await db.get('SELECT COUNT(*) AS c FROM registrations'))?.c || 0
-  const totalPurchases = (await db.get('SELECT COUNT(*) AS c FROM purchase_log'))?.c || 0
+  const totalRegs = Number((await db.get('SELECT COUNT(*) AS c FROM registrations'))?.c || 0)
+  const totalPurchases = Number((await db.get('SELECT COUNT(*) AS c FROM purchase_log'))?.c || 0)
 
   return {
     purchasesByDay,
@@ -224,10 +232,22 @@ function mapHw(row) {
   return {
     id: row.id, email: row.email, name: row.name, courseId: row.course_id,
     courseTitle: row.course_title, lessonIndex: row.lesson_index, lessonTitle: row.lesson_title,
-    content: row.content, fileName: row.file_name, fileType: row.file_type, fileDataUrl: row.file_path,
-    status: row.status, score: row.score, adminComment: row.admin_comment,
+    content: row.content, fileName: row.file_name, fileType: row.file_type, fileDataUrl: null,
+    fileUrl: null, status: row.status, score: row.score, adminComment: row.admin_comment,
     date: row.date, updatedAt: row.updated_at,
   }
+}
+
+async function mapHomeworkList(rows = []) {
+  return Promise.all(rows.map(async (row) => {
+    const hw = mapHw(row)
+    if (row.file_path) {
+      const url = await getFileUrl(row.file_path, row.file_storage)
+      hw.fileDataUrl = url
+      hw.fileUrl = url
+    }
+    return hw
+  }))
 }
 
 function mapReview(row) {
