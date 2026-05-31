@@ -40,6 +40,18 @@ export async function createPostgresDb(connectionString) {
     ssl: useSsl ? { rejectUnauthorized: false } : undefined,
   })
   await pool.query(pgSchema())
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT').catch(() => {})
+  await pool.query(`
+CREATE TABLE IF NOT EXISTS support_messages (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER,
+  email TEXT NOT NULL,
+  name TEXT,
+  message TEXT NOT NULL,
+  reply TEXT,
+  status TEXT NOT NULL DEFAULT 'new',
+  date TEXT NOT NULL
+)`).catch(() => {})
   return {
     driver: 'postgres',
     raw: pool,

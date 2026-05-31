@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
   streak_count INTEGER DEFAULT 0,
   last_activity_date TEXT,
   telegram_chat_id TEXT,
+  avatar_url TEXT,
   team_id INTEGER,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -289,6 +290,21 @@ function migrateColumns(db) {
   if (!cols.includes('telegram_chat_id')) add('ALTER TABLE users ADD COLUMN telegram_chat_id TEXT')
   if (!cols.includes('team_id')) add('ALTER TABLE users ADD COLUMN team_id INTEGER')
   if (!cols.includes('stripe_customer_id')) add('ALTER TABLE users ADD COLUMN stripe_customer_id TEXT')
+  if (!cols.includes('avatar_url')) add('ALTER TABLE users ADD COLUMN avatar_url TEXT')
+
+  try {
+    db.exec(`
+CREATE TABLE IF NOT EXISTS support_messages (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER,
+  email TEXT NOT NULL,
+  name TEXT,
+  message TEXT NOT NULL,
+  reply TEXT,
+  status TEXT NOT NULL DEFAULT 'new',
+  date TEXT NOT NULL
+)`)
+  } catch (_) {}
 
   const reviewCols = db.prepare('PRAGMA table_info(reviews)').all().map((c) => c.name)
   if (!reviewCols.includes('status')) add("ALTER TABLE reviews ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'")

@@ -19,6 +19,7 @@ import { BlogPost } from './pages/BlogPost'
 import { Calendar } from './pages/Calendar'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
+import { AccountSettings } from './pages/AccountSettings'
 import { VerifyEmail } from './pages/VerifyEmail'
 import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
@@ -53,6 +54,7 @@ function AppContent() {
           <Route path="/courses/:slug" element={<Course />} />
           <Route path="/courses/:slug/buy" element={<CourseBuy />} />
           <Route path="/cabinet" element={<ProtectedRoute><Cabinet /></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/calendar" element={<Calendar />} />

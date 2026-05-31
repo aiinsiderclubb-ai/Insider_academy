@@ -20,6 +20,33 @@ const REF_STORAGE = 'lms_pending_ref'
 const AuthContext = createContext(null)
 const STORAGE_KEY = 'lms_user'
 const PURCHASES_KEY = 'lms_purchases'
+const AVATAR_KEY = 'lms_avatar'
+
+function avatarStorageKey(email) {
+  return `${AVATAR_KEY}_${String(email || '').toLowerCase()}`
+}
+
+export function getStoredAvatar(email) {
+  try {
+    return localStorage.getItem(avatarStorageKey(email)) || null
+  } catch {
+    return null
+  }
+}
+
+function saveStoredAvatar(email, dataUrl) {
+  try {
+    if (dataUrl) localStorage.setItem(avatarStorageKey(email), dataUrl)
+    else localStorage.removeItem(avatarStorageKey(email))
+  } catch (_) {}
+}
+
+function withLocalAvatar(user) {
+  if (!user) return null
+  if (user.avatarUrl) return user
+  const localAvatar = getStoredAvatar(user.email)
+  return localAvatar ? { ...user, avatarUrl: localAvatar } : user
+}
 
 function loadUser() {
   try {
@@ -87,16 +114,16 @@ export function AuthProvider({ children }) {
         try {
           const me = await api.getMe()
           if (cancelled) return
-          setUserState(me.user)
+          setUserState(withLocalAvatar(me.user))
           setPurchases(me.purchases || [])
           savePurchasesLocal(me.purchases || [])
         } catch {
-          setUserState(loadUser())
+          setUserState(withLocalAvatar(loadUser()))
           setPurchases(loadPurchases())
         }
       } else {
         const localUser = loadUser()
-        setUserState(localUser)
+        setUserState(withLocalAvatar(localUser))
         if (localUser && isTestAccountEmail(localUser.email)) {
           const testPurchases = getTestAccountPurchases()
           setPurchases(testPurchases)
@@ -111,9 +138,85 @@ export function AuthProvider({ children }) {
   }, [])
 
   const setUser = useCallback((u) => {
-    setUserState(u)
-    if (!apiMode) saveUserLocal(u)
+    const next = withLocalAvatar(u)
+    setUserState(next)
+    if (!apiMode) saveUserLocal(next)
   }, [apiMode])
+
+  const refreshUser = useCallback(async () => {
+    if (apiMode) {
+      const me = await api.getMe()
+      setUserState(withLocalAvatar(me.user))
+      setPurchases(me.purchases || [])
+      savePurchasesLocal(me.purchases || [])
+      return me.user
+    }
+    const localUser = withLocalAvatar(loadUser())
+    setUserState(localUser)
+    return localUser
+  }, [apiMode])
+
+  const updateProfile = useCallback(async (name) => {
+    const nameTrim = String(name || '').trim()
+    if (!nameTrim) throw new Error('Name required')
+    if (apiMode) {
+      const { user: u } = await api.updateProfile({ name: nameTrim })
+      setUserState(withLocalAvatar(u))
+      return u
+    }
+    const next = { ...user, name: nameTrim }
+    setUser(next)
+    return next
+  }, [apiMode, user, setUser])
+
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    if (apiMode) {
+      await api.changePassword({ currentPassword, newPassword })
+      return
+    }
+    if (isTestAccountEmail(user?.email)) {
+      throw new Error('Test account password cannot be changed offline')
+    }
+  }, [apiMode, user])
+
+  const changeEmail = useCallback(async (email, currentPassword) => {
+    const emailTrim = email.trim().toLowerCase()
+    if (apiMode) {
+      const { token, user: u } = await api.updateEmail({ email: emailTrim, currentPassword })
+      setToken(token)
+      setUserState(withLocalAvatar(u))
+      return u
+    }
+    const prevEmail = user?.email
+    const next = { ...user, email: emailTrim }
+    if (prevEmail && getStoredAvatar(prevEmail)) {
+      saveStoredAvatar(emailTrim, getStoredAvatar(prevEmail))
+      saveStoredAvatar(prevEmail, null)
+    }
+    setUser(next)
+    return next
+  }, [apiMode, user, setUser])
+
+  const uploadAvatar = useCallback(async (file) => {
+    if (!file) throw new Error('File required')
+    if (apiMode) {
+      const form = new FormData()
+      form.append('avatar', file)
+      const { user: u } = await api.uploadAvatar(form)
+      setUserState(withLocalAvatar(u))
+      return u
+    }
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+    saveStoredAvatar(user.email, dataUrl)
+    const next = { ...user, avatarUrl: dataUrl }
+    setUser(next)
+    return next
+  }, [apiMode, user, setUser])
 
   const login = useCallback(async (email, password, name) => {
     const emailTrim = email.trim()
@@ -257,6 +360,11 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        refreshUser,
+        updateProfile,
+        changePassword,
+        changeEmail,
+        uploadAvatar,
         purchaseCourse,
         hasPurchased,
         hasClub,

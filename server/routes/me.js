@@ -1,17 +1,39 @@
 import { Router } from 'express'
+import bcrypt from 'bcryptjs'
 import { getDb, parseJson } from '../db.js'
 import { nowIso } from '../db/time.js'
 import { requireUser } from '../middleware/auth.js'
+import { signUserToken } from '../middleware/auth.js'
 import { upload } from '../middleware/upload.js'
 import { saveUploadedFile, getFileUrl } from '../services/storage.js'
 import { computeAchievements, updateStreak, ACHIEVEMENTS } from '../services/achievements.js'
+import { sendTelegramMessage } from '../services/telegram.js'
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase()
+}
+
+async function mapUser(db, user) {
+  let avatarUrl = null
+  if (user.avatar_url) {
+    avatarUrl = await getFileUrl(user.avatar_url, 'local')
+  }
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    emailVerified: Boolean(user.email_verified),
+    telegramChatId: user.telegram_chat_id,
+    avatarUrl,
+  }
+}
 
 const router = Router()
 router.use(requireUser)
 
 router.get('/', async (req, res) => {
   const db = getDb()
-  const user = await db.get('SELECT id, email, name, email_verified, streak_count, last_activity_date, telegram_chat_id FROM users WHERE id = ?', [req.userId])
+  const user = await db.get('SELECT id, email, name, email_verified, streak_count, last_activity_date, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
   if (!user) return res.status(404).json({ error: 'User not found' })
 
   const purchases = await db.all(
@@ -35,13 +57,7 @@ router.get('/', async (req, res) => {
   }
 
   res.json({
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      emailVerified: Boolean(user.email_verified),
-      telegramChatId: user.telegram_chat_id,
-    },
+    user: await mapUser(db, user),
     purchases,
     progress,
     discountPercent: discountRow?.percent || 0,
@@ -192,6 +208,95 @@ router.post('/homework', upload.single('file'), async (req, res) => {
       content || '', fileMeta.fileName, fileMeta.fileType, fileMeta.filePath, fileMeta.fileStorage, now, now]
   )
   res.json({ id: finalId })
+})
+
+router.patch('/profile', async (req, res) => {
+  const db = getDb()
+  const name = String(req.body.name || '').trim()
+  if (!name) return res.status(400).json({ error: 'Name required' })
+  await db.run('UPDATE users SET name = ? WHERE id = ?', [name, req.userId])
+  const user = await db.get('SELECT id, email, name, email_verified, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
+  res.json({ user: await mapUser(db, user) })
+})
+
+router.patch('/password', async (req, res) => {
+  const db = getDb()
+  const currentPassword = String(req.body.currentPassword || '')
+  const newPassword = String(req.body.newPassword || '')
+  if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' })
+  const row = await db.get('SELECT password_hash FROM users WHERE id = ?', [req.userId])
+  if (!row || !bcrypt.compareSync(currentPassword, row.password_hash)) {
+    return res.status(401).json({ error: 'Current password is incorrect' })
+  }
+  const hash = bcrypt.hashSync(newPassword, 10)
+  await db.run('UPDATE users SET password_hash = ? WHERE id = ?', [hash, req.userId])
+  res.json({ ok: true })
+})
+
+router.patch('/email', async (req, res) => {
+  const db = getDb()
+  const email = normalizeEmail(req.body.email)
+  const currentPassword = String(req.body.currentPassword || '')
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Invalid email' })
+  }
+  const row = await db.get('SELECT id, email, name, password_hash, email_verified, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
+  if (!row || !bcrypt.compareSync(currentPassword, row.password_hash)) {
+    return res.status(401).json({ error: 'Current password is incorrect' })
+  }
+  const exists = await db.get('SELECT id FROM users WHERE email = ? AND id != ?', [email, req.userId])
+  if (exists) return res.status(409).json({ error: 'Email already in use' })
+  await db.run('UPDATE users SET email = ?, email_verified = 0 WHERE id = ?', [email, req.userId])
+  await db.run('UPDATE notifications SET email = ? WHERE email = ?', [email, row.email]).catch(() => {})
+  const user = await db.get('SELECT id, email, name, email_verified, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
+  const token = signUserToken(user)
+  res.json({ token, user: await mapUser(db, user) })
+})
+
+router.post('/avatar', upload.single('avatar'), async (req, res) => {
+  const db = getDb()
+  if (!req.file) return res.status(400).json({ error: 'Avatar file required' })
+  const saved = await saveUploadedFile(req.file, 'avatars')
+  await db.run('UPDATE users SET avatar_url = ? WHERE id = ?', [saved.key, req.userId])
+  const user = await db.get('SELECT id, email, name, email_verified, telegram_chat_id, avatar_url FROM users WHERE id = ?', [req.userId])
+  res.json({ user: await mapUser(db, user) })
+})
+
+router.get('/support', async (req, res) => {
+  const db = getDb()
+  const rows = await db.all(
+    'SELECT id, message, reply, status, date FROM support_messages WHERE user_id = ? ORDER BY date ASC LIMIT 100',
+    [req.userId]
+  )
+  res.json(rows.map((row) => ({
+    id: row.id,
+    message: row.message,
+    reply: row.reply,
+    status: row.status,
+    date: row.date,
+  })))
+})
+
+router.post('/support', async (req, res) => {
+  const db = getDb()
+  const message = String(req.body.message || '').trim()
+  if (!message) return res.status(400).json({ error: 'Message required' })
+  const user = await db.get('SELECT id, email, name FROM users WHERE id = ?', [req.userId])
+  if (!user) return res.status(404).json({ error: 'User not found' })
+  const id = `sup-${Date.now()}`
+  const date = new Date().toISOString()
+  await db.run(
+    'INSERT INTO support_messages (id, user_id, email, name, message, status, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, user.id, user.email, user.name, message, 'new', date]
+  )
+  const supportChatId = process.env.SUPPORT_TELEGRAM_CHAT_ID || ''
+  if (supportChatId) {
+    sendTelegramMessage(
+      supportChatId,
+      `📩 <b>Поддержка</b>\nОт: ${user.name || user.email}\nEmail: ${user.email}\n\n${message.slice(0, 1500)}`
+    ).catch(() => {})
+  }
+  res.status(201).json({ id, message, status: 'new', date })
 })
 
 function mapNotification(row) {

@@ -25,6 +25,7 @@ const navItemsKeys = [
 ]
 
 const cabinetMenuKeys = [
+  { to: '/account', labelKey: 'nav.accountSettings', icon: '⚙️' },
   { to: '/cabinet', labelKey: 'nav.myCourses', icon: '📚' },
   { to: '/cabinet#certificates', labelKey: 'nav.myCertificates', icon: '📄' },
   { to: '/cabinet#awards', labelKey: 'nav.awards', icon: '🏆' },
@@ -41,6 +42,7 @@ export function Layout({ children }) {
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
   const [chatOpen, setChatOpen] = useState(false)
+  const [chatTab, setChatTab] = useState('ai')
   const [cabinetOpen, setCabinetOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [, forceUpdate] = useState(0)
@@ -97,6 +99,13 @@ export function Layout({ children }) {
     : 0
 
   const isAdminPage = location.pathname === '/admin'
+
+  const openChat = (tab = 'ai') => {
+    setChatTab(tab)
+    setChatOpen(true)
+  }
+
+  const userInitial = user?.name?.[0] || user?.email?.[0] || '?'
 
   const getNotificationTitle = (notification) => {
     if (notification.type === 'certificate_added') {
@@ -182,7 +191,15 @@ export function Layout({ children }) {
               <span className={styles.langDivider}>/</span>
               <span className={lang === 'en' ? styles.langActive : ''}>{t('common.langEn')}</span>
             </button>
-            <span className={styles.iconBtn} title={t('nav.messages')} aria-hidden><IconMessage /></span>
+            <button
+              type="button"
+              className={styles.iconBtn}
+              title={t('nav.messages')}
+              aria-label={t('nav.messages')}
+              onClick={() => openChat('ai')}
+            >
+              <IconMessage />
+            </button>
             <div className={styles.notifWrap} ref={notifRef}>
               <button type="button" className={styles.iconBtn} title={t('nav.notifications')} onClick={() => setNotifOpen((v) => !v)} aria-expanded={notifOpen}>
                 <IconBell />
@@ -221,7 +238,11 @@ export function Layout({ children }) {
                   aria-haspopup="true"
                 >
                   <ProgressRing percent={overallProgress} size={40} stroke={2.5}>
-                    <span className={styles.avatarInitial}>{user.email?.slice(0, 1).toUpperCase()}</span>
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="" className={styles.avatarImg} />
+                    ) : (
+                      <span className={styles.avatarInitial}>{userInitial.toUpperCase()}</span>
+                    )}
                   </ProgressRing>
                 </button>
                 {cabinetOpen && (
@@ -272,13 +293,13 @@ export function Layout({ children }) {
           </div>
         </footer>
 
-        <button type="button" className={styles.callFab} onClick={() => setChatOpen(true)} title={t('chatbot.title')} aria-label={t('chatbot.title')}>
+        <button type="button" className={styles.callFab} onClick={() => openChat('ai')} title={t('chatbot.title')} aria-label={t('chatbot.title')}>
           <span className={styles.callFabIcon} aria-hidden>💬</span>
         </button>
         {location.pathname !== '/admin' && acceleratorCourse && (
           <FloatingHotOffer lang={lang} courseSlug={acceleratorCourse.slug} />
         )}
-        <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} />
+        <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} initialTab={chatTab} />
       </div>
     </div>
   )
