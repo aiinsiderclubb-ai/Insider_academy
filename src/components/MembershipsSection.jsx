@@ -59,7 +59,7 @@ export function MembershipsSection({ lang, compact = false }) {
 
                   {bonus.length > 0 && (
                     <div className={styles.bonus}>
-                      <strong>Bonus:</strong>
+                      <strong>{lang === 'ru' ? 'Бонус:' : 'Bonus:'}</strong>
                       <ul>
                         {bonus.map((item) => (
                           <li key={item}>{item}</li>
