@@ -147,14 +147,32 @@ router.patch('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, res
   }
   const row = await db.get('SELECT * FROM reviews WHERE id = ?', [req.params.id])
   if (!row) return res.status(404).json({ error: 'Not found' })
+  if (status === 'approved' && !String(row.text || '').trim()) {
+    return res.status(400).json({
+      error: 'Cannot publish empty review',
+      errorRu: 'Нельзя опубликовать отзыв без текста — удалите или отправьте на доработку',
+    })
+  }
   await db.run('UPDATE reviews SET status = ? WHERE id = ?', [status, req.params.id])
   if (status === 'approved' && row.user_id) {
-    await db.run(
-      'INSERT OR IGNORE INTO user_achievements (user_id, achievement_id, unlocked_at) VALUES (?, ?, ?)',
-      [row.user_id, 'reviewer', new Date().toISOString()]
-    )
+    try {
+      await db.run(
+        'INSERT OR IGNORE INTO user_achievements (user_id, achievement_id, unlocked_at) VALUES (?, ?, ?)',
+        [row.user_id, 'reviewer', new Date().toISOString()]
+      )
+    } catch (err) {
+      console.warn('[admin] reviewer achievement skipped:', err.message)
+    }
   }
   res.json({ ok: true, review: mapReview(await db.get('SELECT * FROM reviews WHERE id = ?', [req.params.id])) })
+})
+
+router.delete('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const row = await db.get('SELECT id FROM reviews WHERE id = ?', [req.params.id])
+  if (!row) return res.status(404).json({ error: 'Not found' })
+  await db.run('DELETE FROM reviews WHERE id = ?', [req.params.id])
+  res.json({ ok: true, id: req.params.id })
 })
 
 router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req, res) => {

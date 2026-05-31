@@ -404,7 +404,9 @@ export function getReviewSubmissions() {
 }
 
 export function getPublicReviews(courseId) {
-  const list = getReviewSubmissions().filter((r) => r.status === 'approved' && r.courseId === courseId)
+  const list = getReviewSubmissions().filter(
+    (r) => r.status === 'approved' && r.courseId === courseId && String(r.text || '').trim()
+  )
   const count = list.length
   const average = count ? Math.round((list.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10 : null
   const mask = (email) => {
@@ -457,6 +459,14 @@ export function updateReviewSubmission(id, { status }) {
   if (status) list[idx].status = status
   setJson(KEY_REVIEWS, list)
   return list[idx]
+}
+
+export function deleteReviewSubmission(id) {
+  const list = getReviewSubmissions()
+  const next = list.filter((r) => r.id !== id)
+  if (next.length === list.length) return false
+  setJson(KEY_REVIEWS, next)
+  return true
 }
 
 export function getAcceleratorApplications() {

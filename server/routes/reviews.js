@@ -16,11 +16,11 @@ function maskEmail(email) {
 router.get('/:courseId', async (req, res) => {
   const db = getDb()
   const rows = await db.all(
-    "SELECT * FROM reviews WHERE course_id = ? AND status = 'approved' ORDER BY date DESC LIMIT 50",
+    "SELECT * FROM reviews WHERE course_id = ? AND status = 'approved' AND TRIM(COALESCE(text, '')) != '' ORDER BY date DESC LIMIT 50",
     [req.params.courseId]
   )
   const stats = await db.get(
-    "SELECT COUNT(*) AS count, AVG(rating) AS avg FROM reviews WHERE course_id = ? AND status = 'approved'",
+    "SELECT COUNT(*) AS count, AVG(rating) AS avg FROM reviews WHERE course_id = ? AND status = 'approved' AND TRIM(COALESCE(text, '')) != ''",
     [req.params.courseId]
   )
   res.json({

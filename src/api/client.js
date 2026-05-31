@@ -92,6 +92,7 @@ export const api = {
   adminSaveCalendar: (events) => apiRequest('/admin/calendar', { method: 'PUT', body: { events }, admin: true }),
   adminUpdateHomework: (id, payload) => apiRequest(`/admin/homework/${id}`, { method: 'PATCH', body: payload, admin: true }),
   adminUpdateReview: (id, payload) => apiRequest(`/admin/reviews/${id}`, { method: 'PATCH', body: payload, admin: true }),
+  adminDeleteReview: (id) => apiRequest(`/admin/reviews/${id}`, { method: 'DELETE', admin: true }),
   adminUpdateApplication: (id, payload) => apiRequest(`/admin/applications/${id}`, { method: 'PATCH', body: payload, admin: true }),
   adminAddCertificate: (payload) => apiRequest('/admin/certificates', { method: 'POST', body: payload, admin: true }),
 }
