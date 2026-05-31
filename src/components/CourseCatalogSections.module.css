@@ -49,6 +49,212 @@
   gap: 24px;
 }
 
+.levelGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.levelCard,
+.bundleCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+    var(--bg-card);
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+.levelCard {
+  border-radius: 20px;
+  padding: 22px;
+}
+
+.levelCard::before,
+.bundleCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 18% 0%, rgba(168, 85, 247, 0.16), transparent 38%);
+  pointer-events: none;
+}
+
+.levelPill {
+  position: relative;
+  display: inline-flex;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+  border-radius: var(--radius-pill);
+  color: var(--glow-purple);
+  background: var(--glow-purple-dim);
+  border: 1px solid var(--border-accent);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.levelDesc {
+  position: relative;
+  min-height: 48px;
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.levelList {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.levelList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.levelList a {
+  color: var(--text);
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.levelList a:hover {
+  color: var(--glow-purple);
+}
+
+.levelList strong {
+  color: var(--glow-purple);
+  font-size: 1rem;
+}
+
+.bundleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.bundleCard {
+  border-radius: 22px;
+  padding: 24px;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.bundleCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-accent);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.28), 0 0 28px var(--glow-purple-dim);
+}
+
+.bundleCardFeatured {
+  border-color: color-mix(in srgb, var(--glow-pink) 45%, var(--border));
+  box-shadow: 0 0 34px color-mix(in srgb, var(--glow-pink) 16%, transparent);
+}
+
+.bundleBadge {
+  position: relative;
+  display: inline-flex;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bundleCard h3 {
+  position: relative;
+  margin: 14px 0 8px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.bundleCard p {
+  position: relative;
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.bundleCard ul {
+  position: relative;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 18px;
+}
+
+.bundleCard li {
+  padding: 5px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.bundlePriceRow {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.bundlePrice {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.bundleOldPrice {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.bundleSave {
+  color: var(--success);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.bundleCta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  border-radius: 14px;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-weight: 800;
+}
+
+.bundleCta:hover {
+  filter: brightness(1.08);
+}
+
 .mapCta {
   display: flex;
   flex-wrap: wrap;
@@ -91,5 +297,10 @@
 @media (max-width: 640px) {
   .sectionTitle {
     font-size: 1.375rem;
+  }
+
+  .levelGrid,
+  .bundleGrid {
+    grid-template-columns: 1fr;
   }
 }

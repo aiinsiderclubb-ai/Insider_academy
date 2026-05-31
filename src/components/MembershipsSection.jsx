@@ -94,7 +94,7 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
               aria-selected={billing === 'annual'}
             >
               {lang === 'ru' ? 'Годовой доступ' : 'Annual'}
-              <span>{lang === 'ru' ? '2 месяца бесплатно' : '2 months free'}</span>
+              <span>{lang === 'ru' ? 'до 6 месяцев бесплатно' : 'up to 6 months free'}</span>
             </button>
           </div>
         </ScrollReveal>

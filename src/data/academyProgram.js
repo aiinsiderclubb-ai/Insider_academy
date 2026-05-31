@@ -189,7 +189,7 @@ const rawAcademyCourses = [
     shortDescriptionEn: 'Create content entirely with AI.',
     fullDescription: '8 уроков: тексты, AI-дизайн, видео, Shorts/Reels, контент-план и личный бренд.',
     fullDescriptionEn: '8 lessons: copy, AI design, video, Shorts/Reels, content planning and personal brand.',
-    priceEur: 25,
+    priceEur: 19,
     duration: getLessonCountLabel('ai-content-creator', 'ru'),
     durationEn: getLessonCountLabel('ai-content-creator', 'en'),
     category: 'Контент',

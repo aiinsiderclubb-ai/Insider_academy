@@ -54,6 +54,7 @@ export function isCatalogStale(storedList) {
     const stored = storedList.find((c) => c.id === def.id)
     if (!stored) return true
     if (lessonsNeedSync(stored.lessons, def.lessons)) return true
+    if (Number(stored.priceEur ?? 0) !== Number(def.priceEur ?? 0)) return true
     if (Boolean(def.hasHomework) !== Boolean(stored.hasHomework)) return true
     if (def.weeks?.length && (stored.weeks?.length || 0) !== def.weeks.length) return true
     const defIdea = def.courseIdea || def.fullDescription || ''

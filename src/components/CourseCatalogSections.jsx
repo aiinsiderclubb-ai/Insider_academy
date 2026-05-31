@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { CourseCatalogCard } from './CourseCatalogCard'
+import { COURSE_BUNDLES, COURSE_LEVEL_PACKS } from '../data/coursePacks'
 import styles from './CourseCatalogSections.module.css'
 
 function SectionHeader({ pill, title, desc, lang }) {
@@ -29,6 +30,73 @@ function CourseGrid({ courses, lang, theme, hasPurchased, getPercent, completedL
         />
       ))}
     </div>
+  )
+}
+
+function LevelsAndBundles({ lang }) {
+  const ru = lang === 'ru'
+
+  return (
+    <section className={styles.section}>
+      <SectionHeader
+        pill={ru ? 'Паки' : 'Packs'}
+        title={ru ? 'Курсы по уровням и выгодные пакеты' : 'Courses by level and bundle offers'}
+        desc={ru
+          ? 'Выберите отдельный курс по уровню или заберите набор со скидкой.'
+          : 'Choose a course by level or get a discounted bundle.'}
+        lang={lang}
+      />
+
+      <div className={styles.levelGrid}>
+        {COURSE_LEVEL_PACKS.map((level) => (
+          <article className={styles.levelCard} key={level.id}>
+            <span className={styles.levelPill}>{ru ? level.titleRu : level.titleEn}</span>
+            <p className={styles.levelDesc}>{ru ? level.descRu : level.descEn}</p>
+            <ul className={styles.levelList}>
+              {level.courses.map((course) => (
+                <li key={course.title}>
+                  <Link to={`/courses/${course.courseId}`}>{course.title}</Link>
+                  <strong>{course.priceEur}€</strong>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      <div className={styles.bundleGrid}>
+        {COURSE_BUNDLES.map((bundle) => {
+          const includes = lang === 'en' && bundle.includesEn ? bundle.includesEn : bundle.includes
+          return (
+            <article
+              className={`${styles.bundleCard} ${bundle.featured ? styles.bundleCardFeatured : ''}`}
+              key={bundle.id}
+            >
+              <span className={styles.bundleBadge}>
+                {bundle.featured ? (ru ? 'Лучшее предложение' : 'Best value') : (ru ? 'Пакет' : 'Bundle')}
+              </span>
+              <h3>{bundle.title}</h3>
+              <p>{ru ? bundle.descRu : bundle.descEn}</p>
+              <ul>
+                {includes.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <div className={styles.bundlePriceRow}>
+                <span className={styles.bundlePrice}>{bundle.priceEur}€</span>
+                <span className={styles.bundleOldPrice}>{bundle.oldPriceEur}€</span>
+                <span className={styles.bundleSave}>
+                  {ru ? `экономия ${bundle.oldPriceEur - bundle.priceEur}€` : `save €${bundle.oldPriceEur - bundle.priceEur}`}
+                </span>
+              </div>
+              <Link to="/cabinet#support" className={styles.bundleCta}>
+                {ru ? 'Получить пакет →' : 'Get bundle →'}
+              </Link>
+            </article>
+          )
+        })}
+      </div>
+    </section>
   )
 }
 
@@ -86,6 +154,8 @@ export function CourseCatalogSections({
           actionLabel={ru ? 'Начать бесплатно →' : 'Start free →'}
         />
       </section>
+
+      <LevelsAndBundles lang={lang} />
 
       <section className={styles.section}>
         <SectionHeader
