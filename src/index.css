@@ -1,72 +1,96 @@
 :root {
-  /* ── Dark theme tokens ── */
-  --bg: #0a0a0f;
-  --bg-card: rgba(18, 18, 26, 0.85);
-  --bg-elevated: #1a1a24;
-  --bg-glass: rgba(18, 18, 26, 0.72);
-  --bg-pill: rgba(30, 30, 40, 0.95);
-  --glass-blur: 12px;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-accent: rgba(168, 85, 247, 0.5);
-  --text: #f5f5fa;
-  --text-muted: #b0bdd4;
+  /* ── AI Insider brand (insiderai.it.com) — Cyber Violet × Neon Orange ── */
+  --bg: #07060f;
+  --bg-card: rgba(15, 12, 31, 0.88);
+  --bg-elevated: #1a1330;
+  --bg-glass: rgba(168, 85, 247, 0.04);
+  --bg-pill: rgba(21, 16, 42, 0.92);
+  --glass-blur: 16px;
+  --border: rgba(168, 85, 247, 0.14);
+  --border-accent: rgba(168, 85, 247, 0.35);
+  --text: #ffffff;
+  --text-secondary: #b8b0d6;
+  --text-muted: #b8b0d6;
   --font: 'Manrope', -apple-system, sans-serif;
   --font-display: 'Space Grotesk', 'Manrope', sans-serif;
-  --gradient-primary: linear-gradient(135deg, #f43f5e 0%, #ec4899 30%, #a855f7 70%, #6366f1 100%);
-  --gradient-primary-hover: linear-gradient(135deg, #fb7185 0%, #f472b6 30%, #c084fc 70%, #818cf8 100%);
-  --accent-primary: #c084fc;
-  --accent-secondary: #f472b6;
-  --glow-pink: #f472b6;
-  --glow-pink-dim: rgba(244, 114, 182, 0.35);
-  --glow-purple: #c084fc;
-  --glow-purple-dim: rgba(168, 85, 247, 0.3);
-  --glow-violet: rgba(139, 92, 246, 0.4);
-  --accent: #e879f9;
-  --accent-dim: rgba(168, 85, 247, 0.2);
+
+  /* Brand accents */
+  --accent: #a855f7;
+  --accent-primary: #a855f7;
+  --accent-secondary: #f97316;
+  --accent-violet: #7c3aed;
+  --accent-cyan: #06b6d4;
+  --accent-orange: #f97316;
+  --accent-dim: rgba(168, 85, 247, 0.22);
+
+  /* Gradients — violet → orange (как на insiderai.it.com) */
+  --gradient-primary: linear-gradient(135deg, #a855f7 0%, #7c3aed 45%, #f97316 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #c084fc 0%, #a855f7 40%, #fb923c 100%);
+  --gradient-text: linear-gradient(135deg, #c084fc 0%, #a855f7 35%, #f97316 75%, #fb923c 100%);
+
+  /* Glow aliases (glow-pink → orange для совместимости со старыми модулями) */
+  --glow-purple: #a855f7;
+  --glow-purple-dim: rgba(168, 85, 247, 0.28);
+  --glow-pink: #f97316;
+  --glow-pink-dim: rgba(249, 115, 22, 0.22);
+  --glow-orange: #f97316;
+  --glow-orange-dim: rgba(249, 115, 22, 0.22);
+  --glow-violet: rgba(124, 58, 237, 0.35);
+  --glow-cyan-dim: rgba(6, 182, 212, 0.12);
+
   --success: #34d399;
   --success-dim: rgba(52, 211, 153, 0.2);
   --radius: 12px;
   --radius-pill: 999px;
-  --header-bg: rgba(10, 10, 15, 0.9);
-  --footer-bg: var(--bg-card);
-  --promo-bg: linear-gradient(135deg, rgba(30, 20, 50, 0.95) 0%, rgba(15, 10, 25, 0.98) 100%);
-  --sidebar-bg: rgba(10, 10, 15, 0.95);
-  --shadow-glow-sm: 0 0 20px var(--glow-purple-dim);
-  --shadow-glow-md: 0 8px 40px var(--glow-purple-dim), 0 0 60px var(--glow-pink-dim);
-  --shadow-card: 0 16px 48px rgba(0, 0, 0, 0.35);
-  --progress-track: rgba(255, 255, 255, 0.08);
+  --header-bg: rgba(7, 6, 15, 0.78);
+  --header-border: rgba(168, 85, 247, 0.12);
+  --footer-bg: #050410;
+  --promo-bg: linear-gradient(135deg, rgba(26, 19, 48, 0.95) 0%, rgba(12, 10, 24, 0.98) 100%);
+  --sidebar-bg: rgba(7, 6, 15, 0.95);
+  --shadow-glow-sm: 0 0 24px var(--glow-purple-dim);
+  --shadow-glow-md: 0 8px 40px rgba(124, 58, 237, 0.18), 0 0 48px var(--glow-orange-dim);
+  --shadow-card: 0 4px 28px rgba(124, 58, 237, 0.18), 0 2px 12px rgba(0, 0, 0, 0.5);
+  --progress-track: rgba(168, 85, 247, 0.12);
   --progress-fill: var(--gradient-primary);
   --btn-primary-bg: var(--gradient-primary);
-  --btn-primary-shadow: 0 4px 24px var(--glow-purple-dim);
+  --btn-primary-shadow: 0 4px 24px var(--glow-purple-dim), 0 0 20px var(--glow-orange-dim);
 }
 
-/* ── Light theme ── */
+/* ── Light theme (как на insiderai.it.com) ── */
 [data-theme="light"] {
-  --bg: #f5f3ff;
+  --bg: #f6f4ff;
   --bg-card: rgba(255, 255, 255, 0.92);
-  --bg-elevated: #faf8ff;
-  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-elevated: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.7);
   --bg-pill: rgba(255, 255, 255, 0.98);
-  --border: rgba(139, 92, 246, 0.15);
-  --border-accent: rgba(124, 58, 237, 0.45);
-  --text: #1e1b2e;
-  --text-muted: #4a4560;
-  --accent-primary: #7c3aed;
-  --accent-secondary: #db2777;
-  --glow-pink: #ec4899;
-  --glow-pink-dim: rgba(236, 72, 153, 0.2);
-  --glow-purple: #7c3aed;
-  --glow-purple-dim: rgba(124, 58, 237, 0.22);
+  --border: rgba(124, 58, 237, 0.14);
+  --border-accent: rgba(124, 58, 237, 0.28);
+  --text: #1a103d;
+  --text-secondary: #4b3f6e;
+  --text-muted: #4b3f6e;
   --accent: #7c3aed;
-  --accent-dim: rgba(124, 58, 237, 0.12);
-  --success-dim: rgba(52, 211, 153, 0.2);
-  --header-bg: rgba(255, 255, 255, 0.92);
-  --footer-bg: #ede9fe;
+  --accent-primary: #7c3aed;
+  --accent-secondary: #ea580c;
+  --accent-violet: #6d28d9;
+  --accent-cyan: #0891b2;
+  --accent-orange: #ea580c;
+  --accent-dim: rgba(124, 58, 237, 0.14);
+  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #a855f7 45%, #ea580c 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #8b5cf6 0%, #a855f7 40%, #f97316 100%);
+  --glow-purple: #7c3aed;
+  --glow-purple-dim: rgba(124, 58, 237, 0.18);
+  --glow-pink: #ea580c;
+  --glow-pink-dim: rgba(234, 88, 12, 0.18);
+  --glow-orange: #ea580c;
+  --glow-orange-dim: rgba(234, 88, 12, 0.18);
+  --header-bg: rgba(246, 244, 255, 0.85);
+  --header-border: rgba(124, 58, 237, 0.12);
+  --footer-bg: #0c0a18;
   --promo-bg: linear-gradient(135deg, rgba(250, 245, 255, 0.98) 0%, rgba(237, 233, 254, 0.95) 100%);
   --sidebar-bg: rgba(255, 255, 255, 0.95);
-  --shadow-glow-sm: 0 4px 20px rgba(124, 58, 237, 0.15);
-  --shadow-glow-md: 0 8px 32px rgba(124, 58, 237, 0.18);
-  --shadow-card: 0 12px 40px rgba(124, 58, 237, 0.1);
+  --shadow-glow-sm: 0 4px 20px rgba(124, 58, 237, 0.12);
+  --shadow-glow-md: 0 8px 32px rgba(124, 58, 237, 0.15);
+  --shadow-card: 0 4px 24px rgba(124, 58, 237, 0.1);
   --progress-track: rgba(124, 58, 237, 0.12);
 }
 
@@ -94,15 +118,15 @@ body {
   position: relative;
 }
 
-/* Фон с нейронами: яркие блики и сетка точек */
+/* Фон — ambient glow как на insiderai.it.com (violet + orange + cyan) */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 80% 20%, var(--glow-pink-dim) 0%, transparent 50%),
-    radial-gradient(ellipse 70% 50% at 20% 80%, var(--glow-purple-dim) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+    radial-gradient(60% 50% at 15% 0%, rgba(124, 58, 237, 0.18) 0%, transparent 60%),
+    radial-gradient(50% 40% at 85% 10%, rgba(249, 115, 22, 0.10) 0%, transparent 60%),
+    radial-gradient(60% 50% at 50% 100%, rgba(6, 182, 212, 0.10) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -112,10 +136,10 @@ body::after {
   position: fixed;
   inset: 0;
   background-image:
-    radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.15) 0%, transparent 0.8%),
-    radial-gradient(circle at 60% 70%, rgba(236, 72, 153, 0.12) 0%, transparent 0.6%),
-    radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 0.7%),
-    radial-gradient(circle at 40% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 0.5%);
+    radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.12) 0%, transparent 0.8%),
+    radial-gradient(circle at 60% 70%, rgba(249, 115, 22, 0.10) 0%, transparent 0.6%),
+    radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 0.7%),
+    radial-gradient(circle at 40% 80%, rgba(124, 58, 237, 0.10) 0%, transparent 0.5%);
   background-size: 120px 120px, 180px 180px, 100px 100px, 150px 150px;
   background-position: 0 0, 40px 60px, 80px 20px, 20px 100px;
   pointer-events: none;
@@ -125,22 +149,20 @@ body::after {
 
 [data-theme="light"] body::before {
   background:
-    radial-gradient(ellipse 80% 60% at 80% 20%, var(--glow-pink-dim) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 80% 20%, var(--glow-orange-dim) 0%, transparent 55%),
     radial-gradient(ellipse 70% 50% at 20% 80%, var(--glow-purple-dim) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
   opacity: 1;
 }
 
 [data-theme="light"] body::after {
   background-image:
-    radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.12) 0%, transparent 0.6%),
-    radial-gradient(circle at 60% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 0.5%),
-    radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 0.55%),
-    radial-gradient(circle at 40% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 0.5%),
-    radial-gradient(circle at 70% 40%, rgba(236, 72, 153, 0.08) 0%, transparent 0.45%),
-    radial-gradient(circle at 30% 60%, rgba(139, 92, 246, 0.09) 0%, transparent 0.5%);
-  background-size: 100px 100px, 140px 140px, 90px 90px, 130px 130px, 110px 110px, 150px 150px;
-  background-position: 0 0, 30px 40px, 60px 10px, 10px 80px, 70px 50px, 40px 20px;
+    radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.10) 0%, transparent 0.6%),
+    radial-gradient(circle at 60% 70%, rgba(249, 115, 22, 0.08) 0%, transparent 0.5%),
+    radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 0.55%),
+    radial-gradient(circle at 40% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 0.5%);
+  background-size: 100px 100px, 140px 140px, 90px 90px, 130px 130px;
+  background-position: 0 0, 30px 40px, 60px 10px, 10px 80px;
   opacity: 1;
   animation: neuronFloat 12s ease-in-out infinite;
 }
@@ -184,7 +206,7 @@ img {
   z-index: 1;
 }
 
-/* Кнопка с градиентом розовый–фиолетовый (как на референсе) */
+/* Кнопка с градиентом violet → orange (как на insiderai.it.com) */
 .btn-gradient {
   background: var(--gradient-primary);
   color: #fff;
@@ -195,8 +217,17 @@ img {
   transition: filter 0.2s, box-shadow 0.2s;
 }
 .btn-gradient:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 30px var(--glow-pink-dim), 0 0 50px var(--glow-purple-dim);
+  filter: brightness(1.08);
+  box-shadow: var(--btn-primary-shadow);
+}
+
+/* Градиентный текст бренда */
+.gradient-text {
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Метка-таблетка с фиолетовой рамкой и точками */
@@ -247,7 +278,19 @@ img {
 }
 
 .neuron-glow {
-  box-shadow: 0 0 60px var(--glow-purple-dim), 0 0 100px var(--glow-pink-dim);
+  box-shadow: 0 0 60px var(--glow-purple-dim), 0 0 100px var(--glow-orange-dim);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #a855f7 0%, #7c3aed 100%);
+  border-radius: 999px;
+}
+
+::selection {
+  background: rgba(168, 85, 247, 0.35);
+  color: #fff;
 }
 
 /* Анимации появления и акценты */

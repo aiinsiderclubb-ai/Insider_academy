@@ -307,7 +307,7 @@
 }
 
 .footerAuthLink:hover {
-  color: var(--glow-pink, #ec4899);
+  color: var(--glow-orange, #f97316);
 }
 
 .demoHint {

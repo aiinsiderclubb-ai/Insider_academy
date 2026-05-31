@@ -22,7 +22,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--glow-purple);
-  box-shadow: 0 0 12px var(--glow-purple), 0 0 24px var(--glow-pink-dim);
+  box-shadow: 0 0 12px var(--glow-purple), 0 0 24px var(--glow-orange-dim);
   animation: pulse 3s ease-in-out infinite;
   animation-delay: calc(var(--i, 0) * 0.15s);
 }

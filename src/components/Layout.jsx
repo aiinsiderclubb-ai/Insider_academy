@@ -13,6 +13,7 @@ import { FloatingHotOffer } from './FloatingHotOffer'
 import { NeuronGlow } from './NeuronGlow'
 import { ThemeToggle } from './ThemeToggle'
 import { ProgressRing } from './ProgressRing'
+import { MAIN_SITE_COURSES, MAIN_SITE_URL, TELEGRAM_COMMUNITY, TELEGRAM_MANAGER } from '../data/siteLinks'
 import styles from './Layout.module.css'
 
 const navItemsKeys = [
@@ -176,6 +177,9 @@ export function Layout({ children }) {
               <Link to="/">{t('nav.school')}</Link>
               <Link to="/courses">{t('nav.catalog')}</Link>
               <Link to="/blog">{t('nav.blog')}</Link>
+              <a href={MAIN_SITE_COURSES} target="_blank" rel="noreferrer noopener">
+                {lang === 'ru' ? 'Курсы на сайте' : 'Website courses'} ↗
+              </a>
             </nav>
           )}
           <div className={styles.headerRight}>
@@ -286,9 +290,26 @@ export function Layout({ children }) {
           <div className={styles.footerInner}>
             <p>{t('footer.tagline')}</p>
             <p className={styles.footerMuted}>
-              <a href="https://t.me/your_channel" target="_blank" rel="noreferrer noopener" className={styles.telegramLink}>{t('footer.telegram')}</a>
-              {' · '}{t('footer.copyright')}
-              {' · '}<Link to="/admin" className={styles.telegramLink}>Админ</Link>
+              <a href={MAIN_SITE_URL} target="_blank" rel="noreferrer noopener" className={styles.telegramLink}>
+                insiderai.it.com
+              </a>
+              {' · '}
+              <a href={MAIN_SITE_COURSES} target="_blank" rel="noreferrer noopener" className={styles.telegramLink}>
+                {lang === 'ru' ? 'Курсы' : 'Courses'}
+              </a>
+              {' · '}
+              <a href={TELEGRAM_COMMUNITY} target="_blank" rel="noreferrer noopener" className={styles.telegramLink}>
+                {t('footer.telegram')}
+              </a>
+              {' · '}
+              <a href={TELEGRAM_MANAGER} target="_blank" rel="noreferrer noopener" className={styles.telegramLink}>
+                @vladyslavarcher
+              </a>
+            </p>
+            <p className={styles.footerMuted}>
+              {t('footer.copyright')}
+              {' · '}
+              <Link to="/admin" className={styles.telegramLink}>Админ</Link>
             </p>
           </div>
         </footer>

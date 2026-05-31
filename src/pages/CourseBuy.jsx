@@ -10,7 +10,8 @@ import { useTheme } from '../context/ThemeContext'
 import { ComparePlans } from '../components/ComparePlans'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { CourseHero } from '../components/CourseHero'
-import { BUY_FAQ } from '../data/courseLanding'
+import { COURSE_FAQ } from '../data/courseLanding'
+import { PlatformBridge } from '../components/PlatformBridge'
 import { IconChevronDown } from '../components/Icons'
 import { api, checkApiOnline } from '../api/client'
 import styles from './CourseBuy.module.css'
@@ -210,7 +211,7 @@ export function CourseBuy() {
               <section className={styles.faqSection}>
                 <h2 className={styles.sectionTitle}>FAQ</h2>
                 <div className={styles.faqList}>
-                  {BUY_FAQ.map((item, i) => {
+                  {COURSE_FAQ.map((item, i) => {
                     const open = openFaq === i
                     return (
                       <div key={i} className={styles.faqItem}>
@@ -234,6 +235,8 @@ export function CourseBuy() {
                 </div>
               </section>
             </ScrollReveal>
+
+            <PlatformBridge lang={lang} />
           </div>
 
           <aside className={styles.checkoutCol}>

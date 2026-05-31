@@ -225,6 +225,42 @@
   font-size: 0.9375rem;
   color: var(--text-muted);
   line-height: 1.55;
+  margin-bottom: 12px;
+}
+
+.instructorStats {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.instructorStats li {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid var(--border-accent);
+  color: var(--glow-purple);
+}
+
+.instructorLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.instructorLink {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.instructorLink:hover {
+  text-decoration: underline;
 }
 
 .faqList {

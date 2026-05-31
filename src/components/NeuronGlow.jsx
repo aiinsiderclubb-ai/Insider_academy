@@ -1,4 +1,4 @@
-// Декоративный блок «нейроны» — точки и связи в стиле нейросети (розово-фиолетовые блики)
+// Декоративный блок «нейроны» — violet × orange (как insiderai.it.com)
 import styles from './NeuronGlow.module.css'
 
 export function NeuronGlow({ className }) {
@@ -12,8 +12,8 @@ export function NeuronGlow({ className }) {
       <svg className={styles.lines} viewBox="0 0 200 200" preserveAspectRatio="none">
         <defs>
           <linearGradient id="neuronGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--glow-pink)" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="var(--glow-purple)" stopOpacity="0.4" />
+            <stop offset="0%" stopColor="var(--glow-purple)" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="var(--glow-orange)" stopOpacity="0.35" />
           </linearGradient>
         </defs>
         <line x1="30" y1="30" x2="90" y2="50" stroke="url(#neuronGrad)" strokeWidth="0.5" opacity="0.6" />

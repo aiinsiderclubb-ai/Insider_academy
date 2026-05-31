@@ -17,6 +17,8 @@ import { HomeSuperOffer } from '../components/HomeSuperOffer'
 import { HomeClubSection } from '../components/HomeClubSection'
 import { HomeCertificatesSection } from '../components/HomeCertificatesSection'
 import { HomeReviewsSection } from '../components/HomeReviewsSection'
+import { PlatformBridge } from '../components/PlatformBridge'
+import { TELEGRAM_COMMUNITY } from '../data/siteLinks'
 import { IconStar, IconUsers, IconAward } from '../components/Icons'
 import styles from './Home.module.css'
 
@@ -88,7 +90,7 @@ export function Home() {
             <span className={styles.benefitItem}>{t('home.benefit2')}</span>
             <span className={styles.benefitItem}>{t('home.benefit3')}</span>
           </div>
-          <a href="https://t.me/your_channel" target="_blank" rel="noreferrer noopener" className={styles.telegramCta}>
+          <a href={TELEGRAM_COMMUNITY} target="_blank" rel="noreferrer noopener" className={styles.telegramCta}>
             {t('home.telegramSubscribe')}
           </a>
         </div>
@@ -276,6 +278,8 @@ export function Home() {
           </div>
         </div>
       </section>
+
+      <PlatformBridge lang={lang} />
 
       <div className={styles.container}>
         <TelegramWidget lang={lang} />

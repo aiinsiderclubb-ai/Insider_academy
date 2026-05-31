@@ -141,6 +141,19 @@ export function CourseLandingSections({ course, lang, purchased, priceEur, marke
               <h3 className={styles.instructorName}>{lang === 'ru' ? INSTRUCTOR.nameRu : INSTRUCTOR.name}</h3>
               <p className={styles.instructorRole}>{lang === 'ru' ? INSTRUCTOR.roleRu : INSTRUCTOR.role}</p>
               <p className={styles.instructorBio}>{lang === 'ru' ? INSTRUCTOR.bioRu : INSTRUCTOR.bio}</p>
+              <ul className={styles.instructorStats}>
+                {(lang === 'ru' ? INSTRUCTOR.statsRu : INSTRUCTOR.statsEn).map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <div className={styles.instructorLinks}>
+                <a href={INSTRUCTOR.siteUrl} target="_blank" rel="noreferrer noopener" className={styles.instructorLink}>
+                  {lang === 'ru' ? 'Программы на insiderai.it.com ↗' : 'Programs on insiderai.it.com ↗'}
+                </a>
+                <a href={INSTRUCTOR.telegram} target="_blank" rel="noreferrer noopener" className={styles.instructorLink}>
+                  Telegram @vladyslavarcher ↗
+                </a>
+              </div>
             </div>
           </div>
         </section>
