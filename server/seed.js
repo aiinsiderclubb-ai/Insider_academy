@@ -1,7 +1,9 @@
 import { getDb, parseJson } from './db.js'
 import { courses as defaultCourses } from '../src/data/courses.js'
 import { blogPosts as defaultBlog } from '../src/data/blog.js'
-import { CATALOG_VERSION } from '../src/data/catalogVersion.js'
+
+/** Keep in sync with src/data/catalogVersion.js */
+const CATALOG_VERSION = 5
 
 async function getCatalogVersion(db) {
   const row = await db.get('SELECT value FROM analytics WHERE key = ?', ['catalog_version'])
