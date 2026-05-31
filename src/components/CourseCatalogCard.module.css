@@ -101,47 +101,9 @@
   line-height: 1.55;
   color: var(--text-muted);
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.lessonPreview {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.lessonPreview li {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 0.8125rem;
-  line-height: 1.35;
-  color: var(--text-muted);
-}
-
-.lessonNum {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 5px;
-  background: var(--course-accent-soft);
-  color: var(--course-accent);
-  font-size: 0.6875rem;
-  font-weight: 700;
-}
-
-.lessonMore {
-  padding-left: 26px;
-  font-style: italic;
-  opacity: 0.85;
 }
 
 .meta {

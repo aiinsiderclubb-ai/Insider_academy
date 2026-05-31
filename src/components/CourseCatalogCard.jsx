@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { getCourseField, formatCourseDuration, getCourseDescription, getLessonDisplayTitle } from '../data/courses'
+import { getCourseField, formatCourseDuration, getCourseDescription } from '../data/courses'
 import { isAcceleratorCourse } from '../data/courseCatalog'
 import { getCourseThemeStyle } from '../data/courseThemes'
 import { CourseCover } from './CourseCover'
@@ -19,6 +19,8 @@ export function CourseCatalogCard({
   const description = getCourseDescription(course, lang)
   const category = getCourseField(course, 'category', lang)
   const duration = formatCourseDuration(course, lang)
+    .replace(/\s*\([^)]*(?:мин|min)[^)]*\)/i, '')
+    .trim()
   const isIntake = isAcceleratorCourse(course)
   const isFree = (course.priceEur ?? 0) === 0 && !isIntake
   const price = course.priceEur ?? Math.round((course.price || 0) / 100)
@@ -56,22 +58,6 @@ export function CourseCatalogCard({
 
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.desc}>{description}</p>
-
-        {course.lessons?.length > 0 && (
-          <ul className={styles.lessonPreview} aria-label={lang === 'ru' ? 'Программа' : 'Program'}>
-            {course.lessons.slice(0, 4).map((lesson, index) => (
-              <li key={lesson.id || index}>
-                <span className={styles.lessonNum}>{index + 1}</span>
-                {getLessonDisplayTitle(lesson, lang)}
-              </li>
-            ))}
-            {course.lessons.length > 4 && (
-              <li className={styles.lessonMore}>
-                +{course.lessons.length - 4} {lang === 'ru' ? 'уроков' : 'lessons'}
-              </li>
-            )}
-          </ul>
-        )}
 
         <div className={styles.meta}>
           <span>{duration}</span>

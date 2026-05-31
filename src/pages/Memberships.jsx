@@ -15,18 +15,18 @@ export function Memberships() {
               {lang === 'ru' ? 'Подписка · все курсы · шаблоны Pro' : 'Subscription · all courses · Pro templates'}
             </span>
             <h1 className={styles.title}>
-              {lang === 'ru' ? 'Подписка AI Insider' : 'AI Insider Memberships'}
+              {lang === 'ru' ? 'Выберите доступ к AI Insider Academy' : 'Choose your AI Insider Academy access'}
             </h1>
             <p className={styles.subtitle}>
               {lang === 'ru'
-                ? 'Club открывает все курсы Academy. Pro добавляет готовые workflow, шаблоны агентов и ресурсы для клиентов.'
-                : 'Club unlocks every Academy course. Pro adds ready workflows, agent templates and client resources.'}
+                ? 'Club открывает обучение и комьюнити. Pro добавляет готовые workflow, шаблоны агентов и материалы для клиентов.'
+                : 'Club unlocks learning and community. Pro adds workflows, agent templates and client-ready resources.'}
             </p>
           </ScrollReveal>
         </div>
       </section>
 
-      <MembershipsSection lang={lang} />
+      <MembershipsSection lang={lang} showHeader={false} />
     </div>
   )
 }
