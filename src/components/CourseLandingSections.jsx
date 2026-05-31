@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getCourseField } from '../data/courses'
+import { getLessonCountLabel } from '../data/courseLessonPrograms'
 import { isAcceleratorCourse } from '../data/courseCatalog'
+import { getCourseField, getLessonDisplayTitle, getLessonDescription } from '../data/courses'
 import { getAudienceList, INSTRUCTOR, SOCIAL_PROOF, COURSE_FAQ } from '../data/courseLanding'
 import { ACCELERATOR_OFFER } from '../data/promo'
 import { ACADEMY_GRADING_STANDARD } from '../data/courseHomework'
@@ -16,6 +17,8 @@ export function CourseLandingSections({ course, lang, purchased, priceEur, marke
   const goals = getCourseField(course, 'goals', lang) || []
   const courseIdea = getCourseField(course, 'courseIdea', lang) || getCourseField(course, 'fullDescription', lang)
   const finalProject = getCourseField(course, 'finalProject', lang)
+  const programLabel = getLessonCountLabel(course.id, lang)
+  const lessons = course.lessons || []
   const isLearner = purchased || course.isFreeTrial
   const isBundle = isAcceleratorCourse(course)
 
@@ -92,7 +95,8 @@ export function CourseLandingSections({ course, lang, purchased, priceEur, marke
 
       <ScrollReveal delay={80}>
         <section className={styles.sectionCard}>
-          <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Для кого этот курс' : 'Who is this for'}</h2>
+          <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Для кого подходит курс' : 'Who is this for'}</h2>
+          <p className={styles.audienceLead}>{lang === 'ru' ? 'Этот курс создан для:' : 'This course is designed for:'}</p>
           <div className={styles.audienceGrid}>
             {audience.map((item) => (
               <span key={item} className={styles.audienceChip}>{item}</span>
@@ -104,11 +108,36 @@ export function CourseLandingSections({ course, lang, purchased, priceEur, marke
       {goals.length > 0 && (
         <ScrollReveal delay={120}>
           <section className={styles.sectionCard}>
-            <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Результаты' : 'Outcomes'}</h2>
+            <h2 className={styles.sectionTitle}>
+              {lang === 'ru' ? 'Результат после прохождения курса' : 'Results after completing the course'}
+            </h2>
             <ul className={styles.outcomesList}>
               {goals.map((g, i) => (
                 <li key={i}>{g}</li>
               ))}
+            </ul>
+          </section>
+        </ScrollReveal>
+      )}
+
+      {lessons.length > 0 && (
+        <ScrollReveal delay={140}>
+          <section className={styles.sectionCard}>
+            <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Программа курса' : 'Course program'}</h2>
+            {programLabel && <p className={styles.programMeta}>{programLabel}</p>}
+            <ul className={styles.programPreview}>
+              {lessons.map((lesson, index) => {
+                const description = getLessonDescription(lesson, lang)
+                return (
+                  <li key={lesson.id || index}>
+                    <span className={styles.programNum}>{index + 1}</span>
+                    <div className={styles.programItemContent}>
+                      <strong className={styles.programItemTitle}>{getLessonDisplayTitle(lesson, lang)}</strong>
+                      {description && <p className={styles.programItemDesc}>{description}</p>}
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           </section>
         </ScrollReveal>

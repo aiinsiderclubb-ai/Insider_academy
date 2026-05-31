@@ -8,18 +8,6 @@
   padding-top: 8px;
 }
 
-.sectionIntake {
-  padding: 28px;
-  border-radius: 20px;
-  border: 1px solid color-mix(in srgb, var(--glow-purple) 35%, var(--border));
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--glow-purple) 12%, transparent) 0%,
-    var(--bg-card) 45%,
-    color-mix(in srgb, #f97316 8%, transparent) 100%
-  );
-}
-
 .sectionHead {
   text-align: center;
   margin-bottom: 28px;
@@ -56,14 +44,9 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 360px));
+  justify-content: start;
   gap: 24px;
-}
-
-.gridIntake {
-  grid-template-columns: 1fr;
-  max-width: 720px;
-  margin: 0 auto;
 }
 
 .mapCta {
@@ -106,10 +89,6 @@
 }
 
 @media (max-width: 640px) {
-  .sectionIntake {
-    padding: 20px 16px;
-  }
-
   .sectionTitle {
     font-size: 1.375rem;
   }

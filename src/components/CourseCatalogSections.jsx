@@ -12,10 +12,10 @@ function SectionHeader({ pill, title, desc, lang }) {
   )
 }
 
-function CourseGrid({ courses, lang, theme, hasPurchased, getPercent, completedLabel, actionLabel, intake }) {
+function CourseGrid({ courses, lang, theme, hasPurchased, getPercent, completedLabel, actionLabel }) {
   if (!courses?.length) return null
   return (
-    <div className={`${styles.grid} ${intake ? styles.gridIntake : ''}`}>
+    <div className={styles.grid}>
       {courses.map((course) => (
         <CourseCatalogCard
           key={course.id}
@@ -47,7 +47,7 @@ export function CourseCatalogSections({
   return (
     <div className={styles.sections}>
       {acceleratorCourse && (
-        <section className={`${styles.section} ${styles.sectionIntake}`}>
+        <section className={styles.section}>
           <SectionHeader
             pill={ru ? 'Набор' : 'Enrollment'}
             title={ru ? 'Открытый intake-программа' : 'Open intake program'}
@@ -63,7 +63,6 @@ export function CourseCatalogSections({
             hasPurchased={hasPurchased}
             getPercent={getPercent}
             completedLabel={completedLabel}
-            intake
           />
         </section>
       )}

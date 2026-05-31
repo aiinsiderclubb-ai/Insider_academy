@@ -1,4 +1,6 @@
 /** Video lessons from AI_Insider_Academy_video_lessons_updated.docx — videoUrl заполняется позже */
+import { buildVideoLessonBlock } from './courseLessonPrograms.js'
+
 export const VIDEO_LESSONS_BY_COURSE = {
   "ai-user-pro": {
     "meta": {
@@ -2180,10 +2182,10 @@ export const VIDEO_LESSONS_BY_COURSE = {
   },
   "ai-agent-architect": {
     "meta": {
-      "price": "49€",
-      "videoCount": 21,
+      "price": "59€",
+      "videoCount": 18,
       "videoDuration": "30-55 минут, рандомно внутри диапазона.",
-      "finalResult": "AI Agent Department: multi-agent система с orchestrator, tools, memory, knowledge base и approval."
+      "finalResult": "Собственная мультиагентная AI-платформа: RAG, tools, orchestration и продакшен."
     },
     "lessons": [
       {
@@ -2734,10 +2736,10 @@ export const VIDEO_LESSONS_BY_COURSE = {
   },
   "ai-agency-builder": {
     "meta": {
-      "price": "49€",
-      "videoCount": 21,
+      "price": "59€",
+      "videoCount": 10,
       "videoDuration": "30-55 минут, рандомно внутри диапазона.",
-      "finalResult": "AI Agency Launch Kit: ниша, офферы, КП, лиды, sales kit, delivery system и план запуска."
+      "finalResult": "Запущенное AI-агентство: ниша, оффер, упаковка, кейсы, лидогенерация, продажи и система работы с клиентами."
     },
     "lessons": [
       {
@@ -3288,6 +3290,14 @@ export const VIDEO_LESSONS_BY_COURSE = {
   }
 }
 
+;[
+  ['ai-user-pro', 'AI User Pro'],
+  ['ai-content-creator', 'AI Content Creator'],
+].forEach(([courseId, label]) => {
+  const block = buildVideoLessonBlock(courseId, label)
+  if (block) VIDEO_LESSONS_BY_COURSE[courseId] = block
+})
+
 export function getVideoLessons(courseId) {
   return VIDEO_LESSONS_BY_COURSE[courseId] || null
 }
@@ -3311,14 +3321,16 @@ export function buildLessonsFromVideos(courseId) {
     return {
     id: `${prefix}v${v.number}`,
     title: v.title,
-    titleEn: v.title,
+    titleEn: v.titleEn || v.title,
+    description: v.goal,
+    descriptionEn: v.goalEn || v.goal,
     duration: v.duration || "40–50 мин",
     durationEn: v.duration || "40–50 min",
     videoUrl: "",
     week: v.week,
     videoNumber: v.number,
     weekGoal: v.goal,
-    weekGoalEn: v.goal,
+    weekGoalEn: v.goalEn || v.goal,
     weekOutcome: v.result,
     weekOutcomeEn: v.result,
     weekSkills: v.topics ? v.topics.split(";").map((s) => s.trim()).filter(Boolean) : [],

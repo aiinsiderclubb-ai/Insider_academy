@@ -48,6 +48,14 @@ export function getLessonDisplayTitle(lesson, lang = 'ru') {
   return raw.replace(/^(Видео|Video)\s+\d+\.\s*/i, '').trim() || raw
 }
 
+export function getLessonDescription(lesson, lang = 'ru') {
+  if (!lesson) return ''
+  const desc = lang === 'en' && lesson.descriptionEn ? lesson.descriptionEn : lesson.description
+  if (desc) return desc
+  const goal = lang === 'en' && lesson.weekGoalEn ? lesson.weekGoalEn : lesson.weekGoal
+  return goal || lesson.lessonTopics || ''
+}
+
 export function getWeekDisplayTitle(week, lang = 'ru') {
   if (!week) return ''
   const raw = lang === 'en' && week.titleEn ? week.titleEn : week.title

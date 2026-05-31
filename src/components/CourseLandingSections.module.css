@@ -137,12 +137,38 @@
 
 .programPreview li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: var(--bg-elevated);
   border-radius: var(--radius);
   font-size: 0.9375rem;
+}
+
+.programMeta {
+  margin: -8px 0 16px;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.programItemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.programItemTitle {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.programItemDesc {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
 .programNum {
@@ -175,7 +201,7 @@
 }
 
 .outcomesList li {
-  padding-left: 20px;
+  padding-left: 1.75rem;
   position: relative;
   color: var(--text-muted);
   font-size: 0.9375rem;
@@ -183,14 +209,22 @@
 }
 
 .outcomesList li::before {
-  content: '';
+  content: '✅';
   position: absolute;
   left: 0;
-  top: 0.55em;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--course-accent, var(--accent-primary));
+  top: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.audienceLead {
+  margin: -8px 0 16px;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
 }
 
 .instructor {

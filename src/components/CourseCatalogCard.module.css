@@ -134,6 +134,11 @@
   font-weight: 600;
 }
 
+.priceIntake {
+  color: var(--glow-purple);
+  font-weight: 600;
+}
+
 .bundleActions {
   margin-top: auto;
   padding-top: 10px;

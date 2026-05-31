@@ -1,4 +1,4 @@
-import { getLessonDisplayTitle } from '../data/courses'
+import { getLessonDisplayTitle, getLessonDescription } from '../data/courses'
 import styles from './CourseProgramPanel.module.css'
 
 export function CourseProgramPanel({
@@ -27,6 +27,7 @@ export function CourseProgramPanel({
         const status = lessonStatus(index)
         const active = selectedLesson === index
         const disabled = !canSelectLesson(index)
+        const description = getLessonDescription(lesson, lang)
 
         return (
           <li key={lesson.id}>
@@ -38,7 +39,10 @@ export function CourseProgramPanel({
               aria-current={active ? 'true' : undefined}
             >
               <span className={styles.num}>{index + 1}</span>
-              <span className={styles.title}>{getLessonDisplayTitle(lesson, lang)}</span>
+              <span className={styles.content}>
+                <span className={styles.title}>{getLessonDisplayTitle(lesson, lang)}</span>
+                {description && <span className={styles.desc}>{description}</span>}
+              </span>
               <span className={styles.status} aria-hidden>
                 {isFreeTrial && <span className={styles.statusOpen}>●</span>}
                 {!isFreeTrial && index === 0 && <span className={styles.statusFree}>●</span>}

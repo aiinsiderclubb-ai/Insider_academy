@@ -23,21 +23,32 @@ export function setAdminToken(token) {
   else localStorage.removeItem(ADMIN_TOKEN_KEY)
 }
 
-export async function apiRequest(path, { method = 'GET', body, admin = false, auth = true } = {}) {
+export async function apiRequest(path, { method = 'GET', body, admin = false, auth = true, retries = 0 } = {}) {
   const headers = {}
   const isForm = body instanceof FormData
   if (!isForm) headers['Content-Type'] = 'application/json'
   const token = admin ? getAdminToken() : getToken()
   if (auth && token) headers.Authorization = `Bearer ${token}`
 
-  const res = await fetch(`${getApiBase()}${path}`, {
-    method,
-    headers,
-    body: isForm ? body : body != null ? JSON.stringify(body) : undefined,
-  })
+  let res
+  try {
+    res = await fetch(`${getApiBase()}${path}`, {
+      method,
+      headers,
+      body: isForm ? body : body != null ? JSON.stringify(body) : undefined,
+    })
+  } catch (fetchErr) {
+    const err = new Error(fetchErr?.message || 'Network error')
+    err.network = true
+    throw err
+  }
 
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
+    if (retries > 0 && res.status >= 502) {
+      await new Promise((r) => setTimeout(r, 800))
+      return apiRequest(path, { method, body, admin, auth, retries: retries - 1 })
+    }
     const err = new Error(data.error || res.statusText || 'Request failed')
     err.status = res.status
     err.data = data
@@ -48,8 +59,8 @@ export async function apiRequest(path, { method = 'GET', body, admin = false, au
 
 export const api = {
   health: () => apiRequest('/health', { auth: false }),
-  register: (email, password, name) => apiRequest('/auth/register', { method: 'POST', body: { email, password, name }, auth: false }),
-  login: (email, password) => apiRequest('/auth/login', { method: 'POST', body: { email, password }, auth: false }),
+  register: (email, password, name) => apiRequest('/auth/register', { method: 'POST', body: { email, password, name }, auth: false, retries: 2 }),
+  login: (email, password) => apiRequest('/auth/login', { method: 'POST', body: { email, password }, auth: false, retries: 2 }),
   verifyEmail: (token) => apiRequest('/auth/verify-email', { method: 'POST', body: { token }, auth: false }),
   forgotPassword: (email) => apiRequest('/auth/forgot-password', { method: 'POST', body: { email }, auth: false }),
   resetPassword: (token, password) => apiRequest('/auth/reset-password', { method: 'POST', body: { token, password }, auth: false }),

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
+import { mapAuthApiError } from '../utils/authErrors'
 import { NeuronGlow } from '../components/NeuronGlow'
 import styles from './Login.module.css'
 
@@ -22,13 +23,26 @@ export function Register() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const formRef = useRef(null)
+
+  const syncAutofill = (e) => {
+    const { name, value } = e.target
+    if (name === 'name') setName(value)
+    if (name === 'email') setEmail(value)
+    if (name === 'password') setPassword(value)
+    if (name === 'confirmPassword') setConfirmPassword(value)
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    const nameTrim = name.trim()
-    const emailTrim = email.trim()
+    const form = formRef.current
+    const fd = form ? new FormData(form) : null
+    const nameTrim = (name || fd?.get('name') || '').toString().trim()
+    const emailTrim = (email || fd?.get('email') || '').toString().trim()
+    const passwordValue = (password || fd?.get('password') || '').toString()
+    const confirmValue = (confirmPassword || fd?.get('confirmPassword') || '').toString()
 
     if (!nameTrim) {
       setError(t('register.errorName'))
@@ -42,31 +56,26 @@ export function Register() {
       setError(t('register.errorEmailInvalid'))
       return
     }
-    if (!password) {
+    if (!passwordValue) {
       setError(t('register.errorPassword'))
       return
     }
-    if (password.length < 6) {
+    if (passwordValue.length < 6) {
       setError(t('register.errorPasswordShort'))
       return
     }
-    if (password !== confirmPassword) {
+    if (passwordValue !== confirmValue) {
       setError(t('register.errorPasswordMatch'))
       return
     }
 
     setLoading(true)
     try {
-      await register(emailTrim, password.trim(), nameTrim)
+      await register(emailTrim, passwordValue.trim(), nameTrim)
       navigate(from, { replace: true })
     } catch (err) {
-      if (err?.status === 409) {
-        setError(t('register.errorExists'))
-      } else if (err?.status === 400) {
-        setError(err.message || t('register.errorGeneric'))
-      } else {
-        setError(t('register.errorGeneric'))
-      }
+      const mapped = mapAuthApiError(err, lang, 'register.errorGeneric')
+      setError(mapped || t('register.errorGeneric'))
     } finally {
       setLoading(false)
     }
@@ -116,7 +125,7 @@ export function Register() {
             <h1 className={styles.title}>{t('register.title')}</h1>
             <p className={styles.subtitle}>{t('register.subtitle')}</p>
 
-            <form onSubmit={handleSubmit} className={styles.form}>
+            <form ref={formRef} onSubmit={handleSubmit} className={styles.form}>
               {error && (
                 <div className={styles.error} role="alert">
                   {error}
@@ -131,6 +140,7 @@ export function Register() {
                   autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onInput={syncAutofill}
                   placeholder={t('register.namePlaceholder')}
                   className={styles.input}
                   disabled={loading}
@@ -145,6 +155,7 @@ export function Register() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onInput={syncAutofill}
                   placeholder="you@example.com"
                   className={styles.input}
                   disabled={loading}
@@ -159,6 +170,7 @@ export function Register() {
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onInput={syncAutofill}
                   placeholder="••••••••"
                   className={styles.input}
                   disabled={loading}
@@ -173,6 +185,7 @@ export function Register() {
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  onInput={syncAutofill}
                   placeholder="••••••••"
                   className={styles.input}
                   disabled={loading}
