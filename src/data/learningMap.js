@@ -14,7 +14,7 @@ export const LEARNING_STAGES = [
     subtitle: '7 дней · записанные уроки · без расписания',
     subtitleEn: '7 days · recorded · self-paced',
     accent: '#22c55e',
-    courseIds: ['ai-start', 'ai-content-machine', 'ai-automation-business'],
+    courseIds: ['ai-start', 'ai-for-productivity', 'first-automation-n8n'],
   },
   {
     id: 'stage-2',
@@ -31,8 +31,8 @@ export const LEARNING_STAGES = [
     order: 3,
     title: 'Этап 3. Основная программа обучения',
     titleEn: 'Stage 3. Core programs',
-    subtitle: 'Профессиональные треки · от 25€',
-    subtitleEn: 'Professional tracks · from €25',
+    subtitle: 'Профессиональные треки · от 19€',
+    subtitleEn: 'Professional tracks · from €19',
     accent: '#6366f1',
     courseIds: [
       'ai-user-pro',
@@ -40,6 +40,7 @@ export const LEARNING_STAGES = [
       'no-code-automation',
       'ai-chatbot-developer',
       'ai-voice-developer',
+      'ai-saas-builder',
       'ai-agent-architect',
       'ai-agency-builder',
     ],

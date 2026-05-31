@@ -13,7 +13,7 @@ export const AI_INSIDER_CLUB = {
   descEn:
     'One subscription unlocks every paid AI Insider Academy program. Learn fully async — no calls or mandatory live sessions.',
   includesRu: [
-    'Полный доступ ко всем Pro-курсам Academy (7 программ)',
+    'Полный доступ ко всем Pro-курсам Academy (8 программ)',
     'Все новые Pro-курсы автоматически входят в подписку',
     'Закрытый Telegram-канал: кейсы, шаблоны, тренды',
     'Еженедельные async-челленджи (сдача работ текстом/файлом)',
@@ -21,7 +21,7 @@ export const AI_INSIDER_CLUB = {
     'Проверка домашних заданий по стандартам Academy',
   ],
   includesEn: [
-    'Full access to all Academy Pro courses (7 programs)',
+    'Full access to all Academy Pro courses (8 programs)',
     'All new Pro courses included automatically',
     'Private Telegram: cases, templates, trends',
     'Weekly async challenges (text/file submissions)',
@@ -51,6 +51,7 @@ export const CLUB_PAID_COURSE_IDS = [
   'no-code-automation',
   'ai-chatbot-developer',
   'ai-voice-developer',
+  'ai-saas-builder',
   'ai-agent-architect',
   'ai-agency-builder',
 ]

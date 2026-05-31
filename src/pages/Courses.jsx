@@ -8,6 +8,7 @@ import { getCourseField } from '../data/courses'
 import { useTheme } from '../context/ThemeContext'
 import { CourseGridSkeleton } from '../components/SkeletonLoader'
 import { CourseCatalogCard } from '../components/CourseCatalogCard'
+import { CourseCatalogSections } from '../components/CourseCatalogSections'
 import styles from './Courses.module.css'
 
 const SEGMENTS = [
@@ -51,9 +52,12 @@ export function Courses() {
     })
   }, [segmentCourses, query, category, lang])
 
+  const showSectionedCatalog = segment === 'all' && !query.trim() && category === 'all'
+
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
+        <span className={styles.heroPill}>AI Insider Academy</span>
         <h1 className={styles.title}>{t('courses.title')}</h1>
         <p className={styles.desc}>{t('courses.desc')}</p>
 
@@ -73,30 +77,43 @@ export function Courses() {
           </Link>
         </div>
 
-        <div className={styles.toolbar}>
-          <input
-            type="search"
-            className={styles.search}
-            placeholder={lang === 'ru' ? 'Поиск по курсам…' : 'Search courses…'}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <div className={styles.filters}>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                className={`${styles.filterBtn} ${category === cat ? styles.filterBtnActive : ''}`}
-                onClick={() => setCategory(cat)}
-              >
-                {cat === 'all' ? (lang === 'ru' ? 'Все' : 'All') : cat}
-              </button>
-            ))}
+        {!showSectionedCatalog && (
+          <div className={styles.toolbar}>
+            <input
+              type="search"
+              className={styles.search}
+              placeholder={lang === 'ru' ? 'Поиск по курсам…' : 'Search courses…'}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <div className={styles.filters}>
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`${styles.filterBtn} ${category === cat ? styles.filterBtnActive : ''}`}
+                  onClick={() => setCategory(cat)}
+                >
+                  {cat === 'all' ? (lang === 'ru' ? 'Все' : 'All') : cat}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {loading ? (
           <CourseGridSkeleton count={6} />
+        ) : showSectionedCatalog ? (
+          <CourseCatalogSections
+            lang={lang}
+            theme={theme}
+            acceleratorCourse={acceleratorCourse}
+            freeCourses={freeCourses}
+            paidCourses={paidCourses}
+            hasPurchased={hasPurchased}
+            getPercent={getPercent}
+            completedLabel={t('courses.completed')}
+          />
         ) : filtered.length === 0 ? (
           <p className={styles.empty}>{lang === 'ru' ? 'Курсы не найдены' : 'No courses found'}</p>
         ) : (

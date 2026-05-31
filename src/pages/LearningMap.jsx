@@ -136,8 +136,8 @@ export function LearningMap() {
 
         <aside className={styles.ctaBox}>
           <h3>{lang === 'ru' ? 'Начните бесплатно' : 'Start for free'}</h3>
-          <p>{lang === 'ru' ? 'Этап 1 — три программы по 7 дней без оплаты.' : 'Stage 1 — three 7-day programs, no payment.'}</p>
-          <Link to="/courses/ai-start" className={styles.ctaBtn}>AI Start →</Link>
+          <p>{lang === 'ru' ? 'Этап 1 — три бесплатные программы без оплаты.' : 'Stage 1 — three free programs, no payment.'}</p>
+          <Link to="/courses/ai-start" className={styles.ctaBtn}>{lang === 'ru' ? 'AI Starter Week →' : 'AI Starter Week →'}</Link>
           <Link to="/courses" className={styles.ctaSecondary}>{lang === 'ru' ? 'Весь каталог' : 'Full catalog'}</Link>
         </aside>
       </div>
