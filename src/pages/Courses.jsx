@@ -8,13 +8,14 @@ import { getCourseField } from '../data/courses'
 import { useTheme } from '../context/ThemeContext'
 import { CourseGridSkeleton } from '../components/SkeletonLoader'
 import { CourseCatalogCard } from '../components/CourseCatalogCard'
-import { CourseCatalogSections } from '../components/CourseCatalogSections'
+import { CourseBundleOffers, CourseCatalogSections } from '../components/CourseCatalogSections'
 import styles from './Courses.module.css'
 
 const SEGMENTS = [
   { id: 'all', ru: 'Все', en: 'All' },
   { id: 'free', ru: 'Бесплатные', en: 'Free' },
   { id: 'paid', ru: 'Платные', en: 'Paid' },
+  { id: 'packs', ru: 'Пакеты', en: 'Bundles' },
   { id: 'bundle', ru: 'Набор', en: 'Bundle' },
 ]
 
@@ -31,6 +32,7 @@ export function Courses() {
   const segmentCourses = useMemo(() => {
     if (segment === 'free') return freeCourses
     if (segment === 'paid') return paidCourses
+    if (segment === 'packs') return []
     if (segment === 'bundle') return acceleratorCourse ? [acceleratorCourse] : []
     return courses
   }, [segment, courses, freeCourses, paidCourses, acceleratorCourse])
@@ -77,7 +79,7 @@ export function Courses() {
           </Link>
         </div>
 
-        {!showSectionedCatalog && (
+        {!showSectionedCatalog && segment !== 'packs' && (
           <div className={styles.toolbar}>
             <input
               type="search"
@@ -101,8 +103,10 @@ export function Courses() {
           </div>
         )}
 
-        {loading ? (
+        {loading && segment !== 'packs' ? (
           <CourseGridSkeleton count={6} />
+        ) : segment === 'packs' ? (
+          <CourseBundleOffers lang={lang} />
         ) : showSectionedCatalog ? (
           <CourseCatalogSections
             lang={lang}

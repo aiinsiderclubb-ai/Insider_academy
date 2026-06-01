@@ -23,6 +23,7 @@ import { getCourseThemeStyle } from '../data/courseThemes'
 import { isAcceleratorCourse } from '../data/courseCatalog'
 import { ACCELERATOR_OFFER } from '../data/promo'
 import { BundleCourseActions } from '../components/BundleCourseActions'
+import { CourseBuyAction } from '../components/CourseBuyAction'
 import { useTheme } from '../context/ThemeContext'
 import styles from './Course.module.css'
 
@@ -485,9 +486,13 @@ export function Course() {
                       </div>
                     </div>
                     <p className={styles.priceInstallment}>{t('course.installment')}</p>
-                    <Link to={`/courses/${course.slug}/buy`} className={styles.priceBtn}>
+                    <CourseBuyAction
+                      course={course}
+                      className={styles.priceBtn}
+                      fallbackPath={`/courses/${course.slug}/buy`}
+                    >
                       {t('course.buyCourse')}
-                    </Link>
+                    </CourseBuyAction>
                   </>
                 )}
               </div>

@@ -5,9 +5,12 @@ import { isAcceleratorCourse } from '../data/courseCatalog'
 import { getCourseField, getLessonDisplayTitle, getLessonDescription } from '../data/courses'
 import { getAudienceList, COURSE_FAQ } from '../data/courseLanding'
 import { CERTIFICATE_INFO, COURSE_DETAIL_SECTIONS, TOOLS_BY_COURSE } from '../data/courseDetailContent'
+import { COURSE_BUNDLES } from '../data/coursePacks'
 import { ACCELERATOR_OFFER } from '../data/promo'
 import { ScrollReveal } from './ScrollReveal'
 import { BundleCourseActions } from './BundleCourseActions'
+import { CourseBundleOffers } from './CourseCatalogSections'
+import { CourseBuyAction } from './CourseBuyAction'
 import { IconChevronDown } from './Icons'
 import styles from './CourseLandingSections.module.css'
 
@@ -31,6 +34,7 @@ export function CourseLandingSections({ course, lang, purchased, priceEur }) {
   const isFree = course.isFreeTrial && (course.priceEur ?? 0) === 0
   const cert = lang === 'en' ? CERTIFICATE_INFO.en : CERTIFICATE_INFO.ru
   const showEnroll = !purchased || isFree
+  const recommendedBundles = COURSE_BUNDLES.filter((bundle) => bundle.courseIds.includes(course.id))
 
   return (
     <div className={styles.sections}>
@@ -124,6 +128,20 @@ export function CourseLandingSections({ course, lang, purchased, priceEur }) {
         </ScrollReveal>
       )}
 
+      {recommendedBundles.length > 0 && (
+        <ScrollReveal delay={160}>
+          <CourseBundleOffers
+            lang={lang}
+            bundles={recommendedBundles}
+            compact
+            title={lang === 'ru' ? 'Выгоднее взять курс в пакете' : 'This course is better in a bundle'}
+            desc={lang === 'ru'
+              ? 'Этот курс входит в пакеты со скидкой. Вы можете купить его отдельно или взять вместе с другими программами.'
+              : 'This course is included in discounted bundles. Buy it separately or get it with related programs.'}
+          />
+        </ScrollReveal>
+      )}
+
       <ScrollReveal delay={180}>
         <section className={styles.sectionCard} id="faq">
           <h2 className={styles.sectionTitle}>{sectionTitle('faq', lang)}</h2>
@@ -194,9 +212,13 @@ export function CourseLandingSections({ course, lang, purchased, priceEur }) {
                     {lang === 'ru' ? `Полный доступ — ${priceEur} €` : `Full access — ${priceEur} €`}
                   </p>
                 </div>
-                <Link to={`/courses/${course.slug}/buy`} className={styles.ctaBtn}>
+                <CourseBuyAction
+                  course={course}
+                  className={styles.ctaBtn}
+                  fallbackPath={`/courses/${course.slug}/buy`}
+                >
                   {sectionTitle('enroll', lang)}
-                </Link>
+                </CourseBuyAction>
               </>
             )}
           </section>

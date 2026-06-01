@@ -14,6 +14,7 @@ import { COURSE_FAQ } from '../data/courseLanding'
 import { PlatformBridge } from '../components/PlatformBridge'
 import { IconChevronDown } from '../components/Icons'
 import { api, checkApiOnline } from '../api/client'
+import { getCourseTributePaymentUrl } from '../data/tributePayments'
 import styles from './CourseBuy.module.css'
 
 const PAY_METHODS = [
@@ -85,6 +86,7 @@ export function CourseBuy() {
   const fullPriceEur = Math.round(priceEur * 1.15)
   const discount = fullPriceEur - priceAfterReferral
   const courseTitle = getCourseField(course, 'title', lang)
+  const tributePaymentUrl = getCourseTributePaymentUrl(course.id)
   const goalsList = getCourseField(course, 'goals', lang) || []
   const benefits = lang === 'ru' ? BENEFITS_RU : BENEFITS_EN
   const themeStyle = getCourseThemeStyle(course.id, theme)
@@ -114,6 +116,10 @@ export function CourseBuy() {
       const payload = { courseId: course.id, courseTitle, amount: priceAfterReferral, slug: course.slug }
 
       if (method === 'tribute') {
+        if (tributePaymentUrl) {
+          window.location.href = tributePaymentUrl
+          return
+        }
         const result = await api.tributeCheckout(payload)
         const payUrl = result.url || result.webappUrl
         if (!payUrl) throw new Error(lang === 'ru' ? 'Tribute не вернул ссылку на оплату' : 'No payment URL from Tribute')

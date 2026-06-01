@@ -7,7 +7,7 @@ import {
   addReferralDiscount,
   markReferredPurchased,
 } from '../api/adminStore'
-import { AI_INSIDER_CLUB, courseUnlockedByClub, hasClubMembership } from '../data/club'
+import { AI_INSIDER_CLUB, courseUnlockedByClub, courseUnlockedByPack, hasClubMembership } from '../data/club'
 import {
   isTestAccountEmail,
   TEST_ACCOUNT_PASSWORD,
@@ -334,7 +334,10 @@ export function AuthProvider({ children }) {
   }, [user, apiMode])
 
   const hasPurchased = useCallback(
-    (courseId) => courseUnlockedByClub(courseId, purchases) || purchases.some((p) => p.id === courseId),
+    (courseId) =>
+      purchases.some((p) => p.id === courseId) ||
+      courseUnlockedByClub(courseId, purchases) ||
+      courseUnlockedByPack(courseId, purchases),
     [purchases]
   )
 

@@ -14,7 +14,7 @@ const IMAGES = {
   chatbot: 'https://images.unsplash.com/photo-1531746795393-6cde9e6b2c6b?w=800&q=80',
   voice: 'https://images.unsplash.com/photo-1579762599946-9e2c1ee9dc5d?w=800&q=80',
   agent: 'https://images.unsplash.com/photo-1676299085922-a816a3e77c80?w=800&q=80',
-  agency: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',
+  agency: '/courses/ai-agency-builder.png?v=3',
 }
 
 function baseCourse({

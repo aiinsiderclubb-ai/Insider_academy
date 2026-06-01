@@ -53,6 +53,8 @@ services:
         value: eur
       - key: TRIBUTE_DEFAULT_PRODUCT_ID
         value: "65858"
+      - key: TRIBUTE_PRODUCT_MAP
+        value: '{"ai-agency-builder":126606}'
       - key: TRIBUTE_WEBHOOK_URL
         value: https://insider-academy.onrender.com/api/webhooks/tribute
       - key: TRIBUTE_API_KEY

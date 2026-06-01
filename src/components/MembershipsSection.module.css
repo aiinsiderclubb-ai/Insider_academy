@@ -268,8 +268,15 @@
   background: var(--gradient-primary);
 }
 
+.actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 10px;
+}
+
 .btnClub,
-.btnPro {
+.btnPro,
+.btnDetails {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -279,7 +286,7 @@
   font-weight: 700;
   font-size: 0.9375rem;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .btnClub {
@@ -292,10 +299,26 @@
   color: #fff;
 }
 
+.btnDetails {
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 28%, var(--border));
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+}
+
+.btnClub:hover,
+.btnPro:hover,
+.btnDetails:hover {
+  transform: translateY(-2px);
+}
+
 .btnClub:hover,
 .btnPro:hover {
-  transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.btnDetails:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
 }
 
 .cardNote {
@@ -483,5 +506,9 @@
     grid-template-columns: 1fr 54px 54px;
     gap: 8px;
     padding: 12px;
+  }
+
+  .actions {
+    grid-template-columns: 1fr;
   }
 }

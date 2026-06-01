@@ -6,20 +6,24 @@ import styles from './MembershipsSection.module.css'
 
 const COMPARISON_ROWS = {
   ru: [
-    ['Все курсы Academy', true, true],
-    ['Новые курсы без доплаты', true, true],
-    ['Сертификаты и библиотека промптов', true, true],
-    ['Закрытое комьюнити', true, true],
+    ['Все обычные видеоуроки Academy', true, true],
+    ['Pro-only курсы: Agent Engineer и Agency Builder', false, true],
+    ['Учебные материалы доступных курсов', true, true],
+    ['Домашние задания и сертификаты', true, true],
+    ['Новые базовые курсы внутри Academy', true, true],
+    ['Промпт-библиотека и чек-листы', false, true],
     ['Готовые n8n workflow', false, true],
     ['Шаблоны AI-агентов, ботов и voice agents', false, true],
     ['Скрипты продаж и outreach для клиентов', false, true],
     ['Премиальные кейсы и ресурсы для AI-бизнеса', false, true],
   ],
   en: [
-    ['Every Academy course', true, true],
-    ['Future courses included', true, true],
-    ['Certificates and prompt library', true, true],
-    ['Private community', true, true],
+    ['All regular Academy video lessons', true, true],
+    ['Pro-only courses: Agent Engineer and Agency Builder', false, true],
+    ['Learning materials for available courses', true, true],
+    ['Homework and certificates', true, true],
+    ['Future core Academy courses', true, true],
+    ['Prompt library and checklists', false, true],
     ['Ready-to-use n8n workflows', false, true],
     ['AI agent, chatbot and voice agent templates', false, true],
     ['Sales scripts and client outreach', false, true],
@@ -29,16 +33,16 @@ const COMPARISON_ROWS = {
 
 const BONUS_CARDS = {
   ru: [
-    ['Prompt Pack', 'Готовые промпты для работы, обучения, маркетинга и продаж.'],
-    ['Automation Pack', 'n8n-сценарии, которые можно адаптировать под клиентов и бизнес.'],
-    ['Agent Pack', 'Шаблоны AI-агентов, чатботов и voice agents для быстрых запусков.'],
-    ['Agency Toolkit', 'Материалы для упаковки услуг, outreach, звонков и первых продаж.'],
+    ['Club', 'Доступ к обычным курсам, урокам, материалам и сертификатам.'],
+    ['Pro', 'Открывает Pro-only курсы, workflow, шаблоны, промпты и ресурсы для клиентов.'],
+    ['Пакеты курсов', 'Разовые наборы с Pro-only курсами и бонусами под конкретный результат.'],
+    ['Без лишнего', 'Вы выбираете: подписка для доступа или пакет для запуска проекта.'],
   ],
   en: [
-    ['Prompt Pack', 'Ready prompts for work, learning, marketing and sales.'],
-    ['Automation Pack', 'n8n workflows you can adapt for clients and business.'],
-    ['Agent Pack', 'AI agent, chatbot and voice agent templates for fast launches.'],
-    ['Agency Toolkit', 'Service packaging, outreach, calls and first sales resources.'],
+    ['Club', 'Access to regular courses, lessons, materials and certificates.'],
+    ['Pro', 'Unlocks Pro-only courses, workflows, templates, prompts and client-ready resources.'],
+    ['Course packs', 'One-time bundles with Pro-only courses and outcome-focused bonuses.'],
+    ['Clear choice', 'Subscription for access, or a pack for launching a project.'],
   ],
 }
 
@@ -67,8 +71,8 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
               {!compact && (
                 <p className={styles.lead}>
                   {lang === 'ru'
-                    ? 'Один тариф — все курсы Academy. Pro добавляет шаблоны, workflow и ресурсы для клиентов.'
-                    : 'One plan — every Academy course. Pro adds templates, workflows and client-ready resources.'}
+                    ? 'Club открывает обычные курсы Academy. Pro добавляет Agent Engineer, Agency Builder, шаблоны, workflow и ресурсы для клиентов.'
+                    : 'Club unlocks regular Academy courses. Pro adds Agent Engineer, Agency Builder, templates, workflows and client-ready resources.'}
                 </p>
               )}
             </header>
@@ -118,8 +122,9 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
                 ? 'Для тех, кто хочет внедрять AI, брать клиентов и продавать услуги.'
                 : 'For building AI systems, landing clients and selling services.')
               : (lang === 'ru'
-                ? 'Для тех, кто хочет пройти все курсы и уверенно развиваться в AI.'
-                : 'For learning every course and growing confidently with AI.')
+                ? 'Для тех, кто хочет пройти основные курсы. Agent Engineer и Agency Builder не входят.'
+                : 'For learning core courses. Agent Engineer and Agency Builder are not included.')
+            const detailsPath = compact ? '/memberships#compare' : '#compare'
 
             return (
               <ScrollReveal key={plan.id} delay={index * 40}>
@@ -156,12 +161,17 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
                     </div>
                   )}
 
-                  <Link
-                    to="/cabinet#support"
-                    className={isPro ? styles.btnPro : styles.btnClub}
-                  >
-                    {cta}
-                  </Link>
+                  <div className={styles.actions}>
+                    <Link
+                      to="/cabinet#support"
+                      className={isPro ? styles.btnPro : styles.btnClub}
+                    >
+                      {cta}
+                    </Link>
+                    <Link to={detailsPath} className={styles.btnDetails}>
+                      {lang === 'ru' ? 'Подробнее' : 'Details'}
+                    </Link>
+                  </div>
                   <p className={styles.cardNote}>
                     {lang === 'ru'
                       ? 'Доступ открывается сразу после подтверждения оплаты.'
@@ -189,7 +199,7 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
 
         {!compact && (
           <ScrollReveal>
-            <section className={styles.compare} aria-label={lang === 'ru' ? 'Сравнение тарифов' : 'Plan comparison'}>
+            <section id="compare" className={styles.compare} aria-label={lang === 'ru' ? 'Сравнение тарифов' : 'Plan comparison'}>
               <div className={styles.compareHead}>
                 <h3>{lang === 'ru' ? 'Что выбрать: Club или Pro?' : 'Which plan should you choose?'}</h3>
                 <p>

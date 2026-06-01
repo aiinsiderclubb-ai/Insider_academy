@@ -21,6 +21,7 @@
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
+  display: block;
 }
 
 .progressBadge {
@@ -94,6 +95,14 @@
   letter-spacing: -0.01em;
 }
 
+.title a {
+  color: inherit;
+}
+
+.title a:hover {
+  color: var(--course-accent);
+}
+
 .desc {
   margin: 0;
   flex: 1;
@@ -108,7 +117,7 @@
 
 .meta {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   gap: 12px;
   padding-top: 10px;
@@ -118,29 +127,62 @@
   color: var(--text-muted);
 }
 
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 10px;
+}
+
+.buyBtn,
+.detailsBtn {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.buyBtn {
+  background: var(--course-gradient);
+  color: #fff;
+  box-shadow: 0 10px 26px var(--course-accent-soft);
+}
+
+.detailsBtn {
+  border: 1px solid color-mix(in srgb, var(--course-accent) 28%, var(--border));
+  color: var(--text);
+  background: color-mix(in srgb, var(--course-accent) 8%, transparent);
+}
+
+.buyBtn:hover,
+.detailsBtn:hover {
+  transform: translateY(-2px);
+}
+
+.detailsBtn:hover {
+  border-color: var(--course-accent);
   color: var(--course-accent);
-  font-weight: 700;
-  font-size: 0.9375rem;
 }
 
-.priceFree {
-  color: var(--success);
-  font-weight: 600;
-}
-
-.action {
-  color: var(--glow-purple);
-  font-weight: 600;
-}
-
-.priceIntake {
-  color: var(--glow-purple);
-  font-weight: 600;
-}
-
-.bundleActions {
-  margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
+@media (max-width: 420px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
 }

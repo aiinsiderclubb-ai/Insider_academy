@@ -8,6 +8,24 @@
   padding-top: 8px;
 }
 
+.bundleSectionCompact {
+  padding-top: 0;
+  margin-bottom: 34px;
+}
+
+.bundleSectionCompact .sectionHead {
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.bundleSectionCompact .sectionDesc {
+  margin-left: 0;
+}
+
+.bundleSectionCompact .bundleGrid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
 .sectionHead {
   text-align: center;
   margin-bottom: 28px;
@@ -49,14 +67,6 @@
   gap: 24px;
 }
 
-.levelGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  margin-bottom: 22px;
-}
-
-.levelCard,
 .bundleCard {
   position: relative;
   overflow: hidden;
@@ -67,76 +77,12 @@
   backdrop-filter: blur(var(--glass-blur));
 }
 
-.levelCard {
-  border-radius: 20px;
-  padding: 22px;
-}
-
-.levelCard::before,
 .bundleCard::before {
   content: '';
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 18% 0%, rgba(168, 85, 247, 0.16), transparent 38%);
   pointer-events: none;
-}
-
-.levelPill {
-  position: relative;
-  display: inline-flex;
-  padding: 6px 12px;
-  margin-bottom: 12px;
-  border-radius: var(--radius-pill);
-  color: var(--glow-purple);
-  background: var(--glow-purple-dim);
-  border: 1px solid var(--border-accent);
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.levelDesc {
-  position: relative;
-  min-height: 48px;
-  margin: 0 0 16px;
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-.levelList {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.levelList li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 10px 0;
-  border-top: 1px solid var(--border);
-}
-
-.levelList a {
-  color: var(--text);
-  font-weight: 650;
-  line-height: 1.35;
-}
-
-.levelList a:hover {
-  color: var(--glow-purple);
-}
-
-.levelList strong {
-  color: var(--glow-purple);
-  font-size: 1rem;
 }
 
 .bundleGrid {
@@ -147,7 +93,7 @@
 
 .bundleCard {
   border-radius: 22px;
-  padding: 24px;
+  padding: 18px 24px 24px;
   transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -173,6 +119,64 @@
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.bundleImages {
+  position: relative;
+  height: 128px;
+  margin: -2px -8px 18px;
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(168, 85, 247, 0.22), transparent 42%),
+    var(--bg-elevated);
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 24%, var(--border));
+}
+
+.bundleImages::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 22%, rgba(5, 3, 16, 0.35) 100%),
+    radial-gradient(circle at 80% 15%, rgba(249, 115, 22, 0.16), transparent 36%);
+  pointer-events: none;
+}
+
+.bundleImage {
+  position: absolute;
+  top: 18px;
+  left: calc(14px + (var(--image-index) * 46px));
+  width: 104px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
+  transform: rotate(calc((var(--image-index) - 2) * -4deg));
+}
+
+.bundleImage:nth-child(2n) {
+  top: 28px;
+}
+
+.bundleImageMore {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  box-shadow: 0 0 24px var(--glow-purple-dim);
 }
 
 .bundleCard h3 {
@@ -211,6 +215,47 @@
   font-weight: 650;
 }
 
+.bundleBonus {
+  position: relative;
+  padding: 12px;
+  margin: 0 0 18px;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    color-mix(in srgb, var(--glow-purple) 10%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--glow-purple) 38%, var(--border));
+}
+
+.bundleBonus strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.8125rem;
+}
+
+.bundleBonus ul {
+  margin: 0;
+  gap: 6px;
+}
+
+.bundleBonus li {
+  border: 0;
+  background: transparent;
+  padding: 0 0 0 1rem;
+  position: relative;
+  color: var(--text);
+}
+
+.bundleBonus li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--gradient-primary);
+}
+
 .bundlePriceRow {
   position: relative;
   display: flex;
@@ -238,21 +283,46 @@
   font-weight: 800;
 }
 
-.bundleCta {
+.bundleActions {
   position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 10px;
+}
+
+.bundleBuyBtn,
+.bundleDetailsBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
   min-height: 44px;
   border-radius: 14px;
-  background: var(--gradient-primary);
-  color: #fff;
+  font-size: 0.875rem;
   font-weight: 800;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s;
 }
 
-.bundleCta:hover {
-  filter: brightness(1.08);
+.bundleBuyBtn {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 10px 26px var(--glow-purple-dim);
+}
+
+.bundleDetailsBtn {
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 34%, var(--border));
+  color: var(--text);
+  background: color-mix(in srgb, var(--glow-purple) 8%, transparent);
+}
+
+.bundleBuyBtn:hover,
+.bundleDetailsBtn:hover {
+  transform: translateY(-2px);
+}
+
+.bundleDetailsBtn:hover {
+  border-color: var(--glow-purple);
+  color: var(--glow-purple);
 }
 
 .mapCta {
@@ -299,8 +369,16 @@
     font-size: 1.375rem;
   }
 
-  .levelGrid,
   .bundleGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bundleImage {
+    width: 96px;
+    left: calc(12px + (var(--image-index) * 38px));
+  }
+
+  .bundleActions {
     grid-template-columns: 1fr;
   }
 }
