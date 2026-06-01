@@ -2,6 +2,7 @@
 
 import { mergeHomeworkIntoWeeks } from './courseHomework.js'
 import { buildLessonsFromVideos, buildWeeksFromVideos, getVideoLessons } from './videoLessons.js'
+import { resolveCourseId } from './courseAliases.js'
 
 function week(num, title, titleEn, goal, goalEn, skills, skillsEn, outcome, outcomeEn) {
   return { number: num, title, titleEn, goal, goalEn, skills, skillsEn, outcome, outcomeEn }
@@ -210,13 +211,13 @@ const CURRICULUM = {
         'Business Automation System: brief, diagram, n8n workflow, AI, integrations, docs, demo.'),
     ],
   },
-  'ai-chatbot-developer': {
-    idea: 'AI Chatbot Developer — создание умных чатботов для бизнеса, поддержки, продаж, Telegram, сайтов и CRM.',
-    ideaEn: 'AI Chatbot Developer teaches you to design chatbots as products with logic, memory, knowledge base, and business outcomes.',
+  'ai-conversational-systems': {
+    idea: 'AI Conversational Systems — чат-боты и голосовые AI-агенты для бизнеса: Telegram, сайт, телефония, CRM и коммерческая упаковка.',
+    ideaEn: 'AI Conversational Systems — chatbots and voice AI agents for business: Telegram, web, telephony, CRM and commercial delivery.',
     audience: ['No-code специалисты', 'Automation engineers', 'Маркетологи', 'Владельцы бизнеса', 'Фрилансеры', 'Поддержка'],
     audienceEn: ['No-code specialists', 'Automation engineers', 'Marketers', 'Business owners', 'Freelancers', 'Support teams'],
-    finalResult: 'Коммерческий AI-чатбот: ответы клиентам, база знаний, заявки, квалификация лидов, CRM, Telegram или сайт.',
-    finalResultEn: 'Commercial AI chatbot: customer replies, knowledge base, leads, qualification, CRM, Telegram or web.',
+    finalResult: 'Коммерческий AI-чатбот и голосовой AI-сотрудник: CRM, сценарии, телефония и заявки.',
+    finalResultEn: 'Commercial AI chatbot and voice employee: CRM, scenarios, telephony and lead capture.',
     weeks: [
       week(1, 'Архитектура чатботов', 'Chatbot architecture',
         'Понять, из чего состоит чатбот и как его проектировать.',
@@ -274,72 +275,6 @@ const CURRICULUM = {
         ['AI + knowledge + business logic', 'Testing and documentation', 'Value presentation'],
         'Commercial AI Chatbot: концепция, диалоги, Telegram/web, AI, KB, память, CRM, уведомления.',
         'Commercial AI Chatbot: concept, dialogs, Telegram/web, AI, KB, memory, CRM, alerts.'),
-    ],
-  },
-  'ai-voice-developer': {
-    idea: 'AI Voice Agent Developer — голосовые AI-агенты для звонков, записи на услуги, квалификации лидов и интеграции с CRM.',
-    ideaEn: 'AI Voice Agent Developer teaches voice AI agents for calls, bookings, lead qualification, and CRM integration.',
-    audience: ['No-code automation', 'Chatbot developers', 'Фрилансеры', 'AI-специалисты', 'Агентства', 'Владельцы бизнеса'],
-    audienceEn: ['No-code automation', 'Chatbot developers', 'Freelancers', 'AI specialists', 'Agencies', 'Business owners'],
-    finalResult: 'Голосовой AI-агент: звонки, диалог, сбор данных, CRM, уведомления, бизнес-сценарий.',
-    finalResultEn: 'Voice AI agent: calls, dialogue, data capture, CRM, notifications, business scenario.',
-    weeks: [
-      week(1, 'Основы Voice AI', 'Voice AI fundamentals',
-        'Как устроен голосовой AI-агент и из каких компонентов состоит.',
-        'How voice AI agents work and their components.',
-        ['STT, TTS, LLM в звонке', 'Latency и скорость', 'Сценарии и ниши', 'Ограничения'],
-        ['STT, TTS, LLM in calls', 'Latency and speed', 'Scenarios and niches', 'Limitations'],
-        'Концепция агента: ниша, цель, сценарий, роль, данные, результат звонка.',
-        'Agent concept: niche, goal, scenario, role, data, call outcome.'),
-      week(2, 'Голос и качество общения', 'Voice and conversation quality',
-        'Работа с голосом, стилем и восприятием агента.',
-        'Voice selection, style, and perceived quality.',
-        ['Выбор голоса и тональность', 'Natural flow и паузы', 'Диалог для голоса, не текста'],
-        ['Voice and tone', 'Natural flow and pauses', 'Dialog for voice, not text'],
-        'Голосовая личность: имя, стиль, приветствие, правила, фразы для ситуаций.',
-        'Voice personality: name, style, greeting, rules, situational phrases.'),
-      week(3, 'Сценарии звонков', 'Call scenarios',
-        'Сильный сценарий, ведущий к нужному результату.',
-        'Strong call script that drives the desired outcome.',
-        ['Входящие и исходящие звонки', 'Квалификация и отказы', 'Ветки и fallback', 'Завершение звонка'],
-        ['Inbound and outbound calls', 'Qualification and objections', 'Branches and fallback', 'Call closing'],
-        'Полный сценарий: приветствие, вопросы, переходы, непонятные ответы, завершение.',
-        'Full script: greeting, questions, transitions, unclear answers, closing.'),
-      week(4, 'Первый голосовой AI-агент', 'First voice AI agent',
-        'Собрать первого работающего voice agent.',
-        'Build your first working voice agent.',
-        ['Платформа voice AI', 'Системный промпт и голос', 'Тестирование и оптимизация'],
-        ['Voice AI platform', 'System prompt and voice', 'Testing and optimization'],
-        'Рабочий voice agent с базовым разговором по сценарию.',
-        'Working voice agent with basic scenario conversation.'),
-      week(5, 'Телефония и номера', 'Telephony and phone numbers',
-        'Подключить агента к реальным звонкам.',
-        'Connect agent to real phone calls.',
-        ['Входящие/исходящие, routing', 'Запись результатов', 'Missed calls'],
-        ['Inbound/outbound, routing', 'Recording outcomes', 'Missed calls'],
-        'Агент на звонках: разговор, сбор данных, сохранение результата.',
-        'Agent on calls: conversation, data capture, saved outcome.'),
-      week(6, 'CRM, календарь, автоматизации', 'CRM, calendar, automations',
-        'Voice agent как часть бизнес-процесса.',
-        'Voice agent as part of business workflow.',
-        ['CRM и задачи менеджеру', 'Запись в календарь', 'n8n, summary, follow-up'],
-        ['CRM and manager tasks', 'Calendar booking', 'n8n, summary, follow-up'],
-        'Voice workflow: звонок → данные → AI-summary → CRM → уведомление → follow-up.',
-        'Voice workflow: call → data → AI summary → CRM → alert → follow-up.'),
-      week(7, 'Коммерческие кейсы', 'Commercial use cases',
-        'Voice agents для реальных бизнес-ниш.',
-        'Voice agents for real business niches.',
-        ['Рестораны, клиники, салоны, недвижимость', 'Польза и экономия времени', 'Демо для клиента'],
-        ['Restaurants, clinics, salons, real estate', 'Value and time saved', 'Client demo'],
-        'Коммерческий кейс: ниша, проблема, сценарий, интеграции, выгода.',
-        'Commercial case: niche, problem, scenario, integrations, benefit.'),
-      week(8, 'Финальный проект: AI Voice Employee', 'Capstone: AI Voice Employee',
-        'Полноценный голосовой AI-сотрудник для бизнеса.',
-        'Full voice AI employee for business.',
-        ['Сценарий, голос, телефония, автоматизации', 'Тестирование и презентация'],
-        ['Script, voice, telephony, automations', 'Testing and presentation'],
-        'AI Voice Employee: personality, agent, телефония, CRM, summary, follow-up, презентация.',
-        'AI Voice Employee: personality, agent, telephony, CRM, summary, follow-up, pitch.'),
     ],
   },
   'ai-saas-builder': {
@@ -670,14 +605,13 @@ const LESSON_PREFIX = {
   'ai-user-pro': 'up',
   'ai-content-creator': 'cc',
   'no-code-automation': 'nc',
-  'ai-chatbot-developer': 'cb',
-  'ai-voice-developer': 'vd',
+  'ai-conversational-systems': 'cs',
   'ai-agent-architect': 'aa',
   'ai-agency-builder': 'agb',
 }
 
 export function getCurriculum(courseId) {
-  return CURRICULUM[courseId] || null
+  return CURRICULUM[resolveCourseId(courseId)] || null
 }
 
 export function buildLessonsFromWeeks(courseId, weeks) {

@@ -72,8 +72,8 @@ export function CourseCatalogCard({
         </div>
 
         {!isFree && !isIntake && (
-          <div className={styles.priceRow}>
-            <span className={styles.price}>{priceLabel || `${price}€`}</span>
+          <div className={styles.priceBlock}>
+            <span className={styles.priceMain}>{priceLabel || `${price}€`}</span>
           </div>
         )}
 

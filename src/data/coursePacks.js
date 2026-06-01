@@ -18,7 +18,7 @@ export const COURSE_LEVEL_PACKS = [
     descEn: 'Practical skills for automations, conversational systems and SaaS.',
     courses: [
       { title: 'Automation Engineer', courseId: 'no-code-automation', priceEur: 39 },
-      { title: 'Conversational Systems', courseId: 'ai-chatbot-developer', priceEur: 49 },
+      { title: 'Conversational Systems', courseId: 'ai-conversational-systems', priceEur: 29 },
       { title: 'SaaS Builder', courseId: 'ai-saas-builder', priceEur: 49 },
     ],
   },
@@ -34,6 +34,10 @@ export const COURSE_LEVEL_PACKS = [
     ],
   },
 ]
+
+export function getCourseBundle(id) {
+  return COURSE_BUNDLES.find((b) => b.id === id) || null
+}
 
 export const COURSE_BUNDLES = [
   {
@@ -61,7 +65,7 @@ export const COURSE_BUNDLES = [
     title: 'AI Builder Pack',
     descRu: 'Автоматизации, conversational-системы и SaaS-продукт в одном пакете.',
     descEn: 'Automation, conversational systems and SaaS product in one pack.',
-    courseIds: ['no-code-automation', 'ai-chatbot-developer', 'ai-saas-builder'],
+    courseIds: ['no-code-automation', 'ai-conversational-systems', 'ai-saas-builder'],
     includes: ['Automation', 'Conversational', 'SaaS'],
     bonusRu: [
       'n8n workflow pack',
@@ -73,8 +77,8 @@ export const COURSE_BUNDLES = [
       'Client brief template',
       'SaaS MVP checklist',
     ],
-    priceEur: 119,
-    oldPriceEur: 137,
+    priceEur: 99,
+    oldPriceEur: 117,
   },
   {
     id: 'ai-business-launch-pack',
@@ -83,13 +87,13 @@ export const COURSE_BUNDLES = [
     descEn: 'Launch an AI service: automation, bot, SaaS idea, agents and offer packaging.',
     courseIds: [
       'no-code-automation',
-      'ai-chatbot-developer',
+      'ai-conversational-systems',
       'ai-saas-builder',
       'ai-agent-architect',
       'ai-agency-builder',
     ],
-    includes: ['Automation', 'Chatbot', 'SaaS MVP', 'Agent System', 'Agency Launch Kit'],
-    includesEn: ['Automation', 'Chatbot', 'SaaS MVP', 'Agent System', 'Agency Launch Kit'],
+    includes: ['Automation', 'Conversational', 'SaaS MVP', 'Agent System', 'Agency Launch Kit'],
+    includesEn: ['Automation', 'Conversational', 'SaaS MVP', 'Agent System', 'Agency Launch Kit'],
     bonusRu: [
       'Agency Launch Toolkit',
       'Outreach scripts',
@@ -103,7 +107,7 @@ export const COURSE_BUNDLES = [
       'Delivery checklist',
     ],
     priceEur: 199,
-    oldPriceEur: 255,
+    oldPriceEur: 235,
     featured: true,
   },
 ]

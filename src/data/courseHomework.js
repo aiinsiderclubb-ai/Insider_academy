@@ -1,5 +1,7 @@
 /** Домашние задания, критерии проверки и итоговые проекты Pro-курсов */
 
+import { resolveCourseId } from './courseAliases.js'
+
 function hw(tasks, tasksEn, deliverables, deliverablesEn, criteria, criteriaEn, extra = {}) {
   return { tasks, tasksEn, deliverables, deliverablesEn, criteria, criteriaEn, ...extra }
 }
@@ -498,7 +500,12 @@ export const HOMEWORK_BY_COURSE = {
 }
 
 export function getHomework(courseId, weekNumber) {
-  return HOMEWORK_BY_COURSE[courseId]?.[weekNumber] || null
+  const id = resolveCourseId(courseId)
+  if (id === 'ai-conversational-systems') {
+    if (weekNumber <= 6) return HOMEWORK_BY_COURSE['ai-chatbot-developer']?.[weekNumber] || null
+    return HOMEWORK_BY_COURSE['ai-voice-developer']?.[weekNumber - 6] || null
+  }
+  return HOMEWORK_BY_COURSE[id]?.[weekNumber] || null
 }
 
 export const DEFAULT_LESSON_HOMEWORK = {

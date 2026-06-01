@@ -40,7 +40,10 @@ export function CourseBundleOffers({ lang, bundles = COURSE_BUNDLES, title, desc
   if (!bundles?.length) return null
 
   return (
-    <section className={`${styles.section} ${compact ? styles.bundleSectionCompact : ''}`}>
+    <section
+      id="packs"
+      className={`${styles.section} ${compact ? styles.bundleSectionCompact : ''}`}
+    >
       <SectionHeader
         pill={ru ? 'Пакеты' : 'Bundles'}
         title={title || (ru ? 'Выгодные пакеты курсов' : 'Discounted course bundles')}
@@ -108,7 +111,7 @@ export function CourseBundleOffers({ lang, bundles = COURSE_BUNDLES, title, desc
                 <Link to="/cabinet#support" className={styles.bundleBuyBtn}>
                   {ru ? 'Купить' : 'Buy'}
                 </Link>
-                <Link to="/cabinet#support" className={styles.bundleDetailsBtn}>
+                <Link to={`/packs/${bundle.id}`} className={styles.bundleDetailsBtn}>
                   {ru ? 'Подробнее' : 'Details'}
                 </Link>
               </div>

@@ -1,6 +1,7 @@
 /** Структурированные программы уроков — Academy LMS */
 
 import { getVideoLessons } from './videoLessons.js'
+import { resolveCourseId } from './courseAliases.js'
 
 const SHORT = { ru: '10–20 мин', en: '10–20 min' }
 const PRO = { ru: '30–45 мин', en: '30–45 min' }
@@ -274,10 +275,28 @@ export const LESSON_PROGRAMS = {
   },
 }
 
+const CONVERSATIONAL_CHAT_PICKS = [0, 2, 4, 7, 10, 14]
+const CONVERSATIONAL_VOICE_PICKS = [0, 2, 4, 9, 11, 14]
+
+;(() => {
+  const chat = LESSON_PROGRAMS['ai-chatbot-developer']?.lessons || []
+  const voice = LESSON_PROGRAMS['ai-voice-developer']?.lessons || []
+  if (!chat.length || !voice.length) return
+  const picked = [
+    ...CONVERSATIONAL_CHAT_PICKS.map((idx) => chat[idx]).filter(Boolean),
+    ...CONVERSATIONAL_VOICE_PICKS.map((idx) => voice[idx]).filter(Boolean),
+  ]
+  LESSON_PROGRAMS['ai-conversational-systems'] = {
+    duration: PRO,
+    countLabel: { ru: '12 уроков', en: '12 lessons' },
+    lessons: picked.map((l, i) => lesson(i + 1, l.titleRu, l.titleEn, l.descRu, l.descEn)),
+  }
+  delete LESSON_PROGRAMS['ai-chatbot-developer']
+  delete LESSON_PROGRAMS['ai-voice-developer']
+})()
+
 const VIDEO_COURSE_DURATIONS = {
   'no-code-automation': LONG,
-  'ai-chatbot-developer': LONG,
-  'ai-voice-developer': LONG,
   'ai-agent-architect': LONG,
   'ai-agency-builder': LONG,
 }
@@ -303,8 +322,7 @@ const LESSON_PREFIX = {
   'ai-user-pro': 'up',
   'ai-content-creator': 'cc',
   'no-code-automation': 'nc',
-  'ai-chatbot-developer': 'cb',
-  'ai-voice-developer': 'vd',
+  'ai-conversational-systems': 'cs',
   'ai-saas-builder': 'sb',
   'ai-agent-architect': 'aa',
   'ai-agency-builder': 'agb',
@@ -312,7 +330,8 @@ const LESSON_PREFIX = {
 
 export function getLessonProgram(courseId) {
   ensureVideoPrograms()
-  return LESSON_PROGRAMS[courseId] || buildProgramFromVideos(courseId) || null
+  const id = resolveCourseId(courseId)
+  return LESSON_PROGRAMS[id] || buildProgramFromVideos(id) || null
 }
 
 function isPlaceholderLessons(lessons) {

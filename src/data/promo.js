@@ -38,4 +38,30 @@ export const ACCELERATOR_OFFER = {
     'Practice and homework with curator review',
     '100% async — no live calls',
   ],
+  statsRu: [
+    { value: '12', label: 'уроков' },
+    { value: '1', label: 'месяц' },
+    { value: '0 €', label: 'набор' },
+    { value: '100%', label: 'асинхронно' },
+  ],
+  statsEn: [
+    { value: '12', label: 'lessons' },
+    { value: '1', label: 'month' },
+    { value: '€0', label: 'intake' },
+    { value: '100%', label: 'async' },
+  ],
+  tracksRu: ['Контент', 'Автоматизации', 'Чат-боты', 'Voice AI', 'AI-агенты', 'Монетизация'],
+  tracksEn: ['Content', 'Automation', 'Chatbots', 'Voice AI', 'AI agents', 'Monetization'],
+  stepsRu: [
+    { title: 'Заявка', text: 'Анкета и мотивация' },
+    { title: 'Отбор', text: 'Проверка ментором' },
+    { title: 'Старт', text: '12 уроков и тест' },
+    { title: 'Путь', text: 'Выбор специализации' },
+  ],
+  stepsEn: [
+    { title: 'Apply', text: 'Form and motivation' },
+    { title: 'Review', text: 'Mentor selection' },
+    { title: 'Start', text: '12 lessons and test' },
+    { title: 'Path', text: 'Pick your track' },
+  ],
 }

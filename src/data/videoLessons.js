@@ -1,5 +1,6 @@
 /** Video lessons from AI_Insider_Academy_video_lessons_updated.docx — videoUrl заполняется позже */
 import { buildVideoLessonBlock } from './courseLessonPrograms.js'
+import { CONVERSATIONAL_COURSE_ID, resolveCourseId } from './courseAliases.js'
 
 export const VIDEO_LESSONS_BY_COURSE = {
   "ai-user-pro": {
@@ -3298,24 +3299,74 @@ export const VIDEO_LESSONS_BY_COURSE = {
   if (block) VIDEO_LESSONS_BY_COURSE[courseId] = block
 })
 
+const CONVERSATIONAL_CHAT_PICKS = [0, 2, 4, 7, 10, 14]
+const CONVERSATIONAL_VOICE_PICKS = [0, 2, 4, 9, 11, 14]
+
+function mergeConversationalVideoLessons() {
+  const chat = VIDEO_LESSONS_BY_COURSE['ai-chatbot-developer']
+  const voice = VIDEO_LESSONS_BY_COURSE['ai-voice-developer']
+  if (!chat?.lessons?.length || !voice?.lessons?.length) return null
+  const chatPicked = CONVERSATIONAL_CHAT_PICKS.map((idx) => chat.lessons[idx]).filter(Boolean)
+  const voicePicked = CONVERSATIONAL_VOICE_PICKS.map((idx) => voice.lessons[idx]).filter(Boolean)
+  const chatLen = chatPicked.length
+  const lessons = [
+    ...chatPicked.map((l, i) => ({ ...l, number: i + 1, week: Math.min(i + 1, 6) })),
+    ...voicePicked.map((l, i) => ({
+      ...l,
+      number: chatLen + i + 1,
+      week: Math.min(i + 7, 12),
+    })),
+  ]
+  const weeks = [
+    ...(chat.weeks || []).filter((w) => w.number <= 6),
+    ...(voice.weeks || [])
+      .filter((w) => w.number <= 6)
+      .map((w) => ({ ...w, number: (w.number || 1) + 6 })),
+  ]
+  return {
+    meta: {
+      price: '29€',
+      videoCount: lessons.length,
+      videoDuration: chat.meta?.videoDuration || voice.meta?.videoDuration,
+      finalResult:
+        'Commercial AI Chatbot + AI Voice Employee: чат-бот, голос, CRM, телефония и follow-up.',
+    },
+    lessons,
+    weeks,
+  }
+}
+
+let conversationalVideosMerged = false
+
 export function getVideoLessons(courseId) {
-  return VIDEO_LESSONS_BY_COURSE[courseId] || null
+  const id = resolveCourseId(courseId)
+  if (id === CONVERSATIONAL_COURSE_ID) {
+    if (!conversationalVideosMerged) {
+      const merged = mergeConversationalVideoLessons()
+      if (merged) {
+        VIDEO_LESSONS_BY_COURSE[CONVERSATIONAL_COURSE_ID] = merged
+        conversationalVideosMerged = true
+      }
+    }
+    return VIDEO_LESSONS_BY_COURSE[CONVERSATIONAL_COURSE_ID] || null
+  }
+  return VIDEO_LESSONS_BY_COURSE[id] || VIDEO_LESSONS_BY_COURSE[courseId] || null
 }
 
 const LESSON_PREFIX = {
   'ai-user-pro': 'up',
   'ai-content-creator': 'cc',
   'no-code-automation': 'nc',
-  'ai-chatbot-developer': 'cb',
-  'ai-voice-developer': 'vd',
+  'ai-conversational-systems': 'cs',
   'ai-agent-architect': 'aa',
   'ai-agency-builder': 'agb',
 }
 
 export function buildLessonsFromVideos(courseId) {
-  const data = VIDEO_LESSONS_BY_COURSE[courseId]
+  const id = resolveCourseId(courseId)
+  const data = getVideoLessons(id)
   if (!data?.lessons?.length) return null
-  const prefix = LESSON_PREFIX[courseId] || courseId.slice(0, 2)
+  const prefix = LESSON_PREFIX[id] || courseId.slice(0, 2)
   return data.lessons.map((v) => {
     const isCapstone = v.number === data.lessons.length && /финальный проект/i.test(v.title)
     return {
@@ -3352,7 +3403,7 @@ export function buildLessonsFromVideos(courseId) {
 }
 
 export function buildWeeksFromVideos(courseId) {
-  const data = VIDEO_LESSONS_BY_COURSE[courseId]
+  const data = getVideoLessons(resolveCourseId(courseId))
   if (!data?.weeks?.length) return null
   return data.weeks.map((w) => {
     const homework = w.number === 8 && data.lessons?.length

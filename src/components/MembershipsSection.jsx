@@ -1,35 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MEMBERSHIPS_TITLE, MEMBERSHIP_PLANS } from '../data/memberships'
+import { PLAN_COMPARISON_ROWS } from '../data/membershipDetails'
 import { ScrollReveal } from './ScrollReveal'
 import styles from './MembershipsSection.module.css'
-
-const COMPARISON_ROWS = {
-  ru: [
-    ['Все обычные видеоуроки Academy', true, true],
-    ['Pro-only курсы: Agent Engineer и Agency Builder', false, true],
-    ['Учебные материалы доступных курсов', true, true],
-    ['Домашние задания и сертификаты', true, true],
-    ['Новые базовые курсы внутри Academy', true, true],
-    ['Промпт-библиотека и чек-листы', false, true],
-    ['Готовые n8n workflow', false, true],
-    ['Шаблоны AI-агентов, ботов и voice agents', false, true],
-    ['Скрипты продаж и outreach для клиентов', false, true],
-    ['Премиальные кейсы и ресурсы для AI-бизнеса', false, true],
-  ],
-  en: [
-    ['All regular Academy video lessons', true, true],
-    ['Pro-only courses: Agent Engineer and Agency Builder', false, true],
-    ['Learning materials for available courses', true, true],
-    ['Homework and certificates', true, true],
-    ['Future core Academy courses', true, true],
-    ['Prompt library and checklists', false, true],
-    ['Ready-to-use n8n workflows', false, true],
-    ['AI agent, chatbot and voice agent templates', false, true],
-    ['Sales scripts and client outreach', false, true],
-    ['Premium case studies and AI business resources', false, true],
-  ],
-}
 
 const BONUS_CARDS = {
   ru: [
@@ -56,7 +30,7 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
     () => MEMBERSHIP_PLANS.filter((plan) => plan.billing === billing),
     [billing]
   )
-  const comparisonRows = lang === 'en' ? COMPARISON_ROWS.en : COMPARISON_ROWS.ru
+  const comparisonRows = lang === 'en' ? PLAN_COMPARISON_ROWS.en : PLAN_COMPARISON_ROWS.ru
   const bonusCards = lang === 'en' ? BONUS_CARDS.en : BONUS_CARDS.ru
 
   return (
@@ -124,7 +98,7 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
               : (lang === 'ru'
                 ? 'Для тех, кто хочет пройти основные курсы. Agent Engineer и Agency Builder не входят.'
                 : 'For learning core courses. Agent Engineer and Agency Builder are not included.')
-            const detailsPath = compact ? '/memberships#compare' : '#compare'
+            const detailsPath = `/memberships/${isPro ? 'pro' : 'club'}`
 
             return (
               <ScrollReveal key={plan.id} delay={index * 40}>

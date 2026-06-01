@@ -24,8 +24,11 @@ import { VerifyEmail } from './pages/VerifyEmail'
 import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { Memberships } from './pages/Memberships'
+import { MembershipPlan } from './pages/MembershipPlan'
+import { CoursePack } from './pages/CoursePack'
 import { Admin } from './pages/Admin'
 import { AcceleratorApply } from './pages/AcceleratorApply'
+import { LEGACY_SLUG_REDIRECTS } from './data/courseAliases'
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   const location = useLocation()
@@ -48,10 +51,18 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/packs/:packId" element={<CoursePack />} />
           <Route path="/memberships" element={<Memberships />} />
+          <Route path="/memberships/:tier" element={<MembershipPlan />} />
           <Route path="/club" element={<Memberships />} />
           <Route path="/learning-map" element={<Navigate to="/" replace />} />
           <Route path="/courses/ai-insider-accelerator/apply" element={<AcceleratorApply />} />
+          {Object.entries(LEGACY_SLUG_REDIRECTS).map(([from, to]) => (
+            <Route key={from} path={`/courses/${from}`} element={<Navigate to={`/courses/${to}`} replace />} />
+          ))}
+          {Object.entries(LEGACY_SLUG_REDIRECTS).map(([from, to]) => (
+            <Route key={`${from}-buy`} path={`/courses/${from}/buy`} element={<Navigate to={`/courses/${to}/buy`} replace />} />
+          ))}
           <Route path="/courses/:slug" element={<Course />} />
           <Route path="/courses/:slug/buy" element={<CourseBuy />} />
           <Route path="/cabinet" element={<ProtectedRoute><Cabinet /></ProtectedRoute>} />

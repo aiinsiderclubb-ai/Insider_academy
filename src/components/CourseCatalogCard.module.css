@@ -121,54 +121,62 @@
   align-items: center;
   gap: 12px;
   padding-top: 10px;
-  margin-top: auto;
-  border-top: 1px solid var(--border);
   font-size: 0.8125rem;
   color: var(--text-muted);
 }
 
-.priceRow {
+.priceBlock {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 14px;
 }
 
-.price {
-  font-size: 1.25rem;
+.priceMain {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4.5vw, 2.125rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  line-height: 1;
+  letter-spacing: -0.03em;
   color: var(--text);
 }
 
 .actions {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: 10px;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: 12px;
+  padding-top: 4px;
 }
 
 .buyBtn,
 .detailsBtn {
-  min-height: 42px;
+  min-height: 46px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 800;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 700;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.2s, color 0.2s;
 }
 
 .buyBtn {
-  background: var(--course-gradient);
+  background: var(--gradient-primary);
   color: #fff;
-  box-shadow: 0 10px 26px var(--course-accent-soft);
+  border: none;
+  box-shadow:
+    0 10px 28px color-mix(in srgb, #a855f7 38%, transparent),
+    0 4px 14px color-mix(in srgb, #f97316 20%, transparent);
 }
 
 .detailsBtn {
-  border: 1px solid color-mix(in srgb, var(--course-accent) 28%, var(--border));
+  border: 1px solid color-mix(in srgb, var(--glow-purple) 55%, var(--border));
   color: var(--text);
-  background: color-mix(in srgb, var(--course-accent) 8%, transparent);
+  background: transparent;
 }
 
 .buyBtn:hover,
@@ -176,9 +184,17 @@
   transform: translateY(-2px);
 }
 
+.buyBtn:hover {
+  background: var(--gradient-primary-hover);
+  box-shadow:
+    0 14px 34px color-mix(in srgb, #a855f7 46%, transparent),
+    0 6px 18px color-mix(in srgb, #f97316 26%, transparent);
+}
+
 .detailsBtn:hover {
-  border-color: var(--course-accent);
-  color: var(--course-accent);
+  border-color: var(--glow-purple);
+  color: var(--text);
+  background: color-mix(in srgb, var(--glow-purple) 10%, transparent);
 }
 
 @media (max-width: 420px) {

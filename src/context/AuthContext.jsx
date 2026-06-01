@@ -8,6 +8,7 @@ import {
   markReferredPurchased,
 } from '../api/adminStore'
 import { AI_INSIDER_CLUB, courseUnlockedByClub, courseUnlockedByPack, hasClubMembership } from '../data/club'
+import { purchaseIdsForCourse } from '../data/courseAliases'
 import {
   isTestAccountEmail,
   TEST_ACCOUNT_PASSWORD,
@@ -334,10 +335,15 @@ export function AuthProvider({ children }) {
   }, [user, apiMode])
 
   const hasPurchased = useCallback(
-    (courseId) =>
-      purchases.some((p) => p.id === courseId) ||
-      courseUnlockedByClub(courseId, purchases) ||
-      courseUnlockedByPack(courseId, purchases),
+    (courseId) => {
+      const ids = purchaseIdsForCourse(courseId)
+      return ids.some(
+        (id) =>
+          purchases.some((p) => p.id === id) ||
+          courseUnlockedByClub(id, purchases) ||
+          courseUnlockedByPack(id, purchases)
+      )
+    },
     [purchases]
   )
 
@@ -350,7 +356,8 @@ export function AuthProvider({ children }) {
 
   const getPurchaseDate = useCallback(
     (courseId) => {
-      const p = purchases.find((x) => x.id === courseId)
+      const ids = purchaseIdsForCourse(courseId)
+      const p = purchases.find((x) => ids.includes(x.id))
       return p?.purchasedAt ? new Date(p.purchasedAt) : null
     },
     [purchases]
