@@ -17,6 +17,7 @@ import applicationsRoutes from './routes/applications.js'
 import teamsRoutes from './routes/teams.js'
 import telegramRoutes from './routes/telegram.js'
 import filesRoutes from './routes/files.js'
+import promoRoutes from './routes/promo.js'
 
 export async function createApp() {
   await initDatabase()
@@ -68,7 +69,7 @@ export async function createApp() {
         s3: config.storage.driver === 's3',
         email: Boolean(config.email.smtp.host),
         openai: Boolean(config.openai.apiKey),
-        telegram: Boolean(config.telegram.botToken),
+        telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken),
         tribute: Boolean(config.tribute.apiKey),
         googleSheets: isGoogleSheetsEnabled(),
       },
@@ -88,6 +89,7 @@ export async function createApp() {
   app.use('/api/teams', teamsRoutes)
   app.use('/api/telegram', telegramRoutes)
   app.use('/api/files', filesRoutes)
+  app.use('/api/promo', promoRoutes)
   app.use('/api', publicRoutes)
 
   app.use((err, _req, res, _next) => {
