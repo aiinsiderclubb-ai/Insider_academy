@@ -10,6 +10,7 @@ export function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [resetLink, setResetLink] = useState('')
+  const [deliveryNote, setDeliveryNote] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -26,6 +27,12 @@ export function ForgotPassword() {
       const res = await api.forgotPassword(email.trim())
       setSent(true)
       if (res?.resetLink) setResetLink(res.resetLink)
+      if (res?.errorRu) setDeliveryNote(res.errorRu)
+      else if (res?.emailDelivery === 'failed') {
+        setDeliveryNote(lang === 'ru'
+          ? 'Письмо не отправлено. Используйте ссылку ниже.'
+          : 'Email was not sent. Use the link below.')
+      }
     } catch (err) {
       setError(formatApiError(err, lang) || t('forgotPassword.error'))
     } finally {
@@ -51,6 +58,7 @@ export function ForgotPassword() {
             {sent ? (
               <div className={styles.successBlock}>
                 <p>{t('forgotPassword.sent')}</p>
+                {deliveryNote && <p className={styles.devResetHint}>{deliveryNote}</p>}
                 {resetLink && (
                   <div className={styles.devResetBox}>
                     <p className={styles.devResetHint}>{t('forgotPassword.devLinkHint')}</p>

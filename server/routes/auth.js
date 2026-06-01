@@ -260,12 +260,24 @@ router.post('/forgot-password', asyncHandler(async (req, res) => {
     `et-${Date.now()}`, email, token, 'reset', expiresAt,
   ])
   const resetLink = `${config.appUrl.replace(/\/$/, '')}/reset-password?token=${token}`
-  sendPasswordResetEmail(email, token).catch(() => {})
   const payload = { ok: true, message: 'If the account exists, reset instructions were sent.' }
+
   if (!isEmailEnabled()) {
     payload.resetLink = resetLink
     payload.emailDelivery = 'disabled'
+    return res.json(payload)
   }
+
+  try {
+    await sendPasswordResetEmail(email, token)
+    payload.emailDelivery = 'sent'
+  } catch (err) {
+    console.warn('[auth/forgot-password] email failed:', err.message)
+    payload.emailDelivery = 'failed'
+    payload.resetLink = resetLink
+    payload.errorRu = 'Письмо не удалось отправить (SMTP). Скопируйте ссылку ниже или включите SMTP AUTH в Microsoft 365.'
+  }
+
   res.json(payload)
 }))
 

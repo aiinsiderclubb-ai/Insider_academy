@@ -22,17 +22,22 @@ function getTransporter() {
 }
 
 export async function sendEmail({ to, subject, html, text }) {
-  const info = await getTransporter().sendMail({
-    from: config.email.from,
-    to,
-    subject,
-    html,
-    text: text || html?.replace(/<[^>]+>/g, ''),
-  })
-  if (!isEmailEnabled()) {
-    console.log('[email:dev]', { to, subject, preview: text || html?.slice(0, 120) })
+  try {
+    const info = await getTransporter().sendMail({
+      from: config.email.from,
+      to,
+      subject,
+      html,
+      text: text || html?.replace(/<[^>]+>/g, ''),
+    })
+    if (!isEmailEnabled()) {
+      console.log('[email:dev]', { to, subject, preview: text || html?.slice(0, 120) })
+    }
+    return info
+  } catch (err) {
+    console.error('[email] send failed:', err.message, err.response || '')
+    throw err
   }
-  return info
 }
 
 export async function sendVerificationEmail(email, token) {

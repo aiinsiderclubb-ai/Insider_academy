@@ -93,7 +93,20 @@ AI Insider Academy <info@myinsideracademy.com>
 
 ---
 
-## DNS (важно для доставляемости)
+### Если письма не приходят (Microsoft 365 / GoDaddy)
+
+Ошибка `535 5.7.139 SmtpClientAuthentication is disabled` — у ящика **отключён SMTP**.
+
+**Включить в GoDaddy / Microsoft 365:**
+1. [admin.microsoft.com](https://admin.microsoft.com) (вход через GoDaddy → Email → Admin).
+2. **Users** → `info@myinsideracademy.com` → **Mail** → **Manage email apps**.
+3. Включите **Authenticated SMTP** (SMTP AUTH).
+4. Сохраните, подождите 15–30 мин, снова тест на Render.
+
+Если нет доступа к admin — позвоните в **GoDaddy Support** и попросите включить **SMTP AUTH** для `info@myinsideracademy.com`.
+
+**Быстрая альтернатива:** [Brevo](https://www.brevo.com) — transactional SMTP без Microsoft (см. вариант B выше).
+
 
 У домена `myinsideracademy.com` добавьте записи от вашего SMTP-провайдера (SPF, DKIM, при необходимости DMARC). Без этого письма часто попадают в спам.
 
