@@ -69,7 +69,7 @@ export async function createApp() {
         s3: config.storage.driver === 's3',
         email: Boolean(config.email.smtp.host),
         openai: Boolean(config.openai.apiKey),
-        telegram: Boolean(config.telegram.botToken),
+        telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken),
         tribute: Boolean(config.tribute.apiKey),
         googleSheets: isGoogleSheetsEnabled(),
       },

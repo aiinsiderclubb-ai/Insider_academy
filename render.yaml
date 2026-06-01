@@ -76,9 +76,9 @@ services:
       - key: TELEGRAM_BOT_SERVICE_URL
         value: https://insider-academy-notify-bot.onrender.com
       - key: TELEGRAM_BOT_SERVICE_SECRET
-        sync: false
+        value: "0e4a1374271a72377b84dfc5191df55d62bd6b118e5eb569"
       - key: BOT_SERVICE_SECRET
-        sync: false
+        value: "0e4a1374271a72377b84dfc5191df55d62bd6b118e5eb569"
 
   # ── Telegram notify bot ───────────────────────────────────────────────────
   - type: web

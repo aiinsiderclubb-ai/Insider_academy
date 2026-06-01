@@ -100,7 +100,7 @@ export function isOpenAIEnabled() {
 }
 
 export function isTelegramEnabled() {
-  return Boolean(config.telegram.botToken)
+  return Boolean(process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken)
 }
 
 export function isTributeEnabled() {

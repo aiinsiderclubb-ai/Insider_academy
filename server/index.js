@@ -51,10 +51,12 @@ async function start() {
   setInterval(() => { sendAdminDailyDigest().catch((e) => console.error('[digest]', e.message)) }, 3600000)
   sendAdminDailyDigest().catch(() => {})
 
-  await ensureTelegramWebhook()
-
   app.listen(config.port, () => {
     console.log(`LMS API v2 at http://localhost:${config.port} [${getDb().driver}]`)
+    console.log(`[telegram] token configured: ${Boolean(process.env.TELEGRAM_BOT_TOKEN)}`)
+    setImmediate(() => {
+      ensureTelegramWebhook().catch((e) => console.error('[telegram] webhook:', e.message))
+    })
   })
 }
 
