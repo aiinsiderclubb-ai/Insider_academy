@@ -29,7 +29,7 @@ export async function linkByPersonalId({ personalId, chatId, username }) {
   })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
-    const err = new Error(data.error || 'Link failed')
+    const err = new Error(data.errorRu || data.error || 'Link failed')
     err.status = res.status
     throw err
   }

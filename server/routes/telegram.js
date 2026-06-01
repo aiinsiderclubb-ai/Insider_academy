@@ -13,7 +13,11 @@ import {
   getNotifyPrefs,
   setNotifyPrefs,
   getBotUsername,
+  findUserByPersonalId,
+  isValidPersonalId,
+  normalizePersonalId,
 } from '../services/telegramLink.js'
+import { backfillPersonalIds } from '../services/personalId.js'
 
 const router = Router()
 
@@ -156,9 +160,41 @@ router.post('/bot/confirm-link', requireBotSecret, async (req, res) => {
 router.post('/bot/link-personal-id', requireBotSecret, async (req, res) => {
   const { personalId, chatId, username } = req.body
   if (!personalId || !chatId) return res.status(400).json({ error: 'personalId and chatId required' })
-  const result = await linkByPersonalId(personalId, chatId, username)
-  if (!result.ok) return res.status(400).json({ error: result.error })
-  res.json({ ok: true, email: result.email })
+  const normalized = normalizePersonalId(personalId)
+  if (!isValidPersonalId(normalized)) {
+    return res.status(400).json({ error: 'Invalid personal ID format', errorRu: 'Неверный формат ID' })
+  }
+  let result = await linkByPersonalId(normalized, chatId, username)
+  if (!result.ok && result.error === 'Account not found') {
+    try {
+      await backfillPersonalIds(getDb())
+      result = await linkByPersonalId(normalized, chatId, username)
+    } catch (_) {}
+  }
+  if (!result.ok) {
+    return res.status(400).json({
+      error: result.error,
+      errorRu: 'Аккаунт не найден. Зарегистрируйтесь на сайте Academy и скопируйте ID из личного кабинета.',
+    })
+  }
+  res.json({ ok: true, email: result.email, userId: result.userId })
+})
+
+router.get('/bot/lookup/:personalId', requireBotSecret, async (req, res) => {
+  const normalized = normalizePersonalId(req.params.personalId)
+  if (!isValidPersonalId(normalized)) {
+    return res.status(400).json({ ok: false, error: 'Invalid format' })
+  }
+  const user = await findUserByPersonalId(normalized)
+  if (!user) return res.json({ ok: false, found: false })
+  res.json({
+    ok: true,
+    found: true,
+    email: user.email,
+    userId: user.id,
+    personalId: user.personal_id,
+    telegramConnected: Boolean(user.telegram_chat_id),
+  })
 })
 
 router.post('/bot/unlink', requireBotSecret, async (req, res) => {

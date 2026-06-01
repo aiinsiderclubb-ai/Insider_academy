@@ -67,5 +67,8 @@ function mapNotificationToTelegram(payload) {
     if (payload.status === 'approved') return 'review_approved'
     if (payload.status === 'rejected') return 'review_rejected'
   }
+  if (payload.type === 'application_status') return 'course_news'
+  if (payload.type === 'password_changed') return 'course_news'
+  if (payload.type === 'certificate_added') return 'course_news'
   return null
 }

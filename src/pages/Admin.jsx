@@ -1142,12 +1142,13 @@ export function Admin() {
                   <th>Профиль</th>
                   <th>Пароль</th>
                   <th>Последний вход</th>
+                  <th>Telegram</th>
                   <th>Действия</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRegistrations.length === 0 ? (
-                  <tr><td colSpan={10} className={styles.empty}>Нет данных</td></tr>
+                  <tr><td colSpan={11} className={styles.empty}>Нет данных</td></tr>
                 ) : (
                   filteredRegistrations.map((r, i) => {
                     const unseen = !isAdminItemSeen('registrations', r)
@@ -1178,6 +1179,15 @@ export function Admin() {
                           )}
                         </td>
                         <td>{r.lastLoginAt ? formatDate(r.lastLoginAt) : '—'}</td>
+                        <td>
+                          {r.telegramConnected ? (
+                            <span className={styles.passwordChangedBadge} title={r.telegramChatId}>
+                              ✓ {r.telegramUsername ? `@${r.telegramUsername}` : r.telegramChatId}
+                            </span>
+                          ) : (
+                            <span className={styles.passwordNeverBadge}>—</span>
+                          )}
+                        </td>
                         <td>
                           {unseen && <button type="button" className={styles.inlineBtn} onClick={() => { markAdminItemSeen('registrations', r); setRefresh((v) => v + 1) }}>Увидено</button>}
                         </td>

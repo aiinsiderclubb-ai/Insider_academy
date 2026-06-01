@@ -130,6 +130,9 @@ router.get('/data-health', requireAdmin('admin'), async (req, res) => {
     supportMessages = 0
   }
   const passwordChanges = await count("SELECT COUNT(*) AS c FROM users WHERE password_changed_at IS NOT NULL AND password_changed_at != ''")
+  const telegramLinked = await count(
+    "SELECT COUNT(*) AS c FROM users WHERE telegram_chat_id IS NOT NULL AND telegram_chat_id != ''"
+  )
 
   res.json({
     db: db.driver || 'sqlite',
@@ -137,6 +140,7 @@ router.get('/data-health', requireAdmin('admin'), async (req, res) => {
     users,
     registrations,
     withPersonalId,
+    telegramLinked,
     homework,
     reviews: { total: reviewsTotal, pending: reviewsPending, approved: reviewsApproved },
     purchases,
@@ -480,6 +484,8 @@ function mapAdminUser(row) {
     passwordChangedAt: row.password_changed_at || null,
     lastLoginAt: row.last_login_at || null,
     telegramChatId: row.telegram_chat_id || null,
+    telegramUsername: row.telegram_username || null,
+    telegramConnected: Boolean(row.telegram_chat_id),
   }
 }
 

@@ -22,6 +22,7 @@ export function AdminSettings({ settings, webhookLog, dataHealth, online, onCopy
             <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.purchases}</span><span className={styles.statLabel}>Покупок</span></div>
             <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.certificates}</span><span className={styles.statLabel}>Сертификатов</span></div>
             <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.passwordChanges}</span><span className={styles.statLabel}>Смен пароля</span></div>
+            <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.telegramLinked ?? 0}</span><span className={styles.statLabel}>Telegram привязан</span></div>
             <div className={styles.statCard}><span className={styles.statValue}>{dataHealth.applications ?? 0}</span><span className={styles.statLabel}>Заявок</span></div>
           </div>
         </section>

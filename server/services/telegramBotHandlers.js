@@ -54,10 +54,10 @@ async function handleLinkPersonalId(chatId, personalId, username) {
   try {
     const result = await linkByPersonalId(personalId, chatId, username)
     if (!result.ok) {
-      return sendTelegramMessage(
-        chatId,
-        `❌ ${result.error === 'Account not found' ? 'Аккаунт не найден. Проверьте ID в личном кабинете.' : result.error}`
-      )
+      const hint = result.error === 'Account not found'
+        ? 'Аккаунт не найден в базе Academy.\n\n1) Зарегистрируйтесь на сайте (не в офлайн-режиме)\n2) Откройте «Личный кабинет» → Telegram\n3) Скопируйте ID оттуда и отправьте снова'
+        : result.error
+      return sendTelegramMessage(chatId, `❌ ${hint}`)
     }
     await sendTelegramMessage(
       chatId,
