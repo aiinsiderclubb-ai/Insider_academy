@@ -203,6 +203,77 @@
   color: #fcd34d;
 }
 
+.badgeWarnBtn {
+  cursor: pointer;
+  border: none;
+  font: inherit;
+  text-align: left;
+  transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+.badgeWarnBtn:hover:not(:disabled) {
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.45);
+}
+
+.badgeWarnBtn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.verifyCard {
+  grid-column: 1 / -1;
+  border-color: rgba(124, 58, 237, 0.45);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(251, 146, 60, 0.06));
+}
+
+.verifyHint {
+  margin: 0 0 16px;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.verifyDevCode {
+  display: block;
+  margin: 8px 0 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  font-size: 1.25rem;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--glow-purple);
+}
+
+.verifyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.btnSecondary {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-accent);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnSecondary:hover:not(:disabled) {
+  border-color: var(--glow-purple);
+  color: var(--glow-purple);
+}
+
+.btnSecondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .uploadBtn {
   margin-top: 8px;
   padding: 8px 14px;

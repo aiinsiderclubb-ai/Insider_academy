@@ -13,6 +13,7 @@ import { mapUserResponse, syncUserRecords, userSelectFields } from '../services/
 import { ensurePersonalId } from '../services/personalId.js'
 import { createUserNotification } from '../services/notifications.js'
 import * as sheetsTrack from '../services/sheetsTrack.js'
+import { issueEmailVerificationCode } from '../services/emailVerification.js'
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -326,7 +327,15 @@ router.patch('/email', async (req, res) => {
   await syncUserRecords(db, oldEmail, { email })
   const user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
   const token = signUserToken(user)
-  res.json({ token, user: await mapUserResponse(db, user) })
+  const payload = { token, user: await mapUserResponse(db, user), verificationSent: false }
+  try {
+    const verification = await issueEmailVerificationCode(email, user?.name || email)
+    payload.verificationSent = true
+    if (verification.devCode) payload.devCode = verification.devCode
+  } catch (err) {
+    console.warn('[me/email] verification code:', err.message)
+  }
+  res.json(payload)
 })
 
 router.post('/avatar', upload.single('avatar'), async (req, res) => {

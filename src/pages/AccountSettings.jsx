@@ -1,14 +1,19 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
+import { api, setToken } from '../api/client'
+import { formatApiError } from '../utils/formatApiError'
 import { TelegramConnect } from '../components/TelegramConnect'
 import styles from './AccountSettings.module.css'
 
+const RESEND_COOLDOWN_SEC = 60
+
 export function AccountSettings() {
-  const { user, apiMode, updateProfile, changePassword, changeEmail, uploadAvatar, logout } = useAuth()
+  const { user, apiMode, updateProfile, changePassword, changeEmail, uploadAvatar, logout, refreshUser } = useAuth()
   const { t, lang } = useLanguage()
   const fileRef = useRef(null)
+  const autoSentRef = useRef(false)
 
   const [name, setName] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
@@ -16,9 +21,15 @@ export function AccountSettings() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [verifyCode, setVerifyCode] = useState('')
+  const [devCode, setDevCode] = useState('')
+  const [verifySending, setVerifySending] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const needsVerification = apiMode && user?.email && !user?.emailVerified
 
   const showMsg = (text, isError = false) => {
     if (isError) {
@@ -30,14 +41,60 @@ export function AccountSettings() {
     }
   }
 
-  const formatApiError = (err) => {
-    const msg = err?.message || ''
-    if (msg === 'Current password is incorrect') return lang === 'ru' ? 'Неверный текущий пароль' : msg
-    if (msg === 'Name required') return t('account.errorGeneric')
-    if (msg === 'Image too large (max 700 KB)') return lang === 'ru' ? 'Фото слишком большое (макс. 700 КБ)' : msg
-    if (msg === 'Image file required') return lang === 'ru' ? 'Выберите файл изображения' : msg
-    if (msg === 'Email already in use') return lang === 'ru' ? 'Этот email уже занят' : msg
-    return msg || t('account.errorGeneric')
+  const formatLocalApiError = (err) => formatApiError(err, lang) || t('account.errorGeneric')
+
+  const startResendCooldown = useCallback(() => {
+    setResendCooldown(RESEND_COOLDOWN_SEC)
+  }, [])
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return undefined
+    const id = setInterval(() => setResendCooldown((s) => Math.max(0, s - 1)), 1000)
+    return () => clearInterval(id)
+  }, [resendCooldown])
+
+  const sendVerificationCode = useCallback(async () => {
+    if (!user?.email || user.emailVerified) return
+    setVerifySending(true)
+    try {
+      const res = await api.resendVerificationCode(user.email.trim())
+      if (res.devCode) setDevCode(res.devCode)
+      startResendCooldown()
+      showMsg(t('account.verifyCodeSent'))
+    } catch (err) {
+      showMsg(formatLocalApiError(err), true)
+    } finally {
+      setVerifySending(false)
+    }
+  }, [user?.email, user?.emailVerified, lang, t, startResendCooldown])
+
+  useEffect(() => {
+    if (!needsVerification || autoSentRef.current) return
+    autoSentRef.current = true
+    sendVerificationCode()
+  }, [needsVerification, sendVerificationCode])
+
+  useEffect(() => {
+    setName(user?.name || '')
+    setEmail(user?.email || '')
+  }, [user?.name, user?.email])
+
+  const handleVerifyCode = async (e) => {
+    e.preventDefault()
+    if (!user?.email || verifyCode.length !== 6) return
+    setLoading(true)
+    try {
+      const res = await api.verifyEmailCode(user.email.trim(), verifyCode.trim())
+      if (res.token) setToken(res.token)
+      await refreshUser()
+      setVerifyCode('')
+      setDevCode('')
+      showMsg(t('account.verifySuccess'))
+    } catch (err) {
+      showMsg(formatLocalApiError(err), true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleAvatar = async (e) => {
@@ -48,7 +105,7 @@ export function AccountSettings() {
       await uploadAvatar(file)
       showMsg(t('account.avatarSaved'))
     } catch (err) {
-      showMsg(formatApiError(err), true)
+      showMsg(formatLocalApiError(err), true)
     } finally {
       setLoading(false)
       e.target.value = ''
@@ -62,7 +119,7 @@ export function AccountSettings() {
       await updateProfile(name.trim())
       showMsg(t('account.nameSaved'))
     } catch (err) {
-      showMsg(formatApiError(err), true)
+      showMsg(formatLocalApiError(err), true)
     } finally {
       setLoading(false)
     }
@@ -72,11 +129,18 @@ export function AccountSettings() {
     e.preventDefault()
     setLoading(true)
     try {
-      await changeEmail(email.trim(), emailPassword)
+      const res = await changeEmail(email.trim(), emailPassword)
       setEmailPassword('')
+      autoSentRef.current = false
+      if (res?.devCode) {
+        setDevCode(res.devCode)
+        startResendCooldown()
+      } else if (apiMode) {
+        await sendVerificationCode()
+      }
       showMsg(t('account.emailSaved'))
     } catch (err) {
-      showMsg(formatApiError(err), true)
+      showMsg(formatLocalApiError(err), true)
     } finally {
       setLoading(false)
     }
@@ -100,7 +164,7 @@ export function AccountSettings() {
       setConfirmPassword('')
       showMsg(t('account.passwordSaved'))
     } catch (err) {
-      showMsg(formatApiError(err), true)
+      showMsg(formatLocalApiError(err), true)
     } finally {
       setLoading(false)
     }
@@ -123,6 +187,64 @@ export function AccountSettings() {
           <div className={error ? styles.alertError : styles.alertSuccess} role="alert">
             {error || success}
           </div>
+        )}
+
+        {needsVerification && (
+          <section className={`${styles.card} ${styles.verifyCard}`} id="verify-email">
+            <h2 className={styles.cardTitle}>{t('account.verifyEmailSection')}</h2>
+            <p className={styles.verifyHint}>{t('account.verifyEmailHint')}</p>
+            <p className={styles.verifyHint}>
+              <strong>{user.email}</strong>
+            </p>
+            {devCode && (
+              <>
+                <p className={styles.verifyHint}>{t('account.verifyDevCodeHint')}</p>
+                <code className={styles.verifyDevCode}>{devCode}</code>
+              </>
+            )}
+            <form onSubmit={handleVerifyCode} className={styles.form}>
+              <label className={styles.label}>
+                <span>{t('account.verifyCode')}</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  value={verifyCode}
+                  onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className={styles.input}
+                  placeholder="000000"
+                  autoComplete="one-time-code"
+                  disabled={loading || verifySending}
+                  required
+                />
+              </label>
+              <div className={styles.verifyActions}>
+                <button
+                  type="submit"
+                  className={styles.btnPrimary}
+                  disabled={loading || verifyCode.length !== 6}
+                >
+                  {loading ? t('account.verifySubmitting') : t('account.verifySubmit')}
+                </button>
+                <button
+                  type="button"
+                  className={styles.btnSecondary}
+                  disabled={verifySending || resendCooldown > 0 || loading}
+                  onClick={sendVerificationCode}
+                >
+                  {verifySending
+                    ? t('account.resendSending')
+                    : resendCooldown > 0
+                      ? `${t('account.verifyResendWait')} ${resendCooldown}s`
+                      : t('account.resendCode')}
+                </button>
+                <Link to={`/verify-email?email=${encodeURIComponent(user.email)}`} className={styles.linkMuted}>
+                  {lang === 'ru' ? 'Открыть на отдельной странице' : 'Open full verification page'}
+                </Link>
+              </div>
+            </form>
+          </section>
         )}
 
         <div className={styles.grid}>
@@ -149,7 +271,15 @@ export function AccountSettings() {
                 {user?.emailVerified ? (
                   <span className={styles.badgeOk}>{t('account.emailVerified')}</span>
                 ) : (
-                  <span className={styles.badgeWarn}>{t('account.emailNotVerified')}</span>
+                  <button
+                    type="button"
+                    className={`${styles.badgeWarn} ${styles.badgeWarnBtn}`}
+                    title={t('account.badgeResendHint')}
+                    disabled={verifySending}
+                    onClick={sendVerificationCode}
+                  >
+                    {verifySending ? t('account.resendSending') : t('account.emailNotVerified')}
+                  </button>
                 )}
                 <button type="button" className={styles.uploadBtn} onClick={() => fileRef.current?.click()} disabled={loading}>
                   {t('account.uploadPhoto')}

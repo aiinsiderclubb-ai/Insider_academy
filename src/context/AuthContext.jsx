@@ -191,10 +191,10 @@ export function AuthProvider({ children }) {
   const changeEmail = useCallback(async (email, currentPassword) => {
     const emailTrim = email.trim().toLowerCase()
     if (apiMode) {
-      const { token, user: u } = await api.updateEmail({ email: emailTrim, currentPassword })
-      setToken(token)
-      setUserState(withLocalAvatar(u))
-      return u
+      const res = await api.updateEmail({ email: emailTrim, currentPassword })
+      setToken(res.token)
+      setUserState(withLocalAvatar(res.user))
+      return res
     }
     const prevEmail = user?.email
     const next = { ...user, email: emailTrim }
