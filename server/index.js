@@ -8,6 +8,7 @@ import { getDb } from './db.js'
 import { parseJson } from './db/sqlite.js'
 import { nowIso } from './db/time.js'
 import { notifyTelegramUser } from './services/telegramNotify.js'
+import { ensureTelegramWebhook } from './services/telegramWebhookSetup.js'
 import { sendAdminDailyDigest } from './services/digest.js'
 import { processEmailQueue, processInactiveUsers } from './services/emailQueue.js'
 
@@ -49,6 +50,8 @@ async function start() {
   setInterval(() => { processInactiveUsers().catch((e) => console.error('[inactive]', e.message)) }, 86400000)
   setInterval(() => { sendAdminDailyDigest().catch((e) => console.error('[digest]', e.message)) }, 3600000)
   sendAdminDailyDigest().catch(() => {})
+
+  await ensureTelegramWebhook()
 
   app.listen(config.port, () => {
     console.log(`LMS API v2 at http://localhost:${config.port} [${getDb().driver}]`)

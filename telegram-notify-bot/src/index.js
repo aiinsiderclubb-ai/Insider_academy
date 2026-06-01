@@ -106,6 +106,6 @@ if (!isConfigured()) {
 
 server.listen(config.port, () => {
   console.log(`[telegram-notify-bot] http://localhost:${config.port}`)
-  console.log(`[telegram-notify-bot] webhook path: POST /telegram/webhook`)
   console.log(`[telegram-notify-bot] notify: POST /notify (header x-bot-secret)`)
+  console.log('[telegram-notify-bot] Incoming messages: webhook on LMS API /api/telegram/webhook (do not set BOT_PUBLIC_URL webhook here)')
 })

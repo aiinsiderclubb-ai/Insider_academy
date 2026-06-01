@@ -3,6 +3,8 @@ import { getDb } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
 import { config } from '../config.js'
 import { sendTelegramMessage } from '../services/telegram.js'
+import { handleTelegramUpdate } from '../services/telegramBotHandlers.js'
+import { getTelegramWebhookUrl } from '../services/telegramWebhookSetup.js'
 import {
   createLinkToken,
   consumeLinkToken,
@@ -36,6 +38,28 @@ function requireBotSecret(req, res, next) {
   }
   next()
 }
+
+router.post('/webhook', async (req, res) => {
+  try {
+    await handleTelegramUpdate(req.body)
+    res.json({ ok: true })
+  } catch (err) {
+    console.error('[telegram webhook]', err.message)
+    res.json({ ok: true })
+  }
+})
+
+router.get('/webhook-info', async (_req, res) => {
+  if (!config.telegram.botToken) return res.json({ configured: false })
+  const { getWebhookInfo } = await import('../services/telegram.js')
+  const info = await getWebhookInfo()
+  res.json({
+    configured: true,
+    expectedUrl: getTelegramWebhookUrl(),
+    activeUrl: info?.url || null,
+    pendingUpdates: info?.pending_update_count ?? 0,
+  })
+})
 
 router.get('/bot-info', async (_req, res) => {
   const username = await resolveBotUsername()

@@ -12,12 +12,24 @@ export async function sendTelegramMessage(chatId, text) {
 }
 
 export async function setWebhook(webhookUrl) {
-  if (!isTelegramEnabled()) return
-  await fetch(`https://api.telegram.org/bot${config.telegram.botToken}/setWebhook`, {
+  if (!isTelegramEnabled()) return { ok: false }
+  const res = await fetch(`https://api.telegram.org/bot${config.telegram.botToken}/setWebhook`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url: webhookUrl }),
+    body: JSON.stringify({
+      url: webhookUrl,
+      allowed_updates: ['message', 'callback_query'],
+      drop_pending_updates: true,
+    }),
   })
+  return res.json()
+}
+
+export async function getWebhookInfo() {
+  if (!isTelegramEnabled()) return null
+  const res = await fetch(`https://api.telegram.org/bot${config.telegram.botToken}/getWebhookInfo`)
+  const data = await res.json()
+  return data.result || null
 }
 
 export function parseTelegramUpdate(body) {

@@ -69,6 +69,10 @@ services:
         sync: false
       - key: TELEGRAM_BOT_USERNAME
         value: InsiderAcademyNotifyBot
+      - key: TELEGRAM_WEBHOOK_URL
+        value: https://insider-academy.onrender.com/api/telegram/webhook
+      - key: API_PUBLIC_URL
+        value: https://insider-academy.onrender.com
       - key: TELEGRAM_BOT_SERVICE_URL
         value: https://insider-academy-notify-bot.onrender.com
       - key: TELEGRAM_BOT_SERVICE_SECRET
