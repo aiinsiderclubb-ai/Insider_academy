@@ -152,7 +152,7 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #7c3aed, #a855f7);
-  color: #fff;
+  color: var(--text-on-primary);
   font-weight: 800;
   font-size: 1rem;
 }

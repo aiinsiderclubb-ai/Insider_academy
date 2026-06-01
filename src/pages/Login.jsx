@@ -166,7 +166,7 @@ export function Login() {
 
             <p className={styles.demoHint}>{t('login.demoHint')}</p>
             <Link to="/forgot-password" className={styles.backLink} style={{ marginTop: 12, display: 'inline-block' }}>
-              {lang === 'ru' ? 'Забыли пароль?' : 'Forgot password?'}
+              {t('login.forgotPassword')}
             </Link>
           </div>
         </div>

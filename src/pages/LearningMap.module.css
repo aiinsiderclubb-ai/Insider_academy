@@ -94,7 +94,7 @@
   height: 40px;
   border-radius: 50%;
   background: var(--stage-accent, var(--accent-dim));
-  color: #fff;
+  color: var(--text-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -267,7 +267,7 @@
   margin: 0 8px 8px 0;
   padding: 12px 24px;
   background: var(--gradient-primary);
-  color: #fff;
+  color: var(--text-on-primary);
   border-radius: var(--radius-pill);
   font-weight: 600;
   text-decoration: none;

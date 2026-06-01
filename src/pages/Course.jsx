@@ -94,6 +94,27 @@ export function Course() {
     return () => { cancelled = true }
   }, [course?.id, user?.email, lessonCount, apiMode])
 
+  useEffect(() => {
+    const refreshHomework = () => {
+      if (!course?.id || !user?.email || lessonCount === 0) return
+      ;(async () => {
+        if (!(await canUseAuthenticatedApi())) return
+        const next = {}
+        await Promise.all(
+          Array.from({ length: lessonCount }, (_, index) => index).map(async (index) => {
+            try {
+              const hw = await api.getHomework(course.id, index)
+              if (hw) next[index] = hw
+            } catch (_) {}
+          })
+        )
+        setHomeworkMap(next)
+      })()
+    }
+    window.addEventListener('lms-homework-refresh', refreshHomework)
+    return () => window.removeEventListener('lms-homework-refresh', refreshHomework)
+  }, [course?.id, user?.email, lessonCount])
+
   if (!course) {
     return (
       <div className={styles.wrap}>
@@ -285,6 +306,7 @@ export function Course() {
       setHomeworkMap((prev) => ({ ...prev, [index]: entry }))
       setHwFile((prev) => ({ ...prev, [index]: null }))
       setHwError((prev) => ({ ...prev, [index]: '' }))
+      window.dispatchEvent(new Event('lms-notifications-refresh'))
     } catch {
       setHwError((prev) => ({
         ...prev,

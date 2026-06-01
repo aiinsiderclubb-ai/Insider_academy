@@ -235,6 +235,12 @@ export function Admin() {
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
+    const isLocalDev = typeof window !== 'undefined'
+      && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    if (!online && !isLocalDev) {
+      setError('API-сервер недоступен. Данные не сохраняются — дождитесь подключения или откройте продакшен-сайт.')
+      return
+    }
     if (online) {
       try {
         const { token, role } = await api.adminLogin(password)
@@ -668,7 +674,13 @@ export function Admin() {
           <header className={styles.header}>
             <div>
               <h1 className={styles.title}>{tabTitles[activeTab] || 'Админ'}</h1>
-              <p className={styles.headerSub}>{online ? 'Синхронизация с API активна' : 'Данные из localStorage'}</p>
+              <p className={styles.headerSub}>
+                {online && useServerData
+                  ? 'PostgreSQL + Google Sheets'
+                  : online
+                    ? 'API доступен — войдите паролем админа для синхронизации'
+                    : '⚠️ API недоступен — данные не сохраняются. Запустите сервер или откройте прод-сайт.'}
+              </p>
             </div>
             <div className={styles.headerActions}>
               <button type="button" className={styles.refreshBtn} onClick={() => { setRefresh((r) => r + 1); showToast('Данные обновлены') }} title="Обновить">
@@ -705,8 +717,10 @@ export function Admin() {
               settings={dashData?.settings}
               webhookLog={dashData?.webhookLog}
               dataHealth={dataHealth}
+              online={online}
               onCopy={(url) => { navigator.clipboard?.writeText(url); showToast('URL скопирован') }}
               onEnablePush={() => requestAdminNotificationPermission().then((p) => showToast(p === 'granted' ? 'Push включены' : `Статус: ${p}`))}
+              onToast={(msg, type) => showToast(msg, type)}
             />
           )}
 
@@ -1063,7 +1077,7 @@ export function Admin() {
           <h2 className={styles.sectionTitle}>Пользователи и регистрации</h2>
           <div className={styles.courseActions}>
             <button type="button" className={styles.restoreBtn} onClick={() => { markAdminItemsSeen('registrations', userRows); setRefresh((r) => r + 1) }}>Отметить все как увиденные</button>
-            <button type="button" className={styles.exportBtn} onClick={() => exportCsv('users.csv', filteredRegistrations.map((r) => [r.personalId || '', r.email, r.name, r.registeredAt, r.profileUpdatedAt || '', r.passwordChangedAt || '']), ['ID', 'Email', 'Имя', 'Регистрация', 'Профиль обновлён', 'Пароль изменён'])}>Экспорт CSV</button>
+            <button type="button" className={styles.exportBtn} onClick={() => exportCsv('users.csv', filteredRegistrations.map((r) => [r.personalId || '', r.email, r.name, r.registeredAt, r.profileUpdatedAt || '', r.passwordChangedAt || '', r.lastLoginAt || '']), ['ID', 'Email', 'Имя', 'Регистрация', 'Профиль обновлён', 'Пароль изменён', 'Последний вход'])}>Экспорт CSV</button>
           </div>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
@@ -1077,12 +1091,13 @@ export function Admin() {
                   <th>Регистрация</th>
                   <th>Профиль</th>
                   <th>Пароль</th>
+                  <th>Последний вход</th>
                   <th>Действия</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRegistrations.length === 0 ? (
-                  <tr><td colSpan={9} className={styles.empty}>Нет данных</td></tr>
+                  <tr><td colSpan={10} className={styles.empty}>Нет данных</td></tr>
                 ) : (
                   filteredRegistrations.map((r, i) => {
                     const unseen = !isAdminItemSeen('registrations', r)
@@ -1095,7 +1110,16 @@ export function Admin() {
                         <td>{r.emailVerified ? '✅' : '⏳'}</td>
                         <td>{formatDate(r.registeredAt || r.date)}</td>
                         <td>{r.profileUpdatedAt ? formatDate(r.profileUpdatedAt) : '—'}</td>
-                        <td>{r.passwordChangedAt ? formatDate(r.passwordChangedAt) : '—'}</td>
+                        <td>
+                          {r.passwordChangedAt ? (
+                            <span className={styles.passwordChangedBadge} title={formatDate(r.passwordChangedAt)}>
+                              🔐 {formatDate(r.passwordChangedAt)}
+                            </span>
+                          ) : (
+                            <span className={styles.passwordNeverBadge}>Не менялся</span>
+                          )}
+                        </td>
+                        <td>{r.lastLoginAt ? formatDate(r.lastLoginAt) : '—'}</td>
                         <td>
                           {unseen && <button type="button" className={styles.inlineBtn} onClick={() => { markAdminItemSeen('registrations', r); setRefresh((v) => v + 1) }}>Увидено</button>}
                         </td>

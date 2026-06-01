@@ -52,6 +52,11 @@ export const config = {
     botToken: process.env.TELEGRAM_BOT_TOKEN || '',
     webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || '',
   },
+  googleSheets: {
+    enabled: process.env.GOOGLE_SHEETS_ENABLED !== '0' && Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
+    serviceAccount: process.env.GOOGLE_SERVICE_ACCOUNT_JSON || '',
+    folderId: process.env.GOOGLE_DRIVE_FOLDER_ID || '1JlbsIBxryW8dSemF4XSySdcVabqwxghh',
+  },
   tribute: {
     apiKey: process.env.TRIBUTE_API_KEY || '',
     shopId: process.env.TRIBUTE_SHOP_ID ? Number(process.env.TRIBUTE_SHOP_ID) : null,
@@ -96,4 +101,8 @@ export function isTelegramEnabled() {
 
 export function isTributeEnabled() {
   return Boolean(config.tribute.apiKey)
+}
+
+export function isGoogleSheetsEnabled() {
+  return Boolean(config.googleSheets.enabled && config.googleSheets.serviceAccount)
 }

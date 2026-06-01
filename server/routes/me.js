@@ -11,6 +11,8 @@ import { computeAchievements, updateStreak, ACHIEVEMENTS } from '../services/ach
 import { sendTelegramMessage } from '../services/telegram.js'
 import { mapUserResponse, syncUserRecords, userSelectFields } from '../services/userProfile.js'
 import { ensurePersonalId } from '../services/personalId.js'
+import { createUserNotification } from '../services/notifications.js'
+import * as sheetsTrack from '../services/sheetsTrack.js'
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -85,7 +87,7 @@ router.post('/purchases', async (req, res) => {
   const amount = req.body.amount ?? null
   if (!courseId) return res.status(400).json({ error: 'courseId required' })
 
-  const user = await db.get('SELECT email FROM users WHERE id = ?', [req.userId])
+  const user = await db.get('SELECT email, personal_id FROM users WHERE id = ?', [req.userId])
   const exists = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [req.userId, courseId])
   if (!exists) {
     await db.run('INSERT INTO purchases (user_id, course_id) VALUES (?, ?)', [req.userId, courseId])
@@ -93,6 +95,14 @@ router.post('/purchases', async (req, res) => {
       'INSERT INTO purchase_log (id, email, course_id, course_title, amount, date) VALUES (?, ?, ?, ?, ?, ?)',
       [`purchase-${Date.now()}`, user.email, courseId, courseTitle, amount, new Date().toISOString()]
     )
+    sheetsTrack.trackPurchase({
+      email: user.email,
+      personalId: user.personal_id,
+      courseId,
+      courseTitle,
+      amount,
+      source: 'cabinet',
+    }).catch(() => {})
     const ref = await db.get('SELECT referrer_email FROM referrals WHERE referred_email = ?', [user.email])
     if (ref?.referrer_email) {
       await db.run('UPDATE referrals SET referred_purchased = 1 WHERE referred_email = ?', [user.email])
@@ -131,6 +141,11 @@ router.post('/referral', async (req, res) => {
         'INSERT INTO referrals (referrer_code, referrer_email, referred_email, date) VALUES (?, ?, ?, ?)',
         [referrerCode, referrerEmail, user.email, new Date().toISOString()]
       )
+      sheetsTrack.trackReferral({
+        referrerEmail,
+        referredEmail: user.email,
+        purchased: false,
+      }).catch(() => {})
       const d = await db.get('SELECT percent FROM referral_discounts WHERE email = ?', [referrerEmail])
       await db.run(
         'INSERT INTO referral_discounts (email, percent) VALUES (?, ?) ON CONFLICT(email) DO UPDATE SET percent = excluded.percent',
@@ -199,6 +214,17 @@ router.post('/homework', upload.single('file'), async (req, res) => {
     [finalId, user.email, user.name, courseId, courseTitle, Number(lessonIndex), lessonTitle,
       content || '', fileMeta.fileName, fileMeta.fileType, fileMeta.filePath, fileMeta.fileStorage, now, now]
   )
+  const uRow = await db.get('SELECT personal_id FROM users WHERE id = ?', [req.userId])
+  sheetsTrack.trackHomeworkEvent({
+    email: user.email,
+    personalId: uRow?.personal_id,
+    courseTitle,
+    lessonIndex: Number(lessonIndex),
+    lessonTitle,
+    status: 'pending',
+    action: existing ? 'пересдача' : 'сдано',
+    recordId: finalId,
+  }).catch(() => {})
   res.json({ id: finalId })
 })
 
@@ -227,7 +253,19 @@ router.patch('/password', async (req, res) => {
   const hash = bcrypt.hashSync(newPassword, 10)
   const now = nowIso()
   await db.run('UPDATE users SET password_hash = ?, password_changed_at = ?, profile_updated_at = ? WHERE id = ?', [hash, now, now, req.userId])
-  res.json({ ok: true, passwordChangedAt: now })
+  await createUserNotification(db, {
+    email: row.email,
+    type: 'password_changed',
+    targetPath: '/account',
+    message: 'Пароль аккаунта изменён. Если это были не вы — срочно восстановите доступ через «Забыли пароль?».',
+  })
+  const user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
+  sheetsTrack.trackPasswordChange({
+    email: row.email,
+    personalId: user?.personal_id,
+    action: 'смена в настройках',
+  }).catch(() => {})
+  res.json({ ok: true, passwordChangedAt: now, user: await mapUserResponse(db, user) })
 })
 
 router.patch('/email', async (req, res) => {

@@ -114,19 +114,25 @@ export const api = {
   adminDeleteReview: (id) => apiRequest(`/admin/reviews/${id}`, { method: 'DELETE', admin: true }),
   adminUpdateApplication: (id, payload) => apiRequest(`/admin/applications/${id}`, { method: 'PATCH', body: payload, admin: true }),
   adminAddCertificate: (payload) => apiRequest('/admin/certificates', { method: 'POST', body: payload, admin: true }),
+  adminSheetsStatus: () => apiRequest('/admin/sheets/status', { admin: true }),
+  adminSheetsSync: () => apiRequest('/admin/sheets/sync', { method: 'POST', admin: true }),
 }
 
 export async function checkApiOnline() {
-  try {
-    const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), 2500)
-    const res = await fetch(`${getApiBase()}/health`, { signal: ctrl.signal })
-    clearTimeout(timer)
-    if (!res.ok) return false
-    return true
-  } catch {
-    return false
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const ctrl = new AbortController()
+      const timeoutMs = attempt === 0 ? 8000 : 12000
+      const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+      const res = await fetch(`${getApiBase()}/health`, { signal: ctrl.signal, cache: 'no-store' })
+      clearTimeout(timer)
+      if (!res.ok) continue
+      const data = await res.json().catch(() => ({}))
+      if (data.ok !== false) return true
+    } catch (_) {}
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 1200))
   }
+  return false
 }
 
 /** API доступен и пользователь авторизован JWT-токеном */

@@ -248,7 +248,7 @@
   height: 18px;
   padding: 0 5px;
   background: var(--glow-pink);
-  color: #fff;
+  color: var(--text-on-primary);
   font-size: 0.6875rem;
   font-weight: 700;
   border-radius: var(--radius-pill);
@@ -280,7 +280,7 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border-accent);
   border-radius: var(--radius);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-card-hover);
   padding: 8px 0;
   z-index: 100;
 }
@@ -353,7 +353,7 @@
   height: 44px;
   border-radius: 50%;
   background: transparent;
-  color: #fff;
+  color: var(--text-on-primary);
   border: none;
   cursor: pointer;
   transition: transform 0.15s;
@@ -391,7 +391,7 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border-accent);
   border-radius: var(--radius);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 24px var(--glow-purple-dim);
+  box-shadow: var(--shadow-card-hover);
   padding: 8px 0;
   z-index: 60;
   animation: dropdownIn 0.2s ease-out;
@@ -479,7 +479,7 @@
 .registerLink {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-on-primary);
   padding: 8px 16px;
   border-radius: var(--radius);
   background: var(--gradient-primary);
@@ -528,7 +528,7 @@
 
 .footer p {
   font-size: 0.875rem;
-  color: var(--text-muted);
+  color: var(--footer-text, var(--text-muted));
 }
 
 .footerMuted {
@@ -552,7 +552,7 @@
   height: 56px;
   border-radius: 50%;
   background: var(--gradient-primary);
-  color: #fff;
+  color: var(--text-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;

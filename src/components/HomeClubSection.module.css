@@ -91,7 +91,7 @@
 
 .cta:hover {
   background: var(--gradient-primary);
-  color: #fff;
+  color: var(--text-on-primary);
   border-color: transparent;
 }
 

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { trackVisit, getNotifications, getUnreadCount, markNotificationRead } from '../api/adminStore'
+import { trackVisit } from '../api/adminStore'
+import { useUserNotifications } from '../hooks/useUserNotifications'
 import { api, checkApiOnline } from '../api/client'
 import { ApiStatusBanner } from './ApiStatusBanner'
 import { useAuth } from '../context/AuthContext'
@@ -49,8 +50,7 @@ export function Layout({ children }) {
   const [, forceUpdate] = useState(0)
   const cabinetRef = useRef(null)
   const notifRef = useRef(null)
-  const notifCount = user ? getUnreadCount(user.email) : 0
-  const notifications = user ? getNotifications().filter((n) => n.email === user.email || n.userId === user.email).slice(0, 15) : []
+  const { notifications, unreadCount: notifCount, markRead: markNotificationReadApi } = useUserNotifications(user?.email)
 
   const navItems = navItemsKeys.map(({ labelKey, ...rest }) => ({ ...rest, label: t(labelKey) }))
   const cabinetMenuItems = cabinetMenuKeys.map(({ labelKey, ...rest }) => ({ ...rest, label: t(labelKey) }))
@@ -117,6 +117,20 @@ export function Layout({ children }) {
       if (notification.status === 'resubmit') return lang === 'ru' ? 'ДЗ на доработку' : 'Homework revision requested'
       return lang === 'ru' ? 'Ответ по ДЗ' : 'Homework feedback'
     }
+    if (notification.type === 'review_status') {
+      if (notification.status === 'approved') return lang === 'ru' ? 'Отзыв опубликован' : 'Review published'
+      if (notification.status === 'rejected') return lang === 'ru' ? 'Отзыв отклонён' : 'Review declined'
+      return lang === 'ru' ? 'Статус отзыва' : 'Review status'
+    }
+    if (notification.type === 'password_changed') {
+      return lang === 'ru' ? 'Пароль изменён' : 'Password changed'
+    }
+    if (notification.type === 'application_status') {
+      if (notification.status === 'accepted') return lang === 'ru' ? 'Заявка одобрена' : 'Application accepted'
+      if (notification.status === 'rejected') return lang === 'ru' ? 'Заявка отклонена' : 'Application declined'
+      if (notification.status === 'reviewed') return lang === 'ru' ? 'Заявка просмотрена' : 'Application reviewed'
+      return lang === 'ru' ? 'Заявка на курс' : 'Course application'
+    }
     return notification.type
   }
 
@@ -135,10 +149,11 @@ export function Layout({ children }) {
     return '/cabinet'
   }
 
-  const handleNotificationClick = (notification) => {
-    markNotificationRead(notification.id)
+  const handleNotificationClick = async (notification) => {
+    await markNotificationReadApi(notification.id)
     setNotifOpen(false)
     navigate(resolveNotificationTarget(notification))
+    window.dispatchEvent(new Event('lms-homework-refresh'))
   }
 
   return (

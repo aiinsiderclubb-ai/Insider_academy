@@ -27,11 +27,11 @@
   pointer-events: none;
 }
 
-[data-theme="light"] .overlay {
+:global([data-theme='light']) .overlay {
   background: linear-gradient(
     160deg,
-    transparent 35%,
-    rgba(30, 27, 46, 0.35) 100%
+    transparent 40%,
+    rgba(124, 58, 237, 0.22) 100%
   );
 }
 
@@ -44,10 +44,10 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--text-on-primary);
   background: var(--gradient-primary);
   border-radius: var(--radius-pill);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-inset-card);
 }
 
 @media (prefers-reduced-motion: reduce) {

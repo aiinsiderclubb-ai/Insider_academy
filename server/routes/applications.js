@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { getDb, parseJson } from '../db.js'
 import { nowIso } from '../db/time.js'
 import { optionalUser } from '../middleware/auth.js'
+import * as sheetsTrack from '../services/sheetsTrack.js'
 
 const router = Router()
 
@@ -75,6 +76,16 @@ router.post('/accelerator', optionalUser, async (req, res) => {
       now,
     ]
   )
+
+  sheetsTrack.trackApplication({
+    email: mail,
+    firstName: first,
+    lastName: last,
+    telegram: tg,
+    status: 'new',
+    action: 'подана',
+    applicationId: id,
+  }).catch(() => {})
 
   res.status(201).json({ id, message: 'Application submitted' })
 })

@@ -202,6 +202,11 @@ export function AccountSettings() {
 
           <section className={styles.card}>
             <h2 className={styles.cardTitle}>{t('account.passwordSection')}</h2>
+            <p className={user?.passwordChangedAt ? styles.passwordStatusChanged : styles.passwordStatusDefault}>
+              {user?.passwordChangedAt
+                ? `${t('account.passwordChangedAt')}: ${new Date(user.passwordChangedAt).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US')}`
+                : t('account.passwordNeverChanged')}
+            </p>
             <form onSubmit={handlePasswordSave} className={styles.form}>
               <label className={styles.label}>
                 <span>{t('account.currentPassword')}</span>

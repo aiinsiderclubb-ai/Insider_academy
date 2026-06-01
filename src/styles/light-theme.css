@@ -1,0 +1,26 @@
+/* Глобальные доработки светлой темы (подключается после index.css) */
+
+[data-theme="light"] .pill-badge {
+  color: var(--accent-primary);
+}
+
+[data-theme="light"] .pill-badge::before {
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+}
+
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background: var(--input-bg);
+  color: var(--text);
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: color-mix(in srgb, var(--text-muted) 75%, transparent);
+}
+
+[data-theme="light"] .benefit-check {
+  color: var(--text-secondary);
+}

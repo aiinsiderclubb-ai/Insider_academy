@@ -15,7 +15,14 @@ export function ApiProvider({ children }) {
   useEffect(() => {
     refresh()
     const id = setInterval(refresh, 30000)
-    return () => clearInterval(id)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [refresh])
 
   const value = useMemo(() => ({ online, refresh }), [online, refresh])

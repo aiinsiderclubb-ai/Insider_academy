@@ -188,7 +188,38 @@
     "errorGeneric": "Login failed. Please try again.",
     "noAccount": "Don't have an account?",
     "registerLink": "Sign up",
-    "demoHint": "Test account (all courses): test@ai-insider.academy / TestAll2026! · Offline demo: any email and password (min 6 characters)."
+    "demoHint": "Test account (all courses): test@ai-insider.academy / TestAll2026! · Offline demo: any email and password (min 6 characters).",
+    "forgotPassword": "Forgot password?"
+  },
+  "forgotPassword": {
+    "title": "Reset password",
+    "subtitle": "Enter your email — we will send a link to set a new password (valid for 1 hour).",
+    "email": "Email",
+    "submit": "Send reset link",
+    "sending": "Sending…",
+    "sent": "If an account exists for this email, we sent reset instructions.",
+    "devLinkHint": "Email is not configured on the server — copy the reset link:",
+    "copyLink": "Copy link",
+    "openLink": "Open reset page",
+    "back": "← Back to login",
+    "offline": "Password reset requires the API server.",
+    "error": "Could not send the request. Please try again."
+  },
+  "resetPassword": {
+    "title": "New password",
+    "subtitle": "Choose a new password (at least 6 characters).",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "submit": "Save password",
+    "saving": "Saving…",
+    "success": "Password updated. Redirecting to login…",
+    "back": "← Log in",
+    "requestAgain": "Request a new link",
+    "noToken": "This reset link is invalid. Please request password reset again.",
+    "mismatch": "Passwords do not match.",
+    "short": "Password must be at least 6 characters.",
+    "offline": "Reset requires the API server.",
+    "error": "Could not reset password. The link may have expired."
   },
   "register": {
     "title": "Sign up",
@@ -242,6 +273,8 @@
     "nameSaved": "Name saved.",
     "emailSaved": "Email updated. Check your inbox to verify.",
     "passwordSaved": "Password changed successfully.",
+    "passwordChangedAt": "Password last changed",
+    "passwordNeverChanged": "Password has not been changed since registration",
     "telegramSaved": "Telegram connected.",
     "telegramOffline": "Telegram linking requires the API server.",
     "passwordMismatch": "Passwords do not match.",

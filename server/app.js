@@ -3,7 +3,7 @@ import cors from 'cors'
 import { initDatabase, getDb } from './db.js'
 import { seedIfEmpty } from './seed.js'
 import { backfillPersonalIds } from './services/personalId.js'
-import { config } from './config.js'
+import { config, isGoogleSheetsEnabled } from './config.js'
 import authRoutes from './routes/auth.js'
 import coursesRoutes from './routes/courses.js'
 import meRoutes from './routes/me.js'
@@ -34,6 +34,16 @@ export async function createApp() {
     console.warn('[startup] personal_id backfill:', err.message)
   }
 
+  try {
+    const { initGoogleSheets, isGoogleSheetsEnabled } = await import('./services/googleSheets.js')
+    if (isGoogleSheetsEnabled()) {
+      const r = await initGoogleSheets()
+      console.log('[startup] Google Sheets:', r.ok ? 'connected' : r.error || r.reason)
+    }
+  } catch (err) {
+    console.warn('[startup] Google Sheets:', err.message)
+  }
+
   const app = express()
   const corsOrigins = String(config.corsOrigin || '')
     .split(',')
@@ -60,6 +70,7 @@ export async function createApp() {
         openai: Boolean(config.openai.apiKey),
         telegram: Boolean(config.telegram.botToken),
         tribute: Boolean(config.tribute.apiKey),
+        googleSheets: isGoogleSheetsEnabled(),
       },
       time: new Date().toISOString(),
     })

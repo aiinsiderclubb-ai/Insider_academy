@@ -29,7 +29,7 @@
   border-radius: 20px;
   border: 1px solid var(--border);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
+    linear-gradient(180deg, var(--surface-shine-top), transparent),
     var(--bg-card);
 }
 
@@ -113,7 +113,7 @@
 .billingActive {
   background: var(--bg-card) !important;
   color: var(--text) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-inset-card);
 }
 
 .priceCard {
@@ -197,7 +197,7 @@
 }
 
 .btnPrimaryClub {
-  color: #fff;
+  color: var(--text-on-primary);
   background: var(--gradient-primary);
   box-shadow:
     0 10px 28px color-mix(in srgb, #a855f7 38%, transparent),
@@ -205,7 +205,7 @@
 }
 
 .btnPrimaryPro {
-  color: #fff;
+  color: var(--text-on-primary);
   background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
   box-shadow: 0 10px 28px color-mix(in srgb, #a855f7 40%, transparent);
 }

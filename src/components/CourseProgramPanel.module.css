@@ -55,7 +55,7 @@
 .itemActive .num {
   background: var(--gradient-primary);
   border-color: transparent;
-  color: #fff;
+  color: var(--text-on-primary);
 }
 
 .title {

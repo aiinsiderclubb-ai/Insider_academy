@@ -297,6 +297,7 @@ function migrateColumns(db) {
   if (!cols.includes('avatar_url')) add('ALTER TABLE users ADD COLUMN avatar_url TEXT')
   if (!cols.includes('profile_updated_at')) add('ALTER TABLE users ADD COLUMN profile_updated_at TEXT')
   if (!cols.includes('password_changed_at')) add('ALTER TABLE users ADD COLUMN password_changed_at TEXT')
+  if (!cols.includes('last_login_at')) add('ALTER TABLE users ADD COLUMN last_login_at TEXT')
   if (!cols.includes('personal_id')) add('ALTER TABLE users ADD COLUMN personal_id TEXT')
 
   const regCols = db.prepare('PRAGMA table_info(registrations)').all().map((c) => c.name)

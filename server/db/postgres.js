@@ -43,6 +43,7 @@ export async function createPostgresDb(connectionString) {
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT').catch(() => {})
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_updated_at TEXT').catch(() => {})
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TEXT').catch(() => {})
+  await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TEXT').catch(() => {})
   await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS personal_id TEXT').catch(() => {})
   await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS users_personal_id_idx ON users (personal_id) WHERE personal_id IS NOT NULL').catch(() => {})
   await pool.query('ALTER TABLE registrations ADD COLUMN IF NOT EXISTS personal_id TEXT').catch(() => {})

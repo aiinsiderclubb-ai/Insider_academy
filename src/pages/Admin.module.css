@@ -61,7 +61,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-on-primary);
   font-size: 0.875rem;
 }
 
@@ -123,7 +123,7 @@
   justify-content: center;
   font-weight: 800;
   font-size: 0.75rem;
-  color: #fff;
+  color: var(--text-on-primary);
   flex-shrink: 0;
 }
 
@@ -202,7 +202,7 @@
   padding: 0 5px;
   border-radius: 999px;
   background: var(--glow-pink);
-  color: #fff;
+  color: var(--text-on-primary);
   font-size: 0.6875rem;
   font-weight: 700;
 }
@@ -354,7 +354,7 @@
   padding: 0 5px;
   border-radius: 999px;
   background: var(--glow-pink);
-  color: #fff;
+  color: var(--text-on-primary);
   font-size: 0.6875rem;
   font-weight: 700;
 }
@@ -981,7 +981,7 @@
   font-size: 1rem;
   font-weight: 600;
   font-family: var(--font);
-  color: #fff;
+  color: var(--text-on-primary);
   background: var(--gradient-primary);
   border: none;
   border-radius: var(--radius);
@@ -1059,7 +1059,7 @@
   padding: 0 5px;
   border-radius: 999px;
   background: var(--glow-pink);
-  color: #fff;
+  color: var(--text-on-primary);
   font-size: 0.6875rem;
   font-weight: 700;
   display: inline-flex;
@@ -1151,6 +1151,25 @@
   border-radius: 6px;
 }
 
+.passwordChangedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  white-space: nowrap;
+}
+
+.passwordNeverBadge {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
 .discountList {
   margin: 0;
   padding-left: 20px;
@@ -1169,7 +1188,7 @@
   font-size: 0.9375rem;
   font-family: var(--font);
   background: var(--gradient-primary);
-  color: #fff;
+  color: var(--text-on-primary);
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
@@ -1323,7 +1342,7 @@
   font-size: 0.9375rem;
   font-family: var(--font);
   background: var(--gradient-primary);
-  color: #fff;
+  color: var(--text-on-primary);
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
@@ -1574,7 +1593,7 @@
   padding: 12px 16px;
   background: var(--gradient-primary);
   border-radius: 10px;
-  color: #fff;
+  color: var(--text-on-primary);
   min-width: 120px;
   transition: width 0.4s ease;
 }
@@ -1920,7 +1939,7 @@
   border: none;
   border-radius: 8px;
   background: var(--success);
-  color: #fff;
+  color: var(--text-on-primary);
   font-weight: 600;
   font-size: 0.8125rem;
   cursor: pointer;

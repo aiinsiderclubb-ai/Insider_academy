@@ -2,6 +2,7 @@ import { Router } from 'express'
 import crypto from 'crypto'
 import { getDb, parseJson } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
+import * as sheetsTrack from '../services/sheetsTrack.js'
 
 const router = Router()
 
@@ -101,6 +102,18 @@ router.post('/:courseId', requireUser, async (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
     [id, courseId, req.userId, req.userEmail, email, displayName, ratingNum, text.trim(), new Date().toISOString()]
   )
+
+  const u = await db.get('SELECT personal_id FROM users WHERE id = ?', [req.userId])
+  sheetsTrack.trackReviewEvent({
+    email: req.userEmail,
+    personalId: u?.personal_id,
+    courseId,
+    rating: ratingNum,
+    status: 'pending',
+    text: text.trim(),
+    action: 'отправлен',
+    reviewId: id,
+  }).catch(() => {})
 
   res.status(201).json({
     id,

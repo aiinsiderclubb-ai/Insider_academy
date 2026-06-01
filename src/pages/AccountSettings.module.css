@@ -108,7 +108,7 @@
   height: 100%;
   font-size: 2rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-on-primary);
 }
 
 .avatarOverlay {
@@ -118,7 +118,7 @@
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.45);
-  color: #fff;
+  color: var(--text-on-primary);
   font-size: 0.75rem;
   font-weight: 600;
   opacity: 0;
@@ -159,6 +159,27 @@
   font-family: ui-monospace, monospace;
   font-weight: 700;
   color: var(--text);
+}
+
+.passwordStatusChanged,
+.passwordStatusDefault {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.passwordStatusChanged {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: var(--text);
+}
+
+.passwordStatusDefault {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
 }
 
 .badgeOk,
@@ -249,7 +270,7 @@
 
 .btnPrimary {
   background: var(--gradient-primary);
-  color: #fff;
+  color: var(--text-on-primary);
 }
 
 .btnSecondary {

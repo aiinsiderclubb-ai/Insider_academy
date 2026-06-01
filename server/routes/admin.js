@@ -7,6 +7,13 @@ import { config } from '../config.js'
 import { nowIso } from '../db/time.js'
 import { mapApplication } from './applications.js'
 import { userSelectFields } from '../services/userProfile.js'
+import { createUserNotification, getCourseSlug } from '../services/notifications.js'
+import * as sheetsTrack from '../services/sheetsTrack.js'
+import {
+  getSheetsStatus,
+  syncDatabaseToSheets,
+  exportSheetCsv,
+} from '../services/googleSheets.js'
 
 const router = Router()
 
@@ -179,14 +186,41 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, re
     [status ?? null, adminComment ?? null, nextScore, nowIso(), req.params.id]
   )
   if (status && row.email) {
-    await db.run(
-      `INSERT INTO notifications (id, email, type, status, course_id, course_title, lesson_title, lesson_index, message, date)
-       VALUES (?, ?, 'homework_feedback', ?, ?, ?, ?, ?, ?, ?)`,
-      [`n-${Date.now()}`, row.email, status, row.course_id, row.course_title, row.lesson_title,
-        row.lesson_index, adminComment || (status === 'accepted' ? 'ДЗ принято' : 'ДЗ на доработку'), new Date().toISOString()]
-    )
+    const courseSlug = await getCourseSlug(db, row.course_id)
+    const lessonPart = Number.isInteger(row.lesson_index) ? `?lesson=${row.lesson_index}` : ''
+    const targetPath = courseSlug ? `/courses/${courseSlug}${lessonPart}` : '/cabinet'
+    const defaultMsg = status === 'accepted'
+      ? 'ДЗ принято'
+      : status === 'resubmit'
+        ? 'ДЗ отправлено на доработку'
+        : 'Обновление по домашнему заданию'
+    await createUserNotification(db, {
+      email: row.email,
+      type: 'homework_feedback',
+      status,
+      courseId: row.course_id,
+      courseSlug,
+      courseTitle: row.course_title,
+      lessonTitle: row.lesson_title,
+      lessonIndex: row.lesson_index,
+      targetPath,
+      message: adminComment || defaultMsg,
+    })
     sendHomeworkFeedbackEmail({
       email: row.email, courseTitle: row.course_title, lessonTitle: row.lesson_title, status, comment: adminComment,
+    }).catch(() => {})
+    const u = await db.get('SELECT personal_id FROM users WHERE email = ?', [row.email])
+    sheetsTrack.trackHomeworkEvent({
+      email: row.email,
+      personalId: u?.personal_id,
+      courseTitle: row.course_title,
+      lessonIndex: row.lesson_index,
+      lessonTitle: row.lesson_title,
+      status,
+      score: nextScore,
+      adminComment,
+      action: `админ: ${status}`,
+      recordId: req.params.id,
     }).catch(() => {})
   }
   res.json({ ok: true, homework: (await mapHomeworkList([await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])]))[0] })
@@ -217,6 +251,47 @@ router.patch('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, res
       console.warn('[admin] reviewer achievement skipped:', err.message)
     }
   }
+  if (status !== 'pending') {
+    let notifyEmail = row.email || row.contact_email
+    if (!notifyEmail && row.user_id) {
+      const u = await db.get('SELECT email FROM users WHERE id = ?', [row.user_id])
+      notifyEmail = u?.email
+    }
+    if (notifyEmail) {
+      const courseSlug = await getCourseSlug(db, row.course_id)
+      const courseRow = await db.get('SELECT data FROM courses WHERE id = ?', [row.course_id])
+      const courseData = parseJson(courseRow?.data, null)
+      const courseTitle = courseData?.title || row.course_id
+      const message = status === 'approved'
+        ? 'Ваш отзыв опубликован на странице курса'
+        : status === 'rejected'
+          ? 'Отзыв не опубликован. При необходимости отправьте новый'
+          : 'Статус отзыва обновлён'
+      await createUserNotification(db, {
+        email: notifyEmail,
+        type: 'review_status',
+        status,
+        courseId: row.course_id,
+        courseSlug,
+        courseTitle,
+        targetPath: courseSlug ? `/courses/${courseSlug}` : '/cabinet',
+        message,
+      })
+    }
+    const u = row.user_id
+      ? await db.get('SELECT personal_id FROM users WHERE id = ?', [row.user_id])
+      : null
+    sheetsTrack.trackReviewEvent({
+      email: notifyEmail || row.email,
+      personalId: u?.personal_id,
+      courseId: row.course_id,
+      rating: row.rating,
+      status,
+      text: row.text,
+      action: `админ: ${status}`,
+      reviewId: req.params.id,
+    }).catch(() => {})
+  }
   res.json({ ok: true, review: mapReview(await db.get('SELECT * FROM reviews WHERE id = ?', [req.params.id])) })
 })
 
@@ -236,6 +311,7 @@ router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req
   }
   const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
   if (!row) return res.status(404).json({ error: 'Not found' })
+  const prevStatus = row.status
   await db.run(
     `UPDATE accelerator_applications
      SET status = COALESCE(?, status),
@@ -244,7 +320,35 @@ router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req
      WHERE id = ?`,
     [status ?? null, adminNote ?? null, nowIso(), req.params.id]
   )
-  res.json({ ok: true, application: mapApplication(await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])) })
+  const updated = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
+  if (status && status !== prevStatus && updated?.email) {
+    const statusMessages = {
+      reviewed: 'Заявка на AI Accelerator просмотрена',
+      accepted: 'Поздравляем! Заявка на AI Accelerator одобрена',
+      rejected: 'Заявка на AI Accelerator отклонена',
+    }
+    if (statusMessages[status]) {
+      await createUserNotification(db, {
+        email: updated.email,
+        type: 'application_status',
+        status,
+        courseTitle: 'AI Accelerator',
+        targetPath: '/courses/ai-accelerator',
+        message: adminNote ? `${statusMessages[status]}. ${adminNote}` : statusMessages[status],
+      })
+    }
+    sheetsTrack.trackApplication({
+      email: updated.email,
+      firstName: updated.first_name,
+      lastName: updated.last_name,
+      telegram: updated.telegram,
+      status,
+      adminNote,
+      action: `админ: ${status}`,
+      applicationId: updated.id,
+    }).catch(() => {})
+  }
+  res.json({ ok: true, application: mapApplication(updated) })
 })
 
 router.post('/certificates', requireAdmin('admin', 'moderator'), async (req, res) => {
@@ -262,7 +366,38 @@ router.post('/certificates', requireAdmin('admin', 'moderator'), async (req, res
      VALUES (?, ?, 'certificate_added', ?, ?, '/cabinet#certificates', ?, ?)`,
     [`n-${Date.now()}`, email, courseId, courseTitle, 'Сертификат добавлен', now]
   )
+  const u = await db.get('SELECT personal_id FROM users WHERE email = ?', [email])
+  sheetsTrack.trackCertificate({
+    email,
+    personalId: u?.personal_id,
+    courseId,
+    courseTitle,
+    score,
+    action: 'выдан админом',
+  }).catch(() => {})
   res.json({ ok: true, id })
+})
+
+router.get('/sheets/status', requireAdmin('admin', 'moderator'), async (_req, res) => {
+  res.json(await getSheetsStatus())
+})
+
+router.post('/sheets/sync', requireAdmin('admin'), async (_req, res) => {
+  const db = getDb()
+  const result = await syncDatabaseToSheets(db)
+  res.json(result)
+})
+
+router.get('/sheets/export/:sheetKey', requireAdmin('admin', 'moderator'), async (req, res) => {
+  try {
+    const csv = await exportSheetCsv(req.params.sheetKey)
+    const name = req.params.sheetKey
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="${name}.csv"`)
+    res.send(csv)
+  } catch (err) {
+    res.status(400).json({ error: err.message })
+  }
 })
 
 function getTributeWebhookUrl() {
@@ -323,6 +458,7 @@ function mapAdminUser(row) {
     registeredAt: row.created_at,
     profileUpdatedAt: row.profile_updated_at || null,
     passwordChangedAt: row.password_changed_at || null,
+    lastLoginAt: row.last_login_at || null,
     telegramChatId: row.telegram_chat_id || null,
   }
 }

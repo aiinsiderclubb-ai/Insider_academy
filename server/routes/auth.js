@@ -4,6 +4,10 @@ import crypto from 'crypto'
 import { getDb } from '../db.js'
 import { signUserToken } from '../middleware/auth.js'
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.js'
+import { config, isEmailEnabled } from '../config.js'
+import { createUserNotification } from '../services/notifications.js'
+import { nowIso } from '../db/time.js'
+import * as sheetsTrack from '../services/sheetsTrack.js'
 import { seedTestAccount } from '../seed.js'
 import { TEST_ACCOUNT_EMAIL, TEST_ACCOUNT_PASSWORD } from '../../src/data/testAccount.js'
 import { ensurePersonalId } from '../services/personalId.js'
@@ -91,6 +95,8 @@ router.post('/register', asyncHandler(async (req, res) => {
   })
   sendVerificationEmail(email, token).catch(() => {})
 
+  sheetsTrack.trackUserRegistered({ personalId, userId, email, name }).catch(() => {})
+
   const jwt = signUserToken(user)
   res.status(201).json({ token: jwt, user })
 }))
@@ -111,8 +117,11 @@ router.post('/login', asyncHandler(async (req, res) => {
     return res.status(401).json({ error: 'Invalid email or password' })
   }
   const personalId = row.personal_id || await ensurePersonalId(db, row.id)
+  const loginAt = new Date().toISOString()
+  await db.run('UPDATE users SET last_login_at = ? WHERE id = ?', [loginAt, row.id]).catch(() => {})
   const user = { id: row.id, email: row.email, name: row.name, emailVerified: Boolean(row.email_verified), personalId }
-  res.json({ token: signUserToken(user), user })
+  sheetsTrack.trackLogin({ email, personalId, userId: row.id }).catch(() => {})
+  res.json({ token: signUserToken(user), user, lastLoginAt: loginAt })
 }))
 
 router.post('/verify-email', asyncHandler(async (req, res) => {
@@ -133,31 +142,66 @@ router.post('/verify-email', asyncHandler(async (req, res) => {
 router.post('/forgot-password', asyncHandler(async (req, res) => {
   const db = getDb()
   const email = normalizeEmail(req.body.email)
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email required', errorRu: 'Введите корректный email' })
+  }
   const user = await db.get('SELECT id FROM users WHERE email = ?', [email])
-  if (!user) return res.json({ ok: true })
+  if (!user) return res.json({ ok: true, message: 'If the account exists, reset instructions were sent.' })
   const token = createToken()
+  const expiresAt = new Date(Date.now() + 3600000).toISOString()
+  await db.run(
+    'UPDATE email_tokens SET used = 1 WHERE email = ? AND type = ? AND used = 0',
+    [email, 'reset']
+  )
   await db.run('INSERT INTO email_tokens (id, email, token, type, expires_at) VALUES (?, ?, ?, ?, ?)', [
-    `et-${Date.now()}`, email, token, 'reset', new Date(Date.now() + 3600000).toISOString(),
+    `et-${Date.now()}`, email, token, 'reset', expiresAt,
   ])
+  const resetLink = `${config.appUrl.replace(/\/$/, '')}/reset-password?token=${token}`
   sendPasswordResetEmail(email, token).catch(() => {})
-  res.json({ ok: true })
+  const payload = { ok: true, message: 'If the account exists, reset instructions were sent.' }
+  if (!isEmailEnabled()) {
+    payload.resetLink = resetLink
+    payload.emailDelivery = 'disabled'
+  }
+  res.json(payload)
 }))
 
 router.post('/reset-password', asyncHandler(async (req, res) => {
   const db = getDb()
-  const { token, password } = req.body
-  if (!password || password.length < 6) return res.status(400).json({ error: 'Password too short' })
+  const token = String(req.body.token || '').trim()
+  const password = String(req.body.password || '')
+  if (!token) {
+    return res.status(400).json({ error: 'Token required', errorRu: 'Ссылка для сброса недействительна' })
+  }
+  if (!password || password.length < 6) {
+    return res.status(400).json({
+      error: 'Password must be at least 6 characters',
+      errorRu: 'Пароль должен быть не менее 6 символов',
+    })
+  }
   const row = await db.get(
     'SELECT * FROM email_tokens WHERE token = ? AND type = ? AND used = 0',
     [token, 'reset']
   )
   if (!row || new Date(row.expires_at) < new Date()) {
-    return res.status(400).json({ error: 'Invalid or expired token' })
+    return res.status(400).json({
+      error: 'Invalid or expired token',
+      errorRu: 'Ссылка устарела или уже использована. Запросите сброс пароля снова.',
+    })
   }
+  const now = nowIso()
   const hash = bcrypt.hashSync(password, 10)
-  await db.run('UPDATE users SET password_hash = ?, password_changed_at = ? WHERE email = ?', [hash, new Date().toISOString(), row.email])
+  await db.run('UPDATE users SET password_hash = ?, password_changed_at = ? WHERE email = ?', [hash, now, row.email])
   await db.run('UPDATE email_tokens SET used = 1 WHERE id = ?', [row.id])
-  res.json({ ok: true })
+  await createUserNotification(db, {
+    email: row.email,
+    type: 'password_changed',
+    targetPath: '/account',
+    message: 'Пароль успешно сброшен. Если это были не вы — срочно смените пароль и напишите в поддержку.',
+  })
+  const u = await db.get('SELECT personal_id FROM users WHERE email = ?', [row.email])
+  sheetsTrack.trackPasswordChange({ email: row.email, personalId: u?.personal_id, action: 'сброс пароля' }).catch(() => {})
+  res.json({ ok: true, passwordChangedAt: now })
 }))
 
 export default router

@@ -22,12 +22,10 @@ export function Cabinet() {
   const [teamName, setTeamName] = useState('')
   const [inviteCode, setInviteCode] = useState('')
   const [telegramId, setTelegramId] = useState('')
+  const [myCertificates, setMyCertificates] = useState([])
 
   const myCourses = purchases.map((p) => getCourseById(p.id)).filter(Boolean)
   const userDiscount = getUserDiscountPercent(user?.email || 0)
-  const myCertificates = (getCertificates() || []).filter(
-    (c) => c.email && user?.email && c.email.toLowerCase() === user.email.toLowerCase()
-  )
   const referralLink = user?.email ? `${window.location.origin}/?ref=${btoa(user.email)}` : ''
   const referralsCount = user?.email
     ? getReferrals().filter((r) => r.referrerEmail?.toLowerCase() === user.email.toLowerCase()).length
@@ -43,8 +41,15 @@ export function Cabinet() {
         if (apiMode || await checkApiOnline()) {
           setStats(await api.getStats())
           setTeam(await api.getTeam())
+          const certs = await api.getCertificates()
+          setMyCertificates(certs || [])
+          return
         }
       } catch (_) {}
+      const local = (getCertificates() || []).filter(
+        (c) => c.email && user.email && c.email.toLowerCase() === user.email.toLowerCase()
+      )
+      setMyCertificates(local)
     }
     load()
   }, [user, apiMode])
@@ -96,6 +101,17 @@ export function Cabinet() {
             <span className={styles.ringLabel}>{overallProgress}%</span>
           </ProgressRing>
         </div>
+
+        {(user?.personalId || user?.id) && (
+          <div className={styles.accountIdBanner}>
+            <span>
+              {t('account.personalId')}: <strong>{user.personalId || '—'}</strong>
+            </span>
+            <span className={styles.accountIdMeta}>
+              {lang === 'ru' ? 'Внутренний ID' : 'Internal ID'}: {user.id}
+            </span>
+          </div>
+        )}
 
         {stats?.streak && (
           <div className={styles.streakBanner}>

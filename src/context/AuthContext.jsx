@@ -172,13 +172,21 @@ export function AuthProvider({ children }) {
 
   const changePassword = useCallback(async (currentPassword, newPassword) => {
     if (apiMode) {
-      await api.changePassword({ currentPassword, newPassword })
-      return
+      const res = await api.changePassword({ currentPassword, newPassword })
+      if (res?.user) {
+        setUserState(withLocalAvatar(res.user))
+      } else if (res?.passwordChangedAt) {
+        setUserState((prev) => (prev ? { ...prev, passwordChangedAt: res.passwordChangedAt } : prev))
+      } else {
+        await refreshUser()
+      }
+      window.dispatchEvent(new Event('lms-notifications-refresh'))
+      return res
     }
     if (isTestAccountEmail(user?.email)) {
       throw new Error('Test account password cannot be changed offline')
     }
-  }, [apiMode, user])
+  }, [apiMode, user, refreshUser])
 
   const changeEmail = useCallback(async (email, currentPassword) => {
     const emailTrim = email.trim().toLowerCase()

@@ -113,7 +113,7 @@
   height: 40px;
   border-radius: 50%;
   background: var(--gradient-primary);
-  color: #fff;
+  color: var(--text-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -248,7 +248,7 @@
   border: none;
   border-radius: 12px;
   background: var(--gradient-primary);
-  color: #fff;
+  color: var(--text-on-primary);
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s;

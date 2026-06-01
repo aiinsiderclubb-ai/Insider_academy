@@ -36,8 +36,8 @@
   gap: 8px;
   padding: 20px;
   text-align: center;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.75) 100%);
-  color: #fff;
+  background: linear-gradient(180deg, var(--badge-scrim) 0%, color-mix(in srgb, var(--badge-scrim) 95%, #000) 100%);
+  color: var(--text-on-primary);
 }
 
 .playIcon {

@@ -59,6 +59,12 @@ services:
         value: https://insider-academy.onrender.com/api/webhooks/tribute
       - key: TRIBUTE_API_KEY
         sync: false
+      - key: GOOGLE_DRIVE_FOLDER_ID
+        value: "1JlbsIBxryW8dSemF4XSySdcVabqwxghh"
+      - key: GOOGLE_SHEETS_ENABLED
+        value: "1"
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false
 
   # ── Frontend (Vite / React static site) ──────────────────────────────────
   - type: web

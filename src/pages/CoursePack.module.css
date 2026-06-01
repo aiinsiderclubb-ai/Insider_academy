@@ -29,7 +29,7 @@
   border-radius: 20px;
   border: 1px solid var(--border);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
+    linear-gradient(180deg, var(--surface-shine-top), transparent),
     var(--bg-card);
 }
 
@@ -47,7 +47,7 @@
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--text-on-primary);
   background: var(--gradient-primary);
 }
 
@@ -91,8 +91,8 @@
   height: 82px;
   object-fit: cover;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--bundle-image-border);
+  box-shadow: var(--bundle-image-shadow);
   transform: rotate(calc((var(--thumb-index) - 2) * -3deg));
   animation: packThumbFloat 4.2s ease-in-out infinite;
   animation-delay: calc(var(--thumb-index) * 0.25s);
@@ -179,7 +179,7 @@
 .btnBuy {
   position: relative;
   overflow: hidden;
-  color: #fff;
+  color: var(--text-on-primary);
   background: linear-gradient(
     120deg,
     #a855f7 0%,
