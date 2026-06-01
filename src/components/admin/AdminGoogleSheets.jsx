@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { api, getAdminToken, getApiBase } from '../../api/client'
 import styles from '../../pages/Admin.module.css'
 
+const ARCHIVE_KEYS = new Set(['users', 'logins', 'purchases', 'homework', 'reviews'])
+
 export function AdminGoogleSheets({ online, onToast }) {
   const [status, setStatus] = useState(null)
   const [syncing, setSyncing] = useState(false)
@@ -14,10 +16,17 @@ export function AdminGoogleSheets({ online, onToast }) {
   useEffect(load, [online])
 
   const runSync = async () => {
+    if (!window.confirm(
+      'Перезаписать основные таблицы (Пользователи, Входы, Покупки, ДЗ, Отзывы) данными из базы?\n\nНовые события по-прежнему добавляются автоматически в реальном времени.'
+    )) return
     setSyncing(true)
     try {
       const res = await api.adminSheetsSync()
-      onToast?.(`Синхронизация завершена: ${JSON.stringify(res.counts || {})}`)
+      const counts = res.counts || {}
+      const summary = Object.entries(counts)
+        .map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`)
+        .join(' · ')
+      onToast?.(`Синхронизация завершена${summary ? `: ${summary}` : ''}`)
       load()
     } catch (e) {
       onToast?.(e.message || 'Ошибка синхронизации', 'error')
@@ -44,11 +53,14 @@ export function AdminGoogleSheets({ online, onToast }) {
     }
   }
 
+  const archiveSheets = status?.sheets?.filter((s) => ARCHIVE_KEYS.has(s.key)) || []
+
   return (
     <section className={styles.panel}>
       <h3 className={styles.panelTitle}>Google Таблицы (Google Drive)</h3>
       <p className={styles.sectionDesc}>
-        Все действия пользователей дублируются в таблицы на Google Drive с датой и автором.
+        Архив в реальном времени: регистрации, входы, покупки, ДЗ и отзывы автоматически
+        дописываются в таблицы на Google Drive при каждом событии на сервере.
         Папка:{' '}
         {status?.folderUrl ? (
           <a href={status.folderUrl} target="_blank" rel="noreferrer noopener">открыть на Drive</a>
@@ -64,11 +76,31 @@ export function AdminGoogleSheets({ online, onToast }) {
       )}
 
       {status && (
-        <p className={styles.sectionDesc}>
-          Статус: {status.enabled
-            ? (status.ok ? '✅ подключено' : `⚠️ ${status.error || status.message}`)
-            : `⚠️ ${status.message}`}
-        </p>
+        <>
+          <p className={styles.sectionDesc}>
+            Статус: {status.enabled
+              ? (status.ok ? '✅ подключено · авто-синхронизация включена' : `⚠️ ${status.error || status.message}`)
+              : `⚠️ ${status.message}`}
+          </p>
+          {status.serviceAccountEmail && (
+            <p className={styles.sectionDesc}>
+              Service Account: <code>{status.serviceAccountEmail}</code>
+              {' — '}
+              дайте этому email доступ «Редактор» к папке на Google Drive.
+            </p>
+          )}
+        </>
+      )}
+
+      {archiveSheets.length > 0 && (
+        <div className={styles.statsGrid} style={{ marginBottom: 16 }}>
+          {archiveSheets.map((s) => (
+            <div key={s.key} className={styles.statCard}>
+              <span className={styles.statValue}>{s.rowCount ?? '—'}</span>
+              <span className={styles.statLabel}>{s.title}</span>
+            </div>
+          ))}
+        </div>
       )}
 
       <div className={styles.courseActions}>
@@ -78,7 +110,7 @@ export function AdminGoogleSheets({ online, onToast }) {
           disabled={!online || syncing}
           onClick={runSync}
         >
-          {syncing ? 'Синхронизация…' : 'Синхронизировать БД → Sheets'}
+          {syncing ? 'Синхронизация…' : 'Обновить архив из БД'}
         </button>
         <button type="button" className={styles.smallBtn} disabled={!online} onClick={load}>
           Обновить статус
@@ -91,6 +123,7 @@ export function AdminGoogleSheets({ online, onToast }) {
             <thead>
               <tr>
                 <th>Таблица</th>
+                <th>Строк</th>
                 <th>Действия</th>
               </tr>
             </thead>
@@ -99,6 +132,7 @@ export function AdminGoogleSheets({ online, onToast }) {
                 <tr key={s.key}>
                   <td>
                     {s.title}
+                    {s.archive && <span className={styles.passwordChangedBadge} style={{ marginLeft: 8 }}>архив</span>}
                     {s.url && (
                       <>
                         {' '}
@@ -108,6 +142,7 @@ export function AdminGoogleSheets({ online, onToast }) {
                       </>
                     )}
                   </td>
+                  <td>{s.rowCount ?? '—'}</td>
                   <td>
                     <button
                       type="button"

@@ -18,3 +18,7 @@ server/data/*.sqlite
 server/data/*.sqlite-shm
 server/data/*.sqlite-wal
 server/uploads/
+
+# Google Service Account keys (never commit)
+server/data/google-sheets-key.json
+**/google-sheets-key.json

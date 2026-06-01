@@ -1,4 +1,5 @@
-import { getDb, parseJson } from '../db.js'
+import { getDb } from '../db.js'
+import * as sheetsTrack from './sheetsTrack.js'
 
 export async function logWebhookEvent({ provider, eventName, status, payload }) {
   try {
@@ -33,18 +34,29 @@ export async function grantAccess({ userId, email, courseId, courseTitle, amount
     ? await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [resolvedUserId, courseId])
     : null
 
+  let newlyGranted = false
   if (!exists && resolvedUserId) {
     await db.run(
       'INSERT INTO purchases (user_id, course_id, payment_provider, payment_id) VALUES (?, ?, ?, ?)',
       [resolvedUserId, courseId, provider, externalId]
     )
+    newlyGranted = true
   }
 
-  if (email) {
+  if (email && newlyGranted) {
     await db.run(
       'INSERT INTO purchase_log (id, email, course_id, course_title, amount, date) VALUES (?, ?, ?, ?, ?, ?)',
       [`purchase-${Date.now()}`, email, courseId, courseTitle || courseId, amount, new Date().toISOString()]
     )
+    const u = await db.get('SELECT personal_id, email FROM users WHERE id = ?', [resolvedUserId])
+    sheetsTrack.trackPurchase({
+      email: email || u?.email,
+      personalId: u?.personal_id,
+      courseId,
+      courseTitle: courseTitle || courseId,
+      amount,
+      source: provider || 'webhook',
+    }).catch(() => {})
   }
 
   if (externalId) {

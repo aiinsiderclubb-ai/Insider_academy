@@ -70,6 +70,16 @@ export async function runPostgresMigrations(pool) {
       error TEXT,
       created_at TEXT NOT NULL
     )`,
+    `CREATE TABLE IF NOT EXISTS creator_payouts (
+      id TEXT PRIMARY KEY,
+      creator_email TEXT NOT NULL,
+      product_id TEXT,
+      amount_eur REAL NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      note TEXT,
+      created_at TEXT NOT NULL,
+      paid_at TEXT
+    )`,
   ]
 
   for (const sql of statements) {

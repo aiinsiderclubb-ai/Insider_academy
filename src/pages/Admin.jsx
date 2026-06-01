@@ -40,7 +40,7 @@ import { AdminBlogEditor } from '../components/admin/AdminBlogEditor'
 import { AdminSettings } from '../components/admin/AdminSettings'
 import { AdminCharts } from '../components/admin/AdminCharts'
 import { LessonDragList } from '../components/admin/LessonDragList'
-import { useAdminPushNotifications, requestAdminNotificationPermission } from '../hooks/useAdminPushNotifications'
+import { useAdminPushNotifications, useAdminStaleApplicationAlert, requestAdminNotificationPermission } from '../hooks/useAdminPushNotifications'
 import { getAdminRole, setAdminRole, canAccessTab, resolveLocalRole, ROLE_LABELS } from '../utils/adminAuth'
 import styles from './Admin.module.css'
 
@@ -119,6 +119,7 @@ export function Admin() {
     goals: [], goalsEn: [], lessons: [{ id: 'l1', title: '', titleEn: '', duration: '', durationEn: '', videoUrl: '' }],
   })
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [appFilter, setAppFilter] = useState('all')
   const [drawerUser, setDrawerUser] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -140,6 +141,7 @@ export function Admin() {
   const [dashData, setDashData] = useState(null)
   const [dataHealth, setDataHealth] = useState(null)
   const [emailStatus, setEmailStatus] = useState(null)
+  const [deletingUserId, setDeletingUserId] = useState(null)
 
   useEffect(() => {
     const token = getAdminToken()
@@ -385,13 +387,15 @@ export function Admin() {
     setRefresh((r) => r + 1)
   }
 
-  const changeTab = (tab) => {
+  const changeTab = (tab, nextAppFilter) => {
     if (!canAccessTab(adminRole, tab)) {
       showToast('Нет доступа к этому разделу', 'error')
       return
     }
     setActiveTab(tab)
     setSearchQuery('')
+    if (nextAppFilter) setAppFilter(nextAppFilter)
+    else if (tab !== ACCELERATOR_ADMIN_TAB) setAppFilter('all')
   }
 
   const restoreDefaults = () => {
@@ -409,7 +413,17 @@ export function Admin() {
     ? (useServerData ? (dashData?.homework ?? []) : (dashData?.homework ?? (canAccessTab(adminRole, 'homework') ? getHomeworkSubmissions() : [])))
     : []
   const pendingHwCount = homeworkListPreview.filter((h) => h.status === 'pending').length
+  const staleAppsPreview = authenticated && useServerData
+    ? (dashData?.applications ?? []).filter((a) => {
+      if ((a.status || 'new') !== 'new') return false
+      return (Date.now() - new Date(a.date).getTime()) / 3600000 >= 24
+    }).length
+    : 0
   useAdminPushNotifications(pendingHwCount, authenticated && canAccessTab(adminRole, 'homework'))
+  useAdminStaleApplicationAlert(
+    staleAppsPreview,
+    authenticated && canAccessTab(adminRole, ACCELERATOR_ADMIN_TAB)
+  )
 
   if (!authenticated) {
     return (
@@ -512,6 +526,55 @@ export function Admin() {
   const pendingReviewsCount = reviewsList.filter((r) => (r.status || 'pending') === 'pending').length
   const pendingHwQueue = homeworkList.filter((h) => h.status === 'pending').length
   const newAppsCount = applicationsList.filter((a) => (a.status || 'new') === 'new').length
+
+  const openStudentByEmail = (email, app) => {
+    const mail = String(email || '').toLowerCase()
+    const found = adminUsers.find((u) => u.email?.toLowerCase() === mail)
+    setDrawerUser(found ? {
+      ...found,
+      telegramConnected: app?.telegramConnected ?? Boolean(found.telegram_chat_id),
+      telegramUsername: app?.telegramUsername || app?.telegram || found.telegram,
+    } : {
+      email,
+      name: app ? `${app.firstName || ''} ${app.lastName || ''}`.trim() || email : email,
+      firstName: app?.firstName,
+      lastName: app?.lastName,
+      telegram: app?.telegram,
+      telegramConnected: app?.telegramConnected,
+      telegramUsername: app?.telegramUsername || app?.telegram,
+    })
+  }
+
+  const handleDeleteUser = async (userItem) => {
+    const label = userItem.name ? `${userItem.name} (${userItem.email})` : userItem.email
+    if (!window.confirm(
+      `Удалить аккаунт ${label}?\n\nБудут удалены регистрация, покупки, ДЗ, сертификаты, заявки и все данные пользователя. Действие необратимо.`
+    )) {
+      return
+    }
+
+    setDeletingUserId(userItem.id || userItem.email)
+    try {
+      if (useServerData && getAdminToken()) {
+        await api.adminDeleteUser({
+          userId: userItem.id ?? undefined,
+          email: userItem.email,
+        })
+        if (drawerUser?.email?.toLowerCase() === userItem.email?.toLowerCase()) {
+          setDrawerUser(null)
+        }
+        showToast(`Аккаунт ${userItem.email} удалён`, 'success')
+        setRefresh((r) => r + 1)
+        if (useServerData) await loadDashboardFromApi()
+      } else {
+        showToast('Удаление доступно только при подключении к серверу (роль admin)', 'error')
+      }
+    } catch (err) {
+      showToast(err?.message || 'Не удалось удалить аккаунт', 'error')
+    } finally {
+      setDeletingUserId(null)
+    }
+  }
 
   const unreadByTab = {
     registrations: getUnseenCount('registrations', registrations),
@@ -716,6 +779,7 @@ export function Admin() {
               purchases={purchases}
               homeworkList={homeworkList}
               reviewsList={reviewsList}
+              applications={applicationsList}
               onClose={() => setDrawerUser(null)}
               formatDate={formatDate}
             />
@@ -741,6 +805,7 @@ export function Admin() {
               certificates={certificates}
               courses={courses}
               referrals={referrals}
+              applications={applicationsList}
               unreadByTab={unreadByTab}
               onTabChange={changeTab}
               formatDate={formatDate}
@@ -996,6 +1061,8 @@ export function Admin() {
             online={useServerData}
             onUpdated={() => setRefresh((r) => r + 1)}
             showToast={showToast}
+            onOpenStudent={openStudentByEmail}
+            initialFilter={appFilter}
           />
         </section>
         )}
@@ -1195,7 +1262,24 @@ export function Admin() {
                           )}
                         </td>
                         <td>
-                          {unseen && <button type="button" className={styles.inlineBtn} onClick={() => { markAdminItemSeen('registrations', r); setRefresh((v) => v + 1) }}>Увидено</button>}
+                          <div className={styles.tableActions}>
+                            {unseen && (
+                              <button type="button" className={styles.inlineBtn} onClick={() => { markAdminItemSeen('registrations', r); setRefresh((v) => v + 1) }}>
+                                Увидено
+                              </button>
+                            )}
+                            {adminRole === 'admin' && (
+                              <button
+                                type="button"
+                                className={styles.smallBtnDanger}
+                                disabled={deletingUserId === (r.id || r.email)}
+                                onClick={() => handleDeleteUser(r)}
+                                title="Удалить аккаунт и все данные пользователя"
+                              >
+                                {deletingUserId === (r.id || r.email) ? '…' : 'Удалить'}
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     )

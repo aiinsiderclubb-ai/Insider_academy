@@ -46,12 +46,12 @@ export async function trackCertificate({ email, personalId, courseId, courseTitl
   await appendAudit('certificate', email, personalId, `Сертификат: ${courseTitle}`)
 }
 
-export async function trackApplication({ email, firstName, lastName, telegram, status, adminNote, action, applicationId }) {
+export async function trackApplication({ email, firstName, lastName, telegram, status, adminNote, action, applicationId, accessGranted }) {
   const now = new Date().toISOString()
   await appendSheetRow('applications', [
-    now, email, firstName, lastName, telegram, status, adminNote || '', action, applicationId || '',
+    now, email, firstName, lastName, telegram, status, adminNote || '', accessGranted ? 'да' : 'нет', action, applicationId || '',
   ])
-  await appendAudit('application', email, '', `${action}: ${firstName} ${lastName}`, { status })
+  await appendAudit('application', email, '', `${action}: ${firstName} ${lastName}`, { status, accessGranted })
 }
 
 export async function trackReferral({ referrerEmail, referredEmail, purchased, action = 'реферал' }) {
@@ -64,4 +64,12 @@ export async function trackPasswordChange({ email, personalId, action = 'сме�
   const now = new Date().toISOString()
   await appendSheetRow('users', [now, personalId || '', '', email, '', '', now, '', action, ''])
   await appendAudit('password', email, personalId, action)
+}
+
+export async function trackUserDeleted({ email, personalId, name, userId }) {
+  const now = new Date().toISOString()
+  await appendSheetRow('users', [
+    now, personalId || '', userId || '', email || '', name || '', '', '', '', 'удаление аккаунта', 'admin',
+  ])
+  await appendAudit('user_delete', email, personalId, `Удалён аккаунт: ${email}`, { userId })
 }

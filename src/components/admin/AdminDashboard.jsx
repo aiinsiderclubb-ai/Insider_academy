@@ -68,6 +68,11 @@ function buildActivityFeed({ registrations, purchases, homeworkList, certificate
 
 const typeIcons = { reg: '👤', purchase: '💳', hw: '📝', cert: '🎓' }
 
+function hoursSince(iso) {
+  if (!iso) return 0
+  return (Date.now() - new Date(iso).getTime()) / 3600000
+}
+
 export function AdminDashboard({
   analytics,
   charts,
@@ -77,6 +82,7 @@ export function AdminDashboard({
   certificates,
   courses,
   referrals,
+  applications = [],
   unreadByTab,
   onTabChange,
   formatDate,
@@ -94,6 +100,8 @@ export function AdminDashboard({
 
   const pendingHw = homeworkList.filter((h) => h.status === 'pending').length
   const pendingCerts = certificates.filter((c) => !c.fileDataUrl).length
+  const newApplications = applications.filter((a) => (a.status || 'new') === 'new')
+  const staleApplications = newApplications.filter((a) => hoursSince(a.date) >= 24)
 
   const last7Days = (items) => {
     const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000
@@ -114,6 +122,12 @@ export function AdminDashboard({
   }, [pendingHw, pendingCerts])
 
   const quickActions = [
+    canAccessTab(adminRole, ACCELERATOR_ADMIN_TAB) && {
+      label: 'Новые заявки',
+      tab: ACCELERATOR_ADMIN_TAB,
+      badge: newApplications.length,
+      filter: 'new',
+    },
     canAccessTab(adminRole, ACCELERATOR_ADMIN_TAB) && { label: 'Отборочный курс', tab: ACCELERATOR_ADMIN_TAB, badge: unreadByTab[ACCELERATOR_ADMIN_TAB] },
     canAccessTab(adminRole, 'homework') && { label: 'Проверить ДЗ', tab: 'homework', badge: unreadByTab.homework },
     canAccessTab(adminRole, 'certificates') && { label: 'Выдать сертификат', tab: 'certificates', badge: unreadByTab.certificates },
@@ -131,10 +145,10 @@ export function AdminDashboard({
         <div className={styles.quickActions}>
           {quickActions.map((a) => (
             <button
-              key={a.tab}
+              key={`${a.tab}-${a.label}`}
               type="button"
               className={styles.quickBtn}
-              onClick={() => onTabChange(a.tab)}
+              onClick={() => onTabChange(a.tab, a.filter)}
             >
               {a.label}
               {a.badge > 0 && <span className={styles.quickBadge}>{a.badge}</span>}
@@ -143,11 +157,32 @@ export function AdminDashboard({
         </div>
       </div>
 
+      {staleApplications.length > 0 && canAccessTab(adminRole, ACCELERATOR_ADMIN_TAB) && (
+        <div className={styles.staleBanner} role="status">
+          <div>
+            <strong>⚠️ {staleApplications.length} заявок в статусе «Новая» более 24 часов</strong>
+            <p className={styles.sectionDesc} style={{ margin: '6px 0 0' }}>
+              Рекомендуем проверить очередь и одобрить или отклонить заявки.
+            </p>
+          </div>
+          <button
+            type="button"
+            className={styles.quickBtn}
+            onClick={() => onTabChange(ACCELERATOR_ADMIN_TAB, 'new')}
+          >
+            Открыть новые заявки
+          </button>
+        </div>
+      )}
+
       <div className={styles.kpiGrid}>
         <StatCard label="Заходов на сайт" value={analytics.visits || 0} accent />
         <StatCard label="Регистраций" value={registrations.length} trend={last7Days(registrations)} />
         <StatCard label="Покупок" value={purchases.length} trend={last7Days(purchases)} />
         <StatCard label="Выручка" value={Math.round(revenue)} suffix=" €" accent />
+        {canAccessTab(adminRole, ACCELERATOR_ADMIN_TAB) && (
+          <StatCard label="Новые заявки" value={newApplications.length} accent={newApplications.length > 0} />
+        )}
         <StatCard label="ДЗ на проверке" value={pendingHw} />
         <StatCard label="Сертификатов ждут" value={pendingCerts} />
         <StatCard label="Рефералов" value={referrals.length} />

@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { getDb } from '../db.js'
 import { nowIso } from '../db/time.js'
+import * as sheetsTrack from './sheetsTrack.js'
 
 export async function grantCourseAccess({
   email,
@@ -46,6 +47,15 @@ export async function grantCourseAccess({
       'INSERT INTO purchase_log (id, email, course_id, course_title, amount, date) VALUES (?, ?, ?, ?, ?, ?)',
       [`grant-${Date.now()}`, mail, cid, title, 0, nowIso()]
     )
+    const uRow = await db.get('SELECT personal_id FROM users WHERE id = ?', [user.id])
+    sheetsTrack.trackPurchase({
+      email: mail,
+      personalId: uRow?.personal_id,
+      courseId: cid,
+      courseTitle: title,
+      amount: 0,
+      source: provider,
+    }).catch(() => {})
     granted = true
   }
 

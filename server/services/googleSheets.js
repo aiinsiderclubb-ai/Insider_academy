@@ -1,5 +1,6 @@
 import { google } from 'googleapis'
 import { config } from '../config.js'
+import { hasAcceleratorAccess } from './adminApplications.js'
 
 const SHEET_TITLES = {
   users: 'Пользователи',
@@ -21,7 +22,7 @@ const HEADERS = {
   homework: ['Дата', 'Email', 'Личный ID', 'Курс', 'Урок №', 'Урок', 'Статус', 'Оценка', 'Комментарий', 'Действие', 'ID записи'],
   reviews: ['Дата', 'Email', 'Личный ID', 'Курс ID', 'Рейтинг', 'Статус', 'Текст', 'Действие', 'ID отзыва'],
   certificates: ['Дата', 'Email', 'Личный ID', 'Курс ID', 'Курс', 'Оценка', 'Действие', 'ID'],
-  applications: ['Дата', 'Email', 'Имя', 'Фамилия', 'Telegram', 'Статус', 'Заметка админа', 'Действие', 'ID заявки'],
+  applications: ['Дата', 'Email', 'Имя', 'Фамилия', 'Telegram', 'Статус', 'Заметка админа', 'Доступ выдан', 'Действие', 'ID заявки'],
   referrals: ['Дата', 'Email реферера', 'Email приглашённого', 'Купил', 'Действие'],
   registrations: ['Дата', 'Личный ID', 'Email', 'Имя', 'Действие'],
   audit: ['Дата', 'Тип', 'Email', 'Личный ID', 'Описание', 'Мета'],
@@ -30,6 +31,9 @@ const HEADERS = {
 let authClient = null
 let sheetIdCache = null
 let initPromise = null
+
+/** Основные таблицы-архив в папке Google Drive (как на скриншоте). */
+export const ARCHIVE_SHEET_KEYS = ['users', 'logins', 'purchases', 'homework', 'reviews']
 
 export function isGoogleSheetsEnabled() {
   return Boolean(config.googleSheets.enabled && config.googleSheets.serviceAccount)
@@ -145,14 +149,14 @@ function cell(v) {
 }
 
 export async function appendSheetRow(sheetKey, row) {
-  if (!isGoogleSheetsEnabled()) return
+  if (!isGoogleSheetsEnabled()) return false
   try {
     await initGoogleSheets()
     const auth = await getAuth()
     const sheets = google.sheets({ version: 'v4', auth })
     const ids = await resolveSheetIds()
     const spreadsheetId = ids[sheetKey]
-    if (!spreadsheetId) return
+    if (!spreadsheetId) return false
     await sheets.spreadsheets.values.append({
       spreadsheetId,
       range: 'A:Z',
@@ -160,9 +164,133 @@ export async function appendSheetRow(sheetKey, row) {
       insertDataOption: 'INSERT_ROWS',
       requestBody: { values: [row.map(cell)] },
     })
+    return true
   } catch (err) {
     console.warn(`[googleSheets] append ${sheetKey}:`, err.message)
+    return false
   }
+}
+
+async function getSheetRowCount(sheetKey) {
+  if (!isGoogleSheetsEnabled()) return 0
+  await initGoogleSheets()
+  const auth = await getAuth()
+  const sheets = google.sheets({ version: 'v4', auth })
+  const ids = await resolveSheetIds()
+  const spreadsheetId = ids[sheetKey]
+  if (!spreadsheetId) return 0
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: 'A:A',
+  }).catch(() => ({ data: { values: [] } }))
+  const total = (res.data.values || []).length
+  return Math.max(0, total - 1)
+}
+
+async function replaceSheetRows(sheetKey, dataRows) {
+  if (!isGoogleSheetsEnabled()) return false
+  await initGoogleSheets()
+  const auth = await getAuth()
+  const sheets = google.sheets({ version: 'v4', auth })
+  const ids = await resolveSheetIds()
+  const spreadsheetId = ids[sheetKey]
+  if (!spreadsheetId) return false
+  const headers = HEADERS[sheetKey]
+  if (!headers) return false
+  await sheets.spreadsheets.values.clear({ spreadsheetId, range: 'A:Z' }).catch(() => {})
+  const values = [headers, ...dataRows.map((row) => row.map(cell))]
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: 'A1',
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values },
+  })
+  return true
+}
+
+async function buildArchiveRows(db, sheetKey) {
+  switch (sheetKey) {
+    case 'users': {
+      const users = await db.all(
+        `SELECT id, personal_id, email, name, email_verified, password_changed_at, last_login_at, created_at
+         FROM users ORDER BY created_at`
+      )
+      return users.map((u) => [
+        u.created_at, u.personal_id, u.id, u.email, u.name,
+        u.email_verified ? 'да' : 'нет',
+        u.password_changed_at || '', u.last_login_at || '',
+        'архив', 'регистрация',
+      ])
+    }
+    case 'logins': {
+      const users = await db.all(
+        `SELECT id, personal_id, email, last_login_at FROM users
+         WHERE last_login_at IS NOT NULL AND last_login_at != '' ORDER BY last_login_at`
+      )
+      return users.map((u) => [
+        u.last_login_at, u.email, u.personal_id || '', u.id, 'вход', 'архив',
+      ])
+    }
+    case 'purchases': {
+      const purchases = await db.all('SELECT * FROM purchase_log ORDER BY date')
+      return purchases.map((p) => [
+        p.date, p.email, '', p.course_id, p.course_title, p.amount ?? '', 'архив', 'импорт',
+      ])
+    }
+    case 'homework': {
+      const hw = await db.all('SELECT * FROM homework ORDER BY COALESCE(updated_at, date)')
+      return hw.map((h) => [
+        h.updated_at || h.date, h.email, '', h.course_title, h.lesson_index, h.lesson_title,
+        h.status, h.score ?? '', h.admin_comment || '', 'архив', h.id,
+      ])
+    }
+    case 'reviews': {
+      const reviews = await db.all('SELECT * FROM reviews ORDER BY date')
+      return reviews.map((r) => [
+        r.date, r.email, '', r.course_id, r.rating, r.status, (r.text || '').slice(0, 500), 'архив', r.id,
+      ])
+    }
+    default:
+      return []
+  }
+}
+
+/** Заполнить пустые таблицы из БД при старте сервера. */
+export async function bootstrapArchiveIfNeeded(db) {
+  if (!isGoogleSheetsEnabled()) return { ok: false, skipped: true, reason: 'disabled' }
+  await initGoogleSheets()
+  const results = {}
+  for (const key of ARCHIVE_SHEET_KEYS) {
+    try {
+      const count = await getSheetRowCount(key)
+      if (count > 0) {
+        results[key] = { action: 'skipped', rows: count }
+        continue
+      }
+      const rows = await buildArchiveRows(db, key)
+      await replaceSheetRows(key, rows)
+      results[key] = { action: 'backfilled', rows: rows.length }
+      console.log(`[googleSheets] bootstrap ${key}: ${rows.length} rows`)
+    } catch (err) {
+      results[key] = { action: 'error', error: err.message }
+      console.warn(`[googleSheets] bootstrap ${key}:`, err.message)
+    }
+  }
+  return { ok: true, results }
+}
+
+/** Полная перезапись основных таблиц из БД (без дубликатов). */
+export async function refreshArchiveSheets(db, keys = ARCHIVE_SHEET_KEYS) {
+  if (!isGoogleSheetsEnabled()) return { ok: false, error: 'disabled' }
+  await initGoogleSheets()
+  const counts = {}
+  for (const key of keys) {
+    const rows = await buildArchiveRows(db, key)
+    await replaceSheetRows(key, rows)
+    counts[key] = rows.length
+  }
+  await appendAudit('sync', '', '', 'Полная синхронизация БД → Google Sheets', counts)
+  return { ok: true, counts, mode: 'replace' }
 }
 
 export async function appendAudit(type, email, personalId, description, meta = {}) {
@@ -191,16 +319,29 @@ export async function getSheetsStatus() {
   }
   const init = await initGoogleSheets()
   const ids = sheetIdCache || {}
+  const credentials = getCredentials()
+  const rowCounts = {}
+  for (const key of ARCHIVE_SHEET_KEYS) {
+    try {
+      rowCounts[key] = await getSheetRowCount(key)
+    } catch {
+      rowCounts[key] = null
+    }
+  }
   return {
     enabled: true,
     ok: init.ok,
     error: init.error,
     folderUrl: getDriveFolderUrl(),
+    serviceAccountEmail: credentials?.client_email || null,
+    realtime: true,
     sheets: Object.entries(SHEET_TITLES).map(([key, title]) => ({
       key,
       title,
       spreadsheetId: ids[key] || null,
       url: ids[key] ? `https://docs.google.com/spreadsheets/d/${ids[key]}` : null,
+      rowCount: rowCounts[key] ?? undefined,
+      archive: ARCHIVE_SHEET_KEYS.includes(key),
     })),
   }
 }
@@ -226,71 +367,49 @@ export async function exportSheetCsv(sheetKey) {
 export async function syncDatabaseToSheets(db) {
   if (!isGoogleSheetsEnabled()) return { ok: false, error: 'disabled' }
 
-  const users = await db.all(
-    `SELECT id, personal_id, email, name, email_verified, password_changed_at, last_login_at, created_at FROM users ORDER BY created_at`
-  )
-  for (const u of users) {
-    await appendSheetRow('users', [
-      u.created_at, u.personal_id, u.id, u.email, u.name,
-      u.email_verified ? 'да' : 'нет',
-      u.password_changed_at || '', u.last_login_at || '',
-      'синхронизация', 'полный импорт',
-    ])
+  const archive = await refreshArchiveSheets(db, ARCHIVE_SHEET_KEYS)
+
+  const extraCounts = {}
+  for (const [key, builder] of [
+    ['registrations', async () => {
+      const regs = await db.all('SELECT * FROM registrations ORDER BY date')
+      return regs.map((r) => [r.date, r.personal_id, r.email, r.name, 'синхронизация'])
+    }],
+    ['certificates', async () => {
+      const certs = await db.all('SELECT * FROM certificates ORDER BY date')
+      return certs.map((c) => [c.date, c.email, '', c.course_id, c.course_title, c.score ?? '', 'синхронизация', c.id])
+    }],
+    ['applications', async () => {
+      const apps = await db.all('SELECT * FROM accelerator_applications ORDER BY date')
+      const rows = []
+      for (const a of apps) {
+        const granted = a.status === 'accepted' || await hasAcceleratorAccess(db, a.email)
+        rows.push([a.date, a.email, a.first_name, a.last_name, a.telegram, a.status, a.admin_note || '', granted ? 'да' : 'нет', 'синхронизация', a.id])
+      }
+      return rows
+    }],
+    ['referrals', async () => {
+      const refs = await db.all('SELECT * FROM referrals ORDER BY date')
+      return refs.map((r) => [r.date, r.referrer_email, r.referred_email, r.referred_purchased ? 'да' : 'нет', 'синхронизация'])
+    }],
+  ]) {
+    try {
+      const count = await getSheetRowCount(key)
+      if (count > 0) {
+        extraCounts[key] = { skipped: count }
+        continue
+      }
+      const rows = await builder()
+      await replaceSheetRows(key, rows)
+      extraCounts[key] = rows.length
+    } catch (err) {
+      extraCounts[key] = { error: err.message }
+    }
   }
 
-  const regs = await db.all('SELECT * FROM registrations ORDER BY date')
-  for (const r of regs) {
-    await appendSheetRow('registrations', [r.date, r.personal_id, r.email, r.name, 'синхронизация'])
+  return {
+    ok: true,
+    counts: { ...archive.counts, ...extraCounts },
+    mode: 'replace',
   }
-
-  const purchases = await db.all('SELECT * FROM purchase_log ORDER BY date')
-  for (const p of purchases) {
-    await appendSheetRow('purchases', [
-      p.date, p.email, '', p.course_id, p.course_title, p.amount ?? '', 'синхронизация', 'импорт',
-    ])
-  }
-
-  const hw = await db.all('SELECT * FROM homework ORDER BY date')
-  for (const h of hw) {
-    await appendSheetRow('homework', [
-      h.updated_at || h.date, h.email, '', h.course_title, h.lesson_index, h.lesson_title,
-      h.status, h.score ?? '', h.admin_comment || '', 'синхронизация', h.id,
-    ])
-  }
-
-  const reviews = await db.all('SELECT * FROM reviews ORDER BY date')
-  for (const r of reviews) {
-    await appendSheetRow('reviews', [
-      r.date, r.email, '', r.course_id, r.rating, r.status, (r.text || '').slice(0, 500), 'синхронизация', r.id,
-    ])
-  }
-
-  const certs = await db.all('SELECT * FROM certificates ORDER BY date')
-  for (const c of certs) {
-    await appendSheetRow('certificates', [
-      c.date, c.email, '', c.course_id, c.course_title, c.score ?? '', 'синхронизация', c.id,
-    ])
-  }
-
-  const apps = await db.all('SELECT * FROM accelerator_applications ORDER BY date')
-  for (const a of apps) {
-    await appendSheetRow('applications', [
-      a.date, a.email, a.first_name, a.last_name, a.telegram, a.status, a.admin_note || '', 'синхронизация', a.id,
-    ])
-  }
-
-  const refs = await db.all('SELECT * FROM referrals ORDER BY date')
-  for (const r of refs) {
-    await appendSheetRow('referrals', [
-      r.date, r.referrer_email, r.referred_email, r.referred_purchased ? 'да' : 'нет', 'синхронизация',
-    ])
-  }
-
-  await appendAudit('sync', '', '', 'Полная синхронизация БД → Google Sheets', {
-    users: users.length,
-    purchases: purchases.length,
-    homework: hw.length,
-  })
-
-  return { ok: true, counts: { users: users.length, purchases: purchases.length, homework: hw.length, reviews: reviews.length } }
 }

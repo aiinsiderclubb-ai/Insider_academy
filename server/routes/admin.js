@@ -9,6 +9,12 @@ import { mapApplication } from './applications.js'
 import { userSelectFields } from '../services/userProfile.js'
 import { createUserNotification, getCourseSlug, getNextLessonInfo } from '../services/notifications.js'
 import { approveAcceleratorApplication } from '../services/applicationAccept.js'
+import {
+  enrichApplications,
+  sendApplicantTelegram,
+  getApplicationAuditHistory,
+  hasAcceleratorAccess,
+} from '../services/adminApplications.js'
 import * as sheetsTrack from '../services/sheetsTrack.js'
 import {
   getSheetsStatus,
@@ -18,6 +24,7 @@ import {
 import adminOpsRoutes from './adminOps.js'
 import { queueEmail } from '../services/emailQueue.js'
 import { logAudit } from '../services/auditLog.js'
+import { deleteUserAccount } from '../services/deleteUser.js'
 
 const router = Router()
 
@@ -122,7 +129,7 @@ router.get('/dashboard', async (req, res) => {
          LEFT JOIN users u ON u.id = r.user_id
          ORDER BY r.date DESC LIMIT 200`
       )).map(mapReview),
-      applications: (await db.all('SELECT * FROM accelerator_applications ORDER BY date DESC LIMIT 300')).map(mapApplication),
+      applications: await enrichApplications(db, await db.all('SELECT * FROM accelerator_applications ORDER BY date DESC LIMIT 300')),
       teams: await db.all('SELECT * FROM teams ORDER BY created_at DESC LIMIT 50'),
     })
   }
@@ -142,6 +149,41 @@ router.get('/dashboard', async (req, res) => {
   }
 
   res.json(payload)
+})
+
+router.post('/users/delete', requireAdmin('admin'), async (req, res) => {
+  const db = getDb()
+  const { userId, email } = req.body || {}
+  if (userId == null && !email) {
+    return res.status(400).json({ error: 'userId or email required' })
+  }
+
+  const result = await deleteUserAccount(db, { userId, email })
+  if (!result.ok) {
+    return res.status(404).json({ error: result.error || 'User not found' })
+  }
+
+  await logAudit({
+    actorEmail: `admin:${req.adminRole}`,
+    action: 'user.delete',
+    targetType: 'user',
+    targetId: String(result.userId || result.email || ''),
+    meta: {
+      email: result.email,
+      personalId: result.personalId,
+      name: result.name,
+      scope: result.deleted,
+    },
+  })
+
+  sheetsTrack.trackUserDeleted({
+    email: result.email,
+    personalId: result.personalId,
+    name: result.name,
+    userId: result.userId,
+  }).catch(() => {})
+
+  res.json({ ok: true, ...result })
 })
 
 router.get('/data-health', requireAdmin('admin'), async (req, res) => {
@@ -369,6 +411,139 @@ router.delete('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, re
   res.json({ ok: true, id: req.params.id })
 })
 
+router.post('/applications/bulk-approve', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const ids = Array.isArray(req.body.ids) ? req.body.ids.slice(0, 50) : []
+  if (!ids.length) return res.status(400).json({ error: 'ids array required' })
+
+  let approved = 0
+  const results = []
+  for (const id of ids) {
+    const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [id])
+    if (!row || row.status === 'accepted') continue
+    const result = await approveAcceleratorApplication(db, row, {
+      adminNote: req.body.adminNote,
+      actorRole: req.adminRole,
+    })
+    if (result.ok) {
+      approved += 1
+      results.push({ id, telegramSent: result.telegramSent })
+    }
+  }
+
+  await logAudit({
+    actorEmail: `admin:${req.adminRole}`,
+    action: 'application.bulk_approve',
+    targetType: 'application',
+    meta: { ids, approved },
+  })
+
+  res.json({ ok: true, approved, results })
+})
+
+router.post('/applications/:id/reject', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
+  if (!row) return res.status(404).json({ error: 'Not found' })
+
+  const adminNote = String(req.body.adminNote || req.body.reason || '').trim()
+  const promoCode = String(req.body.promoCode || '').trim().toUpperCase()
+  const discountPercent = req.body.discountPercent != null ? Number(req.body.discountPercent) : null
+
+  await db.run(
+    `UPDATE accelerator_applications SET status = 'rejected', admin_note = ?, updated_at = ? WHERE id = ?`,
+    [adminNote || row.admin_note || 'Заявка отклонена', nowIso(), req.params.id]
+  )
+
+  let promoCreated = null
+  if (promoCode && discountPercent > 0) {
+    try {
+      await db.run(
+        `INSERT INTO promo_codes (code, discount_percent, discount_eur, course_ids, max_uses, valid_from, valid_until, active, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [promoCode, discountPercent, null, JSON.stringify(['ai-start']), null, null, null, 1, nowIso()]
+      )
+      promoCreated = { code: promoCode, discountPercent }
+    } catch (err) {
+      console.warn('[application/reject] promo:', err.message)
+    }
+  }
+
+  await createUserNotification(db, {
+    email: row.email,
+    type: 'application_status',
+    status: 'rejected',
+    courseTitle: 'AI Insider Accelerator',
+    targetPath: '/courses',
+    comment: adminNote || null,
+    message: adminNote || 'Заявка на AI Accelerator отклонена',
+    reviewedAt: nowIso(),
+  })
+
+  sheetsTrack.trackApplication({
+    email: row.email,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    telegram: row.telegram,
+    status: 'rejected',
+    adminNote,
+    action: `админ: rejected`,
+    applicationId: row.id,
+    accessGranted: false,
+  }).catch(() => {})
+
+  await logAudit({
+    actorEmail: `admin:${req.adminRole}`,
+    action: 'application.reject',
+    targetType: 'application',
+    targetId: row.id,
+    meta: { email: row.email, promoCreated },
+  })
+
+  const updated = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
+  res.json({
+    ok: true,
+    application: (await enrichApplications(db, [updated]))[0],
+    promoCreated,
+    telegramSent: false,
+    telegramHint: null,
+  })
+})
+
+router.post('/applications/:id/send-telegram', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
+  if (!row) return res.status(404).json({ error: 'Not found' })
+
+  const text = String(req.body.text || '').trim()
+  if (!text) return res.status(400).json({ error: 'text required' })
+
+  const tg = await sendApplicantTelegram(db, {
+    email: row.email,
+    telegram: row.telegram,
+    title: req.body.title || 'AI Insider Academy',
+    text,
+  })
+
+  await logAudit({
+    actorEmail: `admin:${req.adminRole}`,
+    action: 'application.telegram',
+    targetType: 'application',
+    targetId: row.id,
+    meta: { template: req.body.template || null, sent: tg.sent },
+  })
+
+  res.json({ ok: true, sent: tg.sent, hint: tg.hint })
+})
+
+router.get('/applications/:id/history', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const row = await db.get('SELECT id FROM accelerator_applications WHERE id = ?', [req.params.id])
+  if (!row) return res.status(404).json({ error: 'Not found' })
+  const history = await getApplicationAuditHistory(db, req.params.id)
+  res.json({ history })
+})
+
 router.post('/applications/:id/approve', requireAdmin('admin', 'moderator'), async (req, res) => {
   const db = getDb()
   const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
@@ -405,7 +580,7 @@ router.post('/applications/:id/approve', requireAdmin('admin', 'moderator'), asy
   const updated = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
   res.json({
     ok: true,
-    application: mapApplication(updated),
+    application: (await enrichApplications(db, [updated]))[0],
     granted: result.access?.granted,
     userCreated: result.access?.userCreated,
     telegramSent: result.telegramSent,
@@ -458,9 +633,17 @@ router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req
       adminNote,
       action: `админ: ${status}`,
       applicationId: updated.id,
+      accessGranted: status === 'accepted' ? await hasAcceleratorAccess(db, updated.email) : false,
     }).catch(() => {})
+    await logAudit({
+      actorEmail: `admin:${req.adminRole}`,
+      action: 'application.update',
+      targetType: 'application',
+      targetId: updated.id,
+      meta: { status, prevStatus, email: updated.email },
+    })
   }
-  res.json({ ok: true, application: mapApplication(updated) })
+  res.json({ ok: true, application: (await enrichApplications(db, [updated]))[0] })
 })
 
 router.post('/certificates', requireAdmin('admin', 'moderator'), async (req, res) => {

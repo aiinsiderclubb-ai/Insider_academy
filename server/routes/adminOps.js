@@ -190,8 +190,13 @@ router.patch('/marketplace/products/:id', requireAdmin('admin'), async (req, res
 })
 
 router.get('/creator-payouts', requireAdmin('admin'), async (_req, res) => {
-  const rows = await getDb().all('SELECT * FROM creator_payouts ORDER BY created_at DESC LIMIT 200')
-  res.json(rows.map(mapPayout))
+  try {
+    const rows = await getDb().all('SELECT * FROM creator_payouts ORDER BY created_at DESC LIMIT 200')
+    res.json(rows.map(mapPayout))
+  } catch (err) {
+    console.warn('[creator-payouts]', err.message)
+    res.json([])
+  }
 })
 
 router.post('/creator-payouts', requireAdmin('admin'), async (req, res) => {

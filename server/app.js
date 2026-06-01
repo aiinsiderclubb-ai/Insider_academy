@@ -36,10 +36,17 @@ export async function createApp() {
   }
 
   try {
-    const { initGoogleSheets, isGoogleSheetsEnabled } = await import('./services/googleSheets.js')
+    const { initGoogleSheets, isGoogleSheetsEnabled, bootstrapArchiveIfNeeded } = await import('./services/googleSheets.js')
     if (isGoogleSheetsEnabled()) {
       const r = await initGoogleSheets()
       console.log('[startup] Google Sheets:', r.ok ? 'connected' : r.error || r.reason)
+      const bootstrap = await bootstrapArchiveIfNeeded(getDb())
+      if (bootstrap.ok && bootstrap.results) {
+        const filled = Object.entries(bootstrap.results)
+          .filter(([, v]) => v.action === 'backfilled')
+          .map(([k, v]) => `${k}:${v.rows}`)
+        if (filled.length) console.log('[startup] Google Sheets bootstrap:', filled.join(', '))
+      }
     }
   } catch (err) {
     console.warn('[startup] Google Sheets:', err.message)
