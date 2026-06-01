@@ -225,6 +225,13 @@ router.patch('/creator-payouts/:id', requireAdmin('admin'), async (req, res) => 
     'UPDATE creator_payouts SET status = ?, paid_at = COALESCE(?, paid_at), note = COALESCE(?, note) WHERE id = ?',
     [status, status === 'paid' ? nowIso() : null, req.body.note, req.params.id]
   )
+  await logAudit({
+    actorEmail: `admin:${req.adminRole}`,
+    action: 'payout.update',
+    targetType: 'payout',
+    targetId: req.params.id,
+    meta: { status },
+  })
   res.json({ ok: true })
 })
 

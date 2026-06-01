@@ -834,6 +834,7 @@ export function Admin() {
                 online={useServerData}
                 showToast={showToast}
                 reviews={reviewsList}
+                onTabChange={changeTab}
                 onReviewsUpdated={async () => {
                   setRefresh((r) => r + 1)
                   if (useServerData) await loadDashboardFromApi()

@@ -150,8 +150,10 @@ export const api = {
   adminFeatureFlags: () => apiRequest('/admin/feature-flags', { admin: true }),
   adminSetFeatureFlags: (payload) => apiRequest('/admin/feature-flags', { method: 'PUT', body: payload, admin: true }),
   adminMarketplaceProducts: () => apiRequest('/admin/marketplace/products', { admin: true }),
+  adminUpdateMarketplaceProduct: (id, payload) => apiRequest(`/admin/marketplace/products/${id}`, { method: 'PATCH', body: payload, admin: true }),
   adminCreatorPayouts: () => apiRequest('/admin/creator-payouts', { admin: true }),
   adminCreateCreatorPayout: (payload) => apiRequest('/admin/creator-payouts', { method: 'POST', body: payload, admin: true }),
+  adminUpdateCreatorPayout: (id, payload) => apiRequest(`/admin/creator-payouts/${id}`, { method: 'PATCH', body: payload, admin: true }),
   adminTelegramBroadcast: (payload) => apiRequest('/admin/telegram/broadcast', { method: 'POST', body: payload, admin: true }),
 }
 

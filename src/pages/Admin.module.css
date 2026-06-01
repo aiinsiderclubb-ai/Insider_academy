@@ -2314,6 +2314,41 @@
   color: var(--text-muted);
 }
 
+.marketplaceAdminList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.marketplaceAdminRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+.marketplaceAdminRow:last-child {
+  border-bottom: none;
+}
+
+.payoutRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.payoutActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .flagRow {
   display: flex;
   align-items: center;

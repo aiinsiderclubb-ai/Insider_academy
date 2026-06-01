@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api } from '../../api/client'
 import { courses } from '../../data/courses'
 import styles from '../../pages/Admin.module.css'
@@ -9,6 +9,28 @@ const FLAG_LABELS = {
   peerReview: 'Peer-review ДЗ',
   emailSequences: 'Email-цепочки',
 }
+
+const PAYOUT_STATUS_LABELS = {
+  pending: 'Ожидает',
+  paid: 'Выплачено',
+  cancelled: 'Отменено',
+}
+
+const AUDIT_ACTION_OPTIONS = [
+  { value: 'all', label: 'Все действия' },
+  { value: 'course.grant', label: 'Выдача курса' },
+  { value: 'user.delete', label: 'Удаление аккаунта' },
+  { value: 'application.approve', label: 'Одобрение заявки' },
+  { value: 'application.reject', label: 'Отказ по заявке' },
+  { value: 'application.update', label: 'Статус заявки' },
+  { value: 'promo.create', label: 'Промокоды' },
+  { value: 'reviews.bulk_approve', label: 'Отзывы' },
+  { value: 'payout.create', label: 'Создание выплаты' },
+  { value: 'payout.update', label: 'Статус выплаты' },
+  { value: 'marketplace.update', label: 'Marketplace' },
+  { value: 'flags.update', label: 'Feature flags' },
+  { value: 'telegram.broadcast', label: 'Telegram' },
+]
 
 function formatAction(action) {
   const map = {
@@ -23,12 +45,13 @@ function formatAction(action) {
     'flags.update': 'Feature flags',
     'telegram.broadcast': 'Telegram-рассылка',
     'payout.create': 'Создана выплата',
+    'payout.update': 'Статус выплаты',
     'marketplace.update': 'Marketplace',
   }
   return map[action] || action
 }
 
-export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpdated }) {
+export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpdated, onTabChange }) {
   const [promos, setPromos] = useState([])
   const [flags, setFlags] = useState({})
   const [audit, setAudit] = useState([])
@@ -43,6 +66,9 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
   const [broadcastText, setBroadcastText] = useState('')
   const [broadcastTitle, setBroadcastTitle] = useState('AI Insider Academy')
   const [payoutForm, setPayoutForm] = useState({ creatorEmail: '', amountEur: '', note: '' })
+  const [auditFilter, setAuditFilter] = useState('all')
+  const [productBusy, setProductBusy] = useState(null)
+  const [payoutBusy, setPayoutBusy] = useState(null)
 
   const load = useCallback(async () => {
     if (!online) return
@@ -82,6 +108,11 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
 
   useEffect(() => { load() }, [load])
 
+  const filteredAudit = useMemo(() => {
+    if (auditFilter === 'all') return audit
+    return audit.filter((a) => a.action === auditFilter)
+  }, [audit, auditFilter])
+
   const bulkApprove = async () => {
     const ids = reviews.filter((r) => r.status === 'pending' && String(r.text || '').trim()).map((r) => r.id)
     if (!ids.length) return showToast('Нет отзывов для массового одобрения')
@@ -114,6 +145,32 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
     }
   }
 
+  const updatePayoutStatus = async (id, status) => {
+    setPayoutBusy(id)
+    try {
+      await api.adminUpdateCreatorPayout(id, { status })
+      showToast(`Статус: ${PAYOUT_STATUS_LABELS[status] || status}`)
+      load()
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setPayoutBusy(null)
+    }
+  }
+
+  const toggleProduct = async (product) => {
+    setProductBusy(product.id)
+    try {
+      await api.adminUpdateMarketplaceProduct(product.id, { active: !product.active })
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, active: !p.active } : p)))
+      showToast(product.active ? 'Продукт скрыт' : 'Продукт включён')
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setProductBusy(null)
+    }
+  }
+
   const sendBroadcast = async () => {
     if (!broadcastText.trim()) return showToast('Введите текст сообщения', 'error')
     try {
@@ -140,6 +197,15 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
         <button type="button" className={styles.smallBtn} disabled={loading} onClick={load}>
           {loading ? 'Обновление…' : '↻ Обновить данные'}
         </button>
+        {onTabChange && (
+          <button
+            type="button"
+            className={styles.quickBtn}
+            onClick={() => onTabChange('registrations')}
+          >
+            👤 Удалить пользователя → Регистрации
+          </button>
+        )}
         {Object.keys(loadErrors).length > 0 && (
           <span className={styles.sectionDesc} style={{ color: '#f87171' }}>
             Ошибки: {Object.entries(loadErrors).map(([k, v]) => `${k}: ${v}`).join(' · ')}
@@ -288,21 +354,36 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
           )}
         </section>
 
-        <section className={styles.toolCard}>
-          <h3>Marketplace</h3>
+        <section className={styles.toolCard} style={{ gridColumn: 'span 2' }}>
+          <h3>Marketplace — продукты</h3>
+          <p className={styles.sectionDesc}>Включите или скройте продукты на витрине Marketplace.</p>
           {products.length === 0 ? (
             <p className={styles.drawerMuted}>{loadErrors.products || 'Нет продуктов'}</p>
           ) : (
-            <ul className={styles.compactList}>
-              {products.slice(0, 8).map((p) => (
-                <li key={p.id}>{p.titleRu} — €{p.priceEur}</li>
+            <ul className={styles.marketplaceAdminList}>
+              {products.map((p) => (
+                <li key={p.id} className={styles.marketplaceAdminRow}>
+                  <div>
+                    <strong>{p.titleRu}</strong>
+                    <span className={styles.drawerMuted}> · €{p.priceEur}</span>
+                    {!p.active && <span className={styles.slaWarn} style={{ marginLeft: 8 }}>скрыт</span>}
+                  </div>
+                  <label className={styles.flagRow}>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(p.active)}
+                      disabled={productBusy === p.id}
+                      onChange={() => toggleProduct(p)}
+                    />
+                    На сайте
+                  </label>
+                </li>
               ))}
-              {products.length > 8 && <li>…ещё {products.length - 8}</li>}
             </ul>
           )}
         </section>
 
-        <section className={styles.toolCard}>
+        <section className={styles.toolCard} style={{ gridColumn: 'span 2' }}>
           <h3>Выплаты креаторам</h3>
           <div className={styles.inlineForm}>
             <input
@@ -324,26 +405,67 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
           ) : (
             <ul className={styles.compactList}>
               {payouts.map((p) => (
-                <li key={p.id}>{p.creatorEmail} €{p.amountEur} — {p.status}</li>
+                <li key={p.id} className={styles.payoutRow}>
+                  <span>
+                    {p.creatorEmail} · €{p.amountEur}
+                    {' · '}
+                    <span className={p.status === 'paid' ? styles.tgBadgeOn : p.status === 'cancelled' ? styles.slaWarn : styles.drawerMuted}>
+                      {PAYOUT_STATUS_LABELS[p.status] || p.status}
+                    </span>
+                  </span>
+                  {p.status === 'pending' && (
+                    <span className={styles.payoutActions}>
+                      <button
+                        type="button"
+                        className={styles.smallBtn}
+                        disabled={payoutBusy === p.id}
+                        onClick={() => updatePayoutStatus(p.id, 'paid')}
+                      >
+                        ✓ Выплачено
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.smallBtnDanger}
+                        disabled={payoutBusy === p.id}
+                        onClick={() => updatePayoutStatus(p.id, 'cancelled')}
+                      >
+                        ✕ Отменить
+                      </button>
+                    </span>
+                  )}
+                </li>
               ))}
             </ul>
           )}
         </section>
 
         <section className={styles.toolCard} style={{ gridColumn: '1 / -1' }}>
-          <h3>Audit log</h3>
+          <div className={styles.appPanelHeader}>
+            <h3 style={{ margin: 0 }}>Audit log</h3>
+            <select
+              className={styles.statusSelect}
+              value={auditFilter}
+              onChange={(e) => setAuditFilter(e.target.value)}
+              aria-label="Фильтр по типу действия"
+            >
+              {AUDIT_ACTION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
           <p className={styles.sectionDesc}>
-            Журнал действий админов: выдача курсов, заявки, промокоды, удаление аккаунтов.
+            Журнал действий админов.
+            {filteredAudit.length !== audit.length && ` Показано ${filteredAudit.length} из ${audit.length}.`}
             {audit.length === 0 && ' Записи появятся после первых операций.'}
           </p>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead><tr><th>Время</th><th>Кто</th><th>Действие</th><th>Цель</th></tr></thead>
               <tbody>
-                {audit.length === 0 ? (
-                  <tr><td colSpan={4} className={styles.empty}>Пока нет записей</td></tr>
+                {filteredAudit.length === 0 ? (
+                  <tr><td colSpan={4} className={styles.empty}>Нет записей для фильтра</td></tr>
                 ) : (
-                  audit.slice(0, 50).map((a) => (
+                  filteredAudit.slice(0, 50).map((a) => (
                     <tr key={a.id}>
                       <td>{new Date(a.createdAt).toLocaleString('ru-RU')}</td>
                       <td>{a.actorEmail}</td>
