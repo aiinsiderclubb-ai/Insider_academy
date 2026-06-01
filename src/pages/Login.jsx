@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { isTestAccountEmail } from '../data/testAccount'
+import { formatApiError } from '../utils/formatApiError'
 import { NeuronGlow } from '../components/NeuronGlow'
 import styles from './Login.module.css'
 
@@ -59,8 +60,10 @@ export function Login() {
         setError(lang === 'ru'
           ? 'Неверный пароль тестового аккаунта. Используйте: TestAll2026!'
           : 'Wrong test account password. Use: TestAll2026!')
+      } else if (err?.network) {
+        setError(formatApiError(err, lang))
       } else {
-        setError(t('login.errorGeneric'))
+        setError(formatApiError(err, lang) || t('login.errorGeneric'))
       }
     } finally {
       setLoading(false)

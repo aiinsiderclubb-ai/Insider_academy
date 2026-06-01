@@ -127,7 +127,12 @@ router.post('/login', asyncHandler(async (req, res) => {
   }
 
   if (!row || !bcrypt.compareSync(password, row.password_hash)) {
-    return res.status(401).json({ error: 'Invalid email or password' })
+    return res.status(401).json({
+      error: 'Invalid email or password',
+      errorRu: row
+        ? 'Неверный пароль. Проверьте раскладку или восстановите пароль.'
+        : 'Аккаунт с таким email не найден. Зарегистрируйтесь или проверьте опечатку.',
+    })
   }
 
   if (!isTestLogin && !row.email_verified) {

@@ -24,6 +24,9 @@ export function formatApiError(err, lang = 'ru') {
   if (msg === 'Invalid or expired code') {
     return lang === 'ru' ? 'Неверный или просроченный код' : msg
   }
+  if (msg === 'Invalid email or password') {
+    return lang === 'ru' ? (data.errorRu || 'Неверный email или пароль') : msg
+  }
   if (msg === 'Email not verified') {
     return lang === 'ru' ? 'Подтвердите email — введите код из письма' : 'Please verify your email with the code we sent'
   }
