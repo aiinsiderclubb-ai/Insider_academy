@@ -249,6 +249,14 @@ export function AuthProvider({ children }) {
         await applyReferral(emailTrim)
         return u
       } catch (err) {
+        if (err.status === 403 && err.data?.requiresVerification) {
+          const hint = new Error('Email not verified')
+          hint.status = 403
+          hint.requiresVerification = true
+          hint.email = err.data.email || emailTrim
+          hint.devCode = err.data.devCode
+          throw hint
+        }
         if (err.status === 401 && isTestAccountEmail(emailTrim)) {
           const hint = new Error('Invalid test account password')
           hint.status = 401
@@ -283,19 +291,31 @@ export function AuthProvider({ children }) {
     return u
   }, [apiMode, setUser, applyReferral])
 
+  const applyAuthSession = useCallback((token, u) => {
+    if (token) setToken(token)
+    setUserState(withLocalAvatar(u))
+    setPurchases([])
+    savePurchasesLocal([])
+  }, [])
+
   const register = useCallback(async (email, password, name) => {
     const emailTrim = email.trim()
     const passwordTrim = String(password || '').trim()
     const nameTrim = String(name || emailTrim).trim()
 
     if (apiMode) {
-      const { token, user: u } = await api.register(emailTrim, passwordTrim, nameTrim)
-      setToken(token)
-      setUserState(u)
-      setPurchases([])
-      savePurchasesLocal([])
+      const res = await api.register(emailTrim, passwordTrim, nameTrim)
+      if (res.requiresVerification) {
+        return {
+          requiresVerification: true,
+          email: res.email || emailTrim,
+          devCode: res.devCode,
+          personalId: res.personalId,
+        }
+      }
+      applyAuthSession(res.token, res.user)
       await applyReferral(emailTrim)
-      return u
+      return res.user
     }
 
     const u = { email: emailTrim, name: nameTrim }
@@ -379,6 +399,7 @@ export function AuthProvider({ children }) {
         register,
         logout,
         refreshUser,
+        applyAuthSession,
         updateProfile,
         changePassword,
         changeEmail,

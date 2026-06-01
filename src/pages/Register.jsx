@@ -71,7 +71,13 @@ export function Register() {
 
     setLoading(true)
     try {
-      await register(emailTrim, passwordValue.trim(), nameTrim)
+      const result = await register(emailTrim, passwordValue.trim(), nameTrim)
+      if (result?.requiresVerification) {
+        const q = new URLSearchParams({ email: result.email || emailTrim })
+        if (result.devCode) q.set('devCode', result.devCode)
+        navigate(`/verify-email?${q.toString()}`, { replace: true })
+        return
+      }
       navigate(from, { replace: true })
     } catch (err) {
       const mapped = mapAuthApiError(err, lang, 'register.errorGeneric')

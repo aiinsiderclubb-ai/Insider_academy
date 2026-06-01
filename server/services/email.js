@@ -43,6 +43,27 @@ export async function sendVerificationEmail(email, token) {
   })
 }
 
+export async function sendVerificationCodeEmail(email, code, name = '') {
+  const greeting = name ? `Здравствуйте, ${name}!` : 'Здравствуйте!'
+  const verifyUrl = `${config.appUrl.replace(/\/$/, '')}/verify-email?email=${encodeURIComponent(email)}`
+  return sendEmail({
+    to: email,
+    subject: `${code} — код подтверждения AI Insider Academy`,
+    html: `
+      <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;color:#1a1a1a">
+        <p>${greeting}</p>
+        <p>Спасибо за регистрацию в <strong>AI Insider Academy</strong>.</p>
+        <p>Ваш код подтверждения email:</p>
+        <p style="font-size:32px;font-weight:700;letter-spacing:8px;margin:24px 0;color:#7c3aed">${code}</p>
+        <p style="color:#666;font-size:14px">Код действует <strong>15 минут</strong>.</p>
+        <p style="margin-top:24px"><a href="${verifyUrl}" style="color:#7c3aed">Ввести код на сайте</a></p>
+        <p style="color:#999;font-size:12px;margin-top:32px">Если вы не регистрировались — просто проигнорируйте это письмо.</p>
+      </div>
+    `,
+    text: `${greeting}\n\nКод подтверждения AI Insider Academy: ${code}\nДействует 15 минут.\n\nВвести на сайте: ${verifyUrl}`,
+  })
+}
+
 export async function sendPasswordResetEmail(email, token) {
   const link = `${config.appUrl}/reset-password?token=${token}`
   return sendEmail({

@@ -83,6 +83,17 @@ test('API: health, courses, blog, auth, admin', async (t) => {
     body: JSON.stringify({ email, password: 'secret12', name: 'Test User' }),
   })
   assert.equal(reg.status, 201)
+  const regData = await reg.json()
+  assert.ok(regData.requiresVerification)
+  assert.equal(regData.email, email)
+  assert.ok(regData.devCode, 'dev mode should return verification code')
+
+  const verify = await fetch(`${base}/api/auth/verify-email-code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code: regData.devCode }),
+  })
+  assert.equal(verify.status, 200)
 
   const login = await fetch(`${base}/api/auth/login`, {
     method: 'POST',

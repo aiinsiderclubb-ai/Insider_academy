@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { getDb } from '../db.js'
 import { signUserToken } from '../middleware/auth.js'
-import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.js'
+import { sendPasswordResetEmail } from '../services/email.js'
+import { issueEmailVerificationCode, verifyEmailCode } from '../services/emailVerification.js'
 import { config, isEmailEnabled } from '../config.js'
 import { createUserNotification } from '../services/notifications.js'
 import { nowIso } from '../db/time.js'
@@ -86,22 +87,31 @@ router.post('/register', asyncHandler(async (req, res) => {
     console.warn('[auth/register] registrations insert:', err.message)
   })
 
-  const token = createToken()
-  const expires = new Date(Date.now() + 86400000).toISOString()
-  await db.run('INSERT INTO email_tokens (id, email, token, type, expires_at) VALUES (?, ?, ?, ?, ?)', [
-    `et-${Date.now()}`, email, token, 'verify', expires,
-  ]).catch((err) => {
-    console.warn('[auth/register] email_tokens insert:', err.message)
-  })
-  sendVerificationEmail(email, token).catch(() => {})
+  let verification = {}
+  try {
+    verification = await issueEmailVerificationCode(email, name)
+  } catch (err) {
+    console.warn('[auth/register] verification email:', err.message)
+    if (!isEmailEnabled()) {
+      return res.status(503).json({
+        error: 'Could not send verification email',
+        errorRu: 'Не удалось отправить код на почту. Проверьте SMTP на сервере.',
+      })
+    }
+    throw err
+  }
 
   sheetsTrack.trackUserRegistered({ personalId, userId, email, name }).catch(() => {})
 
-  const { scheduleWelcomeSeries } = await import('../services/emailQueue.js')
-  scheduleWelcomeSeries(email, name).catch(() => {})
-
-  const jwt = signUserToken(user)
-  res.status(201).json({ token: jwt, user })
+  res.status(201).json({
+    requiresVerification: true,
+    email,
+    personalId,
+    message: 'Verification code sent to your email',
+    messageRu: 'Код подтверждения отправлен на вашу почту',
+    expiresAt: verification.expiresAt,
+    ...(verification.devCode ? { devCode: verification.devCode } : {}),
+  })
 }))
 
 router.post('/login', asyncHandler(async (req, res) => {
@@ -119,6 +129,23 @@ router.post('/login', asyncHandler(async (req, res) => {
   if (!row || !bcrypt.compareSync(password, row.password_hash)) {
     return res.status(401).json({ error: 'Invalid email or password' })
   }
+
+  if (!isTestLogin && !row.email_verified) {
+    let verification = {}
+    try {
+      verification = await issueEmailVerificationCode(email, row.name)
+    } catch (err) {
+      console.warn('[auth/login] resend verification:', err.message)
+    }
+    return res.status(403).json({
+      error: 'Email not verified',
+      errorRu: 'Подтвердите email — мы отправили новый код на почту.',
+      requiresVerification: true,
+      email,
+      ...(verification.devCode ? { devCode: verification.devCode } : {}),
+    })
+  }
+
   const personalId = row.personal_id || await ensurePersonalId(db, row.id)
   const loginAt = new Date().toISOString()
   await db.run('UPDATE users SET last_login_at = ? WHERE id = ?', [loginAt, row.id]).catch(() => {})
@@ -135,11 +162,79 @@ router.post('/verify-email', asyncHandler(async (req, res) => {
     [token, 'verify']
   )
   if (!row || new Date(row.expires_at) < new Date()) {
-    return res.status(400).json({ error: 'Invalid or expired token' })
+    return res.status(400).json({ error: 'Invalid or expired token', errorRu: 'Ссылка недействительна или устарела' })
   }
   await db.run('UPDATE users SET email_verified = 1 WHERE email = ?', [row.email])
   await db.run('UPDATE email_tokens SET used = 1 WHERE id = ?', [row.id])
-  res.json({ ok: true })
+  const userRow = await db.get(
+    'SELECT id, email, name, email_verified, personal_id FROM users WHERE email = ?',
+    [row.email]
+  )
+  const personalId = userRow?.personal_id || await ensurePersonalId(db, userRow.id)
+  const user = {
+    id: userRow.id,
+    email: userRow.email,
+    name: userRow.name,
+    emailVerified: true,
+    personalId,
+  }
+  res.json({ ok: true, token: signUserToken(user), user })
+}))
+
+router.post('/verify-email-code', asyncHandler(async (req, res) => {
+  const db = getDb()
+  const email = normalizeEmail(req.body.email)
+  const code = String(req.body.code || '').trim()
+  const result = await verifyEmailCode(email, code)
+  if (!result.ok) {
+    return res.status(400).json({ error: result.error, errorRu: result.errorRu })
+  }
+  const userRow = await db.get(
+    'SELECT id, email, name, email_verified, personal_id FROM users WHERE email = ?',
+    [email]
+  )
+  if (!userRow) return res.status(404).json({ error: 'User not found', errorRu: 'Пользователь не найден' })
+  const personalId = userRow.personal_id || await ensurePersonalId(db, userRow.id)
+  const user = {
+    id: userRow.id,
+    email: userRow.email,
+    name: userRow.name,
+    emailVerified: true,
+    personalId,
+  }
+  const { scheduleWelcomeSeries } = await import('../services/emailQueue.js')
+  scheduleWelcomeSeries(email, userRow.name).catch(() => {})
+  res.json({ ok: true, token: signUserToken(user), user })
+}))
+
+router.post('/resend-verification-code', asyncHandler(async (req, res) => {
+  const db = getDb()
+  const email = normalizeEmail(req.body.email)
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email required', errorRu: 'Введите корректный email' })
+  }
+  const user = await db.get('SELECT id, name, email_verified FROM users WHERE email = ?', [email])
+  if (!user) {
+    return res.json({ ok: true, message: 'If the account exists, a code was sent.' })
+  }
+  if (user.email_verified) {
+    return res.json({ ok: true, alreadyVerified: true, messageRu: 'Email уже подтверждён' })
+  }
+  try {
+    const verification = await issueEmailVerificationCode(email, user.name)
+    res.json({
+      ok: true,
+      messageRu: 'Новый код отправлен на почту',
+      expiresAt: verification.expiresAt,
+      ...(verification.devCode ? { devCode: verification.devCode } : {}),
+    })
+  } catch (err) {
+    console.warn('[auth/resend-verification]', err.message)
+    return res.status(503).json({
+      error: 'Could not send email',
+      errorRu: 'Не удалось отправить письмо. Попробуйте позже.',
+    })
+  }
 }))
 
 router.post('/forgot-password', asyncHandler(async (req, res) => {

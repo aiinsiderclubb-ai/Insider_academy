@@ -37,7 +37,7 @@ export const config = {
     privateKey: process.env.LIQPAY_PRIVATE_KEY || '',
   },
   email: {
-    from: process.env.EMAIL_FROM || 'AI Insider Academy <noreply@example.com>',
+    from: process.env.EMAIL_FROM || 'AI Insider Academy <info@myinsideracademy.com>',
     smtp: {
       host: process.env.SMTP_HOST || '',
       port: Number(process.env.SMTP_PORT) || 587,

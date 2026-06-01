@@ -5,6 +5,7 @@ const API_ERROR_MAP = {
     'User already exists': 'Этот email уже зарегистрирован. Войдите или восстановите пароль.',
     'Registration failed': 'Не удалось создать аккаунт. Попробуйте снова.',
     'Invalid email or password': 'Неверный email или пароль.',
+    'Email not verified': 'Подтвердите email — код отправлен на почту.',
   },
   en: {
     'Invalid email': 'Please enter a valid email.',
@@ -12,6 +13,7 @@ const API_ERROR_MAP = {
     'User already exists': 'This email is already registered. Log in or reset your password.',
     'Registration failed': 'Could not create account. Please try again.',
     'Invalid email or password': 'Invalid email or password.',
+    'Email not verified': 'Please verify your email — we sent a new code.',
   },
 }
 

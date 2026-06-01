@@ -49,6 +49,12 @@ export function Login() {
       await login(emailTrim, password.trim())
       navigate(from, { replace: true })
     } catch (err) {
+      if (err?.requiresVerification) {
+        const q = new URLSearchParams({ email: err.email || emailTrim })
+        if (err.devCode) q.set('devCode', err.devCode)
+        navigate(`/verify-email?${q.toString()}`, { replace: true })
+        return
+      }
       if (err?.code === 'TEST_ACCOUNT_PASSWORD' || (isTestAccountEmail(emailTrim) && err?.status === 401)) {
         setError(lang === 'ru'
           ? 'Неверный пароль тестового аккаунта. Используйте: TestAll2026!'
