@@ -65,9 +65,21 @@ export async function seedIfEmpty() {
     ])
   }
 
-  await seedTestAccount(db)
-  await seedReviews(db)
-  await seedPromoCodes(db)
+  try {
+    await seedTestAccount(db)
+  } catch (err) {
+    console.warn('[seed] test account skipped:', err.message)
+  }
+  try {
+    await seedReviews(db)
+  } catch (err) {
+    console.warn('[seed] reviews skipped:', err.message)
+  }
+  try {
+    await seedPromoCodes(db)
+  } catch (err) {
+    console.warn('[seed] promo codes skipped:', err.message)
+  }
 }
 
 export async function seedPromoCodes(db = getDb()) {
