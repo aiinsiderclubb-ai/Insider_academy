@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { parseJson } from '../db.js'
+import { notifyTelegramByEmail } from './telegramNotify.js'
 
 export async function getCourseSlug(db, courseId) {
   if (!courseId) return null
@@ -35,5 +36,36 @@ export async function createUserNotification(db, payload) {
       now,
     ]
   )
+
+  const tgType = mapNotificationToTelegram(payload)
+  if (tgType) {
+    notifyTelegramByEmail(email, tgType, {
+      courseTitle: payload.courseTitle,
+      lessonTitle: payload.lessonTitle,
+      message: payload.message,
+      targetPath: payload.targetPath,
+      status: payload.status,
+      score: payload.score,
+      code: payload.code,
+      discount: payload.discount,
+      title: payload.title,
+      text: payload.text,
+      url: payload.url,
+    }).catch(() => {})
+  }
+
   return id
+}
+
+function mapNotificationToTelegram(payload) {
+  if (payload.type === 'homework_feedback') {
+    if (payload.status === 'accepted') return 'homework_accepted'
+    if (payload.status === 'resubmit') return 'homework_resubmit'
+    return 'homework_resubmit'
+  }
+  if (payload.type === 'review_status') {
+    if (payload.status === 'approved') return 'review_approved'
+    if (payload.status === 'rejected') return 'review_rejected'
+  }
+  return null
 }

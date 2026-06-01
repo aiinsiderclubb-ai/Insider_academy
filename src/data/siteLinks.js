@@ -8,6 +8,13 @@ export const MAIN_SITE_COURSES = `${MAIN_SITE_URL}/courses`
 export const MAIN_SITE_COMMUNITY = `${MAIN_SITE_URL}/community`
 export const TELEGRAM_COMMUNITY = import.meta.env.VITE_TELEGRAM_COMMUNITY_URL || 'https://t.me/aiinsiderclub'
 export const TELEGRAM_MANAGER = import.meta.env.VITE_TELEGRAM_MANAGER_URL || 'https://t.me/vladyslavarcher'
+
+/** Бот уведомлений Academy (ДЗ, промо, новости) — username или полная ссылка */
+const notifyBotUsername = (
+  import.meta.env.VITE_TELEGRAM_NOTIFY_BOT_USERNAME || 'InsiderAcademyNotifyBot'
+).replace(/^@/, '')
+export const TELEGRAM_NOTIFY_BOT = import.meta.env.VITE_TELEGRAM_NOTIFY_BOT_URL
+  || (notifyBotUsername ? `https://t.me/${notifyBotUsername}` : '')
 export const CONTACT_EMAIL = 'hello@aiinsider.com'
 
 export const PLATFORM_BRIDGE = {

@@ -7,7 +7,7 @@ import { config } from './config.js'
 import { getDb } from './db.js'
 import { parseJson } from './db/sqlite.js'
 import { nowIso } from './db/time.js'
-import { sendTelegramMessage } from './services/telegram.js'
+import { notifyTelegramUser } from './services/telegramNotify.js'
 import { sendAdminDailyDigest } from './services/digest.js'
 import { processEmailQueue, processInactiveUsers } from './services/emailQueue.js'
 
@@ -29,8 +29,11 @@ async function processReminders() {
     for (const row of due) {
       const course = parseJson(row.course_data, {})
       const lesson = course.lessons?.[row.lesson_index]
-      const text = `🔔 Напоминание: урок «${lesson?.title || row.lesson_index + 1}» курса «${course.title || row.course_id}»`
-      if (row.telegram_chat_id) await sendTelegramMessage(row.telegram_chat_id, text)
+      await notifyTelegramUser(row.user_id, 'lesson_reminder', {
+        courseTitle: course.title || row.course_id,
+        lessonTitle: lesson?.title,
+        targetPath: course.slug ? `/courses/${course.slug}?lesson=${row.lesson_index}` : '/cabinet',
+      })
       await db.run('UPDATE lesson_reminders SET sent = 1 WHERE id = ?', [row.id])
     }
   } catch (err) {

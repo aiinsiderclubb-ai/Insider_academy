@@ -31,13 +31,16 @@ export function getCourseDescription(course, lang = 'ru') {
   return idea || full || short || ''
 }
 
-/** Длительность для карточек — без «· N недель» */
+/** Длительность для карточек — без недель и без «(N–M мин)» */
 export function formatCourseDuration(course, lang = 'ru') {
   const raw = getCourseField(course, 'duration', lang)
   if (typeof raw !== 'string') return raw
   return raw
     .replace(/\s*·\s*\d+\s+недел[ьяи]/gi, '')
     .replace(/\s*·\s*\d+\s+weeks?/gi, '')
+    .replace(/\s*\([^)]*(?:мин|min|minute|минут)[^)]*\)/gi, '')
+    .replace(/\s*·\s*\d+[–-]\d+\s*(?:мин|min|минут|minutes?)/gi, '')
+    .replace(/\s{2,}/g, ' ')
     .trim()
 }
 

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
-import { getCourseField, formatCourseDuration } from '../data/courses'
+import { getCourseField } from '../data/courses'
 import { getVaultProduct, isVaultProductId } from '../data/vaultProducts'
 import { isMarketplaceProductId } from '../data/marketplace/discounts'
 import { getMarketplaceProduct } from '../data/marketplace/products'
@@ -12,6 +12,7 @@ import { getMarketplaceFavorites } from '../utils/marketplaceFavorites'
 import { getCertificates, getUserDiscountPercent, getCourseAverageScore, getReferrals } from '../api/adminStore'
 import { getPackProgressForUser } from '../utils/packProgress'
 import { ReferralDashboard } from '../components/ReferralDashboard'
+import { TelegramConnect } from '../components/TelegramConnect'
 import { ProgressRing } from '../components/ProgressRing'
 import { api, checkApiOnline } from '../api/client'
 import styles from './Cabinet.module.css'
@@ -26,7 +27,6 @@ export function Cabinet() {
   const [team, setTeam] = useState(null)
   const [teamName, setTeamName] = useState('')
   const [inviteCode, setInviteCode] = useState('')
-  const [telegramId, setTelegramId] = useState('')
   const [myCertificates, setMyCertificates] = useState([])
 
   const myCourses = purchases
@@ -126,12 +126,6 @@ export function Cabinet() {
     if (!inviteCode.trim()) return
     await api.joinTeam(inviteCode.trim())
     setTeam(await api.getTeam())
-  }
-
-  const linkTelegram = async () => {
-    if (!telegramId.trim()) return
-    await api.linkTelegram(telegramId.trim())
-    alert(lang === 'ru' ? 'Telegram подключён' : 'Telegram linked')
   }
 
   return (
@@ -332,7 +326,6 @@ export function Cabinet() {
             {myCourses.map((course) => {
               const percent = getPercent(course.id, course.lessons?.length ?? 0)
               const title = getCourseField(course, 'title', lang)
-              const duration = formatCourseDuration(course, lang)
               const score = getCourseAverageScore(user?.email, course.id)
               return (
                 <Link to={`/courses/${course.slug}`} key={course.id} className={styles.card}>
@@ -393,12 +386,13 @@ export function Cabinet() {
         </section>
 
         <section id="telegram" className={styles.section}>
-          <h2 className={styles.sectionTitle}>Telegram</h2>
-          <p className={styles.sectionDesc}>{lang === 'ru' ? 'Подключите бота для напоминаний об уроках. Напишите /start боту и вставьте Chat ID.' : 'Connect Telegram for lesson reminders.'}</p>
-          <div className={styles.referralRow}>
-            <input value={telegramId} onChange={(e) => setTelegramId(e.target.value)} placeholder="Chat ID" className={styles.referralInput} />
-            <button type="button" onClick={linkTelegram} className={styles.copyBtn}>{lang === 'ru' ? 'Подключить' : 'Link'}</button>
-          </div>
+          <h2 className={styles.sectionTitle}>Telegram-уведомления</h2>
+          <p className={styles.sectionDesc}>
+            {lang === 'ru'
+              ? 'Подключите бота — он пришлёт в Telegram принятые ДЗ, промокоды, новости курсов и другое.'
+              : 'Connect the bot for homework, promos, course news, and more.'}
+          </p>
+          <TelegramConnect lang={lang} personalId={user?.personalId} />
         </section>
 
         <section id="certificates" className={styles.section}>

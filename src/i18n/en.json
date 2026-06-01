@@ -269,7 +269,7 @@
     "forgotPassword": "Forgot password?",
     "emailVerified": "Email verified",
     "emailNotVerified": "Email not verified",
-    "telegramHint": "Connect Telegram for lesson reminders. Get your Chat ID from our bot with /start.",
+    "telegramHint": "Open the notify bot or send /link with your personal ID (AIA-…). Your ID is shown below.",
     "logoutHint": "Sign out on this device.",
     "avatarSaved": "Profile photo updated.",
     "nameSaved": "Name saved.",

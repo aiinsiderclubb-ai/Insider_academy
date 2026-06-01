@@ -269,7 +269,7 @@
     "forgotPassword": "Забыли пароль?",
     "emailVerified": "Email подтверждён",
     "emailNotVerified": "Email не подтверждён",
-    "telegramHint": "Подключите Telegram для напоминаний об уроках. Получите Chat ID у нашего бота командой /start.",
+    "telegramHint": "Откройте бота уведомлений или отправьте ему команду /link с вашим личным ID (AIA-…). ID указан ниже.",
     "logoutHint": "Выйти из аккаунта на этом устройстве.",
     "avatarSaved": "Фото профиля обновлено.",
     "nameSaved": "Имя сохранено.",

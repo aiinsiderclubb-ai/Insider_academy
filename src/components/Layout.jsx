@@ -19,7 +19,7 @@ import { NeuronGlow } from './NeuronGlow'
 import { isRegistrationOnboardingDone } from '../utils/onboardingStorage'
 import { ThemeToggle } from './ThemeToggle'
 import { ProgressRing } from './ProgressRing'
-import { MAIN_SITE_COURSES, MAIN_SITE_URL, TELEGRAM_COMMUNITY, TELEGRAM_MANAGER } from '../data/siteLinks'
+import { MAIN_SITE_COURSES, MAIN_SITE_URL, TELEGRAM_COMMUNITY, TELEGRAM_MANAGER, TELEGRAM_NOTIFY_BOT } from '../data/siteLinks'
 import styles from './Layout.module.css'
 
 const navItemsKeys = [
@@ -353,6 +353,14 @@ export function Layout({ children }) {
               <a href={TELEGRAM_MANAGER} target="_blank" rel="noreferrer noopener" className={styles.telegramLink}>
                 @vladyslavarcher
               </a>
+              {TELEGRAM_NOTIFY_BOT && (
+                <>
+                  {' · '}
+                  <a href={TELEGRAM_NOTIFY_BOT} target="_blank" rel="noreferrer noopener" className={styles.telegramLink}>
+                    {lang === 'ru' ? 'Бот уведомлений' : 'Notify bot'}
+                  </a>
+                </>
+              )}
             </p>
             <p className={styles.footerMuted}>
               {t('footer.copyright')}

@@ -209,6 +209,7 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, re
       lessonIndex: row.lesson_index,
       targetPath,
       message: adminComment || defaultMsg,
+      score: nextScore,
     })
     sendHomeworkFeedbackEmail({
       email: row.email, courseTitle: row.course_title, lessonTitle: row.lesson_title, status, comment: adminComment,

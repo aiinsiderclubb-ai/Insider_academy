@@ -6,6 +6,7 @@ import { nowIso } from '../db/time.js'
 import { logAudit } from '../services/auditLog.js'
 import { getFeatureFlags, setFeatureFlags } from '../services/featureFlags.js'
 import { MARKETPLACE_PRODUCTS } from '../../src/data/marketplace/products.js'
+import { broadcastTelegram } from '../services/telegramNotify.js'
 
 const router = Router()
 
@@ -40,7 +41,29 @@ router.post('/promo-codes', requireAdmin('admin'), async (req, res) => {
     targetType: 'promo',
     targetId: code,
   })
+  const discount = req.body.discountPercent
+    ? `${req.body.discountPercent}%`
+    : req.body.discountEur
+      ? `€${req.body.discountEur}`
+      : ''
+  broadcastTelegram('promo_new', { code, discount }, { prefKey: 'promo' }).catch(() => {})
   res.status(201).json({ ok: true, code })
+})
+
+router.post('/telegram/broadcast', requireAdmin('admin'), async (req, res) => {
+  const { title, text, url, prefKey } = req.body
+  if (!text?.trim()) return res.status(400).json({ error: 'text required' })
+  const result = await broadcastTelegram(
+    'course_news',
+    { title: title || 'AI Insider Academy', text: text.trim(), url: url || '/courses' },
+    { prefKey: prefKey || 'news' }
+  )
+  await logAudit({
+    actorEmail: `admin:${req.adminRole}`,
+    action: 'telegram.broadcast',
+    meta: { title, sent: result.sent },
+  })
+  res.json({ ok: true, sent: result.sent })
 })
 
 router.patch('/promo-codes/:code', requireAdmin('admin'), async (req, res) => {

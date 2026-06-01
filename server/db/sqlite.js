@@ -299,6 +299,7 @@ function migrateColumns(db) {
   if (!cols.includes('password_changed_at')) add('ALTER TABLE users ADD COLUMN password_changed_at TEXT')
   if (!cols.includes('last_login_at')) add('ALTER TABLE users ADD COLUMN last_login_at TEXT')
   if (!cols.includes('personal_id')) add('ALTER TABLE users ADD COLUMN personal_id TEXT')
+  if (!cols.includes('telegram_username')) add('ALTER TABLE users ADD COLUMN telegram_username TEXT')
 
   const regCols = db.prepare('PRAGMA table_info(registrations)').all().map((c) => c.name)
   if (!regCols.includes('personal_id')) add('ALTER TABLE registrations ADD COLUMN personal_id TEXT')
@@ -365,6 +366,15 @@ CREATE TABLE IF NOT EXISTS creator_payouts (
   created_at TEXT NOT NULL,
   paid_at TEXT
 );
+CREATE TABLE IF NOT EXISTS telegram_link_tokens (
+  token TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  expires_at TEXT NOT NULL,
+  used INTEGER DEFAULT 0,
+  used_at TEXT,
+  created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS peer_reviews (
   id TEXT PRIMARY KEY,
   course_id TEXT NOT NULL,

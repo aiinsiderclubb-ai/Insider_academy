@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
-import { api, checkApiOnline } from '../api/client'
+import { TelegramConnect } from '../components/TelegramConnect'
 import styles from './AccountSettings.module.css'
 
 export function AccountSettings() {
@@ -16,7 +16,6 @@ export function AccountSettings() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [telegramId, setTelegramId] = useState(user?.telegramChatId || '')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -100,24 +99,6 @@ export function AccountSettings() {
       setNewPassword('')
       setConfirmPassword('')
       showMsg(t('account.passwordSaved'))
-    } catch (err) {
-      showMsg(formatApiError(err), true)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleTelegram = async (e) => {
-    e.preventDefault()
-    if (!telegramId.trim()) return
-    setLoading(true)
-    try {
-      if (apiMode || await checkApiOnline()) {
-        await api.linkTelegram(telegramId.trim())
-        showMsg(t('account.telegramSaved'))
-      } else {
-        showMsg(t('account.telegramOffline'), true)
-      }
     } catch (err) {
       showMsg(formatApiError(err), true)
     } finally {
@@ -225,16 +206,10 @@ export function AccountSettings() {
             </form>
           </section>
 
-          <section className={styles.card}>
+          <section className={styles.card} id="telegram">
             <h2 className={styles.cardTitle}>{t('account.telegramSection')}</h2>
             <p className={styles.hint}>{t('account.telegramHint')}</p>
-            <form onSubmit={handleTelegram} className={styles.form}>
-              <label className={styles.label}>
-                <span>Chat ID</span>
-                <input value={telegramId} onChange={(e) => setTelegramId(e.target.value)} className={styles.input} placeholder="123456789" />
-              </label>
-              <button type="submit" className={styles.btnSecondary} disabled={loading}>{t('account.saveTelegram')}</button>
-            </form>
+            <TelegramConnect lang={lang} personalId={user?.personalId} />
           </section>
 
           <section className={styles.card}>

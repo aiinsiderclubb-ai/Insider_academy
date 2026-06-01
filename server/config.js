@@ -52,6 +52,9 @@ export const config = {
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN || '',
     webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || '',
+    botUsername: process.env.TELEGRAM_BOT_USERNAME || '',
+    botServiceUrl: process.env.TELEGRAM_BOT_SERVICE_URL || '',
+    botServiceSecret: process.env.TELEGRAM_BOT_SERVICE_SECRET || process.env.BOT_SERVICE_SECRET || '',
   },
   googleSheets: {
     enabled: process.env.GOOGLE_SHEETS_ENABLED !== '0' && Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),

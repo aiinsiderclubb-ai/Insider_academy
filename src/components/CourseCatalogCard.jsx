@@ -20,8 +20,6 @@ export function CourseCatalogCard({
   const description = getCourseDescription(course, lang)
   const category = getCourseField(course, 'category', lang)
   const duration = formatCourseDuration(course, lang)
-    .replace(/\s*\([^)]*(?:мин|min)[^)]*\)/i, '')
-    .trim()
   const isIntake = isAcceleratorCourse(course)
   const isFree = (course.priceEur ?? 0) === 0 && !isIntake
   const price = course.priceEur ?? Math.round((course.price || 0) / 100)

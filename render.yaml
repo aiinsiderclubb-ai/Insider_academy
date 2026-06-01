@@ -65,6 +65,43 @@ services:
         value: "1"
       - key: GOOGLE_SERVICE_ACCOUNT_JSON
         sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        value: InsiderAcademyNotifyBot
+      - key: TELEGRAM_BOT_SERVICE_URL
+        value: https://insider-academy-notify-bot.onrender.com
+      - key: TELEGRAM_BOT_SERVICE_SECRET
+        sync: false
+      - key: BOT_SERVICE_SECRET
+        sync: false
+
+  # ── Telegram notify bot ───────────────────────────────────────────────────
+  - type: web
+    name: insider-academy-notify-bot
+    runtime: node
+    plan: starter
+    region: frankfurt
+    branch: main
+    rootDir: telegram-notify-bot
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - telegram-notify-bot/**
+    envVars:
+      - key: TELEGRAM_BOT_USERNAME
+        value: InsiderAcademyNotifyBot
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: BOT_SERVICE_SECRET
+        sync: false
+      - key: LMS_API_URL
+        value: https://insider-academy.onrender.com
+      - key: BOT_PUBLIC_URL
+        value: https://insider-academy-notify-bot.onrender.com
 
   # ── Frontend (Vite / React static site) ──────────────────────────────────
   - type: web
@@ -83,6 +120,8 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://insider-academy.onrender.com/api
+      - key: VITE_TELEGRAM_NOTIFY_BOT_USERNAME
+        value: InsiderAcademyNotifyBot
 
 databases:
   - name: insider-academy-db
