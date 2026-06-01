@@ -1,8 +1,13 @@
 import { config, isTelegramEnabled } from '../config.js'
 
+function botToken() {
+  return process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken || ''
+}
+
 export async function sendTelegramMessage(chatId, text) {
-  if (!isTelegramEnabled() || !chatId) return false
-  const url = `https://api.telegram.org/bot${config.telegram.botToken}/sendMessage`
+  const token = botToken()
+  if (!token || !chatId) return false
+  const url = `https://api.telegram.org/bot${token}/sendMessage`
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -12,8 +17,9 @@ export async function sendTelegramMessage(chatId, text) {
 }
 
 export async function setWebhook(webhookUrl) {
-  if (!isTelegramEnabled()) return { ok: false }
-  const res = await fetch(`https://api.telegram.org/bot${config.telegram.botToken}/setWebhook`, {
+  const token = botToken()
+  if (!token) return { ok: false }
+  const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -26,8 +32,9 @@ export async function setWebhook(webhookUrl) {
 }
 
 export async function getWebhookInfo() {
-  if (!isTelegramEnabled()) return null
-  const res = await fetch(`https://api.telegram.org/bot${config.telegram.botToken}/getWebhookInfo`)
+  const token = botToken()
+  if (!token) return null
+  const res = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`)
   const data = await res.json()
   return data.result || null
 }
