@@ -5,6 +5,10 @@ import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { getCourseField, formatCourseDuration } from '../data/courses'
+import { getVaultProduct, isVaultProductId } from '../data/vaultProducts'
+import { isMarketplaceProductId } from '../data/marketplace/discounts'
+import { getMarketplaceProduct } from '../data/marketplace/products'
+import { getMarketplaceFavorites } from '../utils/marketplaceFavorites'
 import { getCertificates, getUserDiscountPercent, getCourseAverageScore, getReferrals } from '../api/adminStore'
 import { ReferralDashboard } from '../components/ReferralDashboard'
 import { ProgressRing } from '../components/ProgressRing'
@@ -24,7 +28,19 @@ export function Cabinet() {
   const [telegramId, setTelegramId] = useState('')
   const [myCertificates, setMyCertificates] = useState([])
 
-  const myCourses = purchases.map((p) => getCourseById(p.id)).filter(Boolean)
+  const myCourses = purchases
+    .filter((p) => !isVaultProductId(p.id) && !isMarketplaceProductId(p.id))
+    .map((p) => getCourseById(p.id))
+    .filter(Boolean)
+  const myVault = purchases
+    .map((p) => getVaultProduct(p.id))
+    .filter(Boolean)
+  const myMarketplace = purchases
+    .map((p) => getMarketplaceProduct(p.id))
+    .filter(Boolean)
+  const favoriteProducts = getMarketplaceFavorites()
+    .map((id) => getMarketplaceProduct(id))
+    .filter(Boolean)
   const userDiscount = getUserDiscountPercent(user?.email || 0)
   const referralLink = user?.email ? `${window.location.origin}/?ref=${btoa(user.email)}` : ''
   const referralsCount = user?.email
@@ -142,6 +158,112 @@ export function Cabinet() {
           <p className={styles.discountBadge}>
             {lang === 'ru' ? `Ваша реферальная скидка: −${userDiscount}%` : `Referral discount: −${userDiscount}%`}
           </p>
+        )}
+
+        <section id="marketplace" className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            {lang === 'ru' ? 'Marketplace' : 'Marketplace'}
+          </h2>
+          <p className={styles.sectionDesc}>
+            {lang === 'ru'
+              ? 'Покупки, загрузки и избранное AI Insider Marketplace.'
+              : 'Purchases, downloads and favorites from AI Insider Marketplace.'}
+          </p>
+          {myMarketplace.length > 0 ? (
+            <div className={styles.cards}>
+              {myMarketplace.map((item) => {
+                const title = lang === 'ru' ? item.titleRu : item.titleEn
+                return (
+                  <Link to={`/marketplace/${item.slug}`} key={item.id} className={styles.card}>
+                    <div
+                      className={styles.cardImageWrap}
+                      style={{ background: item.coverGradient, minHeight: 120 }}
+                    >
+                      <span style={{ fontSize: '2.5rem', padding: 16 }} aria-hidden>{item.coverIcon}</span>
+                      <span className={styles.cardBadge}>{lang === 'ru' ? 'Скачать' : 'Download'}</span>
+                    </div>
+                    <h3 className={styles.cardTitle}>{title}</h3>
+                    <p className={styles.cardMeta}>
+                      {item.fileTypes?.join(' · ') || 'ZIP'}
+                    </p>
+                  </Link>
+                )
+              })}
+            </div>
+          ) : (
+            <p className={styles.muted}>
+              {lang === 'ru' ? 'Пока нет покупок. ' : 'No purchases yet. '}
+              <Link to="/marketplace" className={styles.link}>
+                {lang === 'ru' ? 'Открыть Marketplace →' : 'Browse Marketplace →'}
+              </Link>
+            </p>
+          )}
+          {favoriteProducts.length > 0 && (
+            <>
+              <h3 className={styles.sectionTitle} style={{ fontSize: '1rem', marginTop: 24 }}>
+                {lang === 'ru' ? 'Избранное' : 'Favorites'}
+              </h3>
+              <div className={styles.cards}>
+                {favoriteProducts.map((item) => {
+                  const title = lang === 'ru' ? item.titleRu : item.titleEn
+                  const owned = myMarketplace.some((m) => m.id === item.id)
+                  return (
+                    <Link to={`/marketplace/${item.slug}`} key={item.id} className={styles.card}>
+                      <div
+                        className={styles.cardImageWrap}
+                        style={{ background: item.coverGradient, minHeight: 100 }}
+                      >
+                        <span style={{ fontSize: '2rem', padding: 12 }} aria-hidden>{item.coverIcon}</span>
+                      </div>
+                      <h3 className={styles.cardTitle}>{title}</h3>
+                      <p className={styles.cardMeta}>
+                        {owned
+                          ? (lang === 'ru' ? 'Куплено' : 'Owned')
+                          : `${item.priceEur}€`}
+                      </p>
+                    </Link>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </section>
+
+        {myVault.length > 0 && (
+          <section id="vault" className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              {lang === 'ru' ? 'AI Insider Vault' : 'AI Insider Vault'}
+            </h2>
+            <p className={styles.sectionDesc}>
+              {lang === 'ru'
+                ? 'Готовые ресурсы и шаблоны — скачивание и обновления в этом разделе.'
+                : 'Ready resources and templates — download and updates in this section.'}
+            </p>
+            <div className={styles.cards}>
+              {myVault.map((vault) => {
+                const title = lang === 'ru' ? vault.titleRu : vault.titleEn
+                return (
+                  <Link to={`/vault/${vault.slug}`} key={vault.id} className={styles.card}>
+                    <div
+                      className={styles.cardImageWrap}
+                      style={{ background: vault.gradient, minHeight: 120 }}
+                    >
+                      {vault.coverImage ? (
+                        <img src={vault.coverImage} alt="" className={styles.cardImage} />
+                      ) : (
+                        <span style={{ fontSize: '2.5rem', padding: 16 }} aria-hidden>{vault.icon}</span>
+                      )}
+                      <span className={styles.cardBadge}>Vault</span>
+                    </div>
+                    <h3 className={styles.cardTitle}>{title}</h3>
+                    <p className={styles.cardMeta}>
+                      {lang === 'ru' ? 'Доступ открыт' : 'Access granted'}
+                    </p>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
         )}
 
         {myCourses.length === 0 ? (

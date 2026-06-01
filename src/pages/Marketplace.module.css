@@ -1,0 +1,149 @@
+.wrap {
+  padding-bottom: 80px;
+}
+
+.container {
+  width: min(1200px, 100% - 32px);
+  margin: 0 auto;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+}
+
+.searchRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search {
+  flex: 1;
+  min-width: 200px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 0.9375rem;
+}
+
+.search:focus {
+  outline: none;
+  border-color: var(--glow-purple);
+  box-shadow: 0 0 0 3px var(--glow-purple-dim);
+}
+
+.sort {
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.catBtn {
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.catBtn:hover {
+  border-color: var(--glow-purple);
+  color: var(--text);
+}
+
+.catActive {
+  border-color: var(--glow-purple);
+  background: var(--glow-purple-dim);
+  color: var(--text);
+}
+
+.section {
+  margin-bottom: 48px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.sectionDesc {
+  margin: 6px 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+
+.future {
+  margin-top: 56px;
+  padding: 28px;
+  border-radius: 18px;
+  border: 1px dashed var(--border-accent);
+  background: color-mix(in srgb, var(--glow-purple) 6%, transparent);
+}
+
+.future h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.future ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  columns: 2;
+  column-gap: 32px;
+}
+
+@media (max-width: 640px) {
+  .future ul {
+    columns: 1;
+  }
+}

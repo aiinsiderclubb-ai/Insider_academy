@@ -228,6 +228,17 @@
   font-weight: 700;
 }
 
+.features li.featureExcluded {
+  color: color-mix(in srgb, var(--text-muted) 88%, #f87171);
+}
+
+.features li.featureExcluded::before {
+  content: '×';
+  color: #f87171;
+  font-size: 1.125rem;
+  line-height: 1.35;
+}
+
 .bonus {
   padding: 14px;
   border-radius: 14px;

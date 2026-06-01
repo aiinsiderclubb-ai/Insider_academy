@@ -26,9 +26,16 @@ import { ResetPassword } from './pages/ResetPassword'
 import { Memberships } from './pages/Memberships'
 import { MembershipPlan } from './pages/MembershipPlan'
 import { CoursePack } from './pages/CoursePack'
+import { Vault } from './pages/Vault'
+import { VaultProduct } from './pages/VaultProduct'
+import { VaultBuy } from './pages/VaultBuy'
+import { Marketplace } from './pages/Marketplace'
+import { MarketplaceProduct } from './pages/MarketplaceProduct'
+import { MarketplaceBuy } from './pages/MarketplaceBuy'
+import { MarketplaceCreators } from './pages/MarketplaceCreators'
 import { Admin } from './pages/Admin'
 import { AcceleratorApply } from './pages/AcceleratorApply'
-import { LEGACY_SLUG_REDIRECTS } from './data/courseAliases'
+import { LEGACY_SLUG_REDIRECTS, LEGACY_PACK_REDIRECTS } from './data/courseAliases'
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   const location = useLocation()
@@ -51,7 +58,18 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/courses" element={<Courses />} />
+          {Object.entries(LEGACY_PACK_REDIRECTS).map(([from, to]) => (
+            <Route key={from} path={`/packs/${from}`} element={<Navigate to={`/packs/${to}`} replace />} />
+          ))}
           <Route path="/packs/:packId" element={<CoursePack />} />
+          <Route path="/vault" element={<Vault />} />
+          <Route path="/vault/:vaultSlug" element={<VaultProduct />} />
+          <Route path="/vault/:vaultSlug/buy" element={<VaultBuy />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/marketplace/creators" element={<MarketplaceCreators />} />
+          <Route path="/marketplace/creators/:creatorSlug" element={<MarketplaceCreators />} />
+          <Route path="/marketplace/:productSlug/buy" element={<MarketplaceBuy />} />
+          <Route path="/marketplace/:productSlug" element={<MarketplaceProduct />} />
           <Route path="/memberships" element={<Memberships />} />
           <Route path="/memberships/:tier" element={<MembershipPlan />} />
           <Route path="/club" element={<Memberships />} />

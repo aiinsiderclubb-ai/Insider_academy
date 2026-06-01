@@ -1,5 +1,7 @@
-/** Прямые ссылки Tribute на оплату курсов (webLink из tribute.tg) */
+/** Прямые ссылки Tribute на оплату курсов и Vault (webLink из tribute.tg) */
 export const TRIBUTE_COURSE_PAYMENTS = {
+  // Vault: добавьте productId и paymentUrl после создания продуктов в Tribute
+  // 'vault-prompt': { productId: 0, paymentUrl: '', telegramUrl: '' },
   'ai-agency-builder': {
     productId: 126606,
     paymentUrl: 'https://web.tribute.tg/p/wW2',

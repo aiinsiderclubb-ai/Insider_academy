@@ -1,0 +1,50 @@
+.wrap {
+  padding: 32px 0 64px;
+}
+
+.container {
+  width: min(1120px, 100% - 32px);
+  margin: 0 auto;
+}
+
+.heroPill {
+  display: inline-flex;
+  padding: 6px 14px;
+  margin-bottom: 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c4b5fd;
+  background: color-mix(in srgb, #8b5cf6 18%, transparent);
+  border: 1px solid color-mix(in srgb, #8b5cf6 35%, var(--border));
+}
+
+.title {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.lead {
+  margin: 0 0 24px;
+  max-width: 720px;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.backLink {
+  display: inline-flex;
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.backLink:hover {
+  color: var(--glow-purple);
+}

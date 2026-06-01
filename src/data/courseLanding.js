@@ -30,7 +30,7 @@ export const CLUB_PLAN = {
   id: 'ai-insider-club',
   name: 'AI Insider Club',
   nameEn: 'AI Insider Club',
-  priceEur: 49,
+  priceEur: 59,
   periodRu: 'в месяц',
   periodEn: 'per month',
   featuresRu: [

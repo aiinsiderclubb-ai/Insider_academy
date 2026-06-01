@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MEMBERSHIPS_TITLE, MEMBERSHIP_PLANS } from '../data/memberships'
+import { MEMBERSHIPS_TITLE, MEMBERSHIP_PLANS, isMembershipExcludedLine } from '../data/memberships'
 import { PLAN_COMPARISON_ROWS } from '../data/membershipDetails'
 import { ScrollReveal } from './ScrollReveal'
 import styles from './MembershipsSection.module.css'
@@ -120,7 +120,12 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
 
                   <ul className={styles.features}>
                     {includes.map((item) => (
-                      <li key={item}>{item}</li>
+                      <li
+                        key={item}
+                        className={isMembershipExcludedLine(item) ? styles.featureExcluded : undefined}
+                      >
+                        {item}
+                      </li>
                     ))}
                   </ul>
 

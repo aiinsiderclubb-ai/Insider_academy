@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { useProgress } from '../context/ProgressContext'
-import { IconHome, IconBriefcase, IconVideo, IconCalendar, IconBlog, IconBell, IconMessage, IconUser } from './Icons'
+import { IconHome, IconBriefcase, IconVideo, IconCalendar, IconBlog, IconBell, IconMessage, IconUser, IconBook, IconCart } from './Icons'
 import { ChatBot } from './ChatBot'
 import { FloatingHotOffer } from './FloatingHotOffer'
 import { NeuronGlow } from './NeuronGlow'
@@ -20,6 +20,8 @@ import styles from './Layout.module.css'
 const navItemsKeys = [
   { to: '/', labelKey: 'nav.home', Icon: IconHome },
   { to: '/courses', labelKey: 'nav.catalog', Icon: IconVideo },
+  { to: '/vault', labelKey: 'nav.vault', Icon: IconBook },
+  { to: '/marketplace', labelKey: 'nav.marketplace', Icon: IconCart },
   { to: '/memberships', labelKey: 'nav.memberships', Icon: IconUser },
   { to: '/cabinet', labelKey: 'nav.myCourses', Icon: IconBriefcase, auth: true },
   { to: '/calendar', labelKey: 'nav.calendar', Icon: IconCalendar },
@@ -191,6 +193,8 @@ export function Layout({ children }) {
             <nav className={styles.guestNav}>
               <Link to="/">{t('nav.school')}</Link>
               <Link to="/courses">{t('nav.catalog')}</Link>
+              <Link to="/vault">{t('nav.vault')}</Link>
+              <Link to="/marketplace">{t('nav.marketplace')}</Link>
               <Link to="/blog">{t('nav.blog')}</Link>
               <a href={MAIN_SITE_COURSES} target="_blank" rel="noreferrer noopener">
                 {lang === 'ru' ? 'Курсы на сайте' : 'Website courses'} ↗

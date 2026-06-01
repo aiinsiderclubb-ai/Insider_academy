@@ -2,10 +2,33 @@
 
 import { getVideoLessons } from './videoLessons.js'
 import { resolveCourseId } from './courseAliases.js'
+import {
+  PRODUCTIVITY_MASTER_LESSONS,
+  CONTENT_CREATOR_LESSONS,
+  AUTOMATION_ENGINEER_LESSONS,
+  AGENT_ENGINEER_LESSONS,
+  BUSINESS_BUILDER_LESSONS,
+  FREE_PRODUCTIVITY_LESSONS,
+} from './productStructure.js'
 
 const SHORT = { ru: '10–20 мин', en: '10–20 min' }
 const PRO = { ru: '30–45 мин', en: '30–45 min' }
+const PRO_MASTER = { ru: '25–40 мин', en: '25–40 min' }
 const LONG = { ru: '40–50 мин', en: '40–50 min' }
+
+function programFromTitles(titles, duration = PRO, countSuffix = '') {
+  const n = titles.length
+  return {
+    duration,
+    countLabel: {
+      ru: `${n} уроков${countSuffix ? ` (${countSuffix})` : ''}`,
+      en: `${n} lessons${countSuffix ? ` (${countSuffix})` : ''}`,
+    },
+    lessons: titles.map((title, i) =>
+      lesson(i + 1, title, title, `Практика: ${title}.`, `Practice: ${title}.`)
+    ),
+  }
+}
 
 function lesson(num, titleRu, titleEn, descRu, descEn) {
   return { num, titleRu, titleEn, descRu, descEn }
@@ -54,16 +77,7 @@ export const LESSON_PROGRAMS = {
       lesson(7, 'План развития AI-специалиста', 'AI specialist development plan', 'Построение личной дорожной карты обучения.', 'Building your personal learning roadmap.'),
     ],
   },
-  'ai-for-productivity': {
-    duration: SHORT,
-    countLabel: { ru: '4 урока (10–20 минут)', en: '4 lessons (10–20 min)' },
-    lessons: [
-      lesson(1, 'AI как личный помощник', 'AI as a personal assistant', 'Автоматизация ежедневных задач.', 'Automating daily tasks.'),
-      lesson(2, 'AI для работы и бизнеса', 'AI for work and business', 'Создание документов, писем и отчетов.', 'Creating documents, emails and reports.'),
-      lesson(3, 'AI для обучения', 'AI for learning', 'Быстрое изучение новых навыков.', 'Learning new skills faster.'),
-      lesson(4, 'Личная AI-система продуктивности', 'Personal AI productivity system', 'Собираем собственный стек инструментов.', 'Building your own tool stack.'),
-    ],
-  },
+  'ai-for-productivity': programFromTitles(FREE_PRODUCTIVITY_LESSONS, SHORT, '10–20 мин'),
   'first-automation-n8n': {
     duration: SHORT,
     countLabel: { ru: '5 уроков (10–20 минут)', en: '5 lessons (10–20 min)' },
@@ -75,44 +89,11 @@ export const LESSON_PROGRAMS = {
       lesson(5, 'Финальный проект', 'Capstone project', 'Создаем полноценную автоматизацию.', 'Building a complete automation.'),
     ],
   },
-  'ai-user-pro': {
-    duration: PRO,
-    countLabel: { ru: '10 уроков (30–45 минут)', en: '10 lessons (30–45 min)' },
-    meta: {
-      price: '19€',
-      finalResult: 'Собственная AI-система: инструменты, промпты, шаблоны и рабочие процессы.',
-    },
-    lessons: [
-      lesson(1, 'Современная AI-экосистема', 'Modern AI ecosystem', 'Полный обзор рынка AI.', 'Full overview of the AI market.'),
-      lesson(2, 'ChatGPT Mastery', 'ChatGPT Mastery', 'Продвинутые техники работы.', 'Advanced techniques.'),
-      lesson(3, 'Claude Mastery', 'Claude Mastery', 'Работа с большими проектами.', 'Working on large projects.'),
-      lesson(4, 'Gemini и Google AI', 'Gemini and Google AI', 'Интеграция с экосистемой Google.', 'Integration with the Google ecosystem.'),
-      lesson(5, 'Perplexity и AI Research', 'Perplexity and AI Research', 'Поиск и анализ информации.', 'Search and information analysis.'),
-      lesson(6, 'Prompt Engineering', 'Prompt Engineering', 'Создание профессиональных промптов.', 'Creating professional prompts.'),
-      lesson(7, 'AI для бизнеса', 'AI for business', 'Практическое применение.', 'Practical business applications.'),
-      lesson(8, 'AI для продаж', 'AI for sales', 'Автоматизация коммуникаций.', 'Automating communications.'),
-      lesson(9, 'Личный AI стек', 'Personal AI stack', 'Настройка рабочего пространства.', 'Setting up your workspace.'),
-      lesson(10, 'Финальный проект', 'Capstone project', 'Создание собственной AI-системы.', 'Building your own AI system.'),
-    ],
-  },
-  'ai-content-creator': {
-    duration: PRO,
-    countLabel: { ru: '8 уроков (30–45 минут)', en: '8 lessons (30–45 min)' },
-    meta: {
-      price: '25€',
-      finalResult: 'Полноценная контент-система: тексты, визуал, видео и план публикаций.',
-    },
-    lessons: [
-      lesson(1, 'AI-контент в 2026 году', 'AI content in 2026', 'Современные возможности.', 'Modern capabilities.'),
-      lesson(2, 'Создание текстов', 'Creating copy', 'ChatGPT и Claude для контента.', 'ChatGPT and Claude for content.'),
-      lesson(3, 'AI-дизайн', 'AI design', 'Canva, Midjourney, Flux.', 'Canva, Midjourney, Flux.'),
-      lesson(4, 'Генерация видео', 'Video generation', 'Runway, Kling, Veo.', 'Runway, Kling, Veo.'),
-      lesson(5, 'Shorts и Reels', 'Shorts and Reels', 'Создание вирусных видео.', 'Creating viral short-form video.'),
-      lesson(6, 'Контент-планирование', 'Content planning', 'Автоматизация публикаций.', 'Automating publishing.'),
-      lesson(7, 'Личный бренд', 'Personal brand', 'Создание экспертного образа.', 'Building an expert brand.'),
-      lesson(8, 'Финальный проект', 'Capstone project', 'Полноценная контент-система.', 'Full content system.'),
-    ],
-  },
+  'ai-productivity-master': programFromTitles(PRODUCTIVITY_MASTER_LESSONS, PRO_MASTER, '25–40 мин'),
+  'ai-content-creator': programFromTitles(CONTENT_CREATOR_LESSONS, PRO_MASTER, '25–40 мин'),
+  'ai-automation-engineer': programFromTitles(AUTOMATION_ENGINEER_LESSONS, LONG),
+  'ai-agent-engineer': programFromTitles(AGENT_ENGINEER_LESSONS, LONG),
+  'ai-business-builder': programFromTitles(BUSINESS_BUILDER_LESSONS, LONG),
 
   'ai-insider-accelerator': {
     duration: PRO,
@@ -296,6 +277,9 @@ const CONVERSATIONAL_VOICE_PICKS = [0, 2, 4, 9, 11, 14]
 })()
 
 const VIDEO_COURSE_DURATIONS = {
+  'ai-automation-engineer': LONG,
+  'ai-agent-engineer': LONG,
+  'ai-business-builder': LONG,
   'no-code-automation': LONG,
   'ai-agent-architect': LONG,
   'ai-agency-builder': LONG,
@@ -319,8 +303,12 @@ const LESSON_PREFIX = {
   'ai-for-productivity': 'ap',
   'first-automation-n8n': 'fn',
   'ai-insider-accelerator': 'acc',
-  'ai-user-pro': 'up',
+  'ai-productivity-master': 'pm',
   'ai-content-creator': 'cc',
+  'ai-automation-engineer': 'ae',
+  'ai-agent-engineer': 'ag',
+  'ai-business-builder': 'bb',
+  'ai-user-pro': 'up',
   'no-code-automation': 'nc',
   'ai-conversational-systems': 'cs',
   'ai-saas-builder': 'sb',

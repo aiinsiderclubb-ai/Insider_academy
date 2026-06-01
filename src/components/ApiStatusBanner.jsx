@@ -1,5 +1,6 @@
 import { useApi } from '../context/ApiContext'
 import { useLanguage } from '../context/LanguageContext'
+import { getApiBase } from '../api/client'
 import styles from './ApiStatusBanner.module.css'
 
 const isLocalHost = typeof window !== 'undefined'
@@ -11,15 +12,21 @@ export function ApiStatusBanner() {
 
   if (online === null || online) return null
 
+  const healthUrl = `${getApiBase()}/health`
+
   return (
     <div className={styles.banner} role="status">
       <span>
         {lang === 'ru'
-          ? 'Сервер API недоступен — данные не сохраняются в базу. Запустите backend (npm run dev:all) или откройте сайт на Vercel.'
-          : 'API server is offline — data is not saved to the database. Run the backend (npm run dev:all) or use the Vercel deployment.'}
+          ? isLocalHost
+            ? 'Сервер API недоступен — отзывы и покупки не сохраняются. В папке проекта выполните: cd Insider_academy && npm run dev:all (нужны порты 3001 и 5173).'
+            : 'Сервер API недоступен. Откройте продакшен: insider-academy-vsxg.vercel.app или проверьте VITE_API_URL на Vercel.'
+          : isLocalHost
+            ? 'API is offline. From the project folder run: cd Insider_academy && npm run dev:all (ports 3001 and 5173).'
+            : 'API is offline. Use the Vercel deployment or check VITE_API_URL.'}
       </span>
       {isLocalHost && (
-        <code className={styles.hint}>http://localhost:3001/api/health</code>
+        <code className={styles.hint}>{healthUrl}</code>
       )}
       <button type="button" className={styles.retryBtn} onClick={() => refresh()}>
         {lang === 'ru' ? 'Повторить подключение' : 'Retry connection'}

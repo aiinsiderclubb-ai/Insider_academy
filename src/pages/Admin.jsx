@@ -926,7 +926,10 @@ export function Admin() {
             reviews={searchQuery ? filteredReviews : reviewsList}
             online={useServerData}
             courses={courses}
-            onUpdated={() => setRefresh((r) => r + 1)}
+            onUpdated={async () => {
+              setRefresh((r) => r + 1)
+              if (useServerData) await loadDashboardFromApi()
+            }}
             showToast={showToast}
           />
         </section>

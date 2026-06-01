@@ -3,7 +3,7 @@
 export const PLAN_COMPARISON_ROWS = {
   ru: [
     ['Все обычные видеоуроки Academy', true, true],
-    ['Pro-only курсы: Agent Engineer и Agency Builder', false, true],
+    ['Pro-only: Automation, Agent и Business Builder', false, true],
     ['Учебные материалы доступных курсов', true, true],
     ['Домашние задания и сертификаты', true, true],
     ['Новые базовые курсы внутри Academy', true, true],
@@ -15,7 +15,7 @@ export const PLAN_COMPARISON_ROWS = {
   ],
   en: [
     ['All regular Academy video lessons', true, true],
-    ['Pro-only courses: Agent Engineer and Agency Builder', false, true],
+    ['Pro-only: Automation, Agent and Business Builder', false, true],
     ['Learning materials for available courses', true, true],
     ['Homework and certificates', true, true],
     ['Future core Academy courses', true, true],
@@ -37,9 +37,9 @@ export const MEMBERSHIP_TIER_DETAILS = {
     heroRu: 'Все основные курсы Academy в одной подписке',
     heroEn: 'All core Academy courses in one subscription',
     leadRu:
-      'Club открывает видеоуроки, материалы, домашние задания и сертификаты по обычным курсам. Agent Engineer и Agency Builder доступны в Pro или в пакете курсов.',
+      'Club: AI Productivity Master, AI Content Creator и все бесплатные программы. Automation, Agent и Business Builder — в Pro или пакетах.',
     leadEn:
-      'Club unlocks video lessons, materials, homework and certificates for regular courses. Agent Engineer and Agency Builder are available in Pro or a course pack.',
+      'Club: AI Productivity Master, AI Content Creator and all free programs. Automation, Agent and Business Builder are in Pro or packs.',
     forWhoRu: [
       'Новичкам, которые хотят пройти Academy без покупки каждого курса отдельно',
       'Специалистам, которым нужен доступ к обучению, а не к Pro-шаблонам',

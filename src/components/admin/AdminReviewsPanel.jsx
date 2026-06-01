@@ -30,68 +30,90 @@ function resolveCourse(courseId, courses) {
 
 export function AdminReviewsPanel({
   reviews = [],
-  online,
+  online: useApi = false,
   courses = [],
   onUpdated,
   showToast,
 }) {
   const [filter, setFilter] = useState('pending')
-  const [localReviews, setLocalReviews] = useState(() => (online ? [] : getReviewSubmissions()))
+  const [localReviews, setLocalReviews] = useState(() => (useApi ? [] : getReviewSubmissions()))
   const [busyId, setBusyId] = useState(null)
 
   useEffect(() => {
-    if (online) return
+    if (useApi) return
     setLocalReviews(getReviewSubmissions())
-  }, [online, reviews])
+  }, [useApi, reviews])
 
-  const list = online ? reviews : localReviews
+  const sourceList = useApi ? reviews : localReviews
 
   const filtered = useMemo(() => {
-    if (filter === 'all') return list
-    return list.filter((r) => (r.status || 'pending') === filter)
-  }, [list, filter])
+    if (filter === 'all') return sourceList
+    return sourceList.filter((r) => (r.status || 'pending') === filter)
+  }, [sourceList, filter])
+
+  const applyLocalList = (updater) => {
+    if (useApi) return
+    const next = typeof updater === 'function' ? updater(getReviewSubmissions()) : updater
+    setLocalReviews(next)
+  }
 
   const setStatus = async (id, status) => {
-    const review = list.find((r) => r.id === id)
+    if (!id) {
+      showToast('Ошибка: у отзыва нет идентификатора', 'error')
+      return
+    }
+    const review = sourceList.find((r) => r.id === id)
+    if (!review) {
+      showToast('Отзыв не найден — обновите страницу', 'error')
+      return
+    }
     if (status === 'approved' && !String(review?.text || '').trim()) {
-      showToast('Нельзя опубликовать отзыв без текста — удалите его', 'error')
+      showToast('Нельзя опубликовать отзыв без текста — отклоните или удалите', 'error')
       return
     }
     setBusyId(id)
     try {
-      if (online) {
+      if (useApi) {
         await api.adminUpdateReview(id, { status })
       } else {
-        updateReviewSubmission(id, { status })
-        setLocalReviews(getReviewSubmissions())
+        const updated = updateReviewSubmission(id, { status })
+        if (!updated) throw new Error('not found')
+        applyLocalList(getReviewSubmissions())
       }
       showToast(
         status === 'approved' ? 'Отзыв опубликован на сайте и главной'
           : status === 'rejected' ? 'Отзыв отклонён'
             : 'Статус обновлён'
       )
-      onUpdated?.()
+      await onUpdated?.()
     } catch (err) {
-      showToast(err.data?.errorRu || err.data?.error || 'Ошибка обновления', 'error')
+      const msg = err?.data?.errorRu || err?.data?.error || err?.message || 'Ошибка обновления'
+      showToast(err?.network ? 'Нет связи с API — проверьте сервер' : msg, 'error')
     } finally {
       setBusyId(null)
     }
   }
 
   const removeReview = async (id) => {
+    if (!id) {
+      showToast('Ошибка: у отзыва нет идентификатора', 'error')
+      return
+    }
     if (!window.confirm('Удалить отзыв навсегда?')) return
     setBusyId(id)
     try {
-      if (online) {
+      if (useApi) {
         await api.adminDeleteReview(id)
       } else {
-        deleteReviewSubmission(id)
-        setLocalReviews(getReviewSubmissions())
+        const ok = deleteReviewSubmission(id)
+        if (!ok) throw new Error('not found')
+        applyLocalList(getReviewSubmissions())
       }
       showToast('Отзыв удалён')
-      onUpdated?.()
-    } catch {
-      showToast('Ошибка удаления', 'error')
+      await onUpdated?.()
+    } catch (err) {
+      const msg = err?.data?.errorRu || err?.data?.error || err?.message || 'Ошибка удаления'
+      showToast(err?.network ? 'Нет связи с API — проверьте сервер' : msg, 'error')
     } finally {
       setBusyId(null)
     }
@@ -113,7 +135,7 @@ export function AdminReviewsPanel({
           >
             {f === 'all' ? 'Все' : STATUS_LABELS[f]}
             {' '}
-            ({f === 'all' ? list.length : list.filter((r) => (r.status || 'pending') === f).length})
+            ({f === 'all' ? sourceList.length : sourceList.filter((r) => (r.status || 'pending') === f).length})
           </button>
         ))}
       </div>
@@ -155,7 +177,11 @@ export function AdminReviewsPanel({
                   <span className={styles.reviewAdminStars}>{'★'.repeat(Number(r.rating) || 0)}</span>
                 </div>
                 <p className={styles.reviewAdminText}>
-                  {emptyText ? <em style={{ opacity: 0.6 }}>Текст отсутствует — опубликовать нельзя</em> : r.text}
+                  {emptyText ? (
+                    <em className={styles.reviewEmptyHint}>
+                      Текст отсутствует — «Опубликовать» недоступно. Используйте «Отклонить» или «Удалить».
+                    </em>
+                  ) : r.text}
                 </p>
                 <div className={styles.reviewAdminMeta}>
                   <span>{new Date(r.date).toLocaleString('ru-RU')}</span>
@@ -175,6 +201,8 @@ export function AdminReviewsPanel({
                       type="button"
                       className={styles.approveBtn}
                       disabled={disabled || emptyText}
+                      title={emptyText ? 'Нужен текст отзыва' : 'Опубликовать на сайте'}
+                      aria-disabled={disabled || emptyText}
                       onClick={() => setStatus(r.id, 'approved')}
                     >
                       Опубликовать

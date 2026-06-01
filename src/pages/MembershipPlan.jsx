@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
-import { MEMBERSHIP_PLANS } from '../data/memberships'
+import { MEMBERSHIP_PLANS, isMembershipExcludedLine } from '../data/memberships'
 import {
   MEMBERSHIP_TIER_DETAILS,
   PLAN_COMPARISON_ROWS,
@@ -155,7 +155,12 @@ export function MembershipPlan() {
                 <h2>{ru ? 'Что входит' : 'What is included'}</h2>
                 <ul className={styles.list}>
                   {(ru ? plan.includesRu : plan.includesEn).map((item) => (
-                    <li key={item}>{item}</li>
+                    <li
+                      key={item}
+                      className={isMembershipExcludedLine(item) ? styles.listExcluded : undefined}
+                    >
+                      {item}
+                    </li>
                   ))}
                 </ul>
                 {(ru ? plan.bonusRu : plan.bonusEn)?.length > 0 && (

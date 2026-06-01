@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { CourseCatalogCard } from './CourseCatalogCard'
 import { COURSE_BUNDLES } from '../data/coursePacks'
+import { VaultSection } from './VaultSection'
 import { getCourseById, getCourseField } from '../data/courses'
 import styles from './CourseCatalogSections.module.css'
 
@@ -179,6 +180,8 @@ export function CourseCatalogSections({
       </section>
 
       <CourseBundleOffers lang={lang} />
+
+      <VaultSection lang={lang} hasPurchased={hasPurchased} compact showMoreLink />
 
       <section className={styles.section}>
         <SectionHeader

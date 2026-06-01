@@ -1,3 +1,5 @@
+import { resolveCourseId } from './courseAliases.js'
+
 const defaultTheme = {
   accent: '#a855f7',
   accentSoft: 'rgba(168, 85, 247, 0.22)',
@@ -12,12 +14,16 @@ export const courseThemes = {
   'ai-for-productivity': { accent: '#06b6d4', accentSoft: 'rgba(6,182,212,0.22)', gradient: 'linear-gradient(135deg, #06b6d4 0%, #6366f1 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(7,6,15,0.94) 0%, rgba(6,182,212,0.35) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(236,254,255,0.97) 0%, rgba(6,182,212,0.18) 100%)', icon: '⚡' },
   'first-automation-n8n': { accent: '#22c55e', accentSoft: 'rgba(34,197,94,0.22)', gradient: 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(34,197,94,0.3) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(240,253,244,0.97) 0%, rgba(34,197,94,0.15) 100%)', icon: '🔧' },
   'ai-insider-accelerator': { accent: '#a855f7', accentSoft: 'rgba(168,85,247,0.22)', gradient: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(168,85,247,0.4) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(245,243,255,0.97) 0%, rgba(168,85,247,0.18) 100%)', icon: '🏁' },
+  'ai-productivity-master': { accent: '#6366f1', accentSoft: 'rgba(99,102,241,0.22)', gradient: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(99,102,241,0.35) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(238,242,255,0.97) 0%, rgba(99,102,241,0.15) 100%)', icon: '⭐' },
   'ai-user-pro': { accent: '#6366f1', accentSoft: 'rgba(99,102,241,0.22)', gradient: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(99,102,241,0.35) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(238,242,255,0.97) 0%, rgba(99,102,241,0.15) 100%)', icon: '⭐' },
   'ai-content-creator': { accent: '#ec4899', accentSoft: 'rgba(236,72,153,0.22)', gradient: 'linear-gradient(135deg, #db2777 0%, #f97316 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(236,72,153,0.35) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(253,242,248,0.97) 0%, rgba(236,72,153,0.15) 100%)', icon: '✍️' },
+  'ai-automation-engineer': { accent: '#22c55e', accentSoft: 'rgba(34,197,94,0.22)', gradient: 'linear-gradient(135deg, #16a34a 0%, #06b6d4 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(34,197,94,0.3) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(240,253,244,0.97) 0%, rgba(34,197,94,0.15) 100%)', icon: '🔧' },
   'no-code-automation': { accent: '#22c55e', accentSoft: 'rgba(34,197,94,0.22)', gradient: 'linear-gradient(135deg, #16a34a 0%, #06b6d4 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(34,197,94,0.3) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(240,253,244,0.97) 0%, rgba(34,197,94,0.15) 100%)', icon: '🔧' },
   'ai-conversational-systems': { accent: '#a855f7', accentSoft: 'rgba(168,85,247,0.22)', gradient: 'linear-gradient(135deg, #06b6d4 0%, #7c3aed 45%, #f97316 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(7,6,15,0.94) 0%, rgba(124,58,237,0.38) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(246,244,255,0.97) 0%, rgba(168,85,247,0.16) 100%)', icon: '💬' },
   'ai-saas-builder': { accent: '#f97316', accentSoft: 'rgba(249,115,22,0.22)', gradient: 'linear-gradient(135deg, #f97316 0%, #a855f7 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(7,6,15,0.94) 0%, rgba(249,115,22,0.35) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(255,247,237,0.97) 0%, rgba(249,115,22,0.15) 100%)', icon: '🚀' },
+  'ai-agent-engineer': { accent: '#8b5cf6', accentSoft: 'rgba(139,92,246,0.22)', gradient: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #6366f1 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(139,92,246,0.4) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(245,243,255,0.97) 0%, rgba(139,92,246,0.18) 100%)', icon: '🤖' },
   'ai-agent-architect': { accent: '#8b5cf6', accentSoft: 'rgba(139,92,246,0.22)', gradient: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #6366f1 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(139,92,246,0.4) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(245,243,255,0.97) 0%, rgba(139,92,246,0.18) 100%)', icon: '🤖' },
+  'ai-business-builder': { accent: '#f43f5e', accentSoft: 'rgba(244,63,94,0.22)', gradient: 'linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #a855f7 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(244,63,94,0.35) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(255,241,242,0.97) 0%, rgba(244,63,94,0.12) 100%)', icon: '🏢' },
   'ai-agency-builder': { accent: '#f43f5e', accentSoft: 'rgba(244,63,94,0.22)', gradient: 'linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #a855f7 100%)', heroOverlayDark: 'linear-gradient(135deg, rgba(8,8,14,0.94) 0%, rgba(244,63,94,0.35) 100%)', heroOverlayLight: 'linear-gradient(135deg, rgba(255,241,242,0.97) 0%, rgba(244,63,94,0.12) 100%)', icon: '🏢' },
   'ai-chatbot-engineer': {
     accent: '#6366f1',
@@ -102,7 +108,8 @@ export const courseThemes = {
 }
 
 export function getCourseTheme(courseId) {
-  return courseThemes[courseId] || defaultTheme
+  const id = resolveCourseId(courseId)
+  return courseThemes[id] || courseThemes[courseId] || defaultTheme
 }
 
 export function getCourseThemeStyle(courseId, theme = 'dark') {
