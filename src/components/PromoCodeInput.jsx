@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { api } from '../api/client'
+import { formatApiError } from '../utils/formatApiError'
 import styles from '../pages/CourseBuy.module.css'
 
 export function PromoCodeInput({ courseId, amountEur, lang, onApplied }) {
@@ -18,7 +19,11 @@ export function PromoCodeInput({ courseId, amountEur, lang, onApplied }) {
     } catch (err) {
       setApplied(null)
       onApplied?.(null)
-      setError(err.data?.error || err.message || (lang === 'ru' ? 'Промокод недействителен' : 'Invalid promo'))
+      if (err.status === 404) {
+        setError(lang === 'ru' ? 'Промокоды временно недоступны. Оплатите без промокода.' : 'Promo codes unavailable. Pay without a promo.')
+      } else {
+        setError(formatApiError(err, lang) || (lang === 'ru' ? 'Промокод недействителен' : 'Invalid promo'))
+      }
     } finally {
       setLoading(false)
     }

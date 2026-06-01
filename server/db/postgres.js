@@ -49,6 +49,19 @@ export async function createPostgresDb(connectionString) {
   await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS users_personal_id_idx ON users (personal_id) WHERE personal_id IS NOT NULL').catch(() => {})
   await pool.query('ALTER TABLE registrations ADD COLUMN IF NOT EXISTS personal_id TEXT').catch(() => {})
   await pool.query(`
+CREATE TABLE IF NOT EXISTS promo_codes (
+  code TEXT PRIMARY KEY,
+  discount_percent INTEGER,
+  discount_eur REAL,
+  course_ids TEXT,
+  max_uses INTEGER,
+  used_count INTEGER DEFAULT 0,
+  valid_from TEXT,
+  valid_until TEXT,
+  active INTEGER DEFAULT 1,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`).catch(() => {})
+  await pool.query(`
 CREATE TABLE IF NOT EXISTS support_messages (
   id TEXT PRIMARY KEY,
   user_id INTEGER,

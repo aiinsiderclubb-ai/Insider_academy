@@ -49,8 +49,11 @@ export async function apiRequest(path, { method = 'GET', body, admin = false, au
       body: isForm ? body : body != null ? JSON.stringify(body) : undefined,
     })
   } catch (fetchErr) {
-    const err = new Error(fetchErr?.message || 'Network error')
+    const raw = fetchErr?.message || 'Network error'
+    const isLoadFailed = /load failed|failed to fetch|networkerror/i.test(raw)
+    const err = new Error(isLoadFailed ? 'Network error' : raw)
     err.network = true
+    err.cause = raw
     throw err
   }
 

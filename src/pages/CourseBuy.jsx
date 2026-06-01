@@ -18,6 +18,7 @@ import { COURSE_FAQ } from '../data/courseLanding'
 import { PlatformBridge } from '../components/PlatformBridge'
 import { IconChevronDown } from '../components/Icons'
 import { api, checkApiOnline } from '../api/client'
+import { formatApiError } from '../utils/formatApiError'
 import { getCourseTributePaymentUrl } from '../data/tributePayments'
 import styles from './CourseBuy.module.css'
 
@@ -151,7 +152,11 @@ export function CourseBuy() {
       await completeDemoPurchase()
       navigate(`/courses/${course.slug}?paid=1`)
     } catch (err) {
-      setError(err.message || (lang === 'ru' ? 'Ошибка оплаты' : 'Payment error'))
+      if (err?.requiresVerification) {
+        navigate(`/verify-email?email=${encodeURIComponent(err.email || email)}`)
+        return
+      }
+      setError(formatApiError(err, lang) || (lang === 'ru' ? 'Ошибка оплаты' : 'Payment error'))
     } finally {
       setLoading(false)
     }

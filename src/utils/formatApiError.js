@@ -1,7 +1,15 @@
 export function formatApiError(err, lang = 'ru') {
   if (!err) return ''
   if (err.network) {
-    return lang === 'ru' ? 'Нет связи с сервером. Проверьте интернет и API.' : 'Cannot reach the server. Check your connection.'
+    return lang === 'ru'
+      ? 'Нет связи с API. Проверьте интернет или подождите минуту (сервер мог «заснуть»).'
+      : 'Cannot reach the API. Check your connection or wait a moment (server may be waking up).'
+  }
+  const raw = err.message || ''
+  if (/load failed|failed to fetch/i.test(raw)) {
+    return lang === 'ru'
+      ? 'Нет связи с API. Проверьте интернет или подождите минуту.'
+      : 'Cannot reach the API. Check your connection or wait a moment.'
   }
   const data = err.data || {}
   if (data.errorRu) return data.errorRu

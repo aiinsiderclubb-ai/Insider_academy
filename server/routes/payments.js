@@ -135,11 +135,15 @@ router.post('/demo', requireUser, async (req, res) => {
   const { courseId, courseTitle, amount, promoCode } = req.body
   let finalAmount = Number(amount) || 0
   if (promoCode) {
-    const { validatePromoCode, consumePromoCode } = await import('../services/promoCodes.js')
-    const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: finalAmount })
-    if (promo.valid) {
-      finalAmount = promo.finalEur
-      await consumePromoCode(promoCode)
+    try {
+      const { validatePromoCode, consumePromoCode } = await import('../services/promoCodes.js')
+      const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: finalAmount })
+      if (promo.valid) {
+        finalAmount = promo.finalEur
+        await consumePromoCode(promoCode)
+      }
+    } catch (err) {
+      console.warn('[payments/demo] promo ignored:', err.message)
     }
   }
   const exists = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [req.userId, courseId])
