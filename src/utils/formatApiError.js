@@ -13,6 +13,12 @@ export function formatApiError(err, lang = 'ru') {
   if (msg === 'Invalid or expired token') {
     return lang === 'ru' ? 'Ссылка устарела или уже использована' : msg
   }
+  if (msg === 'Invalid or expired code') {
+    return lang === 'ru' ? 'Неверный или просроченный код' : msg
+  }
+  if (msg === 'Email not verified') {
+    return lang === 'ru' ? 'Подтвердите email — введите код из письма' : 'Please verify your email with the code we sent'
+  }
   if (msg === 'Password must be at least 6 characters' || msg === 'Password too short') {
     return lang === 'ru' ? 'Пароль должен быть не менее 6 символов' : msg
   }
