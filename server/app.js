@@ -55,6 +55,7 @@ export async function createApp() {
     if (!origin) return true
     if (corsOrigins.includes(origin)) return true
     if (/^https:\/\/(www\.)?insiderai\.it\.com$/i.test(origin)) return true
+    if (/^https:\/\/(www\.)?myinsideracademy\.com$/i.test(origin)) return true
     if (/^https:\/\/[\w-]+\.vercel\.app$/i.test(origin)) return true
     if (/^https:\/\/insider-academy\.onrender\.com$/i.test(origin)) return true
     if (/^http:\/\/localhost(:\d+)?$/i.test(origin)) return true

@@ -1,5 +1,5 @@
 /** Связь маркeting-сайта AI Insider и LMS-платформы Academy */
-export const ACADEMY_URL = import.meta.env.VITE_ACADEMY_URL || 'https://insider-academy-vsxg.vercel.app'
+export const ACADEMY_URL = import.meta.env.VITE_ACADEMY_URL || 'https://myinsideracademy.com'
 export const ACADEMY_LOGIN = `${ACADEMY_URL}/login`
 export const ACADEMY_REGISTER = `${ACADEMY_URL}/register`
 export const ACADEMY_COURSES = `${ACADEMY_URL}/courses`

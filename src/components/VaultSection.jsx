@@ -7,7 +7,14 @@ import {
 import { VaultCatalogCard } from './VaultCatalogCard'
 import styles from './VaultSection.module.css'
 
-export function VaultSection({ lang, hasPurchased, compact = false, showMoreLink = true }) {
+export function VaultSection({
+  lang,
+  hasPurchased,
+  compact = false,
+  hideHeader = false,
+  showMoreLink = true,
+  showMarketLink = true,
+}) {
   const ru = lang === 'ru'
   const audience = ru ? VAULT_HUB.audienceRu : VAULT_HUB.audienceEn
   const benefits = ru ? VAULT_HUB.benefitsRu : VAULT_HUB.benefitsEn
@@ -18,17 +25,21 @@ export function VaultSection({ lang, hasPurchased, compact = false, showMoreLink
   return (
     <section
       id="vault"
-      className={`${styles.section} ${compact ? styles.compact : ''}`}
+      className={`${styles.section} ${compact ? styles.compact : ''} ${hideHeader ? styles.noHeader : ''}`}
     >
-      <div className={styles.sectionHead}>
-        <span className={styles.pill}>Vault</span>
-        <h2 className={styles.sectionTitle}>
-          {ru ? VAULT_HUB.titleRu : VAULT_HUB.titleEn}
-        </h2>
-        <p className={styles.sectionDesc}>
-          {ru ? VAULT_HUB.leadRu : VAULT_HUB.leadEn}
-        </p>
+      {!hideHeader && (
+        <div className={styles.sectionHead}>
+          <span className={styles.pill}>Vault</span>
+          <h2 className={styles.sectionTitle}>
+            {ru ? VAULT_HUB.titleRu : VAULT_HUB.titleEn}
+          </h2>
+          <p className={styles.sectionDesc}>
+            {ru ? VAULT_HUB.leadRu : VAULT_HUB.leadEn}
+          </p>
+        </div>
+      )}
 
+      <div className={styles.meta}>
         {stats.length > 0 && (
           <div className={styles.stats}>
             {stats.map((item) => (
@@ -103,9 +114,11 @@ export function VaultSection({ lang, hasPurchased, compact = false, showMoreLink
             {ru ? 'Все Vault-продукты →' : 'All Vault products →'}
           </Link>
         )}
-        <Link to="/marketplace" className={styles.marketLink}>
-          {ru ? 'Больше шаблонов в Marketplace →' : 'More templates in Marketplace →'}
-        </Link>
+        {showMarketLink && (
+          <Link to="/marketplace" className={styles.marketLink}>
+            {ru ? 'Больше шаблонов в Marketplace →' : 'More templates in Marketplace →'}
+          </Link>
+        )}
       </div>
     </section>
   )

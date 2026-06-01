@@ -107,7 +107,7 @@ const emptyCourse = () => ({
 })
 
 export function Admin() {
-  const { online } = useApi()
+  const { online, refresh: refreshApi } = useApi()
   const [password, setPassword] = useState('')
   const [authenticated, setAuthenticated] = useState(false)
   const [error, setError] = useState('')
@@ -139,6 +139,7 @@ export function Admin() {
   const [certificateError, setCertificateError] = useState('')
   const [dashData, setDashData] = useState(null)
   const [dataHealth, setDataHealth] = useState(null)
+  const [emailStatus, setEmailStatus] = useState(null)
 
   useEffect(() => {
     const token = getAdminToken()
@@ -152,6 +153,7 @@ export function Admin() {
         .then((me) => {
           setAdminRoleState(me.role || 'admin')
           setAdminRole(me.role || 'admin')
+          setEmailStatus(me.email || null)
           setAuthenticated(true)
         })
         .catch(() => {
@@ -242,8 +244,11 @@ export function Admin() {
     const isLocalDev = typeof window !== 'undefined'
       && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     if (!online && !isLocalDev) {
-      setError('API-сервер недоступен. Данные не сохраняются — дождитесь подключения или откройте продакшен-сайт.')
-      return
+      const ok = await refreshApi()
+      if (!ok) {
+        setError('API недоступен. Нажмите «Повторить подключение» вверху или обновите страницу через 1–2 мин.')
+        return
+      }
     }
     if (online) {
       try {
@@ -689,7 +694,7 @@ export function Admin() {
                   ? 'PostgreSQL + Google Sheets'
                   : online
                     ? 'API доступен — войдите паролем админа для синхронизации'
-                    : '⚠️ API недоступен — данные не сохраняются. Запустите сервер или откройте прод-сайт.'}
+                    : '⚠️ API недоступен — данные не сохраняются. Дождитесь подключения (кнопка вверху) или обновите страницу.'}
               </p>
             </div>
             <div className={styles.headerActions}>
@@ -748,6 +753,7 @@ export function Admin() {
               settings={dashData?.settings}
               webhookLog={dashData?.webhookLog}
               dataHealth={dataHealth}
+              emailStatus={emailStatus}
               online={online}
               onCopy={(url) => { navigator.clipboard?.writeText(url); showToast('URL скопирован') }}
               onEnablePush={() => requestAdminNotificationPermission().then((p) => showToast(p === 'granted' ? 'Push включены' : `Статус: ${p}`))}

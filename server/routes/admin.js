@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import { getDb, parseJson } from '../db.js'
 import { requireAdmin, signAdminToken } from '../middleware/auth.js'
-import { sendHomeworkFeedbackEmail } from '../services/email.js'
+import { sendEmail, sendHomeworkFeedbackEmail } from '../services/email.js'
+import { config, isEmailEnabled } from '../config.js'
 import { getFileUrl } from '../services/storage.js'
-import { config } from '../config.js'
 import { nowIso } from '../db/time.js'
 import { mapApplication } from './applications.js'
 import { userSelectFields } from '../services/userProfile.js'
@@ -40,10 +40,45 @@ router.get('/me', requireAdmin('admin', 'editor', 'moderator'), (req, res) => {
     webhookUrl: getTributeWebhookUrl(),
     features: {
       tribute: Boolean(config.tribute.apiKey),
-      email: Boolean(config.email.smtp.host),
-      digest: config.adminDigestEnabled,
+      email: isEmailEnabled(),
+      digest: config.adminDigestEnabled && Boolean(config.adminEmail),
+    },
+    email: {
+      enabled: isEmailEnabled(),
+      from: config.email.from,
+      smtpHost: config.email.smtp.host || null,
+      smtpPort: config.email.smtp.port || null,
+      adminEmail: config.adminEmail || null,
     },
   })
+})
+
+router.post('/test-email', requireAdmin('admin'), async (req, res) => {
+  if (!isEmailEnabled()) {
+    return res.status(503).json({
+      error: 'SMTP not configured',
+      errorRu: 'SMTP не настроен. Добавьте SMTP_HOST, SMTP_USER, SMTP_PASS на Render и перезапустите API.',
+    })
+  }
+  const to = String(req.body.email || config.adminEmail || '').trim().toLowerCase()
+  if (!to || !to.includes('@')) {
+    return res.status(400).json({ error: 'Valid email required', errorRu: 'Укажите email для теста' })
+  }
+  try {
+    await sendEmail({
+      to,
+      subject: 'Тест почты — AI Insider Academy',
+      html: `<p>Почта Academy работает.</p><p>Отправитель: ${config.email.from}</p><p>Время: ${new Date().toISOString()}</p>`,
+      text: `Почта Academy работает. Отправитель: ${config.email.from}`,
+    })
+    res.json({ ok: true, to })
+  } catch (err) {
+    console.error('[admin/test-email]', err.message)
+    res.status(502).json({
+      error: err.message || 'Send failed',
+      errorRu: 'Не удалось отправить. Проверьте SMTP_HOST, порт, пароль и SPF/DKIM у домена.',
+    })
+  }
 })
 
 router.use(requireAdmin('admin', 'editor', 'moderator'))

@@ -2,12 +2,14 @@ import { getDb } from '../db.js'
 import { nowIso } from '../db/time.js'
 import crypto from 'crypto'
 import { sendEmail } from './email.js'
-import { isEmailEnabled } from '../config.js'
+import { config, isEmailEnabled } from '../config.js'
+
+const academyBase = () => config.appUrl.replace(/\/$/, '')
 
 const TEMPLATES = {
   welcome_1: {
     subject: 'Добро пожаловать в AI Insider Academy',
-    body: (name) => `Здравствуйте${name ? `, ${name}` : ''}!\n\nСпасибо за регистрацию. Начните с бесплатного курса AI Starter Week: https://insiderai.it.com/courses/ai-start\n\n— AI Insider Academy`,
+    body: (name) => `Здравствуйте${name ? `, ${name}` : ''}!\n\nСпасибо за регистрацию. Начните с бесплатного курса AI Starter Week: ${academyBase()}/courses/ai-start\n\n— AI Insider Academy`,
   },
   hw_reviewed: {
     subject: 'Домашнее задание проверено',
@@ -15,7 +17,7 @@ const TEMPLATES = {
   },
   inactive_3d: {
     subject: 'Мы скучаем — продолжите обучение',
-    body: (name) => `Здравствуйте${name ? `, ${name}` : ''}!\n\nВы не заходили в Academy 3 дня. Продолжите с того места, где остановились: https://insiderai.it.com/cabinet\n\n— AI Insider Academy`,
+    body: (name) => `Здравствуйте${name ? `, ${name}` : ''}!\n\nВы не заходили в Academy 3 дня. Продолжите с того места, где остановились: ${academyBase()}/cabinet\n\n— AI Insider Academy`,
   },
 }
 

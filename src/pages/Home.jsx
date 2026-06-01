@@ -15,7 +15,7 @@ import { CourseCatalogCard } from '../components/CourseCatalogCard'
 import { useTheme } from '../context/ThemeContext'
 import { HomeSuperOffer } from '../components/HomeSuperOffer'
 import { MembershipsSection } from '../components/MembershipsSection'
-import { VaultSection } from '../components/VaultSection'
+import { HomeProductsSection } from '../components/HomeProductsSection'
 import { HomeCertificatesSection } from '../components/HomeCertificatesSection'
 import { HomeReviewsSection } from '../components/HomeReviewsSection'
 import { PlatformBridge } from '../components/PlatformBridge'
@@ -216,49 +216,6 @@ export function Home() {
       <section className={`${styles.courses} ${styles.animateSection}`}>
         <div className={styles.container}>
           <div className={styles.sectionHead}>
-            <span className={styles.sectionPill}>Marketplace</span>
-            <h2 className={styles.sectionTitle}>
-              {lang === 'ru' ? 'AI Insider Marketplace' : 'AI Insider Marketplace'}
-            </h2>
-            <p className={styles.sectionDesc}>
-              {lang === 'ru'
-                ? 'Промпты, n8n, агенты и SaaS-киты — купите и внедрите за часы.'
-                : 'Prompts, n8n, agents and SaaS kits — buy and deploy in hours.'}
-            </p>
-            <Link to="/marketplace" className={styles.moreLink} style={{ marginTop: 12 }}>
-              {lang === 'ru' ? 'Открыть Marketplace →' : 'Open Marketplace →'}
-            </Link>
-          </div>
-          <VaultSection lang={lang} hasPurchased={hasPurchased} compact />
-        </div>
-      </section>
-
-      <MembershipsSection lang={lang} compact />
-
-      <section className={`${styles.tryNow} ${styles.animateSection}`}>
-        <div className={styles.container}>
-          <div className={styles.sectionHead}>
-            <span className={styles.sectionPill}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>
-            <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Начните бесплатно' : 'Start for free'}</h2>
-          </div>
-          <p className={styles.sectionDesc}>{t('home.tryNowDesc')}</p>
-          <div className={styles.cards}>
-            {(loading ? [] : freeCourses).map((course) => (
-              <CourseCatalogCard
-                key={course.id}
-                course={course}
-                lang={lang}
-                theme={theme}
-                actionLabel={t('home.tryNowWatch')}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className={`${styles.courses} ${styles.animateSection}`}>
-        <div className={styles.container}>
-          <div className={styles.sectionHead}>
             <span className={styles.sectionPillPaid}>{lang === 'ru' ? 'Pro' : 'Pro'}</span>
             <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Платные программы' : 'Paid programs'}</h2>
           </div>
@@ -282,6 +239,31 @@ export function Home() {
             <Link to="/courses" className={styles.moreLink}>
               {t('home.allCourses')}
             </Link>
+          </div>
+        </div>
+      </section>
+
+      <HomeProductsSection lang={lang} hasPurchased={hasPurchased} />
+
+      <MembershipsSection lang={lang} compact />
+
+      <section className={`${styles.tryNow} ${styles.animateSection}`}>
+        <div className={styles.container}>
+          <div className={styles.sectionHead}>
+            <span className={styles.sectionPill}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>
+            <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Начните бесплатно' : 'Start for free'}</h2>
+          </div>
+          <p className={styles.sectionDesc}>{t('home.tryNowDesc')}</p>
+          <div className={styles.cards}>
+            {(loading ? [] : freeCourses).map((course) => (
+              <CourseCatalogCard
+                key={course.id}
+                course={course}
+                lang={lang}
+                theme={theme}
+                actionLabel={t('home.tryNowWatch')}
+              />
+            ))}
           </div>
         </div>
       </section>

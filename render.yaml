@@ -41,10 +41,22 @@ services:
         sync: false
       - key: ADMIN_EMAIL
         sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        value: AI Insider Academy <info@myinsideracademy.com>
       - key: CORS_ORIGIN
-        value: https://insiderai.it.com,https://www.insiderai.it.com,https://insider-academy-vsxg.vercel.app,https://insider-academy.onrender.com,http://localhost:5173,http://127.0.0.1:5173
+        value: https://myinsideracademy.com,https://www.myinsideracademy.com,https://insiderai.it.com,https://www.insiderai.it.com,https://insider-academy-vsxg.vercel.app,https://insider-academy.onrender.com,http://localhost:5173,http://127.0.0.1:5173
       - key: APP_URL
-        value: https://insiderai.it.com
+        value: https://myinsideracademy.com
       - key: STORAGE_DRIVER
         value: local
       - key: UPLOADS_DIR
@@ -126,9 +138,9 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://insider-academy.onrender.com/api
+        value: /api
       - key: VITE_ACADEMY_URL
-        value: https://insiderai.it.com
+        value: https://myinsideracademy.com
       - key: VITE_TELEGRAM_NOTIFY_BOT_USERNAME
         value: InsiderAcademyNotifyBot
 

@@ -1,15 +1,17 @@
 import nodemailer from 'nodemailer'
 import { config, isEmailEnabled } from '../config.js'
+import { emailLayout, primaryButton } from './emailTemplates.js'
 
 let transporter = null
 
 function getTransporter() {
   if (!transporter) {
     if (isEmailEnabled()) {
+      const secure = config.email.smtp.secure || config.email.smtp.port === 465
       transporter = nodemailer.createTransport({
         host: config.email.smtp.host,
         port: config.email.smtp.port,
-        secure: config.email.smtp.port === 465,
+        secure,
         auth: { user: config.email.smtp.user, pass: config.email.smtp.pass },
       })
     } else {
@@ -38,7 +40,10 @@ export async function sendVerificationEmail(email, token) {
   return sendEmail({
     to: email,
     subject: 'Подтвердите email — AI Insider Academy',
-    html: `<p>Здравствуйте!</p><p>Подтвердите email: <a href="${link}">${link}</a></p>`,
+    html: emailLayout({
+      title: 'Подтвердите email',
+      bodyHtml: `<p>Нажмите кнопку, чтобы подтвердить адрес почты.</p>${primaryButton(link, 'Подтвердить email')}`,
+    }),
     text: `Подтвердите email: ${link}`,
   })
 }
@@ -65,20 +70,40 @@ export async function sendVerificationCodeEmail(email, code, name = '') {
 }
 
 export async function sendPasswordResetEmail(email, token) {
-  const link = `${config.appUrl}/reset-password?token=${token}`
+  const link = `${config.appUrl.replace(/\/$/, '')}/reset-password?token=${token}`
   return sendEmail({
     to: email,
     subject: 'Сброс пароля — AI Insider Academy',
-    html: `<p>Ссылка для сброса пароля (действует 1 час): <a href="${link}">${link}</a></p>`,
-    text: `Сброс пароля: ${link}`,
+    html: emailLayout({
+      title: 'Сброс пароля',
+      bodyHtml: `
+        <p>Вы запросили сброс пароля для аккаунта на <strong>AI Insider Academy</strong>.</p>
+        <p style="color:#aaa;font-size:14px">Ссылка действует <strong>1 час</strong>.</p>
+        ${primaryButton(link, 'Создать новый пароль')}
+        <p style="font-size:12px;color:#888;word-break:break-all">${link}</p>
+      `,
+    }),
+    text: `Сброс пароля (1 час): ${link}`,
   })
 }
 
 export async function sendHomeworkFeedbackEmail({ email, courseTitle, lessonTitle, status, comment }) {
   const statusRu = status === 'accepted' ? 'принято' : 'на доработку'
+  const cabinet = `${config.appUrl.replace(/\/$/, '')}/cabinet`
   return sendEmail({
     to: email,
     subject: `Ответ по ДЗ: ${courseTitle}`,
-    html: `<p>Урок: <strong>${lessonTitle}</strong></p><p>Статус: ${statusRu}</p>${comment ? `<p>Комментарий: ${comment}</p>` : ''}`,
+    html: emailLayout({
+      title: 'Проверка домашнего задания',
+      bodyHtml: `
+        <p>Курс: <strong>${courseTitle}</strong></p>
+        <p>Урок: <strong>${lessonTitle}</strong></p>
+        <p>Статус: <strong>${statusRu}</strong></p>
+        ${comment ? `<p style="margin-top:12px;padding:12px;background:#1a1a24;border-radius:8px">${comment}</p>` : ''}
+        ${primaryButton(cabinet, 'Открыть личный кабинет')}
+      `,
+      footerNote: 'Уведомление от AI Insider Academy.',
+    }),
+    text: `ДЗ «${lessonTitle}» (${courseTitle}): ${statusRu}. ${comment || ''} Кабинет: ${cabinet}`,
   })
 }

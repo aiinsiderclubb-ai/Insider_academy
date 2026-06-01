@@ -1,7 +1,8 @@
 import { AdminGoogleSheets } from './AdminGoogleSheets'
+import { AdminEmail } from './AdminEmail'
 import styles from '../../pages/Admin.module.css'
 
-export function AdminSettings({ settings, webhookLog, dataHealth, online, onCopy, onEnablePush, onToast }) {
+export function AdminSettings({ settings, webhookLog, dataHealth, emailStatus, online, onCopy, onEnablePush, onToast }) {
   const url = settings?.tributeWebhookUrl || ''
 
   return (
@@ -29,6 +30,8 @@ export function AdminSettings({ settings, webhookLog, dataHealth, online, onCopy
       )}
 
       <AdminGoogleSheets online={online} onToast={onToast} />
+
+      <AdminEmail emailStatus={emailStatus} online={online} onToast={onToast} />
 
       <section className={styles.panel}>
         <h3 className={styles.panelTitle}>Tribute Webhook (production)</h3>

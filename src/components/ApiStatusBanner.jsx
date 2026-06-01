@@ -3,8 +3,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { getApiBase } from '../api/client'
 import styles from './ApiStatusBanner.module.css'
 
-const PRODUCTION_APP = 'https://insiderai.it.com'
-const PRODUCTION_API = 'https://insider-academy.onrender.com/api'
+const ACADEMY_URL = 'https://myinsideracademy.com'
 
 const isLocalHost = typeof window !== 'undefined'
   && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -22,20 +21,12 @@ export function ApiStatusBanner() {
       <span>
         {lang === 'ru'
           ? isLocalHost
-            ? 'Бэкенд (Render) недоступен. Запустите локально: npm run dev:all — или сайт: '
-            : 'Не удаётся подключиться к API на Render. Проверьте интернет или подождите 1–2 мин (сервер просыпается). API: '
+            ? 'Бэкенд недоступен. Запустите: npm run dev:all — или откройте '
+            : 'Не удаётся подключиться к API. Подождите 1–2 мин (сервер просыпается) или обновите страницу. Сайт: '
           : isLocalHost
-            ? 'Backend (Render) is unreachable. Run npm run dev:all locally — or: '
-            : 'Cannot reach the API on Render. Check your connection or wait ~1 min. API: '}
-        <a href={PRODUCTION_API} className={styles.prodLink} target="_blank" rel="noreferrer">
-          {PRODUCTION_API.replace('https://', '')}
-        </a>
-        {!isLocalHost && (
-          <>
-            {' · '}
-            <a href={PRODUCTION_APP} className={styles.prodLink}>{PRODUCTION_APP.replace('https://', '')}</a>
-          </>
-        )}
+            ? 'Backend unreachable. Run npm run dev:all — or open '
+            : 'Cannot reach the API. Wait ~1 min or refresh. Site: '}
+        <a href={ACADEMY_URL} className={styles.prodLink}>{ACADEMY_URL.replace('https://', '')}</a>
       </span>
       {isLocalHost && (
         <code className={styles.hint}>{healthUrl}</code>

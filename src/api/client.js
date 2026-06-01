@@ -7,9 +7,12 @@ function isLocalHost(host) {
   return host === 'localhost' || host === '127.0.0.1'
 }
 
-/** Vercel: /api проксируется на Render. Свой домен (insiderai.it.com) — только прямой URL API. */
-function shouldUseRelativeApiProxy(host) {
-  return host.endsWith('.vercel.app')
+/** Хосты на Vercel с rewrite /api → Render (без CORS). */
+function usesVercelApiProxy(host) {
+  if (isLocalHost(host)) return false
+  if (host.endsWith('.vercel.app')) return true
+  if (host === 'myinsideracademy.com' || host === 'www.myinsideracademy.com') return true
+  return false
 }
 
 export function getApiBase() {
@@ -18,7 +21,7 @@ export function getApiBase() {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname
     if (isLocalHost(host)) return fromEnv || '/api'
-    if (shouldUseRelativeApiProxy(host) && (!fromEnv || fromEnv === '/api')) return '/api'
+    if (usesVercelApiProxy(host)) return '/api'
     if (fromEnv && fromEnv !== '/api') return fromEnv
     return PRODUCTION_API_BASE
   }
@@ -117,27 +120,10 @@ export const api = {
   submitAcceleratorApplication: (payload) => apiRequest('/applications/accelerator', { method: 'POST', body: payload }),
   getTeam: () => apiRequest('/teams/my'),
   createTeam: (name) => apiRequest('/teams/create', { method: 'POST', body: { name } }),
-  joinTeam: (inviteCode) => apiRequest('/teams/join', { method: 'POST', body: { inviteCode } }),
-  grantTeamCourse: (payload) => apiRequest('/teams/grant-course', { method: 'POST', body: payload }),
-  linkTelegram: (chatId) => apiRequest('/telegram/link', { method: 'POST', body: { chatId } }),
-  telegramLinkToken: () => apiRequest('/telegram/link-token', { method: 'POST' }),
-  telegramStatus: () => apiRequest('/telegram/status'),
-  telegramUpdatePrefs: (prefs) => apiRequest('/telegram/prefs', { method: 'PATCH', body: prefs }),
-  telegramDisconnect: () => apiRequest('/telegram/disconnect', { method: 'POST' }),
-  setReminder: (payload) => apiRequest('/telegram/reminder', { method: 'POST', body: payload }),
-  getActivity: () => apiRequest('/me/activity'),
-  submitPeerReview: (payload) => apiRequest('/me/peer-reviews', { method: 'POST', body: payload }),
-  validatePromo: (payload) => apiRequest('/promo/validate', { method: 'POST', body: payload, auth: false }),
-  getFeatureFlags: () => apiRequest('/feature-flags', { auth: false }),
-  telegramBotInfo: () => apiRequest('/telegram/bot-info', { auth: false }),
-  updateProfile: (payload) => apiRequest('/me/profile', { method: 'PATCH', body: payload }),
-  changePassword: (payload) => apiRequest('/me/password', { method: 'PATCH', body: payload }),
-  updateEmail: (payload) => apiRequest('/me/email', { method: 'PATCH', body: payload }),
-  uploadAvatar: (formData) => apiRequest('/me/avatar', { method: 'POST', body: formData }),
-  getSupportMessages: () => apiRequest('/me/support'),
-  sendSupportMessage: (message) => apiRequest('/me/support', { method: 'POST', body: { message } }),
+  joinTeam: (code) => apiRequest('/teams/join', { method: 'POST', body: { code } }),
   adminLogin: (password) => apiRequest('/admin/login', { method: 'POST', body: { password }, auth: false }),
   adminMe: () => apiRequest('/admin/me', { admin: true }),
+  adminTestEmail: (email) => apiRequest('/admin/test-email', { method: 'POST', body: { email }, admin: true }),
   adminDashboard: () => apiRequest('/admin/dashboard', { admin: true }),
   adminDataHealth: () => apiRequest('/admin/data-health', { admin: true }),
   adminSaveCourses: (courses) => apiRequest('/admin/courses', { method: 'PUT', body: { courses }, admin: true }),
