@@ -50,7 +50,25 @@ export async function createApp() {
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean)
-  app.use(cors({ origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins, credentials: true }))
+
+  function isAllowedCorsOrigin(origin) {
+    if (!origin) return true
+    if (corsOrigins.includes(origin)) return true
+    if (/^https:\/\/(www\.)?insiderai\.it\.com$/i.test(origin)) return true
+    if (/^https:\/\/[\w-]+\.vercel\.app$/i.test(origin)) return true
+    if (/^https:\/\/insider-academy\.onrender\.com$/i.test(origin)) return true
+    if (/^http:\/\/localhost(:\d+)?$/i.test(origin)) return true
+    if (/^http:\/\/127\.0\.0\.1(:\d+)?$/i.test(origin)) return true
+    return false
+  }
+
+  app.use(cors({
+    origin(origin, callback) {
+      if (isAllowedCorsOrigin(origin)) return callback(null, true)
+      return callback(new Error('CORS not allowed'))
+    },
+    credentials: true,
+  }))
 
   app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook)
   app.post('/api/webhooks/tribute', express.raw({ type: 'application/json' }), handleTributeWebhook)

@@ -119,11 +119,16 @@ services:
     autoDeployTrigger: commit
     routes:
       - type: rewrite
+        source: /api/*
+        destination: https://insider-academy.onrender.com/api/*
+      - type: rewrite
         source: /*
         destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: https://insider-academy.onrender.com/api
+      - key: VITE_ACADEMY_URL
+        value: https://insiderai.it.com
       - key: VITE_TELEGRAM_NOTIFY_BOT_USERNAME
         value: InsiderAcademyNotifyBot
 

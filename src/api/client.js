@@ -1,19 +1,29 @@
 const TOKEN_KEY = 'lms_token'
 const ADMIN_TOKEN_KEY = 'lms_admin_token'
 
-const PRODUCTION_API_BASE = 'https://insider-academy.onrender.com/api'
+export const PRODUCTION_API_BASE = 'https://insider-academy.onrender.com/api'
+
+function isLocalHost(host) {
+  return host === 'localhost' || host === '127.0.0.1'
+}
+
+/** Vercel: /api проксируется на Render. Свой домен (insiderai.it.com) — только прямой URL API. */
+function shouldUseRelativeApiProxy(host) {
+  return host.endsWith('.vercel.app')
+}
 
 export function getApiBase() {
   const fromEnv = import.meta.env.VITE_API_URL?.replace(/\/$/, '')
-  if (fromEnv) return fromEnv
 
   if (typeof window !== 'undefined') {
     const host = window.location.hostname
-    if (host === 'localhost' || host === '127.0.0.1') return '/api'
+    if (isLocalHost(host)) return fromEnv || '/api'
+    if (shouldUseRelativeApiProxy(host) && (!fromEnv || fromEnv === '/api')) return '/api'
+    if (fromEnv && fromEnv !== '/api') return fromEnv
     return PRODUCTION_API_BASE
   }
 
-  return '/api'
+  return fromEnv && fromEnv !== '/api' ? fromEnv : PRODUCTION_API_BASE
 }
 
 export function getToken() {

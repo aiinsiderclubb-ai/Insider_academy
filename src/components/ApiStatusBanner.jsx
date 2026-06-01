@@ -3,7 +3,8 @@ import { useLanguage } from '../context/LanguageContext'
 import { getApiBase } from '../api/client'
 import styles from './ApiStatusBanner.module.css'
 
-const PRODUCTION_APP = 'https://insider-academy-vsxg.vercel.app'
+const PRODUCTION_APP = 'https://insiderai.it.com'
+const PRODUCTION_API = 'https://insider-academy.onrender.com/api'
 
 const isLocalHost = typeof window !== 'undefined'
   && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -21,16 +22,19 @@ export function ApiStatusBanner() {
       <span>
         {lang === 'ru'
           ? isLocalHost
-            ? 'Локальный API (порт 3001) недоступен. Запустите: cd Insider_academy && npm run dev:all — или откройте прод: '
-            : 'API недоступен. Откройте Academy на продакшене: '
+            ? 'Бэкенд (Render) недоступен. Запустите локально: npm run dev:all — или сайт: '
+            : 'Не удаётся подключиться к API на Render. Проверьте интернет или подождите 1–2 мин (сервер просыпается). API: '
           : isLocalHost
-            ? 'Local API (port 3001) is offline. Run: cd Insider_academy && npm run dev:all — or use production: '
-            : 'API is offline. Open the production app: '}
+            ? 'Backend (Render) is unreachable. Run npm run dev:all locally — or: '
+            : 'Cannot reach the API on Render. Check your connection or wait ~1 min. API: '}
+        <a href={PRODUCTION_API} className={styles.prodLink} target="_blank" rel="noreferrer">
+          {PRODUCTION_API.replace('https://', '')}
+        </a>
         {!isLocalHost && (
-          <a href={PRODUCTION_APP} className={styles.prodLink}>{PRODUCTION_APP.replace('https://', '')}</a>
-        )}
-        {isLocalHost && (
-          <a href={PRODUCTION_APP} className={styles.prodLink}>{PRODUCTION_APP.replace('https://', '')}</a>
+          <>
+            {' · '}
+            <a href={PRODUCTION_APP} className={styles.prodLink}>{PRODUCTION_APP.replace('https://', '')}</a>
+          </>
         )}
       </span>
       {isLocalHost && (
