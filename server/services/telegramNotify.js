@@ -68,7 +68,8 @@ export async function notifyTelegramUser(userId, type, data = {}) {
   const chatId = user.telegram_chat_id
   try {
     if (config.telegram.botServiceUrl) {
-      return await sendViaBotService(chatId, type, data)
+      const viaBot = await sendViaBotService(chatId, type, data)
+      if (viaBot) return true
     }
     return await sendDirectTelegram(chatId, type, data)
   } catch (err) {
