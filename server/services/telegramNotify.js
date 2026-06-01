@@ -14,6 +14,8 @@ const PREF_BY_TYPE = {
   purchase: 'purchases',
   lesson_reminder: 'homework',
   application_accepted: 'news',
+  application_reviewed: 'news',
+  application_rejected: 'news',
   custom: 'news',
 }
 
@@ -89,7 +91,8 @@ export async function notifyTelegramChatId(chatId, type, data = {}) {
   if (!chatId) return false
   try {
     if (config.telegram.botServiceUrl) {
-      return await sendViaBotService(chatId, type, data)
+      const viaBot = await sendViaBotService(chatId, type, data)
+      if (viaBot) return true
     }
     return await sendDirectTelegram(chatId, type, data)
   } catch (err) {

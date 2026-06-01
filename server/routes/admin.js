@@ -442,9 +442,11 @@ router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req
         email: updated.email,
         type: 'application_status',
         status,
-        courseTitle: 'AI Accelerator',
+        courseTitle: 'AI Insider Accelerator',
         targetPath: '/courses/ai-insider-accelerator',
         message: adminNote ? `${statusMessages[status]}. ${adminNote}` : statusMessages[status],
+        comment: adminNote?.trim() || null,
+        reviewedAt: nowIso(),
       })
     }
     sheetsTrack.trackApplication({
