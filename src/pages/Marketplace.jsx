@@ -19,6 +19,7 @@ import styles from './Marketplace.module.css'
 
 const SORT_OPTIONS = [
   { id: 'popular', ru: 'Популярные', en: 'Popular' },
+  { id: 'trending', ru: 'В тренде', en: 'Trending' },
   { id: 'rating', ru: 'Рейтинг', en: 'Rating' },
   { id: 'downloads', ru: 'Скачивания', en: 'Downloads' },
   { id: 'price-asc', ru: 'Цена ↑', en: 'Price ↑' },
@@ -176,7 +177,7 @@ export function Marketplace() {
           {catalogProducts.length === 0 ? (
             <p className={styles.empty}>{ru ? 'Ничего не найдено' : 'No products found'}</p>
           ) : (
-            <div className={styles.grid}>
+            <div className={`${styles.grid} stagger-grid`}>
               {catalogProducts.map(renderCard)}
             </div>
           )}

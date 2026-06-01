@@ -1993,3 +1993,231 @@
   color: var(--text-muted);
   text-align: center;
 }
+
+.inboxList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inboxItem {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inboxMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.inboxType {
+  font-weight: 700;
+  color: var(--glow-purple);
+}
+
+.inboxDate {
+  margin-left: auto;
+}
+
+.inboxSub {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.inboxActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.smallBtnGhost {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.slaWarn {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.slaUrgent {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--glow-purple);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.drawer {
+  width: min(400px, 100%);
+  height: 100%;
+  background: var(--bg-elevated);
+  border-left: 1px solid var(--border);
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.drawerHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.drawerClose {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.drawerSection {
+  margin-bottom: 20px;
+}
+
+.drawerSection h4 {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+}
+
+.drawerList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.drawerMuted {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.funnel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.funnelStep {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8125rem;
+}
+
+.funnelStep strong {
+  font-size: 1.25rem;
+  color: var(--glow-purple);
+}
+
+.funnelStep small {
+  color: var(--text-muted);
+}
+
+.toolsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.toolCard {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-card);
+}
+
+.toolCard h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.inlineForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.inlineForm input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.compactList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.flagRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+}
+
+.primaryBtn {
+  margin-top: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--glow-purple);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}

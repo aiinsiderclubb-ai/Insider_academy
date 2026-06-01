@@ -97,6 +97,9 @@ router.post('/register', asyncHandler(async (req, res) => {
 
   sheetsTrack.trackUserRegistered({ personalId, userId, email, name }).catch(() => {})
 
+  const { scheduleWelcomeSeries } = await import('../services/emailQueue.js')
+  scheduleWelcomeSeries(email, name).catch(() => {})
+
   const jwt = signUserToken(user)
   res.status(201).json({ token: jwt, user })
 }))

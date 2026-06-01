@@ -7,16 +7,12 @@ const LABELS_RU = {
   single: 'Один курс',
   'ai-insider-club': 'AI Insider Club',
   'ai-insider-pro': 'AI Insider Pro',
-  'ai-insider-club-annual': 'Club · год',
-  'ai-insider-pro-annual': 'Pro · год',
 }
 
 const LABELS_EN = {
   single: 'Single course',
   'ai-insider-club': 'AI Insider Club',
   'ai-insider-pro': 'AI Insider Pro',
-  'ai-insider-club-annual': 'Club · annual',
-  'ai-insider-pro-annual': 'Pro · annual',
 }
 
 function periodLabel(row, ru) {
@@ -41,8 +37,8 @@ export function ComparePlans({ course, lang, coursePriceEur }) {
         <h2 className={styles.title}>{ru ? 'Сравнение по цене' : 'Price comparison'}</h2>
         <p className={styles.subtitle}>
           {ru
-            ? 'Разовая покупка, пакеты с этим курсом и все варианты подписки'
-            : 'One-time purchase, bundles with this course, and all subscriptions'}
+            ? 'Разовая покупка, пакеты с этим курсом и месячные подписки Club / Pro'
+            : 'One-time purchase, bundles with this course, and monthly Club / Pro plans'}
         </p>
 
         <div className={styles.grid}>

@@ -34,6 +34,7 @@
 }
 
 .preview {
+  position: relative;
   border-radius: 20px;
   aspect-ratio: 16 / 9;
   background: var(--mp-cover);
@@ -43,9 +44,46 @@
   margin-bottom: 28px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.previewCover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(1.1) saturate(1.2);
+}
+
+.previewTint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(192, 132, 252, 0.35) 0%,
+    rgba(168, 85, 247, 0.2) 45%,
+    rgba(249, 115, 22, 0.28) 100%
+  );
+  mix-blend-mode: soft-light;
+  z-index: 1;
+}
+
+.previewOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 251, 235, 0.12) 0%,
+    rgba(192, 132, 252, 0.18) 50%,
+    rgba(88, 56, 120, 0.3) 100%
+  );
+  z-index: 2;
 }
 
 .previewIcon {
+  position: relative;
+  z-index: 1;
   font-size: 4rem;
   filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
 }

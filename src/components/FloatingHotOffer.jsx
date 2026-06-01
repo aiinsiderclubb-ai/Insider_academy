@@ -4,6 +4,8 @@ import styles from './FloatingHotOffer.module.css'
 export function FloatingHotOffer({ lang, courseSlug }) {
   const { pathname } = useLocation()
   const onHome = pathname === '/'
+  const hiddenPaths = ['/register', '/login', '/admin']
+  if (hiddenPaths.some((p) => pathname.startsWith(p))) return null
 
   const handleClick = () => {
     const el = document.getElementById('super-offer')

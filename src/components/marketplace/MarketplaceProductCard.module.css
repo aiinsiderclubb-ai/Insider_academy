@@ -20,18 +20,53 @@
 .cover {
   position: relative;
   aspect-ratio: 16 / 10;
-  background: var(--mp-cover);
+  background: linear-gradient(135deg, #c4b5fd 0%, #a855f7 42%, #fb923c 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
 
-.cover::after {
-  content: '';
+.coverImg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 40%, rgba(7, 6, 15, 0.55) 100%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(1.1) saturate(1.2) contrast(0.96);
+  transition: transform 0.35s ease;
+}
+
+.card:hover .coverImg {
+  transform: scale(1.04);
+}
+
+.coverTint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(192, 132, 252, 0.38) 0%,
+    rgba(168, 85, 247, 0.22) 40%,
+    rgba(249, 115, 22, 0.32) 100%
+  );
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.coverOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 251, 235, 0.12) 0%,
+    rgba(192, 132, 252, 0.2) 40%,
+    rgba(251, 146, 60, 0.18) 65%,
+    rgba(88, 56, 120, 0.32) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
 }
 
 .coverIcon {
@@ -70,7 +105,7 @@
   position: absolute;
   left: 10px;
   top: 10px;
-  z-index: 2;
+  z-index: 3;
   padding: 4px 10px;
   border-radius: var(--radius-pill);
   font-size: 0.625rem;

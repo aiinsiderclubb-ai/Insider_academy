@@ -95,6 +95,10 @@ export const api = {
   grantTeamCourse: (payload) => apiRequest('/teams/grant-course', { method: 'POST', body: payload }),
   linkTelegram: (chatId) => apiRequest('/telegram/link', { method: 'POST', body: { chatId } }),
   setReminder: (payload) => apiRequest('/telegram/reminder', { method: 'POST', body: payload }),
+  getActivity: () => apiRequest('/me/activity'),
+  submitPeerReview: (payload) => apiRequest('/me/peer-reviews', { method: 'POST', body: payload }),
+  validatePromo: (payload) => apiRequest('/promo/validate', { method: 'POST', body: payload, auth: false }),
+  getFeatureFlags: () => apiRequest('/feature-flags', { auth: false }),
   telegramBotInfo: () => apiRequest('/telegram/bot-info', { auth: false }),
   updateProfile: (payload) => apiRequest('/me/profile', { method: 'PATCH', body: payload }),
   changePassword: (payload) => apiRequest('/me/password', { method: 'PATCH', body: payload }),
@@ -116,6 +120,15 @@ export const api = {
   adminAddCertificate: (payload) => apiRequest('/admin/certificates', { method: 'POST', body: payload, admin: true }),
   adminSheetsStatus: () => apiRequest('/admin/sheets/status', { admin: true }),
   adminSheetsSync: () => apiRequest('/admin/sheets/sync', { method: 'POST', admin: true }),
+  adminPromoCodes: () => apiRequest('/admin/promo-codes', { admin: true }),
+  adminCreatePromo: (payload) => apiRequest('/admin/promo-codes', { method: 'POST', body: payload, admin: true }),
+  adminGrantCourse: (payload) => apiRequest('/admin/grant-course', { method: 'POST', body: payload, admin: true }),
+  adminBulkApproveReviews: (ids) => apiRequest('/admin/reviews/bulk-approve', { method: 'POST', body: { ids }, admin: true }),
+  adminAuditLog: () => apiRequest('/admin/audit-log', { admin: true }),
+  adminFeatureFlags: () => apiRequest('/admin/feature-flags', { admin: true }),
+  adminSetFeatureFlags: (payload) => apiRequest('/admin/feature-flags', { method: 'PUT', body: payload, admin: true }),
+  adminMarketplaceProducts: () => apiRequest('/admin/marketplace/products', { admin: true }),
+  adminCreatorPayouts: () => apiRequest('/admin/creator-payouts', { admin: true }),
 }
 
 export async function checkApiOnline() {

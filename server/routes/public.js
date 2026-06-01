@@ -1,7 +1,12 @@
 import { Router } from 'express'
 import { getDb, parseJson } from '../db.js'
+import { getFeatureFlags } from '../services/featureFlags.js'
 
 const router = Router()
+
+router.get('/feature-flags', async (_req, res) => {
+  res.json(await getFeatureFlags())
+})
 
 router.get('/blog', async (_req, res) => {
   const rows = await getDb().all('SELECT data FROM blog_posts ORDER BY id')

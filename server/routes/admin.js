@@ -14,6 +14,9 @@ import {
   syncDatabaseToSheets,
   exportSheetCsv,
 } from '../services/googleSheets.js'
+import adminOpsRoutes from './adminOps.js'
+import { queueEmail } from '../services/emailQueue.js'
+import { logAudit } from '../services/auditLog.js'
 
 const router = Router()
 
@@ -44,6 +47,7 @@ router.get('/me', requireAdmin('admin', 'editor', 'moderator'), (req, res) => {
 })
 
 router.use(requireAdmin('admin', 'editor', 'moderator'))
+router.use(adminOpsRoutes)
 
 router.get('/dashboard', async (req, res) => {
   const db = getDb()
@@ -223,7 +227,22 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, re
       recordId: req.params.id,
     }).catch(() => {})
   }
-  res.json({ ok: true, homework: (await mapHomeworkList([await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])]))[0] })
+  const updatedHw = await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])
+  if (status === 'accepted' && updatedHw?.email) {
+    queueEmail({
+      to: updatedHw.email,
+      template: 'hw_reviewed',
+      payload: { name: updatedHw.name, courseTitle: updatedHw.course_title },
+    }).catch(() => {})
+  }
+  await logAudit({
+    actorEmail: `admin:${req.adminRole}`,
+    action: 'homework.update',
+    targetType: 'homework',
+    targetId: req.params.id,
+    meta: { status },
+  })
+  res.json({ ok: true, homework: (await mapHomeworkList([updatedHw]))[0] })
 })
 
 router.patch('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, res) => {

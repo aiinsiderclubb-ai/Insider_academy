@@ -132,13 +132,22 @@ router.post('/liqpay/create', requireUser, async (req, res) => {
 
 router.post('/demo', requireUser, async (req, res) => {
   const db = getDb()
-  const { courseId, courseTitle, amount } = req.body
+  const { courseId, courseTitle, amount, promoCode } = req.body
+  let finalAmount = Number(amount) || 0
+  if (promoCode) {
+    const { validatePromoCode, consumePromoCode } = await import('../services/promoCodes.js')
+    const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: finalAmount })
+    if (promo.valid) {
+      finalAmount = promo.finalEur
+      await consumePromoCode(promoCode)
+    }
+  }
   const exists = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [req.userId, courseId])
   if (!exists) {
     await db.run('INSERT INTO purchases (user_id, course_id, payment_provider) VALUES (?, ?, ?)', [req.userId, courseId, 'demo'])
     await db.run(
       'INSERT INTO purchase_log (id, email, course_id, course_title, amount, date) VALUES (?, ?, ?, ?, ?, ?)',
-      [`purchase-${Date.now()}`, req.userEmail, courseId, courseTitle, amount, new Date().toISOString()]
+      [`purchase-${Date.now()}`, req.userEmail, courseId, courseTitle, finalAmount, new Date().toISOString()]
     )
   }
   const purchases = await db.all(

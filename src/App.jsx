@@ -35,6 +35,8 @@ import { MarketplaceBuy } from './pages/MarketplaceBuy'
 import { MarketplaceCreators } from './pages/MarketplaceCreators'
 import { Admin } from './pages/Admin'
 import { AcceleratorApply } from './pages/AcceleratorApply'
+import { LearningMap } from './pages/LearningMap'
+import { ToastProvider } from './context/ToastContext'
 import { LEGACY_SLUG_REDIRECTS, LEGACY_PACK_REDIRECTS } from './data/courseAliases'
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -54,6 +56,7 @@ function AppContent() {
       <CoursesProvider>
       <AuthProvider>
       <ProgressProvider>
+      <ToastProvider>
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -73,7 +76,7 @@ function AppContent() {
           <Route path="/memberships" element={<Memberships />} />
           <Route path="/memberships/:tier" element={<MembershipPlan />} />
           <Route path="/club" element={<Memberships />} />
-          <Route path="/learning-map" element={<Navigate to="/" replace />} />
+          <Route path="/learning-map" element={<LearningMap />} />
           <Route path="/courses/ai-insider-accelerator/apply" element={<AcceleratorApply />} />
           {Object.entries(LEGACY_SLUG_REDIRECTS).map(([from, to]) => (
             <Route key={from} path={`/courses/${from}`} element={<Navigate to={`/courses/${to}`} replace />} />
@@ -97,6 +100,7 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
+      </ToastProvider>
       </ProgressProvider>
       </AuthProvider>
       </CoursesProvider>

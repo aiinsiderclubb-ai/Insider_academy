@@ -155,6 +155,34 @@ export function AdminDashboard({
       </div>
 
       {(canAccessTab(adminRole, 'analytics') || adminRole === 'admin') && (
+        <section className={styles.panel} style={{ marginBottom: 24 }}>
+          <h3 className={styles.panelTitle}>Воронка (упрощённая)</h3>
+          <div className={styles.funnel}>
+            {[
+              { label: 'Визиты', value: analytics.visits || 0 },
+              { label: 'Регистрации', value: registrations.length },
+              { label: 'Покупки', value: purchases.length },
+              { label: 'ДЗ сдано', value: homeworkList.length },
+              {
+                label: 'ДЗ принято',
+                value: homeworkList.filter((h) => h.status === 'accepted').length,
+              },
+            ].map((step, i, arr) => {
+              const prev = i > 0 ? arr[i - 1].value : step.value
+              const conv = prev > 0 ? Math.round((step.value / prev) * 100) : 0
+              return (
+                <div key={step.label} className={styles.funnelStep}>
+                  <span>{step.label}</span>
+                  <strong>{step.value}</strong>
+                  {i > 0 && <small>{conv}%</small>}
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {(canAccessTab(adminRole, 'analytics') || adminRole === 'admin') && (
         <AdminCharts
           charts={charts}
           analytics={analytics}

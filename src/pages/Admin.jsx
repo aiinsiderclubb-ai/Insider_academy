@@ -31,6 +31,9 @@ import { AdminDashboard } from '../components/admin/AdminDashboard'
 import { AdminRoadmap } from '../components/admin/AdminRoadmap'
 import { AdminReviewsPanel } from '../components/admin/AdminReviewsPanel'
 import { AdminApplicationsPanel } from '../components/admin/AdminApplicationsPanel'
+import { AdminInbox } from '../components/admin/AdminInbox'
+import { AdminUserDrawer } from '../components/admin/AdminUserDrawer'
+import { AdminToolsPanel } from '../components/admin/AdminToolsPanel'
 import { AdminToast } from '../components/admin/AdminToast'
 import { AdminSearchBar, matchesSearch } from '../components/admin/AdminSearchBar'
 import { AdminBlogEditor } from '../components/admin/AdminBlogEditor'
@@ -116,6 +119,7 @@ export function Admin() {
     goals: [], goalsEn: [], lessons: [{ id: 'l1', title: '', titleEn: '', duration: '', durationEn: '', videoUrl: '' }],
   })
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [drawerUser, setDrawerUser] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [toast, setToast] = useState({ message: '', type: 'success' })
@@ -500,13 +504,18 @@ export function Admin() {
 
   const getUnseenCount = (type, items) => items.filter((item) => !isAdminItemSeen(type, item)).length
 
+  const pendingReviewsCount = reviewsList.filter((r) => (r.status || 'pending') === 'pending').length
+  const pendingHwQueue = homeworkList.filter((h) => h.status === 'pending').length
+  const newAppsCount = applicationsList.filter((a) => (a.status || 'new') === 'new').length
+
   const unreadByTab = {
     registrations: getUnseenCount('registrations', registrations),
     purchases: getUnseenCount('purchases', purchases),
     certificates: getUnseenCount('certificates', certificates),
-    homework: getUnseenCount('homework', homeworkList),
-    reviews: reviewsList.filter((r) => (r.status || 'pending') === 'pending').length,
-    [ACCELERATOR_ADMIN_TAB]: applicationsList.filter((a) => (a.status || 'new') === 'new').length,
+    homework: pendingHwQueue,
+    reviews: pendingReviewsCount,
+    [ACCELERATOR_ADMIN_TAB]: newAppsCount,
+    inbox: pendingHwQueue + pendingReviewsCount + newAppsCount,
   }
 
   const handleHomeworkDecision = async (submission, status) => {
@@ -652,6 +661,7 @@ export function Admin() {
     blog: 'Блог',
     calendar: 'Календарь',
     settings: 'Настройки',
+    tools: 'Операции',
     referrals: 'Рефералы',
   }
 
@@ -695,6 +705,27 @@ export function Admin() {
             <AdminSearchBar value={searchQuery} onChange={setSearchQuery} />
           )}
 
+          {drawerUser && (
+            <AdminUserDrawer
+              user={drawerUser}
+              purchases={purchases}
+              homeworkList={homeworkList}
+              reviewsList={reviewsList}
+              onClose={() => setDrawerUser(null)}
+              formatDate={formatDate}
+            />
+          )}
+
+          {(activeTab === 'dashboard' || activeTab === 'inbox') && canAccessTab(adminRole, 'inbox') && (
+            <AdminInbox
+              homeworkList={homeworkList}
+              reviewsList={reviewsList}
+              applications={applicationsList}
+              onTabChange={changeTab}
+              formatDate={formatDate}
+            />
+          )}
+
           {activeTab === 'dashboard' && (
             <AdminDashboard
               analytics={analytics}
@@ -722,6 +753,22 @@ export function Admin() {
               onEnablePush={() => requestAdminNotificationPermission().then((p) => showToast(p === 'granted' ? 'Push включены' : `Статус: ${p}`))}
               onToast={(msg, type) => showToast(msg, type)}
             />
+          )}
+
+          {activeTab === 'tools' && canAccessTab(adminRole, 'tools') && (
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>Операции платформы</h2>
+              <p className={styles.sectionDesc}>Промокоды, выдача курсов, feature flags, audit log, marketplace и выплаты.</p>
+              <AdminToolsPanel
+                online={useServerData}
+                showToast={showToast}
+                reviews={reviewsList}
+                onReviewsUpdated={async () => {
+                  setRefresh((r) => r + 1)
+                  if (useServerData) await loadDashboardFromApi()
+                }}
+              />
+            </section>
           )}
 
           {activeTab === 'roadmap' && (
@@ -1108,7 +1155,15 @@ export function Admin() {
                       <tr key={r.id || r.email || i} className={unseen ? styles.unseenRow : ''}>
                         <td><code className={styles.personalId}>{r.personalId || '—'}</code></td>
                         <td>{r.hasAvatar ? '📷' : '—'}</td>
-                        <td>{r.email}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className={styles.linkBtn}
+                            onClick={() => setDrawerUser(r)}
+                          >
+                            {r.email}
+                          </button>
+                        </td>
                         <td>{r.name || '—'}</td>
                         <td>{r.emailVerified ? '✅' : '⏳'}</td>
                         <td>{formatDate(r.registeredAt || r.date)}</td>

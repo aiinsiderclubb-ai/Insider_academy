@@ -14,7 +14,7 @@ function parseVideoUrl(url) {
   return { type: 'none' }
 }
 
-export function VideoPlayer({ lesson, title, locked, lockedMessage, unlockAt, onEnded }) {
+export function VideoPlayer({ lesson, title, locked, lockedMessage, unlockAt, onEnded, initialTime = 0, onTimeUpdate }) {
   const videoUrl = lesson?.videoUrl
   const parsed = parseVideoUrl(videoUrl)
 
@@ -56,7 +56,19 @@ export function VideoPlayer({ lesson, title, locked, lockedMessage, unlockAt, on
         />
       )}
       {parsed.type === 'mp4' && (
-        <video key={lesson.id} src={parsed.src} controls onEnded={onEnded} style={{ width: '100%', height: '100%', objectFit: 'contain' }}>
+        <video
+          key={lesson.id}
+          ref={(el) => {
+            if (el && initialTime > 0 && Math.abs(el.currentTime - initialTime) > 2) {
+              try { el.currentTime = initialTime } catch (_) {}
+            }
+          }}
+          src={parsed.src}
+          controls
+          onEnded={onEnded}
+          onTimeUpdate={(e) => onTimeUpdate?.(e.target.currentTime)}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        >
           Ваш браузер не поддерживает видео.
         </video>
       )}

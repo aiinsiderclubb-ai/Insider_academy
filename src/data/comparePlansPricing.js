@@ -43,15 +43,10 @@ export function getPriceComparisonForCourse(course, coursePriceEur) {
       })
     })
 
-  const subscriptionOrder = [
-    'ai-insider-club',
-    'ai-insider-pro',
-    'ai-insider-club-annual',
-    'ai-insider-pro-annual',
-  ]
+  const subscriptionOrder = ['ai-insider-club', 'ai-insider-pro']
 
   subscriptionOrder.forEach((planId) => {
-    const plan = MEMBERSHIP_PLANS.find((p) => p.id === planId)
+    const plan = MEMBERSHIP_PLANS.find((p) => p.id === planId && p.billing === 'monthly')
     if (!plan) return
     rows.push({
       id: plan.id,

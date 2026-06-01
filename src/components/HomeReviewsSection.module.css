@@ -184,6 +184,11 @@
   letter-spacing: 1px;
 }
 
+.starsDim {
+  color: var(--text-muted);
+  opacity: 0.35;
+}
+
 .text {
   margin: 0;
   font-size: 0.9375rem;

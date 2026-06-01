@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 import './styles/light-theme.css'
+import { initSentry } from './utils/sentry'
+initSentry()
 
 // Применить тему до первого рендера (без inline-скрипта в index.html — иначе ломается Vite React Refresh)
 try {

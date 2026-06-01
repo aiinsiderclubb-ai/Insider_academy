@@ -180,7 +180,13 @@ export function MarketplaceBuy() {
     >
       <div className={buyStyles.container}>
         <header className={styles.preview} style={{ marginBottom: 24, aspectRatio: 'auto', minHeight: 140 }}>
-          <span className={styles.previewIcon}>{product.coverIcon}</span>
+          {product.coverImage ? (
+            <img src={product.coverImage} alt="" className={styles.previewCover} />
+          ) : (
+            <span className={styles.previewIcon}>{product.coverIcon}</span>
+          )}
+          <div className={styles.previewTint} aria-hidden />
+          <div className={styles.previewOverlay} aria-hidden />
         </header>
         <div className={buyStyles.layout}>
           <div className={buyStyles.leftCol}>

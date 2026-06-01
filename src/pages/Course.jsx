@@ -18,6 +18,8 @@ import { CourseHero } from '../components/CourseHero'
 import { CourseLandingSections } from '../components/CourseLandingSections'
 import { Confetti } from '../components/Confetti'
 import { OnboardingBanner } from '../components/OnboardingBanner'
+import { CourseNextStep } from '../components/CourseNextStep'
+import { useToast } from '../context/ToastContext'
 import { getHomeworkForLesson } from '../data/courseHomework'
 import { getCourseThemeStyle } from '../data/courseThemes'
 import { isAcceleratorCourse } from '../data/courseCatalog'
@@ -42,7 +44,10 @@ export function Course() {
   const { getCourseBySlug } = useCourses()
   const course = applyLessonProgramToCourse(getCourseBySlug(slug))
   const { user, hasPurchased, apiMode } = useAuth()
-  const { getProgress, submitHomework, getPercent, markWatched } = useProgress()
+  const { getProgress, submitHomework, getPercent, markWatched, saveVideoPosition, getVideoPosition } = useProgress()
+  const [peerReviewEnabled, setPeerReviewEnabled] = useState(false)
+  const videoSaveTimer = useRef(null)
+  const { showToast } = useToast()
   const { t, lang } = useLanguage()
   const { theme } = useTheme()
   const lessonFromUrl = parseInt(searchParams.get('lesson'), 10)
@@ -65,6 +70,10 @@ export function Course() {
   useEffect(() => {
     if (course?.id) trackCourseClick(course.id)
   }, [course?.id])
+
+  useEffect(() => {
+    api.getFeatureFlags().then((f) => setPeerReviewEnabled(Boolean(f.peerReview))).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!course?.id || !user?.email || lessonCount === 0) {
@@ -335,6 +344,32 @@ export function Course() {
     setSearchParams(searchParams, { replace: true })
   }
 
+  let nextStep = null
+  if ((purchased || isFreeTrial) && lessonsList.length > 0) {
+    if (percent >= 90) {
+      nextStep = { variant: 'certificate' }
+    } else {
+      const nextIdx = safeSelectedLesson + 1
+      if (nextIdx < lessonsList.length) {
+        const nextSt = lessonStatus(nextIdx)
+        if (nextSt === 'review') nextStep = { variant: 'hw_pending' }
+        else if (nextSt === 'homework' || nextSt === 'lock') {
+          if (homeworkEntriesByLesson[safeSelectedLesson]?.status === 'pending') {
+            nextStep = { variant: 'hw_pending' }
+          } else if (showHwForm) {
+            nextStep = { variant: 'hw_required' }
+          }
+        } else if (lessonAvailable(nextIdx)) {
+          nextStep = {
+            variant: 'next_lesson',
+            lessonIndex: nextIdx,
+            nextLessonTitle: getLessonDisplayTitle(lessonsList[nextIdx], lang),
+          }
+        }
+      }
+    }
+  }
+
   return (
     <div className={styles.wrap} style={getCourseThemeStyle(course.id, theme)}>
       <Confetti active={showConfetti} />
@@ -381,6 +416,10 @@ export function Course() {
               </div>
             )}
 
+            {nextStep && (
+              <CourseNextStep lang={lang} courseSlug={course.slug} {...nextStep} />
+            )}
+
             <CourseOverviewSection course={course} lang={lang} />
 
             <section className={styles.videoSection}>
@@ -402,7 +441,19 @@ export function Course() {
                 locked={!lessonAvailable(safeSelectedLesson)}
                 lockedMessage={safeSelectedLesson > 0 && !purchased ? t('course.lockedMessage') : undefined}
                 onEnded={isFreeTrial ? handleWatch : undefined}
+                initialTime={course?.id ? getVideoPosition(course.id, safeSelectedLesson) : 0}
+                onTimeUpdate={(sec) => {
+                  if (!course?.id) return
+                  clearTimeout(videoSaveTimer.current)
+                  videoSaveTimer.current = setTimeout(() => {
+                    saveVideoPosition(course.id, safeSelectedLesson, sec)
+                  }, 2000)
+                }}
               />
+
+              {(purchased || isFreeTrial) && course?.id && (
+                <LessonReminderButton courseId={course.id} lessonIndex={safeSelectedLesson} lang={lang} />
+              )}
 
               {currentLesson && currentHomework && (
                 <CourseHomeworkPanel
@@ -453,6 +504,13 @@ export function Course() {
                   onPass={() => submitHomework(course.id, 0)}
                 />
               )}
+
+              <PeerReviewPanel
+                courseId={course.id}
+                lessonIndex={safeSelectedLesson}
+                lang={lang}
+                enabled={peerReviewEnabled && (purchased || isFreeTrial)}
+              />
             </section>
           </div>
 

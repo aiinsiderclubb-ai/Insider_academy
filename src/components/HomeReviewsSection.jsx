@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api, checkApiOnline } from '../api/client'
 import { getFeaturedReviews } from '../api/adminStore'
 import { ScrollReveal } from './ScrollReveal'
+import { StarRating } from './StarRating'
 import styles from './HomeReviewsSection.module.css'
 
 function formatDate(iso, lang) {
@@ -77,9 +78,7 @@ export function HomeReviewsSection({ lang }) {
                     <strong>{r.userName || (lang === 'ru' ? 'Студент' : 'Student')}</strong>
                     <span className={styles.date}>{formatDate(r.date, lang)}</span>
                   </div>
-                  <span className={styles.stars} aria-label={`${r.rating}/5`}>
-                    {'★'.repeat(r.rating)}
-                  </span>
+                  <StarRating rating={r.rating} className={styles.stars} />
                 </div>
                 <p className={styles.text}>{r.text}</p>
               </article>

@@ -657,6 +657,36 @@
   font-weight: 600;
 }
 
+.streakGoal {
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.packList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.packRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 0.875rem;
+}
+
+.packMeta {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
 .chart { display: flex; flex-direction: column; gap: 12px; }
 .chartRow { display: grid; grid-template-columns: 1fr 2fr auto; gap: 12px; align-items: center; }
 .chartLabel { font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

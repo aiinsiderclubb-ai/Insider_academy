@@ -107,6 +107,38 @@
   font-size: 1.125rem;
 }
 
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.accordionItem {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-card) 90%, transparent);
+  overflow: hidden;
+}
+
+.accordionItem summary {
+  padding: 12px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.accordionItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordionBody {
+  margin: 0;
+  padding: 0 14px 12px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
 .includes {
   margin: 0 0 24px;
   padding: 0;

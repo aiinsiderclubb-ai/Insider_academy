@@ -7,9 +7,11 @@ const navGroups = [
     label: 'Обзор',
     items: [
       { id: 'dashboard', label: 'Дашборд', icon: '📊' },
+      { id: 'inbox', label: 'Модерация', icon: '📥', roles: ['admin', 'moderator'] },
       { id: 'roadmap', label: 'Роадмап', icon: '🗺️', roles: ['admin'] },
       { id: 'analytics', label: 'Аналитика', icon: '📈', roles: ['admin'] },
       { id: 'settings', label: 'Настройки', icon: '⚙️', roles: ['admin'] },
+      { id: 'tools', label: 'Операции', icon: '🛠️', roles: ['admin'] },
     ],
   },
   {

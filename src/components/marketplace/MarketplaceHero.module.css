@@ -19,10 +19,13 @@
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  /* Decorative chips stay in the right band — clear of title, copy, and CTAs */
+  clip-path: polygon(58% 0, 100% 0, 100% 100%, 58% 100%);
 }
 
 .chip {
   position: absolute;
+  left: auto;
   padding: 10px 14px;
   border-radius: 14px;
   font-size: 0.75rem;
@@ -33,23 +36,25 @@
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 20px var(--glow-purple-dim);
   animation: mpFloat 8s ease-in-out infinite;
+  white-space: nowrap;
 }
 
-.chip:nth-child(1) { top: 12%; left: 6%; animation-delay: 0s; }
-.chip:nth-child(2) { top: 22%; right: 8%; animation-delay: -2s; }
-.chip:nth-child(3) { bottom: 28%; left: 12%; animation-delay: -4s; }
-.chip:nth-child(4) { bottom: 18%; right: 14%; animation-delay: -1s; }
-.chip:nth-child(5) { top: 48%; left: 42%; animation-delay: -3s; opacity: 0.85; }
+.chip:nth-child(1) { top: 8%; right: 4%; animation-delay: 0s; }
+.chip:nth-child(2) { top: 22%; right: 22%; animation-delay: -2s; }
+.chip:nth-child(3) { top: 46%; right: 6%; animation-delay: -4s; }
+.chip:nth-child(4) { bottom: 20%; right: 18%; animation-delay: -1s; }
+.chip:nth-child(5) { bottom: 38%; right: 4%; animation-delay: -3s; opacity: 0.85; }
 
 @keyframes mpFloat {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-6px); }
 }
 
 .inner {
   position: relative;
   z-index: 1;
   max-width: 720px;
+  padding-right: 8px;
 }
 
 .pill {
@@ -141,9 +146,19 @@
   color: var(--accent-orange);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+  .floats {
+    clip-path: polygon(72% 0, 100% 0, 100% 100%, 72% 100%);
+  }
+
   .chip:nth-child(3),
   .chip:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .floats {
     display: none;
   }
 }

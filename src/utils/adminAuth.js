@@ -9,9 +9,9 @@ export const ROLE_LABELS = {
 }
 
 export const TAB_PERMISSIONS = {
-  admin: ['dashboard', 'roadmap', 'analytics', 'settings', 'registrations', 'purchases', 'referrals', 'homework', 'reviews', 'accelerator-selection', 'certificates', 'courses', 'blog', 'calendar'],
+  admin: ['dashboard', 'inbox', 'roadmap', 'analytics', 'settings', 'tools', 'registrations', 'purchases', 'referrals', 'homework', 'reviews', 'accelerator-selection', 'certificates', 'courses', 'blog', 'calendar'],
   editor: ['dashboard', 'roadmap', 'courses', 'blog', 'calendar'],
-  moderator: ['dashboard', 'homework', 'reviews', 'accelerator-selection', 'certificates', 'registrations', 'purchases'],
+  moderator: ['dashboard', 'inbox', 'homework', 'reviews', 'accelerator-selection', 'certificates', 'registrations', 'purchases'],
 }
 
 export function getAdminRole() {

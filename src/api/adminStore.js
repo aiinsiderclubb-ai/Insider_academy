@@ -2,6 +2,7 @@
 
 import { canLeaveCourseReview } from '../data/testAccount.js'
 import { getCourseById } from '../data/courses.js'
+import { SEED_REVIEWS, isApprovedSeedReview } from '../data/seedReviews.js'
 
 const KEY_REG = 'lms_admin_registrations'
 const KEY_CERT = 'lms_admin_certificates'
@@ -426,26 +427,44 @@ function mapReviewForPublic(r) {
   }
 }
 
-export function getPublicReviews(courseId) {
-  const list = getReviewSubmissions().filter(
-    (r) => r.status === 'approved' && r.courseId === courseId && String(r.text || '').trim()
+function getAllApprovedReviews(courseId = null) {
+  const stored = getReviewSubmissions().filter(
+    (r) =>
+      r.status === 'approved' &&
+      String(r.text || '').trim() &&
+      (!courseId || r.courseId === courseId)
   )
+  const seeds = SEED_REVIEWS.filter(
+    (r) => isApprovedSeedReview(r) && (!courseId || r.courseId === courseId)
+  )
+  const byId = new Map()
+  for (const r of seeds) byId.set(r.id, r)
+  for (const r of stored) byId.set(r.id, r)
+  return [...byId.values()].sort((a, b) => new Date(b.date) - new Date(a.date))
+}
+
+function reviewStats(list) {
   const count = list.length
-  const average = count ? Math.round((list.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10 : null
+  const average = count
+    ? Math.round((list.reduce((s, r) => s + Number(r.rating || 0), 0) / count) * 10) / 10
+    : null
+  return { count, average }
+}
+
+export function getPublicReviews(courseId) {
+  const approved = getAllApprovedReviews(courseId)
+  const { count, average } = reviewStats(approved)
   return {
-    reviews: list.map(mapReviewForPublic),
+    reviews: approved.map(mapReviewForPublic),
     average,
     count,
   }
 }
 
 export function getFeaturedReviews(limit = 12) {
-  const approved = getReviewSubmissions().filter((r) => r.status === 'approved' && String(r.text || '').trim())
-  const list = [...approved].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, limit)
-  const count = approved.length
-  const average = count
-    ? Math.round((approved.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10
-    : null
+  const approved = getAllApprovedReviews()
+  const { count, average } = reviewStats(approved)
+  const list = approved.slice(0, limit)
   return {
     reviews: list.map(mapReviewForPublic),
     average,

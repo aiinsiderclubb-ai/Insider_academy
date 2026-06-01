@@ -190,3 +190,26 @@
 .sendBtn:hover {
   filter: brightness(1.1);
 }
+
+.faqRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.faqChip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border: 1px solid var(--border-accent);
+  background: var(--glow-purple-dim);
+  color: var(--glow-purple);
+  text-decoration: none;
+}
+
+.faqChip:hover {
+  border-color: var(--glow-purple);
+}

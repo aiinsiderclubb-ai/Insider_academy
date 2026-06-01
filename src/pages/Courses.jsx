@@ -125,7 +125,7 @@ export function Courses() {
         ) : filtered.length === 0 ? (
           <p className={styles.empty}>{lang === 'ru' ? 'Курсы не найдены' : 'No courses found'}</p>
         ) : (
-          <div className={styles.grid}>
+          <div className={`${styles.grid} stagger-grid`}>
             {filtered.map((course) => (
               <CourseCatalogCard
                 key={course.id}

@@ -98,6 +98,18 @@ export function ProgressProvider({ children }) {
     return Math.round((getCompletedCount(courseId, totalLessons) / totalLessons) * 100)
   }, [getCompletedCount])
 
+  const saveVideoPosition = useCallback((courseId, lessonIndex, seconds) => {
+    setProgress(courseId, (c) => ({
+      ...c,
+      videoPositions: { ...(c.videoPositions || {}), [lessonIndex]: Math.floor(seconds) },
+    }))
+  }, [setProgress])
+
+  const getVideoPosition = useCallback((courseId, lessonIndex) => {
+    const p = state[courseId]
+    return p?.videoPositions?.[lessonIndex] || 0
+  }, [state])
+
   const isLessonAvailable = useCallback((courseId, lessonIndex, unlockBySchedule, homeworkUnlock) => {
     if (lessonIndex === 0) return true
     const p = state[courseId]
@@ -117,6 +129,8 @@ export function ProgressProvider({ children }) {
         getCompletedCount,
         getPercent,
         isLessonAvailable,
+        saveVideoPosition,
+        getVideoPosition,
       }}
     >
       {children}

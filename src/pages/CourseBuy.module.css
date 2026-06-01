@@ -207,6 +207,47 @@
   -webkit-text-fill-color: transparent;
 }
 
+.promoRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.promoInput {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.promoBtn {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.promoOk {
+  width: 100%;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--success);
+}
+
+.promoErr {
+  width: 100%;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #fca5a5;
+}
+
 .discountBanner {
   padding: 10px 14px;
   margin-bottom: 16px;

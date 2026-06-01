@@ -111,7 +111,14 @@ export function searchMarketplaceProducts(query, { categoryId, sort, products = 
   else if (sort === 'price-desc') list.sort((a, b) => b.priceEur - a.priceEur)
   else if (sort === 'rating') list.sort((a, b) => b.rating - a.rating)
   else if (sort === 'downloads') list.sort((a, b) => b.downloads - a.downloads)
-  else list.sort((a, b) => (b.badges?.includes('top-selling') ? 1 : 0) - (a.badges?.includes('top-selling') ? 1 : 0))
+  else if (sort === 'trending') {
+    list.sort((a, b) => {
+      const ta = a.badges?.includes('trending') ? 1 : 0
+      const tb = b.badges?.includes('trending') ? 1 : 0
+      if (tb !== ta) return tb - ta
+      return b.downloads - a.downloads
+    })
+  } else list.sort((a, b) => (b.badges?.includes('top-selling') ? 1 : 0) - (a.badges?.includes('top-selling') ? 1 : 0))
 
   return list
 }

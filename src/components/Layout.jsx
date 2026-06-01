@@ -11,7 +11,12 @@ import { useProgress } from '../context/ProgressContext'
 import { IconHome, IconBriefcase, IconVideo, IconCalendar, IconBlog, IconBell, IconMessage, IconUser, IconBook, IconCart } from './Icons'
 import { ChatBot } from './ChatBot'
 import { FloatingHotOffer } from './FloatingHotOffer'
+import { ContinueLearningBar } from './ContinueLearningBar'
+import { RegistrationOnboarding } from './RegistrationOnboarding'
+import { ScrollProgressBar } from './ScrollProgressBar'
+import { InactivityBanner } from './InactivityBanner'
 import { NeuronGlow } from './NeuronGlow'
+import { isRegistrationOnboardingDone } from '../utils/onboardingStorage'
 import { ThemeToggle } from './ThemeToggle'
 import { ProgressRing } from './ProgressRing'
 import { MAIN_SITE_COURSES, MAIN_SITE_URL, TELEGRAM_COMMUNITY, TELEGRAM_MANAGER } from '../data/siteLinks'
@@ -49,6 +54,7 @@ export function Layout({ children }) {
   const [chatTab, setChatTab] = useState('ai')
   const [cabinetOpen, setCabinetOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [showRegOnboarding, setShowRegOnboarding] = useState(false)
   const [, forceUpdate] = useState(0)
   const cabinetRef = useRef(null)
   const notifRef = useRef(null)
@@ -71,7 +77,23 @@ export function Layout({ children }) {
         sessionStorage.setItem('lms_pending_ref', ref)
       } catch (_) {}
     }
+    const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
+    const utm = {}
+    utmKeys.forEach((k) => {
+      const v = searchParams.get(k)
+      if (v) utm[k] = v
+    })
+    if (Object.keys(utm).length) {
+      try {
+        sessionStorage.setItem('lms_utm', JSON.stringify(utm))
+      } catch (_) {}
+    }
   }, [searchParams])
+  useEffect(() => {
+    if (user && !isRegistrationOnboardingDone()) {
+      setShowRegOnboarding(true)
+    }
+  }, [user])
   useEffect(() => {
     const close = (e) => {
       if (cabinetRef.current && !cabinetRef.current.contains(e.target)) setCabinetOpen(false)
@@ -186,6 +208,7 @@ export function Layout({ children }) {
 
       <div className={styles.mainWrap}>
         <ApiStatusBanner />
+        <InactivityBanner lang={lang} />
         <div className={styles.neuronBg} aria-hidden><NeuronGlow /></div>
         <header className={styles.header}>
           <Link to="/" className={styles.logo}>AI Insider Academy</Link>
@@ -301,7 +324,13 @@ export function Layout({ children }) {
           </div>
         </header>
 
+        <ScrollProgressBar />
         <main className={isHome ? styles.mainHero : styles.main}>
+          {user && !location.pathname.startsWith('/admin') && (
+            <div className={styles.continueWrap}>
+              <ContinueLearningBar />
+            </div>
+          )}
           {children}
         </main>
 
@@ -336,8 +365,14 @@ export function Layout({ children }) {
         <button type="button" className={styles.callFab} onClick={() => openChat('ai')} title={t('chatbot.title')} aria-label={t('chatbot.title')}>
           <span className={styles.callFabIcon} aria-hidden>💬</span>
         </button>
-        {location.pathname !== '/admin' && acceleratorCourse && (
+        {location.pathname !== '/admin'
+          && !['/register', '/login'].includes(location.pathname)
+          && !showRegOnboarding
+          && acceleratorCourse && (
           <FloatingHotOffer lang={lang} courseSlug={acceleratorCourse.slug} />
+        )}
+        {showRegOnboarding && (
+          <RegistrationOnboarding lang={lang} onDone={() => setShowRegOnboarding(false)} />
         )}
         <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} initialTab={chatTab} />
       </div>

@@ -21,6 +21,8 @@ import { HomeReviewsSection } from '../components/HomeReviewsSection'
 import { PlatformBridge } from '../components/PlatformBridge'
 import { TELEGRAM_COMMUNITY } from '../data/siteLinks'
 import { IconStar, IconUsers, IconAward } from '../components/Icons'
+import { PageMeta } from '../components/PageMeta'
+import { ContinueLearningBar } from '../components/ContinueLearningBar'
 import styles from './Home.module.css'
 
 export function Home() {
@@ -125,6 +127,14 @@ export function Home() {
         </div>
       </section>
 
+      {user && (
+        <section className={styles.continueSection}>
+          <div className={styles.container}>
+            <ContinueLearningBar />
+          </div>
+        </section>
+      )}
+
       <HomeReviewsSection lang={lang} />
 
       {user && userStats && (
@@ -136,7 +146,15 @@ export function Home() {
                 {userStats.streak && (
                   <div className={styles.userStatCard}>
                     <span className={styles.userStatValue}>{userStats.streak.current}</span>
-                    <span className={styles.userStatLabel}>{lang === 'ru' ? 'дней подряд' : 'day streak'}</span>
+                    <span className={styles.userStatLabel}>
+                      {lang === 'ru' ? 'дней подряд' : 'day streak'}
+                      {userStats.streak.current < 7 && (
+                        <small className={styles.streakGoal}>
+                          {' '}
+                          · {lang === 'ru' ? `до 7: ${7 - userStats.streak.current}` : `to 7: ${7 - userStats.streak.current} left`}
+                        </small>
+                      )}
+                    </span>
                   </div>
                 )}
                 {userStats.achievements?.length > 0 && (

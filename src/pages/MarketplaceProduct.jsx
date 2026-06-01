@@ -1,4 +1,7 @@
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { Confetti } from '../components/Confetti'
+import { StarRating } from '../components/StarRating'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import { getMarketplaceProduct, getRelatedProducts } from '../data/marketplace/products'
@@ -26,6 +29,7 @@ const MOCK_REVIEWS_EN = [
 
 export function MarketplaceProduct() {
   const { productSlug } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { lang } = useLanguage()
   const { hasPurchased, purchases } = useAuth()
   const ru = lang === 'ru'
@@ -45,6 +49,19 @@ export function MarketplaceProduct() {
   const creator = getMarketplaceCreator(product.creatorId)
   const related = getRelatedProducts(product)
   const reviews = ru ? MOCK_REVIEWS_RU : MOCK_REVIEWS_EN
+  const showConfetti = searchParams.get('paid') === '1'
+
+  useEffect(() => {
+    if (searchParams.get('paid') !== '1') return
+    const t = setTimeout(() => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('paid')
+        return next
+      }, { replace: true })
+    }, 4000)
+    return () => clearTimeout(t)
+  }, [searchParams, setSearchParams])
 
   const requirementsRu = [
     'Аккаунт AI Insider Academy',
@@ -68,6 +85,7 @@ export function MarketplaceProduct() {
 
   return (
     <div className={styles.wrap}>
+      <Confetti active={showConfetti} />
       <div
         className={styles.container}
         style={{ '--mp-cover': product.coverGradient }}
@@ -87,9 +105,15 @@ export function MarketplaceProduct() {
         <div className={styles.layout}>
           <div>
             <div className={styles.preview}>
-              <span className={styles.previewIcon} aria-hidden>
-                {product.coverIcon}
-              </span>
+              {product.coverImage ? (
+                <img src={product.coverImage} alt="" className={styles.previewCover} />
+              ) : (
+                <span className={styles.previewIcon} aria-hidden>
+                  {product.coverIcon}
+                </span>
+              )}
+              <div className={styles.previewTint} aria-hidden />
+              <div className={styles.previewOverlay} aria-hidden />
             </div>
 
             <ScrollReveal>
@@ -146,7 +170,7 @@ export function MarketplaceProduct() {
                     <article key={r.name} className={styles.review}>
                       <div className={styles.reviewHead}>
                         <strong>{r.name}</strong>
-                        <span className={styles.reviewStars}>{'★'.repeat(r.rating)}</span>
+                        <StarRating rating={r.rating} className={styles.reviewStars} />
                       </div>
                       <p>{r.text}</p>
                     </article>

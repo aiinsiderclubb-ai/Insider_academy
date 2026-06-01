@@ -3,19 +3,24 @@ import { enrichCourseWithCurriculum } from './courseCurriculum.js'
 import { buildCatalogLessons, getLessonCountLabel, applyLessonProgramToCourse } from './courseLessonPrograms.js'
 import { applyCourseProfile } from './courseProfiles.js'
 
+const COVER_V = 'v=2'
+
 const IMAGES = {
-  start: '/courses/ai-start.png?v=1',
-  productivity: '/courses/ai-for-productivity.png?v=1',
-  content: '/courses/ai-content-creator.png?v=1',
-  automation: '/courses/no-code-automation.png?v=1',
-  firstAutomation: '/courses/first-automation-n8n.png?v=1',
-  saas: '/courses/ai-saas-builder.png?v=1',
+  start: `/courses/ai-start.png?${COVER_V}`,
+  productivity: `/courses/ai-for-productivity.png?${COVER_V}`,
+  productivityMaster: `/courses/ai-productivity-master.png?${COVER_V}`,
+  content: `/courses/ai-content-creator.png?${COVER_V}`,
+  automation: `/courses/ai-automation-engineer.png?${COVER_V}`,
+  firstAutomation: `/courses/first-automation-n8n.png?${COVER_V}`,
+  agent: `/courses/ai-agent-engineer.png?${COVER_V}`,
+  business: `/courses/ai-business-builder.png?${COVER_V}`,
   accelerator: '/courses/ai-insider-accelerator.png?v=1',
-  user: '/courses/ai-user-pro.png?v=1',
+  /** legacy aliases — скрытые курсы */
+  saas: '/courses/ai-saas-builder.png?v=1',
+  user: `/courses/ai-productivity-master.png?${COVER_V}`,
   chatbot: '/courses/ai-conversational-systems.png?v=1',
   voice: 'https://images.unsplash.com/photo-1579762599946-9e2c1ee9dc5d?w=800&q=80',
-  agent: '/courses/ai-agent-architect.png?v=1',
-  agency: '/courses/ai-agency-builder.png?v=5',
+  agency: `/courses/ai-business-builder.png?${COVER_V}`,
 }
 
 function baseCourse({
@@ -300,7 +305,7 @@ const rawAcademyCourses = [
     durationEn: getLessonCountLabel('ai-business-builder', 'en'),
     category: 'Бизнес',
     categoryEn: 'Business',
-    image: IMAGES.agency,
+    image: IMAGES.business,
     audience: ['Предприниматели', 'Фрилансеры', 'Агентства'],
     audienceEn: ['Entrepreneurs', 'Freelancers', 'Agencies'],
     finalProject: 'Финальный запуск',

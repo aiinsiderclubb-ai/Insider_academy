@@ -1,0 +1,96 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(8, 6, 18, 0.75);
+  backdrop-filter: blur(8px);
+}
+
+.card {
+  width: min(440px, 100%);
+  padding: 28px;
+  border-radius: 20px;
+  border: 1px solid var(--border-accent);
+  background: var(--bg-card);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.pill {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--glow-purple-dim);
+  color: var(--glow-purple);
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.stepLabel {
+  margin: 0 0 16px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.stepTitle {
+  margin: 0 0 8px;
+  font-size: 1.125rem;
+}
+
+.stepDesc {
+  margin: 0 0 24px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.primary {
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.skip {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.skip:hover {
+  color: var(--text);
+}
+
+.nextGhost {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--glow-purple);
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}

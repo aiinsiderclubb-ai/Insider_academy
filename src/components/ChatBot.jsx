@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import { api, checkApiOnline } from '../api/client'
+import { Link } from 'react-router-dom'
 import { SUPPORT_TELEGRAM_URL } from '../data/support'
+import { CHATBOT_FAQ_RU, CHATBOT_FAQ_EN } from '../data/chatbotFaq'
 import styles from './ChatBot.module.css'
 
 const SUPPORT_STORAGE = 'lms_support_messages'
@@ -145,6 +147,21 @@ export function ChatBot({ open, onClose, initialTab = 'ai' }) {
             <a href={SUPPORT_TELEGRAM_URL} target="_blank" rel="noreferrer noopener" className={styles.telegramLink}>
               {t('chatbot.openTelegram')}
             </a>
+          </div>
+        )}
+
+        {tab === 'ai' && (
+          <div className={styles.faqRow}>
+            {(lang === 'ru' ? CHATBOT_FAQ_RU : CHATBOT_FAQ_EN).map((item) => (
+              <Link
+                key={item.q}
+                to={item.link}
+                className={styles.faqChip}
+                onClick={onClose}
+              >
+                {item.q}
+              </Link>
+            ))}
           </div>
         )}
 

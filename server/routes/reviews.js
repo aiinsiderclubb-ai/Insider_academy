@@ -2,7 +2,10 @@ import { Router } from 'express'
 import crypto from 'crypto'
 import { getDb, parseJson } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
+import { rateLimitMiddleware } from '../middleware/rateLimit.js'
 import * as sheetsTrack from '../services/sheetsTrack.js'
+import { courses } from '../../src/data/courses.js'
+import { SEED_REVIEWS, isApprovedSeedReview } from '../../src/data/seedReviews.js'
 
 const router = Router()
 
@@ -30,6 +33,42 @@ function mapPublicReview(row, course = null) {
   }
 }
 
+function mapSeedReview(seed) {
+  const course = courses.find((c) => c.id === seed.courseId) || null
+  return mapPublicReview(
+    {
+      id: seed.id,
+      course_id: seed.courseId,
+      user_name: seed.userName,
+      rating: seed.rating,
+      text: seed.text,
+      date: seed.date,
+      email: seed.email,
+      contact_email: seed.contactEmail,
+    },
+    course
+  )
+}
+
+function mergeApprovedReviews(dbRows, courseId = null) {
+  const fromDb = dbRows.map((row) => mapPublicReview(row, parseJson(row.course_data, null)))
+  const seeds = SEED_REVIEWS.filter(
+    (r) => isApprovedSeedReview(r) && (!courseId || r.courseId === courseId)
+  ).map(mapSeedReview)
+  const byId = new Map()
+  for (const r of seeds) byId.set(r.id, r)
+  for (const r of fromDb) byId.set(r.id, r)
+  return [...byId.values()].sort((a, b) => new Date(b.date) - new Date(a.date))
+}
+
+function reviewStatsFromList(list) {
+  const count = list.length
+  const average = count
+    ? Math.round((list.reduce((s, r) => s + Number(r.rating || 0), 0) / count) * 10) / 10
+    : null
+  return { count, average }
+}
+
 router.get('/', async (req, res) => {
   const db = getDb()
   const limit = Math.min(Math.max(Number(req.query.limit) || 12, 1), 50)
@@ -37,40 +76,34 @@ router.get('/', async (req, res) => {
     `SELECT r.*, c.data AS course_data FROM reviews r
      LEFT JOIN courses c ON c.id = r.course_id
      WHERE r.status = 'approved' AND TRIM(COALESCE(r.text, '')) != ''
-     ORDER BY r.date DESC LIMIT ?`,
-    [limit]
+     ORDER BY r.date DESC`
   )
-  const stats = await db.get(
-    "SELECT COUNT(*) AS count, AVG(rating) AS avg FROM reviews WHERE status = 'approved' AND TRIM(COALESCE(text, '')) != ''"
-  )
-  res.json({
-    reviews: rows.map((row) => mapPublicReview(row, parseJson(row.course_data, null))),
-    average: stats?.avg ? Math.round(Number(stats.avg) * 10) / 10 : null,
-    count: Number(stats?.count || 0),
-  })
+  const merged = mergeApprovedReviews(rows).slice(0, limit)
+  const allMerged = mergeApprovedReviews(rows)
+  const { count, average } = reviewStatsFromList(allMerged)
+  res.json({ reviews: merged, average, count })
 })
 
 router.get('/:courseId', async (req, res) => {
   const db = getDb()
+  const courseId = req.params.courseId
   const rows = await db.all(
     `SELECT r.*, c.data AS course_data FROM reviews r
      LEFT JOIN courses c ON c.id = r.course_id
      WHERE r.course_id = ? AND r.status = 'approved' AND TRIM(COALESCE(r.text, '')) != ''
-     ORDER BY r.date DESC LIMIT 50`,
-    [req.params.courseId]
+     ORDER BY r.date DESC`,
+    [courseId]
   )
-  const stats = await db.get(
-    "SELECT COUNT(*) AS count, AVG(rating) AS avg FROM reviews WHERE course_id = ? AND status = 'approved' AND TRIM(COALESCE(text, '')) != ''",
-    [req.params.courseId]
-  )
-  res.json({
-    reviews: rows.map((row) => mapPublicReview(row, parseJson(row.course_data, null))),
-    average: stats?.avg ? Math.round(Number(stats.avg) * 10) / 10 : null,
-    count: Number(stats?.count || 0),
-  })
+  const merged = mergeApprovedReviews(rows, courseId).slice(0, 50)
+  const { count, average } = reviewStatsFromList(mergeApprovedReviews(rows, courseId))
+  res.json({ reviews: merged, average, count })
 })
 
-router.post('/:courseId', requireUser, async (req, res) => {
+router.post(
+  '/:courseId',
+  requireUser,
+  rateLimitMiddleware({ windowMs: 3600_000, max: 3, keyFn: (req) => `u${req.userId}` }),
+  async (req, res) => {
   const db = getDb()
   const courseId = req.params.courseId
   const { rating, text, contactEmail, userName } = req.body
@@ -119,6 +152,7 @@ router.post('/:courseId', requireUser, async (req, res) => {
     id,
     message: 'Review submitted for moderation',
   })
-})
+  }
+)
 
 export default router

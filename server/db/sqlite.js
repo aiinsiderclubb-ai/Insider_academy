@@ -320,6 +320,63 @@ CREATE TABLE IF NOT EXISTS support_messages (
   const reviewCols = db.prepare('PRAGMA table_info(reviews)').all().map((c) => c.name)
   if (!reviewCols.includes('status')) add("ALTER TABLE reviews ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'")
   if (!reviewCols.includes('contact_email')) add('ALTER TABLE reviews ADD COLUMN contact_email TEXT')
+
+  try {
+    db.exec(`
+CREATE TABLE IF NOT EXISTS promo_codes (
+  code TEXT PRIMARY KEY COLLATE NOCASE,
+  discount_percent INTEGER,
+  discount_eur REAL,
+  course_ids TEXT,
+  max_uses INTEGER,
+  used_count INTEGER DEFAULT 0,
+  valid_from TEXT,
+  valid_until TEXT,
+  active INTEGER DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS audit_log (
+  id TEXT PRIMARY KEY,
+  actor_email TEXT NOT NULL,
+  action TEXT NOT NULL,
+  target_type TEXT,
+  target_id TEXT,
+  meta TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS email_queue (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  template TEXT NOT NULL,
+  payload TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  send_after TEXT NOT NULL,
+  sent_at TEXT,
+  error TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS creator_payouts (
+  id TEXT PRIMARY KEY,
+  creator_email TEXT NOT NULL,
+  product_id TEXT,
+  amount_eur REAL NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  note TEXT,
+  created_at TEXT NOT NULL,
+  paid_at TEXT
+);
+CREATE TABLE IF NOT EXISTS peer_reviews (
+  id TEXT PRIMARY KEY,
+  course_id TEXT NOT NULL,
+  lesson_index INTEGER NOT NULL,
+  reviewer_user_id INTEGER NOT NULL,
+  homework_id TEXT,
+  rating INTEGER CHECK(rating >= 1 AND rating <= 5),
+  comment TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  created_at TEXT NOT NULL
+);`)
+  } catch (_) {}
 }
 
 export function parseJson(raw, fallback) {

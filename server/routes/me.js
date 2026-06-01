@@ -118,6 +118,45 @@ router.post('/purchases', async (req, res) => {
   res.json({ purchases })
 })
 
+router.get('/activity', async (req, res) => {
+  const db = getDb()
+  const user = await db.get('SELECT last_login_at, name FROM users WHERE id = ?', [req.userId])
+  const last = user?.last_login_at ? new Date(user.last_login_at).getTime() : Date.now()
+  const inactiveDays = Math.floor((Date.now() - last) / 86400000)
+  res.json({
+    inactiveDays,
+    showInactivityBanner: inactiveDays >= 3,
+    lastLoginAt: user?.last_login_at,
+  })
+})
+
+router.get('/reminders', async (req, res) => {
+  const rows = await getDb().all(
+    'SELECT id, course_id AS courseId, lesson_index AS lessonIndex, remind_at AS remindAt, sent FROM lesson_reminders WHERE user_id = ? ORDER BY remind_at DESC LIMIT 20',
+    [req.userId]
+  )
+  res.json(rows)
+})
+
+router.post('/peer-reviews', async (req, res) => {
+  const db = getDb()
+  const { courseId, lessonIndex, rating, comment, homeworkId } = req.body
+  const ratingNum = Number(rating)
+  if (!courseId || !Number.isFinite(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+    return res.status(400).json({ error: 'courseId and rating 1-5 required' })
+  }
+  const owned = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [req.userId, courseId])
+  if (!owned) return res.status(403).json({ error: 'Course access required' })
+
+  const id = `peer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  await db.run(
+    `INSERT INTO peer_reviews (id, course_id, lesson_index, reviewer_user_id, homework_id, rating, comment, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+    [id, courseId, Number(lessonIndex) || 0, req.userId, homeworkId || null, ratingNum, comment?.trim() || null, nowIso()]
+  )
+  res.status(201).json({ id })
+})
+
 router.put('/progress/:courseId', async (req, res) => {
   const db = getDb()
   const data = req.body.data || {}

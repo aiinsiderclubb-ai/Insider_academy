@@ -1,4 +1,6 @@
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { Confetti } from '../components/Confetti'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import { getVaultProduct } from '../data/vaultProducts'
@@ -8,9 +10,23 @@ import styles from './VaultProduct.module.css'
 
 export function VaultProduct() {
   const { vaultSlug } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { lang } = useLanguage()
   const { hasPurchased } = useAuth()
   const ru = lang === 'ru'
+  const showConfetti = searchParams.get('paid') === '1'
+
+  useEffect(() => {
+    if (searchParams.get('paid') !== '1') return
+    const t = setTimeout(() => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('paid')
+        return next
+      }, { replace: true })
+    }, 4000)
+    return () => clearTimeout(t)
+  }, [searchParams, setSearchParams])
 
   const product = getVaultProduct(vaultSlug)
   const details = product ? getVaultDetails(product.id) : null
@@ -28,6 +44,7 @@ export function VaultProduct() {
 
   return (
     <div className={styles.wrap}>
+      <Confetti active={showConfetti} />
       <div
         className={styles.container}
         style={{
@@ -64,11 +81,18 @@ export function VaultProduct() {
         <div className={styles.grid}>
           <ScrollReveal className={styles.main}>
             <h2>{ru ? 'Что внутри' : 'What\'s inside'}</h2>
-            <ul className={styles.includes}>
-              {includes.map((item) => (
-                <li key={item}>{item}</li>
+            <div className={styles.accordion}>
+              {includes.map((item, i) => (
+                <details key={item} className={styles.accordionItem} open={i < 3}>
+                  <summary>{item}</summary>
+                  <p className={styles.accordionBody}>
+                    {ru
+                      ? 'Материал входит в состав Vault и доступен после покупки.'
+                      : 'Included in Vault — available after purchase.'}
+                  </p>
+                </details>
               ))}
-            </ul>
+            </div>
 
             {outcomes.length > 0 && (
               <>

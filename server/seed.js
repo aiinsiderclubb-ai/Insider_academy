@@ -9,6 +9,7 @@ import {
   TEST_ACCOUNT_PURCHASE_IDS,
 } from '../src/data/testAccount.js'
 import { ensurePersonalId } from './services/personalId.js'
+import { SEED_REVIEWS } from '../src/data/seedReviews.js'
 
 /** Keep in sync with src/data/catalogVersion.js */
 const CATALOG_VERSION = 18
@@ -65,6 +66,48 @@ export async function seedIfEmpty() {
   }
 
   await seedTestAccount(db)
+  await seedReviews(db)
+  await seedPromoCodes(db)
+}
+
+export async function seedPromoCodes(db = getDb()) {
+  const defaults = [
+    { code: 'WELCOME10', discount_percent: 10, max_uses: 1000 },
+    { code: 'INSIDER20', discount_percent: 20, max_uses: 500 },
+  ]
+  for (const p of defaults) {
+    const exists = await db.get('SELECT code FROM promo_codes WHERE UPPER(code) = ?', [p.code])
+    if (exists) continue
+    await db.run(
+      `INSERT INTO promo_codes (code, discount_percent, max_uses, active, created_at) VALUES (?, ?, ?, 1, ?)`,
+      [p.code, p.discount_percent, p.max_uses, new Date().toISOString()]
+    )
+  }
+}
+
+export async function seedReviews(db = getDb()) {
+  let inserted = 0
+  for (const r of SEED_REVIEWS) {
+    const exists = await db.get('SELECT id FROM reviews WHERE id = ?', [r.id])
+    if (exists) continue
+    await db.run(
+      `INSERT INTO reviews (id, course_id, user_id, email, contact_email, user_name, rating, text, status, date)
+       VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        r.id,
+        r.courseId,
+        r.email,
+        r.contactEmail,
+        r.userName,
+        r.rating,
+        r.text,
+        r.status,
+        r.date,
+      ]
+    )
+    inserted += 1
+  }
+  if (inserted > 0) console.log(`[seed] ${inserted} curated reviews loaded`)
 }
 
 export async function seedTestAccount(db = getDb()) {

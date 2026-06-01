@@ -12,6 +12,7 @@ const FAQ_EN = [
 ]
 
 function product(base) {
+  const slug = base.slug
   return {
     fileTypes: ['ZIP'],
     faqRu: FAQ_RU,
@@ -21,6 +22,7 @@ function product(base) {
     recommendsForCourses: [],
     screenshots: [],
     videoPreview: null,
+    coverImage: base.coverImage ?? (slug ? `/marketplace/${slug}.png?v=3` : null),
     ...base,
   }
 }

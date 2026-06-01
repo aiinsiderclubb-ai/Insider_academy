@@ -10,6 +10,7 @@ import { isMarketplaceProductId } from '../data/marketplace/discounts'
 import { getMarketplaceProduct } from '../data/marketplace/products'
 import { getMarketplaceFavorites } from '../utils/marketplaceFavorites'
 import { getCertificates, getUserDiscountPercent, getCourseAverageScore, getReferrals } from '../api/adminStore'
+import { getPackProgressForUser } from '../utils/packProgress'
 import { ReferralDashboard } from '../components/ReferralDashboard'
 import { ProgressRing } from '../components/ProgressRing'
 import { api, checkApiOnline } from '../api/client'
@@ -19,7 +20,7 @@ export function Cabinet() {
   const { user, purchases, apiMode } = useAuth()
   const { getPercent } = useProgress()
   const { t, lang } = useLanguage()
-  const { getCourseById } = useCourses()
+  const { getCourseById, courses } = useCourses()
   const [copied, setCopied] = useState(false)
   const [stats, setStats] = useState(null)
   const [team, setTeam] = useState(null)
@@ -49,6 +50,7 @@ export function Cabinet() {
   const overallProgress = myCourses.length
     ? Math.round(myCourses.reduce((s, c) => s + getPercent(c.id, c.lessons?.length ?? 0), 0) / myCourses.length)
     : 0
+  const packProgress = getPackProgressForUser(purchases, getPercent, courses)
 
   useEffect(() => {
     if (!user) return
@@ -132,7 +134,29 @@ export function Cabinet() {
         {stats?.streak && (
           <div className={styles.streakBanner}>
             🔥 {lang === 'ru' ? 'Серия' : 'Streak'}: {stats.streak.current} {lang === 'ru' ? 'дн.' : 'days'}
+            {stats.streak.current < 7 && (
+              <span className={styles.streakGoal}>
+                {' '}
+                · {lang === 'ru' ? `цель 7 дней` : `goal: 7 days`}
+              </span>
+            )}
           </div>
+        )}
+
+        {packProgress.length > 0 && (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Прогресс по пакам' : 'Pack progress'}</h2>
+            <div className={styles.packList}>
+              {packProgress.map((pack) => (
+                <div key={pack.packId} className={styles.packRow}>
+                  <span>{lang === 'ru' ? pack.titleRu : pack.titleEn}</span>
+                  <span className={styles.packMeta}>
+                    {pack.completed}/{pack.total} {lang === 'ru' ? 'курсов' : 'courses'} · {pack.percent}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
         {stats?.chart?.length > 0 && (
@@ -179,7 +203,11 @@ export function Cabinet() {
                       className={styles.cardImageWrap}
                       style={{ background: item.coverGradient, minHeight: 120 }}
                     >
-                      <span style={{ fontSize: '2.5rem', padding: 16 }} aria-hidden>{item.coverIcon}</span>
+                      {item.coverImage ? (
+                        <img src={item.coverImage} alt="" className={styles.cardImage} />
+                      ) : (
+                        <span style={{ fontSize: '2.5rem', padding: 16 }} aria-hidden>{item.coverIcon}</span>
+                      )}
                       <span className={styles.cardBadge}>{lang === 'ru' ? 'Скачать' : 'Download'}</span>
                     </div>
                     <h3 className={styles.cardTitle}>{title}</h3>
@@ -213,7 +241,11 @@ export function Cabinet() {
                         className={styles.cardImageWrap}
                         style={{ background: item.coverGradient, minHeight: 100 }}
                       >
-                        <span style={{ fontSize: '2rem', padding: 12 }} aria-hidden>{item.coverIcon}</span>
+                        {item.coverImage ? (
+                          <img src={item.coverImage} alt="" className={styles.cardImage} />
+                        ) : (
+                          <span style={{ fontSize: '2rem', padding: 12 }} aria-hidden>{item.coverIcon}</span>
+                        )}
                       </div>
                       <h3 className={styles.cardTitle}>{title}</h3>
                       <p className={styles.cardMeta}>

@@ -31,6 +31,20 @@ export function MarketplaceProductCard({
       style={{ '--mp-cover': product.coverGradient }}
     >
       <Link to={`/marketplace/${product.slug}`} className={styles.cover} aria-label={title}>
+        {product.coverImage ? (
+          <img
+            src={product.coverImage}
+            alt=""
+            className={styles.coverImg}
+            loading="lazy"
+          />
+        ) : (
+          <span className={styles.coverIcon} aria-hidden>
+            {product.coverIcon}
+          </span>
+        )}
+        <div className={styles.coverTint} aria-hidden />
+        <div className={styles.coverOverlay} aria-hidden />
         <span className={styles.category}>{categoryLabel}</span>
         {onToggleFavorite && (
           <button
@@ -46,9 +60,6 @@ export function MarketplaceProductCard({
             {favorite ? '♥' : '♡'}
           </button>
         )}
-        <span className={styles.coverIcon} aria-hidden>
-          {product.coverIcon}
-        </span>
       </Link>
 
       <div className={styles.body}>

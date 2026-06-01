@@ -8,6 +8,10 @@ import { getUserDiscountPercent } from '../api/adminStore'
 import { useLanguage } from '../context/LanguageContext'
 import { useTheme } from '../context/ThemeContext'
 import { ComparePlans } from '../components/ComparePlans'
+import { PromoCodeInput } from '../components/PromoCodeInput'
+import { PageMeta } from '../components/PageMeta'
+import { VideoPlayer } from '../components/VideoPlayer'
+import { getLessonDisplayTitle } from '../data/courses'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { CourseHero } from '../components/CourseHero'
 import { COURSE_FAQ } from '../data/courseLanding'
@@ -54,6 +58,8 @@ export function CourseBuy() {
   const [method, setMethod] = useState('tribute')
   const [tributeEnabled, setTributeEnabled] = useState(false)
   const [openFaq, setOpenFaq] = useState(null)
+  const [promoApplied, setPromoApplied] = useState(null)
+  const [promoCode, setPromoCode] = useState('')
 
   useEffect(() => {
     checkApiOnline().then(async (ok) => {
@@ -83,6 +89,7 @@ export function CourseBuy() {
   const priceAfterReferral = referralDiscountPercent > 0
     ? Math.max(0, priceEur - Math.round((priceEur * referralDiscountPercent) / 100))
     : priceEur
+  const checkoutPrice = promoApplied?.valid ? promoApplied.finalEur : priceAfterReferral
   const fullPriceEur = Math.round(priceEur * 1.15)
   const discount = fullPriceEur - priceAfterReferral
   const courseTitle = getCourseField(course, 'title', lang)
@@ -101,7 +108,7 @@ export function CourseBuy() {
   }
 
   const completeDemoPurchase = async () => {
-    const payload = { courseId: course.id, courseTitle, amount: priceAfterReferral, slug: course.slug }
+    const payload = { courseId: course.id, courseTitle, amount: checkoutPrice, slug: course.slug, promoCode: promoCode || undefined }
     const online = apiMode || await checkApiOnline()
     if (online) await api.demoPurchase(payload)
     else await purchaseCourse(course.id, { recordAdmin: true, courseTitle, amount: priceAfterReferral, email: user?.email || email })
@@ -169,8 +176,14 @@ export function CourseBuy() {
     )
   }
 
+  const previewLesson = course.lessons?.[0]
+  const showLessonPreview = Boolean(
+    previewLesson?.videoUrl && (course.isFreeTrial || course.priceEur === 0)
+  )
+
   return (
     <div className={styles.wrap} style={themeStyle}>
+      <PageMeta title={courseTitle} description={getCourseField(course, 'shortDescription', lang)} />
       <div className={styles.container}>
         <CourseHero
           course={course}
@@ -210,6 +223,19 @@ export function CourseBuy() {
               <span className={styles.trustBadge}>🔒 {lang === 'ru' ? 'Безопасная оплата' : 'Secure payment'}</span>
               <span className={styles.trustBadge}>⚡ {lang === 'ru' ? 'Мгновенный доступ' : 'Instant access'}</span>
             </div>
+
+            {showLessonPreview && (
+              <section className={styles.sectionCard}>
+                <h2 className={styles.sectionTitle}>
+                  {lang === 'ru' ? 'Превью: первый урок (~1 мин)' : 'Preview: first lesson (~1 min)'}
+                </h2>
+                <VideoPlayer
+                  lesson={previewLesson}
+                  title={getLessonDisplayTitle(previewLesson, lang)}
+                  locked={false}
+                />
+              </section>
+            )}
 
             <ComparePlans course={course} lang={lang} coursePriceEur={priceAfterReferral} />
 
@@ -255,9 +281,19 @@ export function CourseBuy() {
                   {discount > 0 && (
                     <span className={styles.oldPrice}>{fullPriceEur} €</span>
                   )}
-                  <span className={styles.price}>{priceAfterReferral} €</span>
+                  <span className={styles.price}>{checkoutPrice} €</span>
                 </div>
               </div>
+
+              <PromoCodeInput
+                courseId={course.id}
+                amountEur={priceAfterReferral}
+                lang={lang}
+                onApplied={(result) => {
+                  setPromoApplied(result)
+                  setPromoCode(result?.code || '')
+                }}
+              />
 
               {referralDiscountPercent > 0 && (
                 <div className={styles.discountBanner}>

@@ -1,7 +1,17 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('LMS flow', () => {
-  test('login → buy demo → open course', async ({ page }) => {
+  test('health + promo validate', async ({ request }) => {
+    const base = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3001/api'
+    const health = await request.get(`${base}/health`)
+    expect(health.ok()).toBeTruthy()
+    const promo = await request.post(`${base}/promo/validate`, {
+      data: { code: 'WELCOME10', courseId: 'ai-start', amountEur: 100 },
+    })
+    expect([200, 400]).toContain(promo.status())
+  })
+
+  test('login → courses catalog', async ({ page }) => {
     const email = `test-${Date.now()}@example.com`
     const password = 'testpass123'
 
@@ -19,6 +29,15 @@ test.describe('LMS flow', () => {
     if (await courseLink.count()) {
       await courseLink.click()
       await expect(page.locator('h1')).toBeVisible()
+    }
+  })
+
+  test('feature flags public endpoint', async ({ request }) => {
+    const base = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3001/api'
+    const res = await request.get(`${base}/feature-flags`)
+    if (res.ok()) {
+      const data = await res.json()
+      expect(data).toHaveProperty('marketplace')
     }
   })
 })
