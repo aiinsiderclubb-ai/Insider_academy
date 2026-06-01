@@ -23,6 +23,21 @@ export async function sendMessage(chatId, text, extra = {}) {
   return data
 }
 
+export async function sendSticker(chatId, stickerFileId) {
+  if (!stickerFileId) return null
+  const res = await fetch(`${API()}/sendSticker`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, sticker: stickerFileId }),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    console.warn('[sticker]', data.description || res.status)
+    return null
+  }
+  return data
+}
+
 export async function getMe() {
   const res = await fetch(`${API()}/getMe`)
   const data = await res.json()

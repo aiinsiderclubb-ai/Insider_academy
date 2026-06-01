@@ -42,7 +42,7 @@ export async function handleTelegramUpdate(update) {
   if (text === '/help') {
     return sendMessage(
       chatId,
-      '<b>Справка</b>\n\n/start — приветствие\n<code>AIA-XXXXXX</code> — привязка\n/stop — отключить'
+      `<b>📖 Справка по боту</b>\n\n/start — приветствие\n<code>AIA-XXXXXX</code> — привязка аккаунта\n/link AIA-XXXXXX — то же самое\n/stop — отключить уведомления\n\n<b>Что приходит в Telegram:</b>\n✅ принятое ДЗ (урок, время, оценка, комментарий)\n📝 ДЗ на доработку\n🎁 промокоды\n📚 новости курсов\n⭐ статус отзывов`
     )
   }
 
@@ -54,12 +54,12 @@ async function handleLinkPersonalId(chatId, personalId, username) {
     const result = await linkByPersonalId({ personalId, chatId, username })
     await sendMessage(
       chatId,
-      `✅ <b>Готово!</b> Telegram подключён.\n\nАккаунт: ${result.email || personalId}\n\nУведомления: ДЗ, промокоды, новости.\n\n/stop — отключить`
+      `✅ <b>Готово! Telegram подключён</b>\n\n👤 Аккаунт: <code>${escEmail(result.email || personalId)}</code>\n\n🔔 <b>Вы будете получать:</b>\n• проверку домашних заданий (урок, оценка, комментарий)\n• промокоды и новости Academy\n• статус отзывов и покупок\n\n⚙️ Настройки уведомлений — в личном кабинете на сайте.\n\n/stop — отключить бота`
     )
   } catch (err) {
     await sendMessage(
       chatId,
-      `❌ Не удалось привязать.\n\n${err.message}\n\nПроверьте ID в кабинете Academy (<code>AIA-XXXXXX</code>).`
+      `❌ <b>Не удалось привязать</b>\n\n${escEmail(err.message)}\n\nПроверьте ID в кабинете Academy (<code>AIA-XXXXXX</code>).`
     )
   }
 }
@@ -84,8 +84,12 @@ async function sendWelcome(chatId, firstName) {
   const bot = config.botUsername ? `@${config.botUsername}` : ''
   await sendMessage(
     chatId,
-    `👋 <b>Здравствуйте${name}!</b>\n\nЯ бот уведомлений <b>AI Insider Academy</b>.\n\n📩 Пришлите ваш <b>личный ID</b> с платформы — одним сообщением.\n\nФормат: <code>AIA-XXXXXX</code>\n(Личный кабинет → Telegram на сайте Academy)\n\nПример: <code>AIA-X5MUH7</code>\n\nИли: <code>/link AIA-X5MUH7</code>${bot ? `\n\n${bot}` : ''}`
+    `👋 <b>Здравствуйте${name}!</b>\n\n🤖 Я бот уведомлений <b>AI Insider Academy</b>.\n\n📩 Пришлите ваш <b>личный ID</b> с платформы — одним сообщением.\n\n🔑 Формат: <code>AIA-XXXXXX</code>\n(Личный кабинет → Telegram на myinsideracademy.com)\n\n📝 Пример: <code>AIA-X5MUH7</code>\n\nИли команда: <code>/link AIA-X5MUH7</code>${bot ? `\n\n${bot}` : ''}\n\n/help — справка`
   )
+}
+
+function escEmail(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 async function askForPersonalId(chatId) {

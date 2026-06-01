@@ -1,7 +1,8 @@
 import http from 'http'
 import { config, isConfigured } from './config.js'
-import { formatNotification } from './messages.js'
-import { sendMessage, parseUpdate } from './telegramApi.js'
+import { formatNotification, getInlineKeyboard } from './messages.js'
+import { getStickerFileId } from './stickers.js'
+import { sendMessage, sendSticker, parseUpdate } from './telegramApi.js'
 import { handleTelegramUpdate } from './handlers.js'
 
 function readJson(req) {
@@ -61,8 +62,12 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ error: 'chatId and type required' }))
         return
       }
-      const text = formatNotification(type, data || {}, appUrl || config.appUrl)
-      await sendMessage(chatId, text)
+      const payload = data || {}
+      const app = appUrl || config.appUrl
+      await sendSticker(chatId, getStickerFileId(type))
+      const text = formatNotification(type, payload, app)
+      const replyMarkup = getInlineKeyboard(type, payload, app)
+      await sendMessage(chatId, text, replyMarkup ? { reply_markup: replyMarkup } : {})
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({ ok: true }))
     } catch (err) {
@@ -84,8 +89,12 @@ const server = http.createServer(async (req, res) => {
     let sent = 0
     for (const item of items.slice(0, 100)) {
       try {
-        const text = formatNotification(item.type, item.data || {}, body.appUrl || config.appUrl)
-        await sendMessage(item.chatId, text)
+        const payload = item.data || {}
+        const app = body.appUrl || config.appUrl
+        await sendSticker(item.chatId, getStickerFileId(item.type))
+        const text = formatNotification(item.type, payload, app)
+        const replyMarkup = getInlineKeyboard(item.type, payload, app)
+        await sendMessage(item.chatId, text, replyMarkup ? { reply_markup: replyMarkup } : {})
         sent += 1
       } catch (err) {
         console.warn('[bulk]', item.chatId, err.message)

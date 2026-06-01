@@ -92,30 +92,16 @@ router.patch('/promo-codes/:code', requireAdmin('admin'), async (req, res) => {
   res.json({ ok: true })
 })
 
+import { grantCourseAccess } from '../services/grantCourse.js'
+
 router.post('/grant-course', requireAdmin('admin', 'moderator'), async (req, res) => {
-  const db = getDb()
   const email = String(req.body.email || '').trim().toLowerCase()
   const courseId = String(req.body.courseId || '').trim()
   const courseTitle = String(req.body.courseTitle || courseId)
   if (!email || !courseId) return res.status(400).json({ error: 'email and courseId required' })
 
-  let user = await db.get('SELECT id, email FROM users WHERE email = ?', [email])
-  if (!user) {
-    const bcrypt = await import('bcryptjs')
-    const hash = bcrypt.default.hashSync(crypto.randomBytes(8).toString('hex'), 10)
-    const result = await db.run('INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)', [email, hash, email.split('@')[0]])
-    const userId = result?.lastInsertRowid || (await db.get('SELECT id FROM users WHERE email = ?', [email]))?.id
-    user = { id: userId, email }
-  }
-
-  const exists = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [user.id, courseId])
-  if (!exists) {
-    await db.run('INSERT INTO purchases (user_id, course_id, payment_provider) VALUES (?, ?, ?)', [user.id, courseId, 'admin_grant'])
-    await db.run(
-      'INSERT INTO purchase_log (id, email, course_id, course_title, amount, date) VALUES (?, ?, ?, ?, ?, ?)',
-      [`grant-${Date.now()}`, email, courseId, courseTitle, 0, nowIso()]
-    )
-  }
+  const access = await grantCourseAccess({ email, courseId, courseTitle, provider: 'admin_grant' })
+  if (!access.ok) return res.status(400).json({ error: access.error })
 
   await logAudit({
     actorEmail: `admin:${req.adminRole}`,
@@ -124,7 +110,7 @@ router.post('/grant-course', requireAdmin('admin', 'moderator'), async (req, res
     targetId: email,
     meta: { courseId },
   })
-  res.json({ ok: true, granted: !exists })
+  res.json({ ok: true, granted: access.granted, userCreated: access.userCreated })
 })
 
 router.post('/reviews/bulk-approve', requireAdmin('admin', 'moderator'), async (req, res) => {

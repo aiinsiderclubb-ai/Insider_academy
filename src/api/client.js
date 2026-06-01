@@ -133,6 +133,7 @@ export const api = {
   adminUpdateReview: (id, payload) => apiRequest(`/admin/reviews/${id}`, { method: 'PATCH', body: payload, admin: true }),
   adminDeleteReview: (id) => apiRequest(`/admin/reviews/${id}`, { method: 'DELETE', admin: true }),
   adminUpdateApplication: (id, payload) => apiRequest(`/admin/applications/${id}`, { method: 'PATCH', body: payload, admin: true }),
+  adminApproveApplication: (id, payload = {}) => apiRequest(`/admin/applications/${id}/approve`, { method: 'POST', body: payload, admin: true }),
   adminAddCertificate: (payload) => apiRequest('/admin/certificates', { method: 'POST', body: payload, admin: true }),
   adminSheetsStatus: () => apiRequest('/admin/sheets/status', { admin: true }),
   adminSheetsSync: () => apiRequest('/admin/sheets/sync', { method: 'POST', admin: true }),

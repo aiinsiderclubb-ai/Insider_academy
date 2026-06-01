@@ -7,7 +7,8 @@ import { getFileUrl } from '../services/storage.js'
 import { nowIso } from '../db/time.js'
 import { mapApplication } from './applications.js'
 import { userSelectFields } from '../services/userProfile.js'
-import { createUserNotification, getCourseSlug } from '../services/notifications.js'
+import { createUserNotification, getCourseSlug, getNextLessonInfo } from '../services/notifications.js'
+import { approveAcceleratorApplication } from '../services/applicationAccept.js'
 import * as sheetsTrack from '../services/sheetsTrack.js'
 import {
   getSheetsStatus,
@@ -237,6 +238,9 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, re
       : status === 'resubmit'
         ? 'ДЗ отправлено на доработку'
         : 'Обновление по домашнему заданию'
+    const nextLesson = Number.isInteger(row.lesson_index)
+      ? await getNextLessonInfo(db, row.course_id, row.lesson_index)
+      : {}
     await createUserNotification(db, {
       email: row.email,
       type: 'homework_feedback',
@@ -247,8 +251,11 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, re
       lessonTitle: row.lesson_title,
       lessonIndex: row.lesson_index,
       targetPath,
-      message: adminComment || defaultMsg,
+      comment: adminComment?.trim() || null,
+      message: adminComment?.trim() || defaultMsg,
       score: nextScore,
+      reviewedAt: nowIso(),
+      ...nextLesson,
     })
     sendHomeworkFeedbackEmail({
       email: row.email, courseTitle: row.course_title, lessonTitle: row.lesson_title, status, comment: adminComment,
@@ -362,6 +369,50 @@ router.delete('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, re
   res.json({ ok: true, id: req.params.id })
 })
 
+router.post('/applications/:id/approve', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
+  if (!row) return res.status(404).json({ error: 'Not found' })
+
+  if (row.status === 'accepted') {
+    return res.status(400).json({
+      error: 'Already accepted',
+      errorRu: 'Заявка уже одобрена',
+    })
+  }
+
+  const result = await approveAcceleratorApplication(db, row, {
+    adminNote: req.body.adminNote,
+    actorRole: req.adminRole,
+  })
+
+  if (!result.ok) {
+    return res.status(400).json({ error: result.error, errorRu: result.error })
+  }
+
+  await logAudit({
+    actorEmail: `admin:${req.adminRole}`,
+    action: 'application.approve',
+    targetType: 'application',
+    targetId: row.id,
+    meta: {
+      email: row.email,
+      granted: result.access?.granted,
+      telegramSent: result.telegramSent,
+    },
+  })
+
+  const updated = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
+  res.json({
+    ok: true,
+    application: mapApplication(updated),
+    granted: result.access?.granted,
+    userCreated: result.access?.userCreated,
+    telegramSent: result.telegramSent,
+    telegramHint: result.telegramHint,
+  })
+})
+
 router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req, res) => {
   const db = getDb()
   const { status, adminNote } = req.body
@@ -392,7 +443,7 @@ router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req
         type: 'application_status',
         status,
         courseTitle: 'AI Accelerator',
-        targetPath: '/courses/ai-accelerator',
+        targetPath: '/courses/ai-insider-accelerator',
         message: adminNote ? `${statusMessages[status]}. ${adminNote}` : statusMessages[status],
       })
     }

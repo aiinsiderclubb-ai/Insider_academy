@@ -4,14 +4,25 @@ function botToken() {
   return process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken || ''
 }
 
-export async function sendTelegramMessage(chatId, text) {
+export async function sendTelegramMessage(chatId, text, extra = {}) {
   const token = botToken()
   if (!token || !chatId) return false
   const url = `https://api.telegram.org/bot${token}/sendMessage`
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', ...extra }),
+  })
+  return res.ok
+}
+
+export async function sendTelegramSticker(chatId, stickerFileId) {
+  const token = botToken()
+  if (!token || !chatId || !stickerFileId) return false
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendSticker`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, sticker: stickerFileId }),
   })
   return res.ok
 }

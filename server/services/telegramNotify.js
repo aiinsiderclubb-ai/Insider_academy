@@ -1,7 +1,8 @@
 import { getDb } from '../db.js'
 import { config } from '../config.js'
-import { sendTelegramMessage } from './telegram.js'
+import { sendTelegramMessage, sendTelegramSticker } from './telegram.js'
 import { getNotifyPrefs, defaultNotifyPrefs } from './telegramLink.js'
+import { formatNotification, getInlineKeyboard } from './telegramMessages.js'
 
 const PREF_BY_TYPE = {
   homework_accepted: 'homework',
@@ -12,7 +13,25 @@ const PREF_BY_TYPE = {
   review_rejected: 'reviews',
   purchase: 'purchases',
   lesson_reminder: 'homework',
+  application_accepted: 'news',
   custom: 'news',
+}
+
+const STICKER_ENV = {
+  homework_accepted: 'STICKER_HW_ACCEPTED',
+  homework_resubmit: 'STICKER_HW_RESUBMIT',
+  review_approved: 'STICKER_REVIEW_OK',
+  review_rejected: 'STICKER_REVIEW_NO',
+  purchase: 'STICKER_PURCHASE',
+  promo_new: 'STICKER_PROMO',
+  lesson_reminder: 'STICKER_REMINDER',
+  course_news: 'STICKER_NEWS',
+}
+
+function getStickerFileId(type) {
+  const envKey = STICKER_ENV[type]
+  if (!envKey) return null
+  return process.env[envKey]?.trim() || null
 }
 
 async function sendViaBotService(chatId, type, data) {
@@ -29,11 +48,12 @@ async function sendViaBotService(chatId, type, data) {
   return res.ok
 }
 
-function formatFallback(type, data) {
-  const title = data.courseTitle || data.title || 'AI Insider Academy'
-  const lines = [title, data.message || data.text || ''].filter(Boolean)
-  if (data.code) lines.push(`Промокод: ${data.code}`)
-  return lines.join('\n')
+async function sendDirectTelegram(chatId, type, data) {
+  const appUrl = config.appUrl
+  await sendTelegramSticker(chatId, getStickerFileId(type))
+  const text = formatNotification(type, data, appUrl)
+  const replyMarkup = getInlineKeyboard(type, data, appUrl)
+  return sendTelegramMessage(chatId, text, replyMarkup ? { reply_markup: replyMarkup } : {})
 }
 
 export async function notifyTelegramUser(userId, type, data = {}) {
@@ -50,7 +70,7 @@ export async function notifyTelegramUser(userId, type, data = {}) {
     if (config.telegram.botServiceUrl) {
       return await sendViaBotService(chatId, type, data)
     }
-    return await sendTelegramMessage(chatId, formatFallback(type, data))
+    return await sendDirectTelegram(chatId, type, data)
   } catch (err) {
     console.warn('[telegramNotify]', type, err.message)
     return false
@@ -62,6 +82,19 @@ export async function notifyTelegramByEmail(email, type, data = {}) {
   const user = await db.get('SELECT id FROM users WHERE email = ?', [String(email).trim().toLowerCase()])
   if (!user?.id) return false
   return notifyTelegramUser(user.id, type, data)
+}
+
+export async function notifyTelegramChatId(chatId, type, data = {}) {
+  if (!chatId) return false
+  try {
+    if (config.telegram.botServiceUrl) {
+      return await sendViaBotService(chatId, type, data)
+    }
+    return await sendDirectTelegram(chatId, type, data)
+  } catch (err) {
+    console.warn('[telegramNotify]', type, chatId, err.message)
+    return false
+  }
 }
 
 export async function broadcastTelegram(type, data = {}, { prefKey = 'news' } = {}) {
@@ -94,7 +127,7 @@ export async function broadcastTelegram(type, data = {}, { prefKey = 'news' } = 
   let sent = 0
   for (const item of items) {
     try {
-      if (await sendTelegramMessage(item.chatId, formatFallback(item.type, item.data))) sent += 1
+      if (await sendDirectTelegram(item.chatId, item.type, item.data)) sent += 1
     } catch (_) {}
   }
   return { sent }

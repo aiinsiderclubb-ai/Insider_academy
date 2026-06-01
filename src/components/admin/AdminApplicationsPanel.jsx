@@ -76,6 +76,7 @@ export function AdminApplicationsPanel({
   const [filter, setFilter] = useState('all')
   const [expandedId, setExpandedId] = useState(null)
   const [notes, setNotes] = useState({})
+  const [approvingId, setApprovingId] = useState(null)
   const [localApps, setLocalApps] = useState(() => (online ? [] : getAcceleratorApplications()))
 
   useEffect(() => {
@@ -98,7 +99,13 @@ export function AdminApplicationsPanel({
   }), [list])
 
   const setStatus = async (id, status) => {
+    const app = list.find((a) => a.id === id)
     const adminNote = notes[id] ?? undefined
+
+    if (status === 'accepted' && app && online) {
+      return approveApplication(app)
+    }
+
     try {
       if (online) {
         await api.adminUpdateApplication(id, { status, adminNote })
@@ -128,6 +135,36 @@ export function AdminApplicationsPanel({
       showToast('Ошибка сохранения', 'error')
     }
   }
+
+  const approveApplication = async (app) => {
+    const adminNote = notes[app.id] ?? app.adminNote ?? ''
+    if (!window.confirm(`Одобрить заявку ${app.firstName} ${app.lastName} (${app.email})?\n\nОткроется доступ к курсу и уйдёт уведомление в Telegram (если бот подключён).`)) {
+      return
+    }
+    setApprovingId(app.id)
+    try {
+      if (online) {
+        const result = await api.adminApproveApplication(app.id, { adminNote: adminNote || undefined })
+        let msg = 'Заявка одобрена · доступ к курсу открыт'
+        if (result.telegramSent) msg += ' · Telegram отправлен'
+        else if (result.telegramHint) msg += ` · ${result.telegramHint}`
+        showToast(msg, result.telegramSent ? 'success' : 'info')
+      } else {
+        updateAcceleratorApplication(app.id, { status: 'accepted', adminNote })
+        setLocalApps(getAcceleratorApplications())
+        showToast('Заявка одобрена (локально)')
+      }
+      onUpdated?.()
+    } catch (err) {
+      showToast(err?.message || 'Ошибка одобрения', 'error')
+    } finally {
+      setApprovingId(null)
+    }
+  }
+
+  const isCompleteApplication = (app) => Boolean(
+    app.firstName && app.lastName && app.email && app.telegram && app.motivation && app.futureGoal
+  )
 
   return (
     <div>
@@ -225,6 +262,17 @@ export function AdminApplicationsPanel({
                       </td>
                       <td>
                         <div className={styles.tableActions}>
+                          {status !== 'accepted' && isCompleteApplication(app) && (
+                            <button
+                              type="button"
+                              className={styles.approveBtn}
+                              disabled={approvingId === app.id}
+                              onClick={() => approveApplication(app)}
+                              title="Одобрить, открыть доступ к курсу и отправить Telegram"
+                            >
+                              {approvingId === app.id ? '…' : '✓ Одобрить'}
+                            </button>
+                          )}
                           <button
                             type="button"
                             className={styles.inlineBtn}
@@ -268,6 +316,21 @@ export function AdminApplicationsPanel({
                             <button type="button" className={styles.inlineBtn} onClick={() => saveNote(app.id)}>
                               Сохранить заметку
                             </button>
+                            {status !== 'accepted' && isCompleteApplication(app) && (
+                              <button
+                                type="button"
+                                className={styles.approveBtn}
+                                disabled={approvingId === app.id}
+                                onClick={() => approveApplication(app)}
+                              >
+                                {approvingId === app.id ? 'Одобряем…' : '✓ Одобрить и открыть доступ'}
+                              </button>
+                            )}
+                            {status === 'accepted' && (
+                              <p className={styles.sectionDesc} style={{ margin: 0 }}>
+                                ✅ Доступ к курсу выдан · студент может войти на myinsideracademy.com
+                              </p>
+                            )}
                           </div>
                         </td>
                       </tr>

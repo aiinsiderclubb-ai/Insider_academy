@@ -9,6 +9,30 @@ export async function getCourseSlug(db, courseId) {
   return data?.slug || courseId
 }
 
+export async function getNextLessonInfo(db, courseId, lessonIndex) {
+  if (!courseId || !Number.isInteger(lessonIndex)) {
+    return { hasNextLesson: false, isLastLesson: false }
+  }
+  const row = await db.get('SELECT data FROM courses WHERE id = ?', [courseId])
+  const course = parseJson(row?.data, {})
+  const lessons = Array.isArray(course.lessons) ? course.lessons : []
+  const nextIdx = lessonIndex + 1
+  const next = lessons[nextIdx]
+  const slug = course.slug || courseId
+
+  if (!next) {
+    return { hasNextLesson: false, isLastLesson: lessons.length > 0 && lessonIndex >= lessons.length - 1 }
+  }
+
+  return {
+    hasNextLesson: true,
+    isLastLesson: false,
+    nextLessonIndex: nextIdx,
+    nextLessonTitle: next.title || next.titleRu || `Урок ${nextIdx + 1}`,
+    nextTargetPath: slug ? `/courses/${slug}?lesson=${nextIdx}` : '/cabinet',
+  }
+}
+
 export async function createUserNotification(db, payload) {
   const email = String(payload.email || '').trim().toLowerCase()
   if (!email) return null
@@ -42,8 +66,18 @@ export async function createUserNotification(db, payload) {
     notifyTelegramByEmail(email, tgType, {
       courseTitle: payload.courseTitle,
       lessonTitle: payload.lessonTitle,
+      lessonIndex: payload.lessonIndex,
+      lessonNumber: payload.lessonIndex != null ? payload.lessonIndex + 1 : null,
       message: payload.message,
+      comment: payload.comment,
+      adminComment: payload.comment,
       targetPath: payload.targetPath,
+      nextTargetPath: payload.nextTargetPath,
+      nextLessonTitle: payload.nextLessonTitle,
+      nextLessonIndex: payload.nextLessonIndex,
+      hasNextLesson: payload.hasNextLesson,
+      isLastLesson: payload.isLastLesson,
+      reviewedAt: payload.reviewedAt,
       status: payload.status,
       score: payload.score,
       code: payload.code,
