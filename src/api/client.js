@@ -1,8 +1,19 @@
 const TOKEN_KEY = 'lms_token'
 const ADMIN_TOKEN_KEY = 'lms_admin_token'
 
+const PRODUCTION_API_BASE = 'https://insider-academy.onrender.com/api'
+
 export function getApiBase() {
-  return import.meta.env.VITE_API_URL || '/api'
+  const fromEnv = import.meta.env.VITE_API_URL?.replace(/\/$/, '')
+  if (fromEnv) return fromEnv
+
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname
+    if (host === 'localhost' || host === '127.0.0.1') return '/api'
+    return PRODUCTION_API_BASE
+  }
+
+  return '/api'
 }
 
 export function getToken() {

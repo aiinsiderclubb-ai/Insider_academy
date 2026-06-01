@@ -3,6 +3,8 @@ import { useLanguage } from '../context/LanguageContext'
 import { getApiBase } from '../api/client'
 import styles from './ApiStatusBanner.module.css'
 
+const PRODUCTION_APP = 'https://insider-academy-vsxg.vercel.app'
+
 const isLocalHost = typeof window !== 'undefined'
   && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
 
@@ -19,11 +21,17 @@ export function ApiStatusBanner() {
       <span>
         {lang === 'ru'
           ? isLocalHost
-            ? 'Сервер API недоступен — отзывы и покупки не сохраняются. В папке проекта выполните: cd Insider_academy && npm run dev:all (нужны порты 3001 и 5173).'
-            : 'Сервер API недоступен. Откройте продакшен: insider-academy-vsxg.vercel.app или проверьте VITE_API_URL на Vercel.'
+            ? 'Локальный API (порт 3001) недоступен. Запустите: cd Insider_academy && npm run dev:all — или откройте прод: '
+            : 'API недоступен. Откройте Academy на продакшене: '}
           : isLocalHost
-            ? 'API is offline. From the project folder run: cd Insider_academy && npm run dev:all (ports 3001 and 5173).'
-            : 'API is offline. Use the Vercel deployment or check VITE_API_URL.'}
+            ? 'Local API (port 3001) is offline. Run: cd Insider_academy && npm run dev:all — or use production: '
+            : 'API is offline. Open the production app: '}
+        {!isLocalHost && (
+          <a href={PRODUCTION_APP} className={styles.prodLink}>{PRODUCTION_APP.replace('https://', '')}</a>
+        )}
+        {isLocalHost && (
+          <a href={PRODUCTION_APP} className={styles.prodLink}>{PRODUCTION_APP.replace('https://', '')}</a>
+        )}
       </span>
       {isLocalHost && (
         <code className={styles.hint}>{healthUrl}</code>

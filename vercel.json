@@ -1,4 +1,9 @@
 {
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://insider-academy.onrender.com/api"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/:path*",
