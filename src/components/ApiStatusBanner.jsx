@@ -22,7 +22,7 @@ export function ApiStatusBanner() {
         {lang === 'ru'
           ? isLocalHost
             ? 'Локальный API (порт 3001) недоступен. Запустите: cd Insider_academy && npm run dev:all — или откройте прод: '
-            : 'API недоступен. Откройте Academy на продакшене: '}
+            : 'API недоступен. Откройте Academy на продакшене: '
           : isLocalHost
             ? 'Local API (port 3001) is offline. Run: cd Insider_academy && npm run dev:all — or use production: '
             : 'API is offline. Open the production app: '}

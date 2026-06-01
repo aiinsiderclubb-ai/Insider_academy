@@ -18,7 +18,7 @@ import styles from './Cabinet.module.css'
 
 export function Cabinet() {
   const { user, purchases, apiMode } = useAuth()
-  const { getPercent } = useProgress()
+  const { getPercent, syncHomeworkAccepted } = useProgress()
   const { t, lang } = useLanguage()
   const { getCourseById, courses } = useCourses()
   const [copied, setCopied] = useState(false)
@@ -71,6 +71,30 @@ export function Cabinet() {
     }
     load()
   }, [user, apiMode])
+
+  useEffect(() => {
+    if (!user?.email || myCourses.length === 0) return
+    let cancelled = false
+    ;(async () => {
+      const online = apiMode || await checkApiOnline()
+      if (!online) return
+      for (const course of myCourses) {
+        const total = course.lessons?.length ?? 0
+        if (!total) continue
+        const accepted = []
+        await Promise.all(
+          Array.from({ length: total }, (_, index) => index).map(async (index) => {
+            try {
+              const hw = await api.getHomework(course.id, index)
+              if (hw?.status === 'accepted') accepted.push(index)
+            } catch (_) {}
+          })
+        )
+        if (!cancelled && accepted.length) syncHomeworkAccepted(course.id, accepted)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [user?.email, apiMode, purchases, courses, syncHomeworkAccepted])
 
   const copyReferralLink = useCallback(() => {
     if (!referralLink) return

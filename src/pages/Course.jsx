@@ -46,7 +46,7 @@ export function Course() {
   const { getCourseBySlug } = useCourses()
   const course = applyLessonProgramToCourse(getCourseBySlug(slug))
   const { user, hasPurchased, apiMode } = useAuth()
-  const { getProgress, submitHomework, getPercent, markWatched, saveVideoPosition, getVideoPosition } = useProgress()
+  const { getProgress, submitHomework, getPercent, markWatched, saveVideoPosition, getVideoPosition, syncHomeworkAccepted } = useProgress()
   const [peerReviewEnabled, setPeerReviewEnabled] = useState(false)
   const videoSaveTimer = useRef(null)
   const { showToast } = useToast()
@@ -125,6 +125,14 @@ export function Course() {
     window.addEventListener('lms-homework-refresh', refreshHomework)
     return () => window.removeEventListener('lms-homework-refresh', refreshHomework)
   }, [course?.id, user?.email, lessonCount])
+
+  useEffect(() => {
+    if (!course?.id) return
+    const accepted = Object.entries(homeworkMap)
+      .filter(([, hw]) => hw?.status === 'accepted')
+      .map(([idx]) => Number(idx))
+    syncHomeworkAccepted(course.id, accepted)
+  }, [homeworkMap, course?.id, syncHomeworkAccepted])
 
   if (!course) {
     return (
@@ -442,7 +450,7 @@ export function Course() {
                 title={lessonTitle}
                 locked={!lessonAvailable(safeSelectedLesson)}
                 lockedMessage={safeSelectedLesson > 0 && !purchased ? t('course.lockedMessage') : undefined}
-                onEnded={isFreeTrial ? handleWatch : undefined}
+                onEnded={(purchased || isFreeTrial) ? handleWatch : undefined}
                 initialTime={course?.id ? getVideoPosition(course.id, safeSelectedLesson) : 0}
                 onTimeUpdate={(sec) => {
                   if (!course?.id) return

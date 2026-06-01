@@ -30,7 +30,9 @@ export function ProgressProvider({ children }) {
     ;(async () => {
       try {
         const me = await api.getMe()
-        if (!cancelled && me.progress) setState(me.progress)
+        if (!cancelled && me.progress) {
+          setState((prev) => ({ ...prev, ...me.progress }))
+        }
       } catch (_) {}
     })()
     return () => { cancelled = true }
@@ -84,12 +86,30 @@ export function ProgressProvider({ children }) {
     return state[courseId] || { watched: [], homeworkSubmitted: [], homeworkChecked: [] }
   }, [state])
 
+  const syncHomeworkAccepted = useCallback((courseId, lessonIndexes = []) => {
+    const accepted = lessonIndexes.filter((i) => Number.isInteger(i) && i >= 0)
+    if (!accepted.length) return
+    setProgress(courseId, (c) => {
+      const prevChecked = c.homeworkChecked || []
+      const missing = accepted.filter((i) => !prevChecked.includes(i))
+      if (!missing.length) return c
+      const checked = new Set([...prevChecked, ...accepted])
+      const watched = new Set([...(c.watched || []), ...accepted])
+      return {
+        ...c,
+        homeworkChecked: [...checked].sort((a, b) => a - b),
+        watched: [...watched].sort((a, b) => a - b),
+      }
+    })
+  }, [setProgress])
+
   const getCompletedCount = useCallback((courseId, totalLessons) => {
     const p = state[courseId]
     if (!p || !totalLessons) return 0
     const checked = p.homeworkChecked || []
     const watched = p.watched || []
-    const completed = new Set([...checked, ...watched])
+    const submitted = p.homeworkSubmitted || []
+    const completed = new Set([...checked, ...watched, ...submitted])
     return Math.min(completed.size, totalLessons)
   }, [state])
 
@@ -131,6 +151,7 @@ export function ProgressProvider({ children }) {
         isLessonAvailable,
         saveVideoPosition,
         getVideoPosition,
+        syncHomeworkAccepted,
       }}
     >
       {children}
