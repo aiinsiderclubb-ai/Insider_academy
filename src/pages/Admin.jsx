@@ -1269,17 +1269,19 @@ export function Admin() {
                                 Увидено
                               </button>
                             )}
-                            {adminRole === 'admin' && (
-                              <button
-                                type="button"
-                                className={styles.smallBtnDanger}
-                                disabled={deletingUserId === (r.id || r.email)}
-                                onClick={() => handleDeleteUser(r)}
-                                title="Удалить аккаунт и все данные пользователя"
-                              >
-                                {deletingUserId === (r.id || r.email) ? '…' : 'Удалить'}
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              className={styles.smallBtnDanger}
+                              disabled={adminRole !== 'admin' || deletingUserId === (r.id || r.email)}
+                              onClick={() => handleDeleteUser(r)}
+                              title={adminRole === 'admin'
+                                ? 'Удалить аккаунт и все данные пользователя'
+                                : 'Недостаточно прав (нужна роль admin)'}
+                            >
+                              {adminRole !== 'admin'
+                                ? 'Удалить'
+                                : deletingUserId === (r.id || r.email) ? '…' : 'Удалить'}
+                            </button>
                           </div>
                         </td>
                       </tr>
