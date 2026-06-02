@@ -309,7 +309,7 @@ export function getDriveFolderUrl() {
   return id ? `https://drive.google.com/drive/folders/${id}` : null
 }
 
-export async function getSheetsStatus() {
+export async function getSheetsStatus(db = null) {
   if (!isGoogleSheetsEnabled()) {
     return {
       enabled: false,
@@ -328,6 +328,16 @@ export async function getSheetsStatus() {
       rowCounts[key] = null
     }
   }
+
+  let lastFullSync = null
+  if (db) {
+    try {
+      const row = await db.get('SELECT value FROM analytics WHERE key = ?', [GOOGLE_SHEETS_LAST_SYNC_KEY])
+      lastFullSync = row?.value ? JSON.parse(row.value) : null
+    } catch {
+      lastFullSync = null
+    }
+  }
   return {
     enabled: true,
     ok: init.ok,
@@ -335,6 +345,7 @@ export async function getSheetsStatus() {
     folderUrl: getDriveFolderUrl(),
     serviceAccountEmail: credentials?.client_email || null,
     realtime: true,
+    lastFullSync,
     sheets: Object.entries(SHEET_TITLES).map(([key, title]) => ({
       key,
       title,
@@ -407,9 +418,25 @@ export async function syncDatabaseToSheets(db) {
     }
   }
 
-  return {
+  const payload = {
     ok: true,
     counts: { ...archive.counts, ...extraCounts },
     mode: 'replace',
+  }
+  await writeLastFullSync(db, { at: new Date().toISOString(), counts: payload.counts })
+  return payload
+}
+
+export const GOOGLE_SHEETS_LAST_SYNC_KEY = 'google_sheets_last_full_sync'
+
+async function writeLastFullSync(db, payload) {
+  try {
+    await db.run(
+      `INSERT INTO analytics (key, value) VALUES (?, ?)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+      [GOOGLE_SHEETS_LAST_SYNC_KEY, JSON.stringify(payload)]
+    )
+  } catch (err) {
+    console.warn('[googleSheets] write last sync failed:', err.message)
   }
 }

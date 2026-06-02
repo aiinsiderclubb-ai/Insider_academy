@@ -674,7 +674,7 @@ router.post('/certificates', requireAdmin('admin', 'moderator'), async (req, res
 })
 
 router.get('/sheets/status', requireAdmin('admin', 'moderator'), async (_req, res) => {
-  res.json(await getSheetsStatus())
+  res.json(await getSheetsStatus(getDb()))
 })
 
 router.post('/sheets/sync', requireAdmin('admin'), async (_req, res) => {

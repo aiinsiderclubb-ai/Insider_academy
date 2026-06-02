@@ -7,10 +7,20 @@ const ARCHIVE_KEYS = new Set(['users', 'logins', 'purchases', 'homework', 'revie
 export function AdminGoogleSheets({ online, onToast }) {
   const [status, setStatus] = useState(null)
   const [syncing, setSyncing] = useState(false)
+  const [loadingStatus, setLoadingStatus] = useState(false)
 
-  const load = () => {
+  const load = async () => {
     if (!online) return
-    api.adminSheetsStatus().then(setStatus).catch(() => setStatus(null))
+    setLoadingStatus(true)
+    try {
+      const s = await api.adminSheetsStatus()
+      setStatus(s)
+    } catch (e) {
+      setStatus(null)
+      onToast?.(e?.message || 'Не удалось обновить статус', 'error')
+    } finally {
+      setLoadingStatus(false)
+    }
   }
 
   useEffect(load, [online])
@@ -82,6 +92,12 @@ export function AdminGoogleSheets({ online, onToast }) {
               ? (status.ok ? '✅ подключено · авто-синхронизация включена' : `⚠️ ${status.error || status.message}`)
               : `⚠️ ${status.message}`}
           </p>
+          {status.lastFullSync?.at && (
+            <p className={styles.sectionDesc}>
+              Последняя синхронизация БД → Drive:{' '}
+              <strong>{new Date(status.lastFullSync.at).toLocaleString('ru-RU')}</strong>
+            </p>
+          )}
           {status.serviceAccountEmail && (
             <p className={styles.sectionDesc}>
               Service Account: <code>{status.serviceAccountEmail}</code>
@@ -112,8 +128,8 @@ export function AdminGoogleSheets({ online, onToast }) {
         >
           {syncing ? 'Синхронизация…' : 'Обновить архив из БД'}
         </button>
-        <button type="button" className={styles.smallBtn} disabled={!online} onClick={load}>
-          Обновить статус
+        <button type="button" className={styles.smallBtn} disabled={!online || loadingStatus} onClick={load}>
+          {loadingStatus ? 'Обновление…' : 'Обновить статус'}
         </button>
       </div>
 
