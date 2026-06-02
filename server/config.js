@@ -7,7 +7,7 @@ export const config = {
   port: Number(process.env.PORT) || 3001,
   corsOrigin: process.env.CORS_ORIGIN
     || 'http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174',
-  appUrl: process.env.APP_URL || 'http://localhost:5173',
+  appUrl: process.env.APP_URL || (process.env.NODE_ENV === 'production' ? 'https://myinsideracademy.com' : 'http://localhost:5173'),
   jwtSecret: process.env.JWT_SECRET || 'dev-secret',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
   editorPassword: process.env.EDITOR_PASSWORD || 'editor123',

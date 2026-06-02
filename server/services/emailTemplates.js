@@ -11,5 +11,16 @@ export function emailLayout({ title, bodyHtml, footerNote }) {
 }
 
 export function primaryButton(href, label) {
-  return `<p style="margin:24px 0"><a href="${href}" style="display:inline-block;padding:12px 24px;border-radius:999px;font-weight:700;text-decoration:none;color:#fff;background:linear-gradient(135deg,#7c3aed,#f97316)">${label}</a></p>`
+  // Table-based button is the most compatible across email clients (Gmail/iOS/Outlook).
+  return `
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin:24px 0">
+      <tr>
+        <td align="center" bgcolor="#7c3aed" style="border-radius:999px">
+          <a href="${href}" style="display:inline-block;padding:12px 24px;border-radius:999px;font-weight:700;text-decoration:none;color:#ffffff;background:linear-gradient(135deg,#7c3aed,#f97316)">
+            ${label}
+          </a>
+        </td>
+      </tr>
+    </table>
+  `
 }
