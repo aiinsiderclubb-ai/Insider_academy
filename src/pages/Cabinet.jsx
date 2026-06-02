@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
-import { getCourseField } from '../data/courses'
+import { getCourseField, formatCourseDuration } from '../data/courses'
 import { getVaultProduct, isVaultProductId } from '../data/vaultProducts'
 import { isMarketplaceProductId } from '../data/marketplace/discounts'
 import { getMarketplaceProduct } from '../data/marketplace/products'
@@ -326,6 +326,7 @@ export function Cabinet() {
             {myCourses.map((course) => {
               const percent = getPercent(course.id, course.lessons?.length ?? 0)
               const title = getCourseField(course, 'title', lang)
+              const duration = formatCourseDuration(course, lang)
               const score = getCourseAverageScore(user?.email, course.id)
               return (
                 <Link to={`/courses/${course.slug}`} key={course.id} className={styles.card}>
