@@ -3,6 +3,7 @@ export const PROMO_VIDEOS = {
   accelerator: '',
   club: '',
   'ai-content-creator': '/videos/ai-content-creator-promo.mp4',
+  'ai-automation-engineer': '/videos/ai-automation-engineer-promo.mp4',
 }
 
 export function getCoursePromoVideo(courseId) {
