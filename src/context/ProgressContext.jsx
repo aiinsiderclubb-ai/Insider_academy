@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
-import { useAuth } from './AuthContext'
+import { useAuth, LOGOUT_EVENT } from './AuthContext'
 import { api } from '../api/client'
 
 const STORAGE_KEY = 'lms_progress'
@@ -25,7 +25,18 @@ export function ProgressProvider({ children }) {
   const syncTimer = useRef(null)
 
   useEffect(() => {
-    if (authLoading || !apiMode || !user) return
+    const resetProgress = () => setState({})
+    window.addEventListener(LOGOUT_EVENT, resetProgress)
+    return () => window.removeEventListener(LOGOUT_EVENT, resetProgress)
+  }, [])
+
+  useEffect(() => {
+    if (authLoading) return
+    if (!user) {
+      setState(loadLocal())
+      return
+    }
+    if (!apiMode) return
     let cancelled = false
     ;(async () => {
       try {

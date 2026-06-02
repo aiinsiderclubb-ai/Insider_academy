@@ -308,7 +308,7 @@ export function Layout({ children }) {
                         {item.label}
                       </Link>
                     ))}
-                    <button type="button" className={styles.cabinetDropdownLogout} onClick={() => { logout(); setCabinetOpen(false); }}>
+                    <button type="button" className={styles.cabinetDropdownLogout} onClick={() => { setCabinetOpen(false); setChatOpen(false); logout(); }}>
                       <span className={styles.cabinetDropdownIcon}>🚪</span>
                       {t('nav.logout')}
                     </button>

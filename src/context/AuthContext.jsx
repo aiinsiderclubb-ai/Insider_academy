@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api, setToken, checkApiOnline, isProductionSite } from '../api/client'
-import { setPendingVerifyEmail } from '../utils/pendingVerification'
+import { clearPendingVerifyEmail, setPendingVerifyEmail } from '../utils/pendingVerification'
 import {
   recordRegistration,
   recordPurchase,
@@ -19,10 +20,14 @@ import {
 } from '../data/testAccount'
 
 const REF_STORAGE = 'lms_pending_ref'
+const PROGRESS_KEY = 'lms_progress'
+const SUPPORT_CHAT_PREFIX = 'lms_support_messages_'
 const AuthContext = createContext(null)
 const STORAGE_KEY = 'lms_user'
 const PURCHASES_KEY = 'lms_purchases'
 const AVATAR_KEY = 'lms_avatar'
+
+export const LOGOUT_EVENT = 'lms-logout'
 
 function avatarStorageKey(email) {
   return `${AVATAR_KEY}_${String(email || '').toLowerCase()}`
@@ -84,6 +89,7 @@ function savePurchasesLocal(list) {
 }
 
 export function AuthProvider({ children }) {
+  const navigate = useNavigate()
   const [user, setUserState] = useState(null)
   const [purchases, setPurchases] = useState([])
   const [loading, setLoading] = useState(true)
@@ -357,11 +363,23 @@ export function AuthProvider({ children }) {
   }, [apiMode, setUser, applyReferral, completeAuthSession])
 
   const logout = useCallback(() => {
+    const prevEmail = user?.email
     setUserState(null)
     setPurchases([])
     setToken(null)
-    if (!apiMode) saveUserLocal(null)
-  }, [apiMode])
+    saveUserLocal(null)
+    savePurchasesLocal([])
+    clearPendingVerifyEmail()
+    try {
+      localStorage.removeItem(PROGRESS_KEY)
+      if (prevEmail) {
+        localStorage.removeItem(`${SUPPORT_CHAT_PREFIX}${prevEmail}`)
+        localStorage.removeItem(`${AVATAR_KEY}_${String(prevEmail).toLowerCase()}`)
+      }
+    } catch (_) {}
+    window.dispatchEvent(new Event(LOGOUT_EVENT))
+    navigate('/', { replace: true })
+  }, [navigate, user])
 
   const purchaseCourse = useCallback(async (courseId, meta = {}) => {
     const buyerEmail = user?.email || meta.email || ''
