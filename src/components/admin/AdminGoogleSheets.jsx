@@ -105,13 +105,33 @@ export function AdminGoogleSheets({ online, onToast }) {
               дайте этому email доступ «Редактор» к папке на Google Drive.
             </p>
           )}
-          {status.errorCode === 'drive_quota' && (
-            <p className={styles.sectionDesc} style={{ color: '#fbbf24', maxWidth: 640 }}>
-              <strong>Что сделать:</strong>{' '}
-              <a href="https://one.google.com/storage" target="_blank" rel="noreferrer noopener">Проверить хранилище Google</a>
-              {' · '}
-              <a href={status.folderUrl} target="_blank" rel="noreferrer noopener">Папка архива на Drive</a>
-              {' — удалите старые файлы и очистите корзину у аккаунта, которому принадлежит эта папка.'}
+          {status.folderInspection && (
+            <p className={styles.sectionDesc} style={{ maxWidth: 720 }}>
+              Папка:{' '}
+              {status.folderInspection.ok
+                ? (
+                  <>
+                    <strong>{status.folderInspection.folderName || '—'}</strong>
+                    {' · '}
+                    {status.folderInspection.canAddChildren
+                      ? '✅ робот может создавать файлы'
+                      : '⚠️ робот не может создавать файлы (нужен доступ «Редактор»)'}
+                    {' · '}
+                    таблиц в папке: {status.folderInspection.existingSpreadsheets ?? 0}
+                  </>
+                )
+                : (
+                  <>⚠️ робот не видит папку — расшарьте её на email сервис-аккаунта</>
+                )}
+            </p>
+          )}
+          {(status.errorCode === 'drive_quota' || status.errorCode === 'folder_access') && (
+            <p className={styles.sectionDesc} style={{ color: '#fbbf24', maxWidth: 720 }}>
+              <strong>Если Drive пустой:</strong> откройте{' '}
+              <a href={status.folderUrl} target="_blank" rel="noreferrer noopener">папку архива</a>
+              {' → Поделиться → добавьте '}
+              <code>{status.serviceAccountEmail}</code>
+              {' с правом «Редактор». Или создайте в папке 5 таблиц: Пользователи, Входы, Покупки, Домашнее задание, Отзывы.'}
             </p>
           )}
         </>

@@ -50,18 +50,86 @@ function getCredentials() {
   }
 }
 
-/** Понятное сообщение для типичных ошибок Google API (квота Drive и т.д.). */
+export function classifyGoogleDriveError(message) {
+  if (!message) return 'unknown'
+  if (/FOLDER_NO_WRITE|FOLDER_NOT_FOUND|FOLDER_INACCESSIBLE/i.test(message)) return 'folder_access'
+  if (/storage quota|quota exceeded|quotaExceeded/i.test(message)) return 'drive_quota'
+  if (/403|permission|forbidden|insufficient/i.test(message)) return 'folder_access'
+  return 'unknown'
+}
+
+/** Понятное сообщение для типичных ошибок Google API (квота Drive, доступ к папке). */
 export function formatGoogleDriveError(message) {
   if (!message) return message
-  if (/storage quota has been exceeded|quota exceeded/i.test(message)) {
+  if (/FOLDER_NO_WRITE/i.test(message)) {
     return (
-      'Закончилось место на Google Drive у владельца папки архива. '
-      + 'Освободите место: drive.google.com → шестерёнка → Настройки → Управление хранилищем, '
-      + 'очистите корзину. Либо оформите Google One. '
-      + 'Новые таблицы создаются в вашей папке и занимают квоту вашего Google-аккаунта, не сервис-аккаунта.'
+      'Сервис-аккаунт видит папку, но не может создавать в ней файлы. '
+      + 'Откройте папку на Google Drive → Поделиться → добавьте email робота с правом «Редактор» (не «Читатель»).'
+    )
+  }
+  if (/FOLDER_NOT_FOUND|FOLDER_INACCESSIBLE/i.test(message)) {
+    return (
+      'Папка архива недоступна сервис-аккаунту. Проверьте GOOGLE_DRIVE_FOLDER_ID и что папку расшарили '
+      + 'на email робота (Редактор). Ссылка «доступ по ссылке» без добавления email робота не сработает.'
+    )
+  }
+  if (/storage quota has been exceeded|quota exceeded|quotaExceeded/i.test(message)) {
+    return (
+      'Google вернул «квота превышена». Если ваш личный Drive пустой — обычно папка не расшарена роботу как «Редактор», '
+      + 'и таблицы пытаются создаться в Drive сервис-аккаунта (лимит ~15 МБ). '
+      + 'Исправление: Поделиться папкой → добавить my-insider-academy@... → Редактор. '
+      + 'Либо вручную создайте в папке таблицы «Пользователи», «Входы», «Покупки», «Домашнее задание», «Отзывы».'
+    )
+  }
+  if (/403|permission|forbidden/i.test(message)) {
+    return (
+      'Нет доступа к Google Drive. Дайте сервис-аккаунту роль «Редактор» на папку архива '
+      + '(Поделиться → конкретный email робота, не только ссылка).'
     )
   }
   return message
+}
+
+/** Проверка доступа сервис-аккаунта к папке архива (без создания файлов). */
+export async function inspectDriveFolder() {
+  if (!isGoogleSheetsEnabled()) {
+    return { ok: false, reason: 'disabled' }
+  }
+  const folderId = config.googleSheets.folderId
+  if (!folderId) return { ok: false, reason: 'no_folder_id' }
+
+  const auth = await getAuth()
+  const drive = google.drive({ version: 'v3', auth })
+  try {
+    const meta = await drive.files.get({
+      fileId: folderId,
+      fields: 'id,name,mimeType,capabilities,driveId,shared',
+      supportsAllDrives: true,
+    })
+    const caps = meta.data.capabilities || {}
+    const listQ = `'${folderId}' in parents and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`
+    const listed = await drive.files.list({
+      q: listQ,
+      fields: 'files(id, name)',
+      pageSize: 50,
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true,
+    })
+    const files = listed.data.files || []
+    return {
+      ok: true,
+      folderId,
+      folderName: meta.data.name,
+      canAddChildren: Boolean(caps.canAddChildren),
+      canEdit: Boolean(caps.canEdit),
+      isSharedDrive: Boolean(meta.data.driveId),
+      existingSpreadsheets: files.length,
+      spreadsheetNames: files.map((f) => f.name),
+    }
+  } catch (err) {
+    const code = err?.code === 404 || err?.response?.status === 404 ? 'folder_not_found' : 'folder_inaccessible'
+    return { ok: false, reason: code, detail: err.message }
+  }
 }
 
 async function getAuth() {
@@ -78,11 +146,26 @@ async function getAuth() {
   return authClient
 }
 
+async function assertFolderWritable(folderId) {
+  const inspection = await inspectDriveFolder()
+  if (!inspection.ok) {
+    if (inspection.reason === 'folder_not_found') {
+      throw new Error(`FOLDER_NOT_FOUND: ${inspection.detail || folderId}`)
+    }
+    throw new Error(`FOLDER_INACCESSIBLE: ${inspection.detail || 'no access'}`)
+  }
+  if (!inspection.canAddChildren) {
+    throw new Error('FOLDER_NO_WRITE: service account cannot create files in archive folder')
+  }
+  return inspection
+}
+
 async function resolveSheetIds() {
   if (sheetIdCache) return sheetIdCache
   const auth = await getAuth()
   const drive = google.drive({ version: 'v3', auth })
   const folderId = config.googleSheets.folderId
+  if (folderId) await assertFolderWritable(folderId)
   const q = folderId
     ? `'${folderId}' in parents and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`
     : "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false"
@@ -153,7 +236,7 @@ export async function initGoogleSheets() {
     initPromise = null
     const friendly = formatGoogleDriveError(err.message)
     console.warn('[googleSheets] init failed:', err.message)
-    return { ok: false, error: friendly, errorCode: /quota/i.test(err.message) ? 'drive_quota' : undefined }
+    return { ok: false, error: friendly, errorCode: classifyGoogleDriveError(err.message) }
   })
   return initPromise
 }
@@ -332,6 +415,13 @@ export async function getSheetsStatus(db = null) {
       message: 'Задайте GOOGLE_SERVICE_ACCOUNT_JSON и GOOGLE_DRIVE_FOLDER_ID на сервере',
     }
   }
+  let folderInspection = null
+  try {
+    folderInspection = await inspectDriveFolder()
+  } catch {
+    folderInspection = { ok: false, reason: 'inspect_failed' }
+  }
+
   const init = await initGoogleSheets()
   const ids = sheetIdCache || {}
   const credentials = getCredentials()
@@ -359,6 +449,7 @@ export async function getSheetsStatus(db = null) {
     error: init.error,
     errorCode: init.errorCode,
     folderUrl: getDriveFolderUrl(),
+    folderInspection,
     serviceAccountEmail: credentials?.client_email || null,
     realtime: true,
     lastFullSync,
