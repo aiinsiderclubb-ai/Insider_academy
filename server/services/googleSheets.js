@@ -50,6 +50,20 @@ function getCredentials() {
   }
 }
 
+/** Понятное сообщение для типичных ошибок Google API (квота Drive и т.д.). */
+export function formatGoogleDriveError(message) {
+  if (!message) return message
+  if (/storage quota has been exceeded|quota exceeded/i.test(message)) {
+    return (
+      'Закончилось место на Google Drive у владельца папки архива. '
+      + 'Освободите место: drive.google.com → шестерёнка → Настройки → Управление хранилищем, '
+      + 'очистите корзину. Либо оформите Google One. '
+      + 'Новые таблицы создаются в вашей папке и занимают квоту вашего Google-аккаунта, не сервис-аккаунта.'
+    )
+  }
+  return message
+}
+
 async function getAuth() {
   if (authClient) return authClient
   const credentials = getCredentials()
@@ -137,8 +151,9 @@ export async function initGoogleSheets() {
     return { ok: true, sheets: Object.keys(ids).length }
   })().catch((err) => {
     initPromise = null
+    const friendly = formatGoogleDriveError(err.message)
     console.warn('[googleSheets] init failed:', err.message)
-    return { ok: false, error: err.message }
+    return { ok: false, error: friendly, errorCode: /quota/i.test(err.message) ? 'drive_quota' : undefined }
   })
   return initPromise
 }
@@ -342,6 +357,7 @@ export async function getSheetsStatus(db = null) {
     enabled: true,
     ok: init.ok,
     error: init.error,
+    errorCode: init.errorCode,
     folderUrl: getDriveFolderUrl(),
     serviceAccountEmail: credentials?.client_email || null,
     realtime: true,

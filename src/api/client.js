@@ -15,6 +15,29 @@ function usesVercelApiProxy(host) {
   return false
 }
 
+/** Прод-сайт с прокси /api (Render может «просыпаться» 30–90 с). */
+export function isProductionSite() {
+  if (typeof window === 'undefined') return false
+  return usesVercelApiProxy(window.location.hostname)
+}
+
+let checkApiOnlinePromise = null
+
+async function pingHealth(timeoutMs) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const res = await fetch(`${getApiBase()}/health`, { signal: ctrl.signal, cache: 'no-store' })
+    if (!res.ok) return false
+    const data = await res.json().catch(() => ({}))
+    return data.ok !== false
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 export function getApiBase() {
   const fromEnv = import.meta.env.VITE_API_URL?.replace(/\/$/, '')
 
@@ -157,21 +180,40 @@ export const api = {
   adminTelegramBroadcast: (payload) => apiRequest('/admin/telegram/broadcast', { method: 'POST', body: payload, admin: true }),
 }
 
-export async function checkApiOnline() {
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try {
-      const ctrl = new AbortController()
-      const timeoutMs = attempt === 0 ? 8000 : 12000
-      const timer = setTimeout(() => ctrl.abort(), timeoutMs)
-      const res = await fetch(`${getApiBase()}/health`, { signal: ctrl.signal, cache: 'no-store' })
-      clearTimeout(timer)
-      if (!res.ok) continue
-      const data = await res.json().catch(() => ({}))
-      if (data.ok !== false) return true
-    } catch (_) {}
-    if (attempt < 2) await new Promise((r) => setTimeout(r, 1200))
+/**
+ * @param {{ wake?: boolean }} [options] — wake: длинная серия попыток при первой загрузке (cold start Render).
+ */
+export async function checkApiOnline(options = {}) {
+  const { wake = false } = options
+  if (!wake && checkApiOnlinePromise) return checkApiOnlinePromise
+
+  const run = async () => {
+    const prod = isProductionSite()
+    const attempts = wake && prod ? 10 : prod ? 4 : 3
+    const timeouts = wake && prod
+      ? [12000, 14000, 16000, 18000, 20000, 22000, 24000, 26000, 28000, 30000]
+      : prod
+        ? [10000, 12000, 14000, 16000]
+        : [8000, 12000, 12000]
+    const delays = wake && prod
+      ? [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500]
+      : [1200, 1500, 2000]
+
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      if (await pingHealth(timeouts[attempt] ?? 12000)) return true
+      if (attempt < attempts - 1) {
+        await new Promise((r) => setTimeout(r, delays[attempt] ?? 1500))
+      }
+    }
+    return false
   }
-  return false
+
+  if (wake) return run()
+
+  checkApiOnlinePromise = run().finally(() => {
+    checkApiOnlinePromise = null
+  })
+  return checkApiOnlinePromise
 }
 
 /** API доступен и пользователь авторизован JWT-токеном */

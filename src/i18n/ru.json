@@ -246,7 +246,16 @@
     "errorPasswordShort": "Пароль должен быть не менее 6 символов.",
     "errorPasswordMatch": "Пароли не совпадают.",
     "errorExists": "Этот email уже зарегистрирован. Войдите или восстановите пароль.",
-    "errorGeneric": "Ошибка регистрации. Попробуйте снова."
+    "errorGeneric": "Ошибка регистрации. Попробуйте снова.",
+    "stepVerify": "Шаг 2 из 2",
+    "verifyTitle": "Введите код с почты",
+    "verifySubtitle": "Мы отправили 6-значный код на",
+    "verifySubmit": "Подтвердить и войти",
+    "backToForm": "← Изменить данные регистрации",
+    "errorCodeLength": "Введите все 6 цифр кода.",
+    "successTitle": "Регистрация успешна!",
+    "successSubtitle": "Аккаунт подтверждён. Добро пожаловать в AI Insider Academy.",
+    "successRedirect": "Сейчас откроем личный кабинет…"
   },
   "verifyEmail": {
     "title": "Подтверждение email",

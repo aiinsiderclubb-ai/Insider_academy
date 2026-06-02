@@ -108,7 +108,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      const online = await checkApiOnline()
+      const online = await checkApiOnline({ wake: true })
       if (cancelled) return
       setApiMode(online)
       if (online) {
@@ -298,12 +298,32 @@ export function AuthProvider({ children }) {
     savePurchasesLocal([])
   }, [])
 
+  const completeAuthSession = useCallback(async (token, u) => {
+    if (token) setToken(token)
+    try {
+      const me = await api.getMe()
+      setUserState(withLocalAvatar(me.user))
+      setPurchases(me.purchases || [])
+      savePurchasesLocal(me.purchases || [])
+      saveUserLocal(me.user)
+      await applyReferral(me.user?.email || u?.email)
+      return me.user
+    } catch {
+      setUserState(withLocalAvatar(u))
+      saveUserLocal(u)
+      setPurchases([])
+      savePurchasesLocal([])
+      return u
+    }
+  }, [applyReferral])
+
   const register = useCallback(async (email, password, name) => {
     const emailTrim = email.trim()
     const passwordTrim = String(password || '').trim()
     const nameTrim = String(name || emailTrim).trim()
 
-    if (apiMode) {
+    const online = apiMode || await checkApiOnline()
+    if (online) {
       const res = await api.register(emailTrim, passwordTrim, nameTrim)
       if (res.requiresVerification) {
         return {
@@ -313,17 +333,17 @@ export function AuthProvider({ children }) {
           personalId: res.personalId,
         }
       }
-      applyAuthSession(res.token, res.user)
-      await applyReferral(emailTrim)
+      await completeAuthSession(res.token, res.user)
       return res.user
     }
 
     const u = { email: emailTrim, name: nameTrim }
     setUser(u)
+    saveUserLocal(u)
     recordRegistration({ email: emailTrim, name: nameTrim })
     await applyReferral(emailTrim)
     return u
-  }, [apiMode, setUser, applyReferral])
+  }, [apiMode, setUser, applyReferral, completeAuthSession])
 
   const logout = useCallback(() => {
     setUserState(null)
@@ -400,6 +420,7 @@ export function AuthProvider({ children }) {
         logout,
         refreshUser,
         applyAuthSession,
+        completeAuthSession,
         updateProfile,
         changePassword,
         changeEmail,

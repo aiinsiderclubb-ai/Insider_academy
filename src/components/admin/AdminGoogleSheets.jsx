@@ -105,6 +105,15 @@ export function AdminGoogleSheets({ online, onToast }) {
               дайте этому email доступ «Редактор» к папке на Google Drive.
             </p>
           )}
+          {status.errorCode === 'drive_quota' && (
+            <p className={styles.sectionDesc} style={{ color: '#fbbf24', maxWidth: 640 }}>
+              <strong>Что сделать:</strong>{' '}
+              <a href="https://one.google.com/storage" target="_blank" rel="noreferrer noopener">Проверить хранилище Google</a>
+              {' · '}
+              <a href={status.folderUrl} target="_blank" rel="noreferrer noopener">Папка архива на Drive</a>
+              {' — удалите старые файлы и очистите корзину у аккаунта, которому принадлежит эта папка.'}
+            </p>
+          )}
         </>
       )}
 

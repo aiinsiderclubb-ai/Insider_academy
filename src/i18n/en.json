@@ -246,7 +246,16 @@
     "errorPasswordShort": "Password must be at least 6 characters.",
     "errorPasswordMatch": "Passwords do not match.",
     "errorExists": "This email is already registered. Log in or reset your password.",
-    "errorGeneric": "Registration failed. Please try again."
+    "errorGeneric": "Registration failed. Please try again.",
+    "stepVerify": "Step 2 of 2",
+    "verifyTitle": "Enter the code from your email",
+    "verifySubtitle": "We sent a 6-digit code to",
+    "verifySubmit": "Confirm and sign in",
+    "backToForm": "← Edit registration details",
+    "errorCodeLength": "Enter all 6 digits.",
+    "successTitle": "Registration successful!",
+    "successSubtitle": "Your account is verified. Welcome to AI Insider Academy.",
+    "successRedirect": "Opening your dashboard…"
   },
   "verifyEmail": {
     "title": "Verify your email",

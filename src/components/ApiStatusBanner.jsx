@@ -9,10 +9,10 @@ const isLocalHost = typeof window !== 'undefined'
   && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
 
 export function ApiStatusBanner() {
-  const { online, refresh } = useApi()
+  const { online, showOfflineBanner, refresh } = useApi()
   const { lang } = useLanguage()
 
-  if (online === null || online) return null
+  if (!showOfflineBanner || online === null || online) return null
 
   const healthUrl = `${getApiBase()}/health`
 
@@ -31,7 +31,7 @@ export function ApiStatusBanner() {
       {isLocalHost && (
         <code className={styles.hint}>{healthUrl}</code>
       )}
-      <button type="button" className={styles.retryBtn} onClick={() => refresh()}>
+      <button type="button" className={styles.retryBtn} onClick={() => refresh({ wake: true, userRetry: true })}>
         {lang === 'ru' ? 'Повторить подключение' : 'Retry connection'}
       </button>
     </div>

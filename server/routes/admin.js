@@ -20,6 +20,7 @@ import {
   getSheetsStatus,
   syncDatabaseToSheets,
   exportSheetCsv,
+  formatGoogleDriveError,
 } from '../services/googleSheets.js'
 import adminOpsRoutes from './adminOps.js'
 import { queueEmail } from '../services/emailQueue.js'
@@ -678,9 +679,13 @@ router.get('/sheets/status', requireAdmin('admin', 'moderator'), async (_req, re
 })
 
 router.post('/sheets/sync', requireAdmin('admin'), async (_req, res) => {
-  const db = getDb()
-  const result = await syncDatabaseToSheets(db)
-  res.json(result)
+  try {
+    const db = getDb()
+    const result = await syncDatabaseToSheets(db)
+    res.json(result)
+  } catch (err) {
+    res.status(400).json({ error: formatGoogleDriveError(err.message) })
+  }
 })
 
 router.get('/sheets/export/:sheetKey', requireAdmin('admin', 'moderator'), async (req, res) => {

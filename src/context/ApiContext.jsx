@@ -1,22 +1,57 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
-import { checkApiOnline } from '../api/client'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { checkApiOnline, isProductionSite } from '../api/client'
 
 const ApiContext = createContext(null)
 
-export function ApiProvider({ children }) {
-  const [online, setOnline] = useState(null)
+function prodApiUiConfig() {
+  const prod = typeof window !== 'undefined' && isProductionSite()
+  return {
+    bannerDelayMs: prod ? 120000 : 15000,
+    pollMs: prod ? 60000 : 30000,
+    streak: prod ? 3 : 2,
+    optimistic: prod,
+  }
+}
 
-  const refresh = useCallback(async () => {
-    const ok = await checkApiOnline()
-    setOnline(ok)
-    return ok
+export function ApiProvider({ children }) {
+  const cfgRef = useRef(prodApiUiConfig())
+  const [online, setOnline] = useState(() => (cfgRef.current.optimistic ? true : null))
+  const [showOfflineBanner, setShowOfflineBanner] = useState(false)
+  const failStreakRef = useRef(0)
+  const mountedAtRef = useRef(Date.now())
+
+  const refresh = useCallback(async ({ wake = false, userRetry = false } = {}) => {
+    const ok = await checkApiOnline({ wake })
+    if (ok) {
+      failStreakRef.current = 0
+      setOnline(true)
+      setShowOfflineBanner(false)
+      return true
+    }
+
+    failStreakRef.current += 1
+    const elapsed = Date.now() - mountedAtRef.current
+    const { streak, bannerDelayMs, optimistic } = cfgRef.current
+    const streakEnough = failStreakRef.current >= streak
+    const graceOver = elapsed >= bannerDelayMs
+
+    if (userRetry || (streakEnough && graceOver)) {
+      setOnline(false)
+      setShowOfflineBanner(true)
+    } else if (!optimistic) {
+      setOnline(false)
+      if (graceOver) setShowOfflineBanner(true)
+    }
+    return false
   }, [])
 
   useEffect(() => {
-    refresh()
-    const id = setInterval(refresh, 30000)
+    mountedAtRef.current = Date.now()
+    refresh({ wake: true })
+
+    const id = setInterval(() => refresh(), cfgRef.current.pollMs)
     const onVisible = () => {
-      if (document.visibilityState === 'visible') refresh()
+      if (document.visibilityState === 'visible') refresh({ wake: true })
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => {
@@ -25,7 +60,10 @@ export function ApiProvider({ children }) {
     }
   }, [refresh])
 
-  const value = useMemo(() => ({ online, refresh }), [online, refresh])
+  const value = useMemo(
+    () => ({ online, showOfflineBanner, refresh }),
+    [online, showOfflineBanner, refresh]
+  )
 
   return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>
 }

@@ -50,9 +50,9 @@ export function Login() {
       await login(emailTrim, password.trim())
       navigate(from, { replace: true })
     } catch (err) {
-      if (err?.requiresVerification) {
-        const q = new URLSearchParams({ email: err.email || emailTrim })
-        if (err.devCode) q.set('devCode', err.devCode)
+      if (err?.requiresVerification || err?.data?.requiresVerification) {
+        const q = new URLSearchParams({ email: err.email || err.data?.email || emailTrim })
+        if (err.devCode || err.data?.devCode) q.set('devCode', err.devCode || err.data.devCode)
         navigate(`/verify-email?${q.toString()}`, { replace: true })
         return
       }

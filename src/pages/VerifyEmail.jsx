@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { api, setToken } from '../api/client'
+import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { formatApiError } from '../utils/formatApiError'
+import { EmailCodeInput } from '../components/EmailCodeInput'
+import { NeuronGlow } from '../components/NeuronGlow'
 import styles from './Login.module.css'
 
 export function VerifyEmail() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
-  const { applyAuthSession } = useAuth()
+  const { completeAuthSession } = useAuth()
   const [params] = useSearchParams()
   const tokenFromUrl = params.get('token')
   const emailFromUrl = params.get('email') || ''
@@ -26,15 +28,13 @@ export function VerifyEmail() {
   useEffect(() => {
     if (!tokenFromUrl) return
     api.verifyEmail(tokenFromUrl)
-      .then((res) => {
-        if (res.token) {
-          setToken(res.token)
-          applyAuthSession(res.token, res.user)
-        }
+      .then(async (res) => {
+        if (res.token) await completeAuthSession(res.token, res.user)
         setStatus('ok')
+        setTimeout(() => navigate('/cabinet', { replace: true }), 2200)
       })
       .catch(() => setStatus('link-error'))
-  }, [tokenFromUrl, applyAuthSession])
+  }, [tokenFromUrl, completeAuthSession, navigate])
 
   useEffect(() => {
     if (resendCooldown <= 0) return undefined
@@ -44,16 +44,17 @@ export function VerifyEmail() {
 
   const submitCode = async (e) => {
     e.preventDefault()
+    if (code.length !== 6) {
+      setError(t('register.errorCodeLength'))
+      return
+    }
     setError('')
     setLoading(true)
     try {
       const res = await api.verifyEmailCode(email.trim(), code.trim())
-      if (res.token) {
-        setToken(res.token)
-        applyAuthSession(res.token, res.user)
-      }
+      await completeAuthSession(res.token, res.user)
       setStatus('ok')
-      setTimeout(() => navigate('/cabinet', { replace: true }), 1500)
+      setTimeout(() => navigate('/cabinet', { replace: true }), 2200)
     } catch (err) {
       setError(formatApiError(err, lang) || t('verifyEmail.error'))
     } finally {
@@ -91,14 +92,20 @@ export function VerifyEmail() {
   if (status === 'ok') {
     return (
       <div className={styles.page}>
+        <div className={styles.bg}>
+          <NeuronGlow className={styles.neuron} />
+        </div>
         <div className={styles.content}>
-          <div className={styles.card}><div className={styles.cardInner}>
-            <h1 className={styles.title}>{t('verifyEmail.successTitle')}</h1>
-            <p className={styles.subtitle}>{t('verifyEmail.successSubtitle')}</p>
-            <Link to="/cabinet" className={styles.submit} style={{ display: 'inline-block', textAlign: 'center', textDecoration: 'none' }}>
-              {t('verifyEmail.toCabinet')}
-            </Link>
-          </div></div>
+          <div className={styles.card}>
+            <div className={styles.cardInner}>
+              <div className={styles.successBlock}>
+                <div className={styles.successIcon} aria-hidden>✓</div>
+                <h1 className={styles.title}>{t('register.successTitle')}</h1>
+                <p className={styles.subtitle}>{t('register.successSubtitle')}</p>
+                <p className={styles.successRedirect}>{t('register.successRedirect')}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -106,9 +113,16 @@ export function VerifyEmail() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.bg}>
+        <NeuronGlow className={styles.neuron} />
+        <div className={styles.gradientOrb} aria-hidden />
+      </div>
       <div className={styles.content}>
         <div className={styles.card}>
           <div className={styles.cardInner}>
+            <div className={styles.logoWrap}>
+              <span className={styles.logoText}>AI Insider Academy</span>
+            </div>
             <h1 className={styles.title}>{t('verifyEmail.title')}</h1>
             <p className={styles.subtitle}>{t('verifyEmail.subtitle')}</p>
 
@@ -137,22 +151,15 @@ export function VerifyEmail() {
                   disabled={loading}
                 />
               </label>
-              <label className={styles.label}>
-                <span className={styles.labelText}>{t('verifyEmail.code')}</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]{6}"
-                  maxLength={6}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className={styles.input}
-                  placeholder="000000"
-                  required
-                  autoComplete="one-time-code"
-                  disabled={loading}
-                />
-              </label>
+
+              <span className={styles.labelText}>{t('verifyEmail.code')}</span>
+              <EmailCodeInput
+                value={code}
+                onChange={setCode}
+                disabled={loading}
+                autoFocus={!emailFromUrl}
+              />
+
               <button type="submit" className={styles.submit} disabled={loading || code.length !== 6}>
                 {loading ? t('verifyEmail.submitting') : t('verifyEmail.submit')}
               </button>
@@ -160,8 +167,7 @@ export function VerifyEmail() {
 
             <button
               type="button"
-              className={styles.backLink}
-              style={{ marginTop: 16, border: 'none', background: 'none', cursor: 'pointer' }}
+              className={styles.resendBtn}
               disabled={loading || resendCooldown > 0 || !email.trim()}
               onClick={resend}
             >
