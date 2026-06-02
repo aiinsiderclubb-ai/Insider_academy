@@ -136,18 +136,11 @@ router.post('/login', asyncHandler(async (req, res) => {
   }
 
   if (!isTestLogin && !row.email_verified) {
-    let verification = {}
-    try {
-      verification = await issueEmailVerificationCode(email, row.name)
-    } catch (err) {
-      console.warn('[auth/login] resend verification:', err.message)
-    }
     return res.status(403).json({
       error: 'Email not verified',
-      errorRu: 'Подтвердите email — мы отправили новый код на почту.',
+      errorRu: 'Email не подтверждён. Введите 6‑значный код из письма (код отправляется при регистрации) или нажмите «Отправить код повторно».',
       requiresVerification: true,
       email,
-      ...(verification.devCode ? { devCode: verification.devCode } : {}),
     })
   }
 
@@ -307,6 +300,8 @@ router.post('/reset-password', asyncHandler(async (req, res) => {
   const now = nowIso()
   const hash = bcrypt.hashSync(password, 10)
   await db.run('UPDATE users SET password_hash = ?, password_changed_at = ? WHERE email = ?', [hash, now, row.email])
+  // Password reset token proves email ownership; mark as verified.
+  await db.run('UPDATE users SET email_verified = 1 WHERE email = ?', [row.email]).catch(() => {})
   await db.run('UPDATE email_tokens SET used = 1 WHERE id = ?', [row.id])
   await createUserNotification(db, {
     email: row.email,

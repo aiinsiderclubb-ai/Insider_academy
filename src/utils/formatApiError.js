@@ -28,7 +28,9 @@ export function formatApiError(err, lang = 'ru') {
     return lang === 'ru' ? (data.errorRu || 'Неверный email или пароль') : msg
   }
   if (msg === 'Email not verified') {
-    return lang === 'ru' ? 'Подтвердите email — введите код из письма' : 'Please verify your email with the code we sent'
+    return lang === 'ru'
+      ? 'Email не подтверждён — введите 6‑значный код из письма или запросите код повторно.'
+      : 'Email is not verified — enter the 6-digit code from the email or request a new code.'
   }
   if (msg === 'Password must be at least 6 characters' || msg === 'Password too short') {
     return lang === 'ru' ? 'Пароль должен быть не менее 6 символов' : msg
