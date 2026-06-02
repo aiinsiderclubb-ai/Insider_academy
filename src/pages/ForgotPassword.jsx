@@ -57,28 +57,48 @@ export function ForgotPassword() {
 
             {sent ? (
               <div className={styles.successBlock}>
-                <p>{t('forgotPassword.sent')}</p>
+                <div className={styles.successHeader}>
+                  <div className={styles.successIcon} aria-hidden>✓</div>
+                  <div>
+                    <div className={styles.successTitle}>
+                      {lang === 'ru' ? 'Письмо отправлено' : 'Email sent'}
+                    </div>
+                    <div className={styles.successText}>
+                      {t('forgotPassword.sent')}
+                    </div>
+                  </div>
+                </div>
+
+                {email?.trim() && (
+                  <div className={styles.successMeta}>
+                    <span className={styles.successMetaLabel}>{lang === 'ru' ? 'Email:' : 'Email:'}</span>
+                    <code className={styles.successMetaValue}>{email.trim()}</code>
+                  </div>
+                )}
+
                 {deliveryNote && <p className={styles.devResetHint}>{deliveryNote}</p>}
                 {resetLink && (
                   <div className={styles.devResetBox}>
                     <p className={styles.devResetHint}>{t('forgotPassword.devLinkHint')}</p>
                     <code className={styles.devResetCode}>{resetLink}</code>
-                    <button type="button" className={styles.submit} onClick={copyLink}>
-                      {t('forgotPassword.copyLink')}
-                    </button>
-                    <Link
-                      to={(() => {
-                        try {
-                          const u = new URL(resetLink)
-                          return `${u.pathname}${u.search}`
-                        } catch {
-                          return '/reset-password'
-                        }
-                      })()}
-                      className={styles.footerAuthLink}
-                    >
-                      {t('forgotPassword.openLink')}
-                    </Link>
+                    <div className={styles.successActions}>
+                      <button type="button" className={styles.submit} onClick={copyLink}>
+                        {t('forgotPassword.copyLink')}
+                      </button>
+                      <Link
+                        to={(() => {
+                          try {
+                            const u = new URL(resetLink)
+                            return `${u.pathname}${u.search}`
+                          } catch {
+                            return '/reset-password'
+                          }
+                        })()}
+                        className={styles.footerAuthLink}
+                      >
+                        {t('forgotPassword.openLink')}
+                      </Link>
+                    </div>
                   </div>
                 )}
               </div>
