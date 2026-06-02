@@ -327,6 +327,14 @@ function migrateColumns(db) {
   const regCols = db.prepare('PRAGMA table_info(registrations)').all().map((c) => c.name)
   if (!regCols.includes('personal_id')) add('ALTER TABLE registrations ADD COLUMN personal_id TEXT')
 
+  const purchaseCols = db.prepare('PRAGMA table_info(purchases)').all().map((c) => c.name)
+  if (purchaseCols.length && !purchaseCols.includes('payment_provider')) {
+    add('ALTER TABLE purchases ADD COLUMN payment_provider TEXT')
+  }
+  if (purchaseCols.length && !purchaseCols.includes('payment_id')) {
+    add('ALTER TABLE purchases ADD COLUMN payment_id TEXT')
+  }
+
   try {
     db.exec(`
 CREATE TABLE IF NOT EXISTS support_messages (

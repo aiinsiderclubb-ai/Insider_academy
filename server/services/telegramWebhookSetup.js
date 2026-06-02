@@ -21,7 +21,8 @@ export async function ensureTelegramWebhook() {
 
   const url = getTelegramWebhookUrl()
   try {
-    const result = await setWebhook(url)
+    const secret = config.telegram.webhookSecret || ''
+    const result = await setWebhook(url, secret || undefined)
     const info = await getWebhookInfo()
     console.log('[telegram] Webhook set:', url)
     if (result?.ok === false) console.warn('[telegram] setWebhook:', result.description || result)

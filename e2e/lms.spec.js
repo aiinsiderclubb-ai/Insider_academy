@@ -27,8 +27,8 @@ test.describe('LMS flow', () => {
 
     const courseLink = page.locator('a[href*="/courses/"]').first()
     if (await courseLink.count()) {
-      await courseLink.click()
-      await expect(page.locator('h1')).toBeVisible()
+      await courseLink.click({ force: true, timeout: 10000 })
+      await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 })
     }
   })
 

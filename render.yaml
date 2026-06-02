@@ -1,20 +1,19 @@
-# Insider Academy — Render Blueprint
-# Repo: https://github.com/aiinsiderclubb-ai/Insider_academy
+# Insider Academy — Render Blueprint (synced with production layout)
+# Live API: https://insider-academy.onrender.com (Virginia)
+# Frontend: Vercel https://myinsideracademy.com
 #
-# Deploy: Render Dashboard → New → Blueprint → connect this repo → Apply
-# After deploy, set secrets marked sync: false in the Dashboard (see .env.example).
+# After apply: set all sync:false secrets in Dashboard (see docs/LAUNCH_CHECKLIST.md)
 
 services:
-  # ── Backend API (Node.js / Express) ──────────────────────────────────────
   - type: web
-    name: insider-academy-api
+    name: insider-academy
     runtime: node
     plan: starter
-    region: frankfurt
+    region: virginia
     branch: main
-    buildCommand: npm ci --prefix server
-    startCommand: npm start --prefix server
-    healthCheckPath: /api/health
+    buildCommand: cd server && npm ci
+    startCommand: cd server && node index.js
+    healthCheckPath: /api/health/ready
     autoDeployTrigger: commit
     buildFilter:
       paths:
@@ -66,7 +65,7 @@ services:
       - key: TRIBUTE_DEFAULT_PRODUCT_ID
         value: "65858"
       - key: TRIBUTE_PRODUCT_MAP
-        value: '{"ai-agency-builder":126606}'
+        value: '{"ai-agency-builder":126606,"ai-start":65858}'
       - key: TRIBUTE_WEBHOOK_URL
         value: https://insider-academy.onrender.com/api/webhooks/tribute
       - key: TRIBUTE_API_KEY
@@ -81,6 +80,8 @@ services:
         sync: false
       - key: TELEGRAM_BOT_USERNAME
         value: InsiderAcademyNotifyBot
+      - key: TELEGRAM_WEBHOOK_SECRET
+        sync: false
       - key: TELEGRAM_WEBHOOK_URL
         value: https://insider-academy.onrender.com/api/telegram/webhook
       - key: API_PUBLIC_URL
@@ -88,16 +89,15 @@ services:
       - key: TELEGRAM_BOT_SERVICE_URL
         value: https://insider-academy-notify-bot.onrender.com
       - key: TELEGRAM_BOT_SERVICE_SECRET
-        value: "0e4a1374271a72377b84dfc5191df55d62bd6b118e5eb569"
+        sync: false
       - key: BOT_SERVICE_SECRET
-        value: "0e4a1374271a72377b84dfc5191df55d62bd6b118e5eb569"
+        sync: false
 
-  # ── Telegram notify bot ───────────────────────────────────────────────────
   - type: web
     name: insider-academy-notify-bot
     runtime: node
     plan: starter
-    region: frankfurt
+    region: virginia
     branch: main
     rootDir: telegram-notify-bot
     buildCommand: npm ci
@@ -119,36 +119,10 @@ services:
       - key: BOT_PUBLIC_URL
         value: https://insider-academy-notify-bot.onrender.com
 
-  # ── Frontend (Vite / React static site) ──────────────────────────────────
-  - type: web
-    name: insider-academy
-    runtime: static
-    plan: free
-    region: frankfurt
-    branch: main
-    buildCommand: npm ci && npm run build
-    staticPublishPath: dist
-    autoDeployTrigger: commit
-    routes:
-      - type: rewrite
-        source: /api/*
-        destination: https://insider-academy.onrender.com/api/*
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        value: /api
-      - key: VITE_ACADEMY_URL
-        value: https://myinsideracademy.com
-      - key: VITE_TELEGRAM_NOTIFY_BOT_USERNAME
-        value: InsiderAcademyNotifyBot
-
 databases:
   - name: insider-academy-db
     plan: basic-256mb
-    region: frankfurt
-    databaseName: lms
-    user: lms
+    region: virginia
+    databaseName: lms_h8w8
     postgresMajorVersion: "16"
     ipAllowList: []

@@ -43,7 +43,22 @@ function requireBotSecret(req, res, next) {
   next()
 }
 
-router.post('/webhook', async (req, res) => {
+function verifyTelegramWebhookSecret(req, res, next) {
+  const expected = config.telegram.webhookSecret
+  if (!expected) {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(503).json({ error: 'Telegram webhook secret not configured' })
+    }
+    return next()
+  }
+  const header = req.headers['x-telegram-bot-api-secret-token'] || ''
+  if (header !== expected) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+  next()
+}
+
+router.post('/webhook', verifyTelegramWebhookSecret, async (req, res) => {
   try {
     await handleTelegramUpdate(req.body)
     res.json({ ok: true })

@@ -13,8 +13,17 @@ import { seedTestAccount } from '../seed.js'
 import { TEST_ACCOUNT_EMAIL, TEST_ACCOUNT_PASSWORD } from '../../src/data/testAccount.js'
 import { ensurePersonalId } from '../services/personalId.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
+import { rateLimitMiddleware } from '../middleware/rateLimit.js'
 
 const router = Router()
+
+const authRateLimit = rateLimitMiddleware({
+  windowMs: 15 * 60_000,
+  max: 30,
+  keyFn: (req) => req.ip || req.headers['x-forwarded-for'] || 'unknown',
+})
+
+router.use(authRateLimit)
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -120,7 +129,10 @@ router.post('/login', asyncHandler(async (req, res) => {
   const password = String(req.body.password || '').trim()
   let row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id FROM users WHERE email = ?', [email])
 
-  const isTestLogin = email === TEST_ACCOUNT_EMAIL && password === TEST_ACCOUNT_PASSWORD
+  const allowTestAccount = process.env.NODE_ENV !== 'production' || process.env.ALLOW_TEST_ACCOUNT === '1'
+  const isTestLogin = allowTestAccount
+    && email === TEST_ACCOUNT_EMAIL
+    && password === TEST_ACCOUNT_PASSWORD
   if (isTestLogin && (!row || !bcrypt.compareSync(password, row.password_hash))) {
     await seedTestAccount(db)
     row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id FROM users WHERE email = ?', [email])

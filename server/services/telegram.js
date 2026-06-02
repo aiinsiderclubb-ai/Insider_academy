@@ -27,17 +27,19 @@ export async function sendTelegramSticker(chatId, stickerFileId) {
   return res.ok
 }
 
-export async function setWebhook(webhookUrl) {
+export async function setWebhook(webhookUrl, secretToken) {
   const token = botToken()
   if (!token) return { ok: false }
+  const body = {
+    url: webhookUrl,
+    allowed_updates: ['message', 'callback_query'],
+    drop_pending_updates: true,
+  }
+  if (secretToken) body.secret_token = secretToken
   const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      url: webhookUrl,
-      allowed_updates: ['message', 'callback_query'],
-      drop_pending_updates: true,
-    }),
+    body: JSON.stringify(body),
   })
   return res.json()
 }

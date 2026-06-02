@@ -2,6 +2,7 @@ import 'dotenv/config'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { assertProductionConfig } from './utils/productionChecks.js'
 import { createApp } from './app.js'
 import { config } from './config.js'
 import { getDb } from './db.js'
@@ -44,6 +45,7 @@ async function processReminders() {
 }
 
 async function start() {
+  assertProductionConfig()
   const app = await createApp()
 
   setInterval(processReminders, 60000)

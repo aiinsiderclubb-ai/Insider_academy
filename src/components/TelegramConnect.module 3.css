@@ -1,0 +1,157 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ok {
+  margin: 0;
+  font-weight: 600;
+  color: var(--success, #34d399);
+}
+
+.muted {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.warn {
+  margin: 0;
+  color: #fbbf24;
+  font-size: 0.875rem;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c3aed, #f97316);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.secondaryBtn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  width: fit-content;
+}
+
+.textBtn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--glow-purple, #a78bfa);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  width: fit-content;
+}
+
+.prefs {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+}
+
+.prefs h4 {
+  margin: 0 0 10px;
+  font-size: 0.875rem;
+}
+
+.prefRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.8125rem;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.msg {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.linkBtn {
+  display: inline-flex;
+  width: fit-content;
+  font-size: 0.875rem;
+  color: var(--glow-purple, #a78bfa);
+  text-decoration: none;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+.idBox {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.idLabel {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.idHint {
+  margin: 10px 0 6px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.idRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.idCode,
+.cmdCode {
+  font-size: 0.9375rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  color: #e9d5ff;
+}
+
+.copyBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8125rem;
+}
+
+.mutedSmall {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

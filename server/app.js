@@ -4,6 +4,7 @@ import { initDatabase, getDb } from './db.js'
 import { seedIfEmpty } from './seed.js'
 import { backfillPersonalIds } from './services/personalId.js'
 import { config, isGoogleSheetsEnabled } from './config.js'
+import { validateProductionConfig } from './utils/productionChecks.js'
 import authRoutes from './routes/auth.js'
 import coursesRoutes from './routes/courses.js'
 import meRoutes from './routes/me.js'
@@ -53,6 +54,8 @@ export async function createApp() {
   }
 
   const app = express()
+  app.set('trust proxy', 1)
+
   const corsOrigins = String(config.corsOrigin || '')
     .split(',')
     .map((o) => o.trim())
@@ -63,7 +66,11 @@ export async function createApp() {
     if (corsOrigins.includes(origin)) return true
     if (/^https:\/\/(www\.)?insiderai\.it\.com$/i.test(origin)) return true
     if (/^https:\/\/(www\.)?myinsideracademy\.com$/i.test(origin)) return true
-    if (/^https:\/\/[\w-]+\.vercel\.app$/i.test(origin)) return true
+    if (process.env.NODE_ENV === 'production') {
+      if (/^https:\/\/insider-academy[\w-]*\.vercel\.app$/i.test(origin)) return true
+    } else if (/^https:\/\/[\w-]+\.vercel\.app$/i.test(origin)) {
+      return true
+    }
     if (/^https:\/\/insider-academy\.onrender\.com$/i.test(origin)) return true
     if (/^http:\/\/localhost(:\d+)?$/i.test(origin)) return true
     if (/^http:\/\/127\.0\.0\.1(:\d+)?$/i.test(origin)) return true
@@ -85,6 +92,7 @@ export async function createApp() {
   app.use(express.urlencoded({ extended: true }))
 
   app.get('/api/health', (_req, res) => {
+    const { errors, warnings } = validateProductionConfig()
     res.json({
       ok: true,
       version: '2.0.0',
@@ -93,14 +101,27 @@ export async function createApp() {
         stripe: Boolean(config.stripe.secretKey),
         liqpay: Boolean(config.liqpay.publicKey),
         s3: config.storage.driver === 's3',
-        email: Boolean(config.email.smtp.host),
+        email: Boolean(config.email.smtp.host && config.email.smtp.user),
         openai: Boolean(config.openai.apiKey),
         telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken),
         tribute: Boolean(config.tribute.apiKey),
         googleSheets: isGoogleSheetsEnabled(),
       },
+      config: process.env.NODE_ENV === 'production'
+        ? { warnings: warnings.length, errors: errors.length }
+        : undefined,
       time: new Date().toISOString(),
     })
+  })
+
+  app.get('/api/health/ready', async (_req, res) => {
+    try {
+      const db = getDb()
+      await db.get('SELECT 1 AS ok')
+      res.json({ ok: true, db: db.driver, time: new Date().toISOString() })
+    } catch (err) {
+      res.status(503).json({ ok: false, error: err.message })
+    }
   })
 
   app.use('/api/webhooks', webhooksRoutes)

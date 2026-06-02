@@ -1,0 +1,15 @@
+.wrap {
+  display: inline-flex;
+  letter-spacing: 1px;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.filled {
+  color: #fbbf24;
+}
+
+.dim {
+  color: var(--text-muted);
+  opacity: 0.35;
+}

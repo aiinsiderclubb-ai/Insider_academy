@@ -9,9 +9,12 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'npm run dev --prefix server',
+      command: 'mkdir -p server/data && npm run dev --prefix server',
       port: 3001,
       reuseExistingServer: !process.env.CI,
+      env: {
+        LMS_TEST_DB: 'data/lms-e2e.sqlite',
+      },
     },
     {
       command: 'npm run dev',
