@@ -49,8 +49,12 @@ export function validateProductionConfig() {
 
   for (const key of ['ADMIN_PASSWORD', 'EDITOR_PASSWORD', 'MODERATOR_PASSWORD']) {
     const val = process.env[key]
-    if (isWeakSecret(val)) {
-      errors.push(`${key} must be set in Render Dashboard (12+ chars, not default examples)`)
+    if (!String(val || '').trim()) {
+      errors.push(`${key} is missing — set in Render → Environment (12+ characters)`)
+    } else if (WEAK_VALUES.has(String(val).trim())) {
+      errors.push(`${key} is a default/example password — set a unique value in Render Dashboard`)
+    } else if (String(val).trim().length < 12) {
+      errors.push(`${key} must be at least 12 characters`)
     }
   }
 
