@@ -7,7 +7,7 @@ function parseVideoUrl(url) {
   if (yt) return { type: 'youtube', id: yt[1] }
   const vimeo = u.match(/vimeo\.com\/(?:video\/)?(\d+)/)
   if (vimeo) return { type: 'vimeo', id: vimeo[1] }
-  if (u.startsWith('http')) return { type: 'mp4', src: u }
+  if (u.startsWith('http') || u.startsWith('/')) return { type: 'mp4', src: u }
   return null
 }
 

@@ -17,6 +17,7 @@ import { CourseOverviewSection } from '../components/CourseOverviewSection'
 import { CourseReviews } from '../components/CourseReviews'
 import { LessonTest } from '../components/LessonTest'
 import { CourseHero } from '../components/CourseHero'
+import { CoursePromoSection } from '../components/CoursePromoSection'
 import { CourseLandingSections } from '../components/CourseLandingSections'
 import { Confetti } from '../components/Confetti'
 import { OnboardingBanner } from '../components/OnboardingBanner'
@@ -429,6 +430,8 @@ export function Course() {
             {nextStep && (
               <CourseNextStep lang={lang} courseSlug={course.slug} {...nextStep} />
             )}
+
+            <CoursePromoSection course={course} lang={lang} title={courseTitle} />
 
             <CourseOverviewSection course={course} lang={lang} />
 

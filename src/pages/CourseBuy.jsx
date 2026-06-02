@@ -14,6 +14,7 @@ import { VideoPlayer } from '../components/VideoPlayer'
 import { getLessonDisplayTitle } from '../data/courses'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { CourseHero } from '../components/CourseHero'
+import { CoursePromoSection } from '../components/CoursePromoSection'
 import { COURSE_FAQ } from '../data/courseLanding'
 import { PlatformBridge } from '../components/PlatformBridge'
 import { IconChevronDown } from '../components/Icons'
@@ -200,6 +201,8 @@ export function CourseBuy() {
 
         <div className={styles.layout}>
           <div className={styles.leftCol}>
+            <CoursePromoSection course={course} lang={lang} title={courseTitle} />
+
             <section className={styles.sectionCard}>
               <h2 className={styles.sectionTitle}>
                 {lang === 'ru' ? 'Что входит в курс' : 'What\'s included'}

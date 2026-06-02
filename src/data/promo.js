@@ -1,7 +1,13 @@
-/** Промо-видео (заполните URL позже) */
+/** Промо-видео: YouTube/Vimeo URL или путь из public/, например /videos/foo.mp4 */
 export const PROMO_VIDEOS = {
   accelerator: '',
   club: '',
+  'ai-content-creator': '/videos/ai-content-creator-promo.mp4',
+}
+
+export function getCoursePromoVideo(courseId) {
+  if (!courseId) return ''
+  return PROMO_VIDEOS[courseId] || ''
 }
 
 /**
