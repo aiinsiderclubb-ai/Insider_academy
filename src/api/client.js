@@ -129,6 +129,7 @@ export const api = {
   submitHomeworkForm: (formData) => apiRequest('/me/homework', { method: 'POST', body: formData }),
   getBlogPosts: () => apiRequest('/blog', { auth: false }),
   getCalendarEvents: () => apiRequest('/calendar', { auth: false }),
+  getFeatureFlags: () => apiRequest('/feature-flags', { auth: false }),
   trackVisit: () => apiRequest('/analytics/visit', { method: 'POST', auth: false }),
   trackCourseClick: (courseId) => apiRequest('/analytics/course-click', { method: 'POST', body: { courseId }, auth: false }),
   stripeCheckout: (payload) => apiRequest('/payments/stripe/checkout', { method: 'POST', body: payload }),
