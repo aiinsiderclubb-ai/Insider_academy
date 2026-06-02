@@ -167,6 +167,7 @@ export const api = {
   adminPromoCodes: () => apiRequest('/admin/promo-codes', { admin: true }),
   adminCreatePromo: (payload) => apiRequest('/admin/promo-codes', { method: 'POST', body: payload, admin: true }),
   adminGrantCourse: (payload) => apiRequest('/admin/grant-course', { method: 'POST', body: payload, admin: true }),
+  adminUnlockLesson: (payload) => apiRequest('/admin/unlock-lesson', { method: 'POST', body: payload, admin: true }),
   adminDeleteUser: (payload) => apiRequest('/admin/users/delete', { method: 'POST', body: payload, admin: true }),
   adminBulkApproveReviews: (ids) => apiRequest('/admin/reviews/bulk-approve', { method: 'POST', body: { ids }, admin: true }),
   adminAuditLog: () => apiRequest('/admin/audit-log', { admin: true }),

@@ -93,6 +93,7 @@ router.patch('/promo-codes/:code', requireAdmin('admin'), async (req, res) => {
 })
 
 import { grantCourseAccess } from '../services/grantCourse.js'
+import { unlockLessonForUser } from '../services/unlockLesson.js'
 
 router.post('/grant-course', requireAdmin('admin', 'moderator'), async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase()
@@ -111,6 +112,29 @@ router.post('/grant-course', requireAdmin('admin', 'moderator'), async (req, res
     meta: { courseId },
   })
   res.json({ ok: true, granted: access.granted, userCreated: access.userCreated })
+})
+
+router.post('/unlock-lesson', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const email = String(req.body.email || '').trim().toLowerCase()
+  const courseId = String(req.body.courseId || '').trim()
+  const courseTitle = String(req.body.courseTitle || courseId)
+  const lessonIndex = Number(req.body.lessonIndex)
+  if (!email || !courseId) return res.status(400).json({ error: 'email and courseId required' })
+  if (!Number.isInteger(lessonIndex) || lessonIndex < 0) {
+    return res.status(400).json({ error: 'lessonIndex must be a non-negative integer (0 = first lesson)' })
+  }
+
+  const result = await unlockLessonForUser({ email, courseId, lessonIndex, courseTitle })
+  if (!result.ok) return res.status(400).json({ error: result.error })
+
+  await logAudit({
+    actorEmail: `admin:${req.adminRole}`,
+    action: 'lesson.unlock',
+    targetType: 'user',
+    targetId: email,
+    meta: { courseId, lessonIndex, targetPath: result.targetPath },
+  })
+  res.json(result)
 })
 
 router.post('/reviews/bulk-approve', requireAdmin('admin', 'moderator'), async (req, res) => {

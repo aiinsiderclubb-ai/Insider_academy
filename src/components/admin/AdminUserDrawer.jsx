@@ -1,3 +1,6 @@
+import { useMemo, useState } from 'react'
+import { api } from '../../api/client'
+import { courses as catalogCourses } from '../../data/courses'
 import styles from '../../pages/Admin.module.css'
 
 export function AdminUserDrawer({
@@ -6,9 +9,22 @@ export function AdminUserDrawer({
   homeworkList = [],
   reviewsList = [],
   applications = [],
+  online = false,
+  showToast,
   onClose,
+  onRefresh,
   formatDate,
 }) {
+  const [unlockCourseId, setUnlockCourseId] = useState(catalogCourses[0]?.id || '')
+  const [unlockLessonNum, setUnlockLessonNum] = useState(1)
+  const [unlockBusy, setUnlockBusy] = useState(false)
+
+  const selectedCourse = useMemo(
+    () => catalogCourses.find((c) => c.id === unlockCourseId),
+    [unlockCourseId]
+  )
+  const lessonCount = selectedCourse?.lessons?.length || 0
+
   if (!user) return null
 
   const email = user.email?.toLowerCase()
@@ -18,6 +34,36 @@ export function AdminUserDrawer({
   const userHw = homeworkList.filter((h) => h.email?.toLowerCase() === email)
   const userRev = reviewsList.filter((r) => r.email?.toLowerCase() === email || r.contactEmail?.toLowerCase() === email)
   const userApps = applications.filter((a) => a.email?.toLowerCase() === email)
+
+  const handleUnlockLesson = async () => {
+    if (!online) {
+      showToast?.('Подключите API-сервер', 'error')
+      return
+    }
+    const lessonIndex = Math.max(0, Number(unlockLessonNum) - 1)
+    if (lessonCount && lessonIndex >= lessonCount) {
+      showToast?.(`В курсе только ${lessonCount} урок(ов)`, 'error')
+      return
+    }
+    setUnlockBusy(true)
+    try {
+      const res = await api.adminUnlockLesson({
+        email: user.email,
+        courseId: unlockCourseId,
+        courseTitle: selectedCourse?.title,
+        lessonIndex,
+      })
+      showToast?.(
+        `Открыт урок ${lessonIndex + 1}${res.courseGranted ? ' · курс выдан' : ''}`,
+        'success'
+      )
+      onRefresh?.()
+    } catch (err) {
+      showToast?.(err.message || 'Не удалось открыть урок', 'error')
+    } finally {
+      setUnlockBusy(false)
+    }
+  }
 
   return (
     <div className={styles.drawerOverlay} onClick={onClose} role="presentation">
@@ -48,6 +94,49 @@ export function AdminUserDrawer({
             ×
           </button>
         </header>
+
+        <section className={styles.drawerSection}>
+          <h4>Открыть урок</h4>
+          <p className={styles.drawerMuted}>
+            Выдаёт доступ к курсу (если нет), принимает ДЗ по предыдущим урокам и открывает выбранный урок.
+          </p>
+          <select
+            value={unlockCourseId}
+            onChange={(e) => setUnlockCourseId(e.target.value)}
+            className={styles.input}
+            style={{ width: '100%', marginBottom: 8 }}
+          >
+            {catalogCourses.map((c) => (
+              <option key={c.id} value={c.id}>{c.title}</option>
+            ))}
+          </select>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <label className={styles.drawerMuted}>
+              Урок №
+              <input
+                type="number"
+                min={1}
+                max={lessonCount || 99}
+                value={unlockLessonNum}
+                onChange={(e) => setUnlockLessonNum(Number(e.target.value) || 1)}
+                className={styles.input}
+                style={{ width: 72, marginLeft: 8 }}
+              />
+            </label>
+            {lessonCount > 0 && (
+              <span className={styles.drawerMuted}>из {lessonCount}</span>
+            )}
+          </div>
+          <button
+            type="button"
+            className={styles.primaryBtn}
+            style={{ marginTop: 10 }}
+            disabled={unlockBusy || !online}
+            onClick={handleUnlockLesson}
+          >
+            {unlockBusy ? 'Открываем…' : 'Открыть урок пользователю'}
+          </button>
+        </section>
 
         <section className={styles.drawerSection}>
           <h4>Заявки Accelerator ({userApps.length})</h4>

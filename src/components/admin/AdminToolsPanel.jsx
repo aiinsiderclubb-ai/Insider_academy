@@ -19,6 +19,7 @@ const PAYOUT_STATUS_LABELS = {
 const AUDIT_ACTION_OPTIONS = [
   { value: 'all', label: 'Все действия' },
   { value: 'course.grant', label: 'Выдача курса' },
+  { value: 'lesson.unlock', label: 'Открытие урока' },
   { value: 'user.delete', label: 'Удаление аккаунта' },
   { value: 'application.approve', label: 'Одобрение заявки' },
   { value: 'application.reject', label: 'Отказ по заявке' },
@@ -37,6 +38,7 @@ function formatAction(action) {
     'promo.create': 'Создан промокод',
     'promo.update': 'Обновлён промокод',
     'course.grant': 'Выдан курс',
+    'lesson.unlock': 'Открыт урок',
     'reviews.bulk_approve': 'Массовое одобрение отзывов',
     'application.approve': 'Одобрена заявка',
     'application.reject': 'Отказ по заявке',
@@ -62,6 +64,8 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
   const [loading, setLoading] = useState(false)
   const [grantEmail, setGrantEmail] = useState('')
   const [grantCourse, setGrantCourse] = useState(courses[0]?.id || '')
+  const [unlockLessonNum, setUnlockLessonNum] = useState(1)
+  const [unlockBusy, setUnlockBusy] = useState(false)
   const [newPromo, setNewPromo] = useState({ code: '', discountPercent: 10, maxUses: 100 })
   const [broadcastText, setBroadcastText] = useState('')
   const [broadcastTitle, setBroadcastTitle] = useState('AI Insider Academy')
@@ -293,6 +297,60 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
             }}
           >
             Выдать доступ
+          </button>
+        </section>
+
+        <section className={styles.toolCard}>
+          <h3>Открыть урок пользователю</h3>
+          <p className={styles.sectionDesc}>
+            Email, курс и номер урока (с 1). При необходимости выдаёт курс и принимает ДЗ по предыдущим урокам.
+          </p>
+          <input type="email" placeholder="email" value={grantEmail} onChange={(e) => setGrantEmail(e.target.value)} className={styles.input} />
+          <select value={grantCourse} onChange={(e) => setGrantCourse(e.target.value)} className={styles.input}>
+            {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+          </select>
+          <label className={styles.sectionDesc}>
+            Урок №{' '}
+            <input
+              type="number"
+              min={1}
+              max={courses.find((x) => x.id === grantCourse)?.lessons?.length || 99}
+              value={unlockLessonNum}
+              onChange={(e) => setUnlockLessonNum(Number(e.target.value) || 1)}
+              className={styles.input}
+              style={{ width: 80, display: 'inline-block', marginLeft: 8 }}
+            />
+          </label>
+          <button
+            type="button"
+            className={styles.primaryBtn}
+            disabled={unlockBusy}
+            onClick={async () => {
+              const c = courses.find((x) => x.id === grantCourse)
+              const max = c?.lessons?.length || 0
+              const lessonIndex = Math.max(0, unlockLessonNum - 1)
+              if (max && lessonIndex >= max) {
+                showToast(`В курсе ${max} урок(ов)`, 'error')
+                return
+              }
+              setUnlockBusy(true)
+              try {
+                const res = await api.adminUnlockLesson({
+                  email: grantEmail.trim(),
+                  courseId: grantCourse,
+                  courseTitle: c?.title,
+                  lessonIndex,
+                })
+                showToast(`Урок ${lessonIndex + 1} открыт${res.courseGranted ? ' · курс выдан' : ''}`)
+                load()
+              } catch (err) {
+                showToast(err.message, 'error')
+              } finally {
+                setUnlockBusy(false)
+              }
+            }}
+          >
+            {unlockBusy ? 'Открываем…' : 'Открыть урок'}
           </button>
         </section>
 

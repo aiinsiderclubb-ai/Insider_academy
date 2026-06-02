@@ -780,7 +780,13 @@ export function Admin() {
               homeworkList={homeworkList}
               reviewsList={reviewsList}
               applications={applicationsList}
+              online={useServerData}
+              showToast={showToast}
               onClose={() => setDrawerUser(null)}
+              onRefresh={async () => {
+                setRefresh((r) => r + 1)
+                if (useServerData) await loadDashboardFromApi()
+              }}
               formatDate={formatDate}
             />
           )}
