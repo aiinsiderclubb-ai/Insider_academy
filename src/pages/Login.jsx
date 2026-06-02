@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { isTestAccountEmail } from '../data/testAccount'
 import { formatApiError } from '../utils/formatApiError'
+import { setPendingVerifyEmail } from '../utils/pendingVerification'
 import { NeuronGlow } from '../components/NeuronGlow'
 import styles from './Login.module.css'
 
@@ -51,7 +52,9 @@ export function Login() {
       navigate(from, { replace: true })
     } catch (err) {
       if (err?.requiresVerification || err?.data?.requiresVerification) {
-        const q = new URLSearchParams({ email: err.email || err.data?.email || emailTrim })
+        const verifyEmail = err.email || err.data?.email || emailTrim
+        setPendingVerifyEmail(verifyEmail)
+        const q = new URLSearchParams({ email: verifyEmail })
         if (err.devCode || err.data?.devCode) q.set('devCode', err.devCode || err.data.devCode)
         navigate(`/verify-email?${q.toString()}`, { replace: true })
         return

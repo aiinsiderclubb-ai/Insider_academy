@@ -399,7 +399,7 @@ export function Layout({ children }) {
           {!chatOpen && <span className={styles.callFabBadge} aria-hidden />}
         </button>
         {location.pathname !== '/admin'
-          && !['/register', '/login'].includes(location.pathname)
+          && !['/register', '/login', '/verify-email'].includes(location.pathname)
           && !showRegOnboarding
           && acceleratorCourse && (
           <FloatingHotOffer lang={lang} courseSlug={acceleratorCourse.slug} />

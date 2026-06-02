@@ -4,6 +4,11 @@ import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { formatApiError } from '../utils/formatApiError'
+import {
+  clearPendingVerifyEmail,
+  getPendingVerifyEmail,
+  setPendingVerifyEmail,
+} from '../utils/pendingVerification'
 import { EmailCodeInput } from '../components/EmailCodeInput'
 import { NeuronGlow } from '../components/NeuronGlow'
 import styles from './Login.module.css'
@@ -14,7 +19,7 @@ export function VerifyEmail() {
   const { completeAuthSession } = useAuth()
   const [params] = useSearchParams()
   const tokenFromUrl = params.get('token')
-  const emailFromUrl = params.get('email') || ''
+  const emailFromUrl = params.get('email') || getPendingVerifyEmail() || ''
   const devCodeFromUrl = params.get('devCode') || ''
 
   const [email, setEmail] = useState(emailFromUrl)
@@ -24,6 +29,10 @@ export function VerifyEmail() {
   const [devCode, setDevCode] = useState(devCodeFromUrl)
   const [loading, setLoading] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
+
+  useEffect(() => {
+    if (emailFromUrl) setPendingVerifyEmail(emailFromUrl)
+  }, [emailFromUrl])
 
   useEffect(() => {
     if (!tokenFromUrl) return
@@ -53,6 +62,7 @@ export function VerifyEmail() {
     try {
       const res = await api.verifyEmailCode(email.trim(), code.trim())
       await completeAuthSession(res.token, res.user)
+      clearPendingVerifyEmail()
       setStatus('ok')
       setTimeout(() => navigate('/cabinet', { replace: true }), 2200)
     } catch (err) {
@@ -123,8 +133,14 @@ export function VerifyEmail() {
             <div className={styles.logoWrap}>
               <span className={styles.logoText}>AI Insider Academy</span>
             </div>
-            <h1 className={styles.title}>{t('verifyEmail.title')}</h1>
-            <p className={styles.subtitle}>{t('verifyEmail.subtitle')}</p>
+            <div className={styles.stepBadge}>{t('register.stepVerify')}</div>
+            <h1 className={styles.title}>{t('register.verifyTitle')}</h1>
+            <p className={styles.subtitle}>
+              {t('register.verifySubtitle')}{' '}
+              {email.trim() ? (
+                <strong className={styles.emailHighlight}>{email.trim()}</strong>
+              ) : null}
+            </p>
 
             {status === 'link-error' && (
               <div className={styles.error} role="alert">{t('verifyEmail.linkError')}</div>
@@ -139,25 +155,27 @@ export function VerifyEmail() {
             )}
 
             <form onSubmit={submitCode} className={styles.form}>
-              <label className={styles.label}>
-                <span className={styles.labelText}>{t('verifyEmail.email')}</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={styles.input}
-                  required
-                  autoComplete="email"
-                  disabled={loading}
-                />
-              </label>
+              {!emailFromUrl && (
+                <label className={styles.label}>
+                  <span className={styles.labelText}>{t('verifyEmail.email')}</span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={styles.input}
+                    required
+                    autoComplete="email"
+                    disabled={loading}
+                  />
+                </label>
+              )}
 
               <span className={styles.labelText}>{t('verifyEmail.code')}</span>
               <EmailCodeInput
                 value={code}
                 onChange={setCode}
                 disabled={loading}
-                autoFocus={!emailFromUrl}
+                autoFocus
               />
 
               <button type="submit" className={styles.submit} disabled={loading || code.length !== 6}>

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { api, setToken, checkApiOnline } from '../api/client'
+import { api, setToken, checkApiOnline, isProductionSite } from '../api/client'
+import { setPendingVerifyEmail } from '../utils/pendingVerification'
 import {
   recordRegistration,
   recordPurchase,
@@ -250,6 +251,7 @@ export function AuthProvider({ children }) {
         return u
       } catch (err) {
         if (err.status === 403 && err.data?.requiresVerification) {
+          setPendingVerifyEmail(err.data.email || emailTrim)
           const hint = new Error('Email not verified')
           hint.status = 403
           hint.requiresVerification = true
@@ -322,27 +324,36 @@ export function AuthProvider({ children }) {
     const passwordTrim = String(password || '').trim()
     const nameTrim = String(name || emailTrim).trim()
 
-    const online = apiMode || await checkApiOnline()
-    if (online) {
-      const res = await api.register(emailTrim, passwordTrim, nameTrim)
-      if (res.requiresVerification) {
-        return {
-          requiresVerification: true,
-          email: res.email || emailTrim,
-          devCode: res.devCode,
-          personalId: res.personalId,
-        }
+    const online = apiMode || await checkApiOnline({ wake: true })
+    if (!online) {
+      if (isProductionSite()) {
+        const err = new Error('API unreachable')
+        err.network = true
+        throw err
       }
+      const u = { email: emailTrim, name: nameTrim }
+      setUser(u)
+      saveUserLocal(u)
+      recordRegistration({ email: emailTrim, name: nameTrim })
+      await applyReferral(emailTrim)
+      return u
+    }
+
+    const res = await api.register(emailTrim, passwordTrim, nameTrim)
+    if (res.requiresVerification) {
+      setPendingVerifyEmail(res.email || emailTrim)
+      return {
+        requiresVerification: true,
+        email: res.email || emailTrim,
+        devCode: res.devCode,
+        personalId: res.personalId,
+      }
+    }
+    if (res.token) {
       await completeAuthSession(res.token, res.user)
       return res.user
     }
-
-    const u = { email: emailTrim, name: nameTrim }
-    setUser(u)
-    saveUserLocal(u)
-    recordRegistration({ email: emailTrim, name: nameTrim })
-    await applyReferral(emailTrim)
-    return u
+    return res
   }, [apiMode, setUser, applyReferral, completeAuthSession])
 
   const logout = useCallback(() => {
