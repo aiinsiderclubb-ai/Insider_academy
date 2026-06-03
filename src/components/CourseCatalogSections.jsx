@@ -181,8 +181,6 @@ export function CourseCatalogSections({
 
       <CourseBundleOffers lang={lang} />
 
-      <VaultSection lang={lang} hasPurchased={hasPurchased} compact showMoreLink />
-
       <section className={styles.section}>
         <SectionHeader
           pill="Pro"
@@ -201,6 +199,8 @@ export function CourseCatalogSections({
           completedLabel={completedLabel}
         />
       </section>
+
+      <VaultSection lang={lang} hasPurchased={hasPurchased} compact showMoreLink />
 
       <aside className={styles.mapCta}>
         <div>
