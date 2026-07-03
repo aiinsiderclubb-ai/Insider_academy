@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api, checkApiOnline, getToken } from '../api/client'
-import { getNotifications, getUnreadCount, markNotificationRead } from '../api/adminStore'
+import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from '../api/adminStore'
 
 export function useUserNotifications(userEmail) {
   const [notifications, setNotifications] = useState([])
@@ -54,10 +54,26 @@ export function useUserNotifications(userEmail) {
     await load()
   }, [load])
 
+  const markAllRead = useCallback(async () => {
+    if (!userEmail) return
+    const online = await checkApiOnline()
+    if (online && getToken()) {
+      try {
+        await api.markAllNotificationsRead()
+      } catch (_) {
+        markAllNotificationsRead(userEmail)
+      }
+    } else {
+      markAllNotificationsRead(userEmail)
+    }
+    await load()
+  }, [load, userEmail])
+
   return {
     notifications: notifications.slice(0, 15),
     unreadCount,
     refresh: load,
     markRead,
+    markAllRead,
   }
 }

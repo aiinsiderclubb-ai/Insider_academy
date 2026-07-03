@@ -124,6 +124,7 @@ export const api = {
   recordReferral: (payload) => apiRequest('/me/referral', { method: 'POST', body: payload }),
   getNotifications: () => apiRequest('/me/notifications'),
   markNotificationRead: (id) => apiRequest(`/me/notifications/${id}/read`, { method: 'PATCH' }),
+  markAllNotificationsRead: () => apiRequest('/me/notifications/read-all', { method: 'PATCH' }),
   getCertificates: () => apiRequest('/me/certificates'),
   getHomework: (courseId, lessonIndex) => apiRequest(`/me/homework/${courseId}/${lessonIndex}`),
   submitHomeworkForm: (formData) => apiRequest('/me/homework', { method: 'POST', body: formData }),

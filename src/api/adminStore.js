@@ -392,6 +392,18 @@ export function markNotificationRead(id) {
   setJson(KEY_NOTIFICATIONS, list)
 }
 
+export function markAllNotificationsRead(email) {
+  const list = getNotifications()
+  let changed = false
+  list.forEach((n) => {
+    if ((n.email === email || n.userId === email) && !n.read) {
+      n.read = true
+      changed = true
+    }
+  })
+  if (changed) setJson(KEY_NOTIFICATIONS, list)
+}
+
 export function getUnreadCount(email) {
   const list = getNotifications()
   return list.filter((n) => (n.email === email || n.userId === email) && !n.read).length

@@ -26,7 +26,7 @@ import { ContinueLearningBar } from '../components/ContinueLearningBar'
 import styles from './Home.module.css'
 
 export function Home() {
-  const { user, hasPurchased } = useAuth()
+  const { user, hasPurchased, purchases } = useAuth()
   const { getPercent } = useProgress()
   const { t, lang } = useLanguage()
   const { theme } = useTheme()
@@ -55,6 +55,19 @@ export function Home() {
   const getPostTitle = (post) => (lang === 'en' && post.titleEn ? post.titleEn : post.title)
   const getPostExcerpt = (post) => (lang === 'en' && post.excerptEn ? post.excerptEn : post.excerpt)
   const getPostCategory = (post) => (lang === 'en' && post.categoryEn ? post.categoryEn : post.category)
+
+  const streakCurrent = userStats?.streak?.current || 0
+  const streakGoal = 7
+  const streakProgress = Math.min(100, Math.round((streakCurrent / streakGoal) * 100))
+  const activeCourses = purchases?.filter((p) => {
+    const course = courses.find((c) => c.id === p.id)
+    const pct = getPercent(p.id, course?.lessons?.length ?? 0)
+    return pct > 0 && pct < 100
+  }).length || 0
+  const avgProgress = userStats?.chart?.length
+    ? Math.round(userStats.chart.reduce((s, r) => s + r.percent, 0) / userStats.chart.length)
+    : null
+  const achievementsCount = userStats?.achievements?.length || 0
 
   return (
     <>
@@ -141,36 +154,78 @@ export function Home() {
         <ScrollReveal>
           <section className={styles.userStatsSection}>
             <div className={styles.container}>
-              <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Ваш прогресс' : 'Your progress'}</h2>
-              <div className={styles.userStatsGrid}>
-                {userStats.streak && (
-                  <div className={styles.userStatCard}>
-                    <span className={styles.userStatValue}>{userStats.streak.current}</span>
-                    <span className={styles.userStatLabel}>
-                      {lang === 'ru' ? 'дней подряд' : 'day streak'}
-                      {userStats.streak.current < 7 && (
-                        <small className={styles.streakGoal}>
-                          {' '}
-                          · {lang === 'ru' ? `до 7: ${7 - userStats.streak.current}` : `to 7: ${7 - userStats.streak.current} left`}
-                        </small>
-                      )}
-                    </span>
+              <div className={styles.progressPanel}>
+                <div className={styles.progressPanelHead}>
+                  <div>
+                    <h2 className={styles.progressPanelTitle}>
+                      {lang === 'ru' ? 'Ваш прогресс' : 'Your progress'}
+                    </h2>
+                    <p className={styles.progressPanelDesc}>
+                      {lang === 'ru'
+                        ? 'Серия входов, курсы и награды — в одном месте'
+                        : 'Streak, courses and achievements at a glance'}
+                    </p>
                   </div>
-                )}
-                {userStats.achievements?.length > 0 && (
-                  <div className={styles.userStatCard}>
-                    <span className={styles.userStatValue}>{userStats.achievements.length}</span>
-                    <span className={styles.userStatLabel}>{lang === 'ru' ? 'наград' : 'achievements'}</span>
+                  <Link to="/cabinet" className={styles.progressPanelLink}>
+                    {lang === 'ru' ? 'Кабинет →' : 'Dashboard →'}
+                  </Link>
+                </div>
+
+                <div className={styles.progressPanelGrid}>
+                  <article className={styles.streakCard}>
+                    <div className={styles.streakCardVisual}>
+                      <div
+                        className={styles.streakRing}
+                        style={{ '--streak-pct': `${streakProgress}%` }}
+                        aria-hidden
+                      >
+                        <span className={styles.streakRingEmoji}>🔥</span>
+                      </div>
+                      <div className={styles.streakCardMain}>
+                        <span className={styles.streakCardValue}>{streakCurrent}</span>
+                        <span className={styles.streakCardLabel}>
+                          {lang === 'ru' ? 'дней подряд' : 'day streak'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className={styles.streakCardGoal}>
+                      <div className={styles.streakBarTrack}>
+                        <div className={styles.streakBarFill} style={{ width: `${streakProgress}%` }} />
+                      </div>
+                      <span className={styles.streakGoalText}>
+                        {streakCurrent >= streakGoal
+                          ? (lang === 'ru' ? 'Цель 7 дней достигнута!' : '7-day goal reached!')
+                          : (lang === 'ru'
+                            ? `До цели 7 дней: ${streakGoal - streakCurrent}`
+                            : `${streakGoal - streakCurrent} days to 7-day goal`)}
+                      </span>
+                    </div>
+                  </article>
+
+                  <div className={styles.progressMetrics}>
+                    <article className={styles.metricCard}>
+                      <span className={styles.metricIcon} aria-hidden>📚</span>
+                      <span className={styles.metricValue}>{activeCourses}</span>
+                      <span className={styles.metricLabel}>
+                        {lang === 'ru' ? 'курсов в процессе' : 'courses in progress'}
+                      </span>
+                    </article>
+                    <article className={styles.metricCard}>
+                      <span className={styles.metricIcon} aria-hidden>📈</span>
+                      <span className={styles.metricValue}>{avgProgress ?? 0}%</span>
+                      <span className={styles.metricLabel}>
+                        {lang === 'ru' ? 'средний прогресс' : 'avg. progress'}
+                      </span>
+                    </article>
+                    <article className={styles.metricCard}>
+                      <span className={styles.metricIcon} aria-hidden>🏆</span>
+                      <span className={styles.metricValue}>{achievementsCount}</span>
+                      <span className={styles.metricLabel}>
+                        {lang === 'ru' ? 'наград' : 'achievements'}
+                      </span>
+                    </article>
                   </div>
-                )}
-                {userStats.chart?.length > 0 && (
-                  <div className={styles.userStatCard}>
-                    <span className={styles.userStatValue}>
-                      {Math.round(userStats.chart.reduce((s, r) => s + r.percent, 0) / userStats.chart.length)}%
-                    </span>
-                    <span className={styles.userStatLabel}>{lang === 'ru' ? 'средний прогресс' : 'avg. progress'}</span>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           </section>

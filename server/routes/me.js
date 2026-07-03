@@ -202,6 +202,11 @@ router.get('/notifications', async (req, res) => {
   res.json(rows.map(mapNotification))
 })
 
+router.patch('/notifications/read-all', async (req, res) => {
+  await getDb().run('UPDATE notifications SET read = 1 WHERE email = ? AND read = 0', [req.userEmail])
+  res.json({ ok: true })
+})
+
 router.patch('/notifications/:id/read', async (req, res) => {
   await getDb().run('UPDATE notifications SET read = 1 WHERE id = ? AND email = ?', [req.params.id, req.userEmail])
   res.json({ ok: true })

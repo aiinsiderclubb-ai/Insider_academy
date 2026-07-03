@@ -65,7 +65,7 @@ export function Layout({ children }) {
   const [, forceUpdate] = useState(0)
   const cabinetRef = useRef(null)
   const notifRef = useRef(null)
-  const { notifications, unreadCount: notifCount, markRead: markNotificationReadApi } = useUserNotifications(user?.email)
+  const { notifications, unreadCount: notifCount, markRead: markNotificationReadApi, markAllRead: markAllNotificationsReadApi } = useUserNotifications(user?.email)
 
   const navItems = navItemsKeys.map(({ labelKey, ...rest }) => ({ ...rest, label: t(labelKey) }))
   const cabinetMenuItems = cabinetMenuKeys.map(({ labelKey, ...rest }) => ({ ...rest, label: t(labelKey) }))
@@ -170,6 +170,37 @@ export function Layout({ children }) {
       return lang === 'ru' ? 'Заявка на курс' : 'Course application'
     }
     return notification.type
+  }
+
+  const getNotificationIcon = (notification) => {
+    if (notification.type === 'certificate_added') return '📄'
+    if (notification.type === 'homework_feedback') return '📝'
+    if (notification.type === 'review_status') return '⭐'
+    if (notification.type === 'password_changed') return '🔐'
+    if (notification.type === 'application_status') return '🎓'
+    return '🔔'
+  }
+
+  const getNotificationBody = (notification) => {
+    if (notification.message?.trim()) return notification.message.trim()
+    const parts = [notification.courseTitle, notification.lessonTitle].filter(Boolean)
+    return parts.join(' — ')
+  }
+
+  const formatNotificationTime = (dateStr) => {
+    if (!dateStr) return ''
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 1) return lang === 'ru' ? 'только что' : 'just now'
+    if (mins < 60) return lang === 'ru' ? `${mins} мин назад` : `${mins}m ago`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return lang === 'ru' ? `${hours} ч назад` : `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    return lang === 'ru' ? `${days} дн назад` : `${days}d ago`
+  }
+
+  const handleMarkAllNotificationsRead = async () => {
+    await markAllNotificationsReadApi()
   }
 
   const resolveNotificationTarget = (notification) => {
@@ -297,22 +328,47 @@ export function Layout({ children }) {
               </button>
               {notifOpen && (
                 <div className={styles.notifDropdown}>
-                  <div className={styles.notifDropdownTitle}>{t('nav.notifications')}</div>
+                  <div className={styles.notifDropdownHead}>
+                    <span className={styles.notifDropdownTitle}>{t('nav.notifications')}</span>
+                    {notifications.length > 0 && (
+                      <button
+                        type="button"
+                        className={styles.notifMarkAll}
+                        onClick={handleMarkAllNotificationsRead}
+                        disabled={notifCount === 0}
+                      >
+                        {lang === 'ru' ? 'Все прочитано' : 'Mark all read'}
+                      </button>
+                    )}
+                  </div>
                   {notifications.length === 0 ? (
                     <div className={styles.notifEmpty}>{lang === 'ru' ? 'Нет уведомлений' : 'No notifications'}</div>
                   ) : (
-                    notifications.map((n) => (
-                      <button
-                        key={n.id}
-                        type="button"
-                        className={styles.notifItem}
-                        onClick={() => handleNotificationClick(n)}
-                      >
-                        <span className={styles.notifItemTitle}>{getNotificationTitle(n)}</span>
-                        <span className={styles.notifItemText}>{n.courseTitle} {n.lessonTitle ? `— ${n.lessonTitle}` : ''}</span>
-                        {n.message && <span className={styles.notifItemMsg}>{n.message.slice(0, 80)}{n.message.length > 80 ? '…' : ''}</span>}
-                      </button>
-                    ))
+                    <div className={styles.notifList}>
+                      {notifications.map((n) => {
+                        const body = getNotificationBody(n)
+                        return (
+                          <button
+                            key={n.id}
+                            type="button"
+                            className={`${styles.notifItem} ${!n.read ? styles.notifItemUnread : ''}`}
+                            onClick={() => handleNotificationClick(n)}
+                          >
+                            <span className={styles.notifItemIcon} aria-hidden>{getNotificationIcon(n)}</span>
+                            <span className={styles.notifItemBody}>
+                              <span className={styles.notifItemTop}>
+                                <span className={styles.notifItemTitle}>{getNotificationTitle(n)}</span>
+                                {n.date && (
+                                  <span className={styles.notifItemTime}>{formatNotificationTime(n.date)}</span>
+                                )}
+                              </span>
+                              {body && <span className={styles.notifItemText}>{body}</span>}
+                            </span>
+                            {!n.read && <span className={styles.notifUnreadDot} aria-hidden />}
+                          </button>
+                        )
+                      })}
+                    </div>
                   )}
                 </div>
               )}
