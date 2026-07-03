@@ -32,7 +32,7 @@ export function VaultProduct() {
   const details = product ? getVaultDetails(product.id) : null
 
   if (!product) {
-    return <Navigate to="/vault" replace />
+    return <Navigate to="/marketplace?tab=vault" replace />
   }
 
   const purchased = hasPurchased(product.id)
@@ -54,7 +54,7 @@ export function VaultProduct() {
       >
         <ScrollReveal>
           <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-            <Link to="/vault">{ru ? 'Vault' : 'Vault'}</Link>
+            <Link to="/marketplace?tab=vault">{ru ? 'Vault' : 'Vault'}</Link>
             <span aria-hidden>/</span>
             <span>{title}</span>
           </nav>
@@ -133,7 +133,7 @@ export function VaultProduct() {
                   {ru ? 'Купить' : 'Buy'}
                 </Link>
               )}
-              <Link to="/vault" className={styles.btnSecondary}>
+              <Link to="/marketplace?tab=vault" className={styles.btnSecondary}>
                 {ru ? 'Все Vault-продукты' : 'All Vault products'}
               </Link>
             </aside>

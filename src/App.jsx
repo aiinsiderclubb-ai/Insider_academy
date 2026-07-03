@@ -26,7 +26,6 @@ import { ResetPassword } from './pages/ResetPassword'
 import { Memberships } from './pages/Memberships'
 import { MembershipPlan } from './pages/MembershipPlan'
 import { CoursePack } from './pages/CoursePack'
-import { Vault } from './pages/Vault'
 import { VaultProduct } from './pages/VaultProduct'
 import { VaultBuy } from './pages/VaultBuy'
 import { Marketplace } from './pages/Marketplace'
@@ -65,7 +64,7 @@ function AppContent() {
             <Route key={from} path={`/packs/${from}`} element={<Navigate to={`/packs/${to}`} replace />} />
           ))}
           <Route path="/packs/:packId" element={<CoursePack />} />
-          <Route path="/vault" element={<Vault />} />
+          <Route path="/vault" element={<Navigate to="/marketplace?tab=vault" replace />} />
           <Route path="/vault/:vaultSlug" element={<VaultProduct />} />
           <Route path="/vault/:vaultSlug/buy" element={<VaultBuy />} />
           <Route path="/marketplace" element={<Marketplace />} />

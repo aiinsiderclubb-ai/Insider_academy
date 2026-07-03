@@ -110,7 +110,7 @@ export function VaultSection({
 
       <div className={styles.footerLinks}>
         {showMoreLink && (
-          <Link to="/vault" className={styles.moreLink}>
+          <Link to="/marketplace?tab=vault" className={styles.moreLink}>
             {ru ? 'Все Vault-продукты →' : 'All Vault products →'}
           </Link>
         )}

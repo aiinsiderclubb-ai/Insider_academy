@@ -7,6 +7,45 @@
   margin: 0 auto;
 }
 
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0 32px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.tabBtn {
+  min-height: 44px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.tabBtn:hover {
+  color: var(--text);
+}
+
+.tabActive {
+  color: var(--text-on-primary);
+  background: var(--gradient-primary);
+  box-shadow: var(--btn-primary-shadow);
+}
+
+.tabsVaultFirst {
+  margin-top: 32px;
+}
+
 .toolbar {
   display: flex;
   flex-direction: column;

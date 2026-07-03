@@ -61,7 +61,7 @@ export function VaultBuy() {
       <div className={buyStyles.wrap}>
         <div className={buyStyles.container}>
           <p>{ru ? 'Продукт не найден' : 'Product not found'}</p>
-          <Link to="/vault">{ru ? 'К Vault' : 'To Vault'}</Link>
+          <Link to="/marketplace?tab=vault">{ru ? 'К Vault' : 'To Vault'}</Link>
         </div>
       </div>
     )

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import styles from './MarketplaceHero.module.css'
 
-export function MarketplaceHero({ lang, discountPercent = 0 }) {
+export function MarketplaceHero({ lang }) {
   const ru = lang === 'ru'
 
   const floats = ru
@@ -33,20 +33,6 @@ export function MarketplaceHero({ lang, discountPercent = 0 }) {
           <Link to="/marketplace/creators" className={styles.btnSecondary}>
             {ru ? 'Стать креатором' : 'Become a Creator'}
           </Link>
-        </div>
-        <div className={styles.perks}>
-          <span className={styles.perk}>
-            <strong>Club</strong> −10%
-          </span>
-          <span className={styles.perk}>
-            <strong>Pro</strong> −25%
-          </span>
-          {discountPercent > 0 && (
-            <span className={styles.perk}>
-              {ru ? 'Ваша скидка активна' : 'Your discount is active'}: <strong>−{discountPercent}%</strong>
-            </span>
-          )}
-          <span>{ru ? '70% креатору · 30% платформе' : '70% creator · 30% platform'}</span>
         </div>
       </div>
     </header>

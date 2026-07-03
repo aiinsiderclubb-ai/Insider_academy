@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { useProgress } from '../context/ProgressContext'
-import { IconHome, IconBriefcase, IconVideo, IconCalendar, IconBlog, IconBell, IconMessage, IconUser, IconBook, IconCart } from './Icons'
+import { IconHome, IconBriefcase, IconVideo, IconCalendar, IconBlog, IconBell, IconMessage, IconUser, IconCart } from './Icons'
 import { ChatBot } from './ChatBot'
 import { FloatingHotOffer } from './FloatingHotOffer'
 import { ContinueLearningBar } from './ContinueLearningBar'
@@ -25,8 +25,15 @@ import styles from './Layout.module.css'
 const navItemsKeys = [
   { to: '/', labelKey: 'nav.home', Icon: IconHome },
   { to: '/courses', labelKey: 'nav.catalog', Icon: IconVideo },
-  { to: '/vault', labelKey: 'nav.vault', Icon: IconBook },
-  { to: '/marketplace', labelKey: 'nav.marketplace', Icon: IconCart },
+  {
+    to: '/marketplace',
+    labelKey: 'nav.marketplace',
+    Icon: IconCart,
+    children: [
+      { to: '/marketplace', labelKey: 'nav.marketplaceCatalog', section: 'catalog' },
+      { to: '/marketplace?tab=vault', labelKey: 'nav.vault', section: 'vault' },
+    ],
+  },
   { to: '/memberships', labelKey: 'nav.memberships', Icon: IconUser },
   { to: '/cabinet', labelKey: 'nav.myCourses', Icon: IconBriefcase, auth: true },
   { to: '/calendar', labelKey: 'nav.calendar', Icon: IconCalendar },
@@ -125,6 +132,13 @@ export function Layout({ children }) {
 
   const isAdminPage = location.pathname === '/admin'
 
+  const isMarketplaceSection =
+    location.pathname.startsWith('/marketplace') || location.pathname.startsWith('/vault')
+  const isMarketplaceVaultActive =
+    (location.pathname === '/marketplace' && searchParams.get('tab') === 'vault')
+    || location.pathname.startsWith('/vault/')
+  const isMarketplaceCatalogActive = isMarketplaceSection && !isMarketplaceVaultActive
+
   const openChat = (tab = 'ai') => {
     setChatTab(tab)
     setChatOpen(true)
@@ -188,8 +202,39 @@ export function Layout({ children }) {
           <span className={styles.logoText}>AI Insider Academy</span>
         </Link>
         <nav className={styles.sidebarNav}>
-          {navItems.map(({ to, label, Icon, auth }) => {
+          {navItems.map(({ to, label, Icon, auth, children }) => {
             if (auth && !user) return null
+
+            if (children?.length) {
+              return (
+                <div key={to + label} className={styles.sidebarGroup}>
+                  <Link
+                    to={to}
+                    className={`${styles.sidebarLink} ${isMarketplaceSection ? styles.sidebarLinkActive : ''}`}
+                  >
+                    <span className={styles.sidebarIcon}><Icon /></span>
+                    <span className={styles.sidebarLabel}>{label}</span>
+                  </Link>
+                  <div className={styles.sidebarSubNav}>
+                    {children.map((child) => {
+                      const childLabel = t(child.labelKey)
+                      const childActive =
+                        child.section === 'vault' ? isMarketplaceVaultActive : isMarketplaceCatalogActive
+                      return (
+                        <Link
+                          key={child.to + childLabel}
+                          to={child.to}
+                          className={`${styles.sidebarSubLink} ${childActive ? styles.sidebarSubLinkActive : ''}`}
+                        >
+                          {childLabel}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            }
+
             const isActive = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
             return (
               <Link
@@ -216,7 +261,6 @@ export function Layout({ children }) {
             <nav className={styles.guestNav}>
               <Link to="/">{t('nav.school')}</Link>
               <Link to="/courses">{t('nav.catalog')}</Link>
-              <Link to="/vault">{t('nav.vault')}</Link>
               <Link to="/marketplace">{t('nav.marketplace')}</Link>
               <Link to="/blog">{t('nav.blog')}</Link>
               <a href={MAIN_SITE_COURSES} target="_blank" rel="noreferrer noopener">

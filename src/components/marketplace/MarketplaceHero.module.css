@@ -133,19 +133,6 @@
   background: var(--glow-purple-dim);
 }
 
-.perks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 28px;
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-}
-
-.perk strong {
-  color: var(--accent-orange);
-}
-
 @media (max-width: 1024px) {
   .floats {
     clip-path: polygon(72% 0, 100% 0, 100% 100%, 72% 100%);

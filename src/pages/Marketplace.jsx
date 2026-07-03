@@ -1,10 +1,12 @@
 import { useMemo, useState, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
+import { VaultSection } from '../components/VaultSection'
 import { MarketplaceHero } from '../components/marketplace/MarketplaceHero'
+import { MarketplacePerksBar } from '../components/marketplace/MarketplacePerksBar'
 import { MarketplaceProductCard } from '../components/marketplace/MarketplaceProductCard'
 import { MARKETPLACE_CATEGORIES } from '../data/marketplace/categories'
-import { FEATURED_SECTIONS, getProductsByBadge } from '../data/marketplace/products'
 import {
   getRecommendedMarketplaceProducts,
   searchMarketplaceProducts,
@@ -43,10 +45,29 @@ const FUTURE_EN = [
   'Monthly drops',
 ]
 
+const TABS = [
+  { id: 'catalog', ru: 'Каталог', en: 'Catalog' },
+  { id: 'vault', ru: 'Vault', en: 'Vault' },
+]
+
 export function Marketplace() {
   const { lang } = useLanguage()
   const { hasPurchased, purchases } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
   const ru = lang === 'ru'
+
+  const activeTab = searchParams.get('tab') === 'vault' ? 'vault' : 'catalog'
+
+  const setActiveTab = useCallback(
+    (tabId) => {
+      if (tabId === 'catalog') {
+        setSearchParams({}, { replace: true })
+      } else {
+        setSearchParams({ tab: tabId }, { replace: true })
+      }
+    },
+    [setSearchParams]
+  )
 
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
@@ -85,8 +106,38 @@ export function Marketplace() {
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
-        <MarketplaceHero lang={lang} discountPercent={discountPercent} />
+        {activeTab === 'catalog' && (
+          <MarketplaceHero lang={lang} />
+        )}
 
+        <nav
+          className={`${styles.tabs} ${activeTab === 'vault' ? styles.tabsVaultFirst : ''}`}
+          aria-label={ru ? 'Разделы Marketplace' : 'Marketplace sections'}
+        >
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`${styles.tabBtn} ${activeTab === tab.id ? styles.tabActive : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+              aria-selected={activeTab === tab.id}
+            >
+              {ru ? tab.ru : tab.en}
+            </button>
+          ))}
+        </nav>
+
+        <MarketplacePerksBar lang={lang} discountPercent={discountPercent} />
+
+        {activeTab === 'vault' ? (
+          <VaultSection
+            lang={lang}
+            hasPurchased={hasPurchased}
+            showMoreLink={false}
+            showMarketLink={false}
+          />
+        ) : (
+          <>
         {recommended.length > 0 && !query && category === 'all' && (
           <ScrollReveal>
             <section className={styles.section}>
@@ -105,27 +156,6 @@ export function Marketplace() {
               <div className={styles.grid}>{recommended.map(renderCard)}</div>
             </section>
           </ScrollReveal>
-        )}
-
-        {!query && category === 'all' && (
-          <>
-            {FEATURED_SECTIONS.map((section) => {
-              const items = getProductsByBadge(section.badge).slice(0, 4)
-              if (!items.length) return null
-              return (
-                <ScrollReveal key={section.id}>
-                  <section className={styles.section}>
-                    <div className={styles.sectionHead}>
-                      <h2 className={styles.sectionTitle}>
-                        {ru ? section.titleRu : section.titleEn}
-                      </h2>
-                    </div>
-                    <div className={styles.grid}>{items.map(renderCard)}</div>
-                  </section>
-                </ScrollReveal>
-              )
-            })}
-          </>
         )}
 
         <section id="catalog" className={styles.section}>
@@ -193,6 +223,8 @@ export function Marketplace() {
             </ul>
           </aside>
         </ScrollReveal>
+          </>
+        )}
       </div>
     </div>
   )

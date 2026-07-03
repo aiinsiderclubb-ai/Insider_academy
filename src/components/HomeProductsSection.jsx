@@ -35,7 +35,7 @@ export function HomeProductsSection({ lang, hasPurchased }) {
             <p className={styles.introDesc}>
               {ru ? VAULT_HUB.leadRu : VAULT_HUB.leadEn}
             </p>
-            <Link to="/vault" className={styles.introLink}>
+            <Link to="/marketplace?tab=vault" className={styles.introLink}>
               {ru ? 'Все Vault-продукты' : 'All Vault products'} →
             </Link>
           </article>

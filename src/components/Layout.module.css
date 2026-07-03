@@ -82,6 +82,40 @@
   text-overflow: ellipsis;
 }
 
+.sidebarGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebarSubNav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 4px 20px;
+  padding-left: 14px;
+  border-left: 1px solid var(--border);
+}
+
+.sidebarSubLink {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: background 0.2s, color 0.2s;
+}
+
+.sidebarSubLink:hover {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.sidebarSubLinkActive {
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+}
+
 .guestLayout .mainWrap,
 .adminLayout .mainWrap {
   max-width: 100%;

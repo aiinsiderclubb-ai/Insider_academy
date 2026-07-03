@@ -3,7 +3,7 @@
   <url><loc>https://myinsideracademy.com/</loc><changefreq>weekly</changefreq><priority>1</priority></url>
   <url><loc>https://myinsideracademy.com/courses</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://myinsideracademy.com/learning-map</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://myinsideracademy.com/vault</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://myinsideracademy.com/marketplace?tab=vault</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://myinsideracademy.com/marketplace</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://myinsideracademy.com/memberships</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://myinsideracademy.com/blog</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
