@@ -4,6 +4,7 @@ export const CHATBOT_FAQ_RU = [
   { q: 'Club и Pro?', a: 'Подписки со скидками на курсы и Marketplace: /memberships', link: '/memberships' },
   { q: 'Marketplace', a: 'Готовые шаблоны и автоматизации: /marketplace', link: '/marketplace' },
   { q: 'Vault', a: 'Цифровые продукты AI Insider: /marketplace?tab=vault', link: '/marketplace?tab=vault' },
+  { q: 'Розыгрыш', a: 'Claude Pro и другие AI-призы: /giveaway/claude-pro', link: '/giveaway/claude-pro' },
   { q: 'Сертификат', a: 'После 100% курса — в кабинете, вкладка «Сертификаты».', link: '/cabinet#certificates' },
 ]
 
@@ -13,5 +14,6 @@ export const CHATBOT_FAQ_EN = [
   { q: 'Club & Pro?', a: 'Memberships with discounts: /memberships', link: '/memberships' },
   { q: 'Marketplace', a: 'Templates and automations: /marketplace', link: '/marketplace' },
   { q: 'Vault', a: 'Digital products: /marketplace?tab=vault', link: '/marketplace?tab=vault' },
+  { q: 'Giveaway', a: 'Claude Pro and AI prizes: /giveaway/claude-pro', link: '/giveaway/claude-pro' },
   { q: 'Certificate', a: 'After 100% completion — in your cabinet.', link: '/cabinet#certificates' },
 ]

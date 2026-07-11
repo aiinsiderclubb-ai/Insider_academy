@@ -35,6 +35,7 @@ import { MarketplaceCreators } from './pages/MarketplaceCreators'
 import { Admin } from './pages/Admin'
 import { AcceleratorApply } from './pages/AcceleratorApply'
 import { LearningMap } from './pages/LearningMap'
+import { Giveaway } from './pages/Giveaway'
 import { ToastProvider } from './context/ToastContext'
 import { LEGACY_SLUG_REDIRECTS, LEGACY_PACK_REDIRECTS } from './data/courseAliases'
 function ProtectedRoute({ children }) {
@@ -76,6 +77,8 @@ function AppContent() {
           <Route path="/memberships/:tier" element={<MembershipPlan />} />
           <Route path="/club" element={<Memberships />} />
           <Route path="/learning-map" element={<LearningMap />} />
+          <Route path="/giveaway" element={<Giveaway />} />
+          <Route path="/giveaway/:slug" element={<Giveaway />} />
           <Route path="/courses/ai-insider-accelerator/apply" element={<AcceleratorApply />} />
           {Object.entries(LEGACY_SLUG_REDIRECTS).map(([from, to]) => (
             <Route key={from} path={`/courses/${from}`} element={<Navigate to={`/courses/${to}`} replace />} />

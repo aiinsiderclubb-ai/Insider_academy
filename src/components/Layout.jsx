@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { useProgress } from '../context/ProgressContext'
-import { IconHome, IconBriefcase, IconVideo, IconCalendar, IconBlog, IconBell, IconMessage, IconUser, IconCart } from './Icons'
+import { IconHome, IconBriefcase, IconVideo, IconCalendar, IconBlog, IconBell, IconMessage, IconUser, IconCart, IconAward } from './Icons'
 import { ChatBot } from './ChatBot'
 import { FloatingHotOffer } from './FloatingHotOffer'
 import { ContinueLearningBar } from './ContinueLearningBar'
@@ -35,6 +35,7 @@ const navItemsKeys = [
     ],
   },
   { to: '/memberships', labelKey: 'nav.memberships', Icon: IconUser },
+  { to: '/giveaway', labelKey: 'nav.giveaway', Icon: IconAward },
   { to: '/cabinet', labelKey: 'nav.myCourses', Icon: IconBriefcase, auth: true },
   { to: '/calendar', labelKey: 'nav.calendar', Icon: IconCalendar },
   { to: '/blog', labelKey: 'nav.blog', Icon: IconBlog },
@@ -293,6 +294,7 @@ export function Layout({ children }) {
               <Link to="/">{t('nav.school')}</Link>
               <Link to="/courses">{t('nav.catalog')}</Link>
               <Link to="/marketplace">{t('nav.marketplace')}</Link>
+              <Link to="/giveaway">{t('nav.giveaway')}</Link>
               <Link to="/blog">{t('nav.blog')}</Link>
               <a href={MAIN_SITE_COURSES} target="_blank" rel="noreferrer noopener">
                 {lang === 'ru' ? 'Курсы на сайте' : 'Website courses'} ↗
