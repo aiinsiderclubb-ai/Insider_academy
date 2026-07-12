@@ -1,7 +1,8 @@
 import { getCourseField } from '../data/courses'
 import { ACCELERATOR_OFFER, PROMO_VIDEOS } from '../data/promo'
-import { PromoVideo } from './PromoVideo'
 import { BundleCourseActions } from './BundleCourseActions'
+import { PromoVideo } from './PromoVideo'
+import { UiIcon } from './UiIcon'
 import styles from './HomeSuperOffer.module.css'
 
 export function HomeSuperOffer({ course, lang }) {
@@ -18,20 +19,25 @@ export function HomeSuperOffer({ course, lang }) {
   const stats = lang === 'en' ? ACCELERATOR_OFFER.statsEn : ACCELERATOR_OFFER.statsRu
   const tracks = lang === 'en' ? ACCELERATOR_OFFER.tracksEn : ACCELERATOR_OFFER.tracksRu
   const steps = lang === 'en' ? ACCELERATOR_OFFER.stepsEn : ACCELERATOR_OFFER.stepsRu
+  const videoUrl =
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ACCELERATOR_VIDEO_URL?.trim())
+    || PROMO_VIDEOS.accelerator
+    || ''
 
   return (
     <section id="super-offer" className={styles.section} aria-label={title}>
       <div className={styles.hotStrip}>
-        <span className={styles.hotFlame} aria-hidden>🔥</span>
+        <UiIcon name="flame" variant="inline" size={20} tone="onAccent" className={styles.hotFlame} />
         <span className={styles.hotText}>
           {lang === 'ru' ? 'ГОРЯЩЕЕ ПРЕДЛОЖЕНИЕ — набор спецкурсов' : 'HOT OFFER — special course bundle'}
         </span>
         <span className={styles.hotPulse} aria-hidden />
       </div>
       <div className={styles.container}>
-        <div className={styles.grid}>
+        <div className={`${styles.grid} ${videoUrl ? '' : styles.gridSolo}`}>
           <div className={styles.content}>
             <span className={styles.badge}>
+              <UiIcon name="flame" variant="badge" tone="onAccent" />
               {lang === 'en' ? ACCELERATOR_OFFER.badgeEn : ACCELERATOR_OFFER.badgeRu}
             </span>
             <span className={styles.tag}>
@@ -50,7 +56,9 @@ export function HomeSuperOffer({ course, lang }) {
             </ul>
 
             <div className={styles.selection}>
-              <span className={styles.selectionIcon} aria-hidden>🎯</span>
+              <span className={styles.selectionIcon} aria-hidden>
+                <UiIcon name="target" variant="box" tone="accent" />
+              </span>
               <p className={styles.selectionText}>{selection}</p>
             </div>
 
@@ -101,17 +109,38 @@ export function HomeSuperOffer({ course, lang }) {
           </div>
 
           <div className={styles.mediaCol}>
-            <PromoVideo
-              url={PROMO_VIDEOS.accelerator}
-              poster={course.image}
-              title={title}
-              compact
-            />
-            <p className={styles.mediaCaption}>
-              {lang === 'ru'
-                ? 'Коротко о программе набора — видео скоро'
-                : 'Quick overview of the intake program — video coming soon'}
-            </p>
+            {videoUrl ? (
+              <>
+                <PromoVideo
+                  url={videoUrl}
+                  title={lang === 'ru'
+                    ? 'Основатель о Accelerator — что соберёте за месяц'
+                    : 'Founder on Accelerator — what you will build'}
+                />
+                <p className={styles.mediaCaption}>
+                  {lang === 'ru'
+                    ? '60–90 сек: лицо основателя и результат программы.'
+                    : '60–90 sec: founder face + program outcome.'}
+                </p>
+              </>
+            ) : (
+              <div className={styles.outcomeCard}>
+                <span className={styles.outcomeEyebrow}>
+                  {lang === 'ru' ? 'Что соберёте' : 'What you will build'}
+                </span>
+                <p className={styles.outcomeCardText}>
+                  {finalProject
+                    || (lang === 'ru'
+                      ? 'Рабочий AI-стек под вашу специализацию: агенты, автоматизации или контент-система.'
+                      : 'A working AI stack for your path: agents, automation, or a content system.')}
+                </p>
+                <p className={styles.mediaCaption}>
+                  {lang === 'ru'
+                    ? 'Видео основателя (60–90 сек) появится здесь после записи.'
+                    : 'Founder video (60–90 sec) will appear here when ready.'}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

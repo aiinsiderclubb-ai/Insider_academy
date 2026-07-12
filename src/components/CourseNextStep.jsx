@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { UiIcon } from './UiIcon'
 import styles from './CourseNextStep.module.css'
 
 export function CourseNextStep({
@@ -13,7 +14,9 @@ export function CourseNextStep({
   if (variant === 'hw_pending') {
     return (
       <div className={styles.box} data-variant="pending">
-        <span className={styles.icon} aria-hidden>📝</span>
+        <span className={styles.icon} aria-hidden>
+          <UiIcon name="penLine" size={20} tone="accent" />
+        </span>
         <div>
           <strong>{ru ? 'ДЗ на проверке' : 'Homework under review'}</strong>
           <p>
@@ -29,7 +32,9 @@ export function CourseNextStep({
   if (variant === 'hw_required') {
     return (
       <div className={styles.box} data-variant="action">
-        <span className={styles.icon} aria-hidden>✋</span>
+        <span className={styles.icon} aria-hidden>
+          <UiIcon name="flag" size={20} tone="accent" />
+        </span>
         <div>
           <strong>{ru ? 'Сдайте домашнее задание' : 'Submit homework'}</strong>
           <p>
@@ -45,7 +50,9 @@ export function CourseNextStep({
   if (variant === 'certificate') {
     return (
       <div className={styles.box} data-variant="success">
-        <span className={styles.icon} aria-hidden>🎓</span>
+        <span className={styles.icon} aria-hidden>
+          <UiIcon name="graduationCap" size={20} tone="accent" />
+        </span>
         <div>
           <strong>{ru ? 'Курс почти завершён' : 'Almost done'}</strong>
           <p>
@@ -64,7 +71,9 @@ export function CourseNextStep({
   if (variant === 'next_lesson' && nextLessonTitle) {
     return (
       <div className={styles.box} data-variant="next">
-        <span className={styles.icon} aria-hidden>▶</span>
+        <span className={styles.icon} aria-hidden>
+          <UiIcon name="play" size={20} tone="accent" />
+        </span>
         <div>
           <strong>{ru ? 'Следующий урок' : 'Next lesson'}</strong>
           <p>{nextLessonTitle}</p>

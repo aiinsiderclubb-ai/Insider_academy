@@ -1,10 +1,11 @@
-import { TELEGRAM_COMMUNITY } from './siteLinks'
+import { TELEGRAM_COMMUNITY, TELEGRAM_GIVEAWAY_CLAUDE } from './siteLinks'
 
 /** @typedef {'active' | 'upcoming' | 'ended'} GiveawayStatus */
 
 /**
- * Розыгрыши AI Insider. Добавляйте новые объекты в массив — страница подхватит автоматически.
- * telegramPostUrl — ссылка на пост-анонс в Telegram (обновите при новом розыгрыше).
+ * Розыгрыши AI Insider.
+ * telegramInviteUrl — ссылка «вступить в канал» для этого розыгрыша.
+ * telegramPostUrl — только ссылка на КОНКРЕТНЫЙ пост (t.me/channel/123). Канал без поста не эмбедится.
  */
 export const GIVEAWAYS = [
   {
@@ -12,17 +13,20 @@ export const GIVEAWAYS = [
     slug: 'claude-pro',
     status: 'active',
     brand: 'Claude',
-    icon: '🧠',
+    icon: 'brain',
+    logoText: 'Claude',
     accent: '#d97757',
-    gradient: 'linear-gradient(135deg, #d97757 0%, #c45c3e 45%, #8b5cf6 100%)',
+    gradient: 'linear-gradient(145deg, #2a1a14 0%, #d97757 45%, #8b5cf6 100%)',
     prizeRu: 'Claude Pro',
     prizeEn: 'Claude Pro',
-    prizeDetailRu: '1 месяц подписки',
-    prizeDetailEn: '1 month subscription',
-    prizeValue: '$20',
+    prizeDetailRu: '× 1 месяц',
+    prizeDetailEn: '× 1 month',
     winnersCount: 1,
+    startsAt: '2026-07-10T00:00:00+03:00',
     endsAt: '2026-07-25T23:59:59+03:00',
-    telegramPostUrl: import.meta.env.VITE_GIVEAWAY_TELEGRAM_URL || TELEGRAM_COMMUNITY,
+    telegramChannel: 'aiinsiderclub',
+    telegramInviteUrl: TELEGRAM_GIVEAWAY_CLAUDE,
+    telegramPostUrl: import.meta.env.VITE_GIVEAWAY_TELEGRAM_URL || '',
     tagRu: 'Активный розыгрыш',
     tagEn: 'Active giveaway',
     headlineRu: 'Выиграйте Claude Pro',
@@ -31,84 +35,58 @@ export const GIVEAWAYS = [
       'Подписка на Claude Pro — для глубокой работы с AI, длинным контекстом и проектами. Разыгрываем среди подписчиков AI Insider.',
     leadEn:
       'Claude Pro subscription — for deep AI work, long context and projects. We are giving it away to AI Insider community members.',
-    stepsRu: [
-      { id: 'telegram', label: 'Подпишитесь на Telegram-канал AI Insider', link: TELEGRAM_COMMUNITY, external: true },
-      { id: 'register', label: 'Зарегистрируйтесь на Academy (если ещё нет аккаунта)', link: '/register', external: false },
-      { id: 'comment', label: 'Оставьте комментарий под постом розыгрыша в Telegram', link: null, useTelegramPost: true },
-    ],
-    stepsEn: [
-      { id: 'telegram', label: 'Subscribe to AI Insider Telegram channel', link: TELEGRAM_COMMUNITY, external: true },
-      { id: 'register', label: 'Sign up on Academy (if you do not have an account yet)', link: '/register', external: false },
-      { id: 'comment', label: 'Leave a comment under the giveaway post on Telegram', link: null, useTelegramPost: true },
-    ],
     rulesRu: [
-      'Участие бесплатное. Один аккаунт — одна заявка.',
-      'Победитель выбирается случайно среди выполнивших все условия.',
-      'Итоги публикуем в Telegram и на этой странице.',
-      'Приз — промокод или оплата подписки Claude Pro на 1 месяц (по договорённости с победителем).',
-      'Команда AI Insider может отказать участнику при нарушении правил или фейковом аккаунте.',
+      { title: 'Бесплатное участие', text: 'Участие бесплатное. Базовое участие даёт 1 шанс.' },
+      { title: 'Дополнительные шансы', text: 'Подписка на Telegram (+1), приглашение друга (+3), шаринг страницы (+2).' },
+      { title: 'Как выбираем победителя', text: 'Победитель выбирается случайно с учётом шансов участников.' },
+      { title: 'Публикация итогов', text: 'Итоги публикуем в Telegram и на этой странице.' },
+      { title: 'Что получит победитель', text: 'Приз — промокод или оплата подписки Claude Pro на 1 месяц.' },
+      { title: 'Честная игра', text: 'Команда AI Insider может отказать участнику при нарушении правил или фейковом аккаунте.' },
     ],
     rulesEn: [
-      'Participation is free. One account — one entry.',
-      'Winner is picked at random among those who completed all steps.',
-      'Results are published on Telegram and this page.',
-      'Prize is a promo code or Claude Pro subscription for 1 month (arranged with the winner).',
-      'AI Insider team may disqualify entries that break rules or use fake accounts.',
+      { title: 'Free to enter', text: 'Participation is free. Base entry gives 1 chance.' },
+      { title: 'Bonus chances', text: 'Telegram subscribe (+1), invite a friend (+3), share the page (+2).' },
+      { title: 'How we pick a winner', text: 'Winner is picked at random weighted by chances.' },
+      { title: 'Results', text: 'Results are published on Telegram and this page.' },
+      { title: 'What you win', text: 'Prize is a promo code or Claude Pro subscription for 1 month.' },
+      { title: 'Fair play', text: 'AI Insider team may disqualify entries that break rules or use fake accounts.' },
     ],
-  },
-  {
-    id: 'chatgpt-plus',
-    slug: 'chatgpt-plus',
-    status: 'upcoming',
-    brand: 'ChatGPT',
-    icon: '💬',
-    accent: '#10a37f',
-    gradient: 'linear-gradient(135deg, #10a37f, #8b5cf6)',
-    prizeRu: 'ChatGPT Plus',
-    prizeEn: 'ChatGPT Plus',
-    prizeDetailRu: 'скоро',
-    prizeDetailEn: 'coming soon',
-    prizeValue: '$20',
-    winnersCount: 1,
-    endsAt: null,
-    telegramPostUrl: TELEGRAM_COMMUNITY,
-    tagRu: 'Скоро',
-    tagEn: 'Coming soon',
-    headlineRu: 'ChatGPT Plus',
-    headlineEn: 'ChatGPT Plus',
-    leadRu: 'Следующий розыгрыш в линейке AI Insider Giveaways.',
-    leadEn: 'Next giveaway in the AI Insider Giveaways series.',
-    stepsRu: [],
-    stepsEn: [],
-    rulesRu: [],
-    rulesEn: [],
-  },
-  {
-    id: 'cursor-pro',
-    slug: 'cursor-pro',
-    status: 'upcoming',
-    brand: 'Cursor',
-    icon: '⌨️',
-    accent: '#6b7280',
-    gradient: 'linear-gradient(135deg, #374151, #8b5cf6)',
-    prizeRu: 'Cursor Pro',
-    prizeEn: 'Cursor Pro',
-    prizeDetailRu: 'скоро',
-    prizeDetailEn: 'coming soon',
-    prizeValue: '$20',
-    winnersCount: 1,
-    endsAt: null,
-    telegramPostUrl: TELEGRAM_COMMUNITY,
-    tagRu: 'Скоро',
-    tagEn: 'Coming soon',
-    headlineRu: 'Cursor Pro',
-    headlineEn: 'Cursor Pro',
-    leadRu: 'Розыгрыш подписки для разработчиков — анонс в Telegram.',
-    leadEn: 'Developer subscription giveaway — announced on Telegram.',
-    stepsRu: [],
-    stepsEn: [],
-    rulesRu: [],
-    rulesEn: [],
+    faqRu: [
+      {
+        q: 'Как выбирается победитель?',
+        a: 'Случайным образом среди участников с учётом шансов: больше шансов — выше вероятность. Итоги публикуем в Telegram и на странице розыгрыша.',
+      },
+      {
+        q: 'Как я получу приз?',
+        a: 'Мы свяжемся с победителем в Telegram / по email аккаунта Academy и передадим промокод или оплатим подписку Claude Pro на 1 месяц.',
+      },
+      {
+        q: 'Можно ли участвовать без Telegram?',
+        a: 'Для базового участия и проверки подписки нужен Telegram-бот AI Insider и канал AI Insider. Без этого сервер не примет заявку.',
+      },
+      {
+        q: 'Когда итоги?',
+        a: 'Сразу после окончания таймера. Анонс — в Telegram-канале AI Insider и на этой странице.',
+      },
+    ],
+    faqEn: [
+      {
+        q: 'How is the winner chosen?',
+        a: 'At random among participants, weighted by chances. Results go live on Telegram and this page.',
+      },
+      {
+        q: 'How do I receive the prize?',
+        a: 'We contact the winner via Telegram / Academy email and send a promo code or pay for 1 month of Claude Pro.',
+      },
+      {
+        q: 'Can I enter without Telegram?',
+        a: 'Base entry requires the AI Insider Telegram bot and AI Insider channel so we can verify participation.',
+      },
+      {
+        q: 'When are results announced?',
+        a: 'Right after the timer ends — on the AI Insider Telegram channel and this page.',
+      },
+    ],
   },
 ]
 
@@ -127,3 +105,21 @@ export function getUpcomingGiveaways() {
 export function getEndedGiveaways() {
   return GIVEAWAYS.filter((g) => g.status === 'ended')
 }
+
+/** Активные или анонсированные с датой — без пустых «скоро» */
+export function isGiveawayListedOnEvents(giveaway) {
+  if (giveaway.status === 'active') return true
+  if (giveaway.status === 'ended') return true
+  if (giveaway.status !== 'upcoming') return false
+  return Boolean(giveaway.announcedAt || giveaway.startsAt)
+}
+
+export function getListedGiveaways() {
+  return GIVEAWAYS.filter(isGiveawayListedOnEvents)
+}
+
+export function getAnnouncedUpcomingGiveaways() {
+  return GIVEAWAYS.filter((g) => g.status === 'upcoming' && isGiveawayListedOnEvents(g))
+}
+
+export { TELEGRAM_COMMUNITY }

@@ -1,107 +1,86 @@
 .section {
-  padding: 56px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  background:
-    radial-gradient(ellipse 70% 50% at 0% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 80%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
-    var(--bg);
+  padding: var(--section-py) 0;
+  background: var(--bg-surface);
 }
 
 .container {
-  max-width: 1200px;
+  max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 28px;
 }
 
 .head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 48px;
+  text-align: center;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .pill {
   display: inline-block;
-  margin-bottom: 10px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--glow-purple) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--glow-purple) 30%, var(--border));
-  color: var(--glow-purple);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
 }
 
 .title {
-  margin: 0 0 10px;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  font-size: var(--text-h2);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+  line-height: var(--leading-heading);
 }
 
 .desc {
   margin: 0;
-  max-width: 520px;
-  color: var(--text-muted);
-  line-height: 1.6;
-  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  font-size: var(--text-body);
 }
 
-.score {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 22px;
-  border-radius: 16px;
-  background: var(--glow-purple-dim);
-  border: 1px solid color-mix(in srgb, var(--glow-purple) 30%, var(--border));
-  min-width: 110px;
-}
-
-.scoreValue {
-  font-size: 2.25rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--glow-purple);
-}
-
-.scoreStars {
-  color: #fbbf24;
-  letter-spacing: 2px;
-  margin: 4px 0;
-}
-
-.scoreCount {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+.masonry {
+  columns: 3;
+  column-gap: 24px;
 }
 
 .card {
+  break-inside: avoid;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 20px;
-  border-radius: 18px;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+  padding: 24px;
+  margin: 0 0 24px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform var(--motion-base) var(--ease-motion),
+    border-color var(--motion-base) var(--ease-motion),
+    box-shadow var(--motion-base) var(--ease-motion);
 }
 
 .card:hover {
-  border-color: color-mix(in srgb, var(--glow-purple) 35%, var(--border));
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.1);
-  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.cardTall .text {
+  -webkit-line-clamp: 8;
+}
+
+.cardShort .text {
+  -webkit-line-clamp: 3;
 }
 
 .courseBadge {
@@ -110,25 +89,14 @@
   gap: 8px;
   align-self: flex-start;
   max-width: 100%;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--glow-purple) 14%, var(--bg)), color-mix(in srgb, var(--glow-pink) 8%, var(--bg)));
-  border: 1px solid color-mix(in srgb, var(--glow-purple) 28%, var(--border));
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   text-decoration: none;
-  color: var(--glow-purple);
+  color: var(--text-primary);
   font-size: 0.8125rem;
   font-weight: 600;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.courseBadge:hover {
-  border-color: var(--glow-purple);
-  background: color-mix(in srgb, var(--glow-purple) 18%, var(--bg));
-}
-
-.courseBadgeIcon {
-  flex-shrink: 0;
-  font-size: 0.875rem;
 }
 
 .courseBadgeText {
@@ -145,54 +113,50 @@
 
 .avatar {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  background: var(--gradient-primary);
   color: var(--text-on-primary);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1rem;
 }
 
 .meta {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 .meta strong {
+  display: block;
   font-size: 0.9375rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.date {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+.role {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stars {
   flex-shrink: 0;
   color: #fbbf24;
-  font-size: 0.875rem;
-  letter-spacing: 1px;
-}
-
-.starsDim {
-  color: var(--text-muted);
-  opacity: 0.35;
+  font-size: 0.9375rem;
 }
 
 .text {
   margin: 0;
   font-size: 0.9375rem;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 5;
@@ -206,8 +170,18 @@
   }
 }
 
+@media (max-width: 900px) {
+  .section {
+    padding: 64px 0;
+  }
+
+  .masonry {
+    columns: 2;
+  }
+}
+
 @media (max-width: 640px) {
-  .grid {
-    grid-template-columns: 1fr;
+  .masonry {
+    columns: 1;
   }
 }

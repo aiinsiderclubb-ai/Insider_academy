@@ -8,7 +8,7 @@
     "marketplaceCatalog": "Catalog",
     "club": "Club",
     "memberships": "Memberships",
-    "giveaway": "Giveaways",
+    "giveaway": "Giveaways & events",
     "school": "School",
     "blog": "Blog",
     "calendar": "Calendar",
@@ -21,12 +21,13 @@
     "messages": "Messages",
     "notifications": "Notifications",
     "myCertificates": "My Certificates",
+    "challenge": "Weekly challenge",
     "awards": "Awards",
     "inviteFriend": "Invite a Friend",
     "support": "Support"
   },
   "home": {
-    "heroPill": "Video courses for practitioners",
+    "heroPill": "100% async · recorded lessons",
     "heroTitle1": "Automation, chatbots",
     "heroTitle2": "and AI tools",
     "heroDesc": "Voice agents, chatbot creation, and AI development — no filming or long prep.",
@@ -173,6 +174,9 @@
   "footer": {
     "tagline": "Video courses on automation, chatbots, voice agents, and development.",
     "telegram": "Telegram channel",
+    "offer": "Public offer",
+    "privacy": "Privacy policy",
+    "refund": "Refund policy",
     "copyright": "© AI Insider Academy"
   },
   "common": {

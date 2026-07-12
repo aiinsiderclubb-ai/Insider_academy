@@ -1,4 +1,7 @@
+import { useMemo, useState, useEffect } from 'react'
 import { getLessonDisplayTitle, getLessonDescription } from '../data/courses'
+import { UiIcon } from './UiIcon'
+import { IconChevronDown } from './Icons'
 import styles from './CourseProgramPanel.module.css'
 
 export function CourseProgramPanel({
@@ -12,6 +15,57 @@ export function CourseProgramPanel({
   isFreeTrial,
   purchased,
 }) {
+  const MODULE_SIZE = 5
+
+  const weekGroups = useMemo(() => {
+    if (!lessons?.length) return null
+
+    if (lessons.some((l) => l.week != null)) {
+      const map = new Map()
+      lessons.forEach((lesson, index) => {
+        const week = lesson.week ?? 0
+        if (!map.has(week)) {
+          map.set(week, {
+            week,
+            kind: 'week',
+            goal: lang === 'en' ? (lesson.weekGoalEn || lesson.weekGoal) : lesson.weekGoal,
+            items: [],
+          })
+        }
+        map.get(week).items.push({ lesson, index })
+      })
+      return [...map.values()].sort((a, b) => a.week - b.week)
+    }
+
+    // Без данных о неделях длинные программы делим на модули — компактнее для навигации
+    if (lessons.length <= 10) return null
+    const groups = []
+    lessons.forEach((lesson, index) => {
+      const moduleNum = Math.floor(index / MODULE_SIZE) + 1
+      if (!groups[moduleNum - 1]) {
+        groups.push({ week: moduleNum, kind: 'module', goal: null, items: [] })
+      }
+      groups[moduleNum - 1].items.push({ lesson, index })
+    })
+    return groups
+  }, [lessons, lang])
+
+  const selectedWeek = weekGroups
+    ? (weekGroups.find((g) => g.items.some((it) => it.index === selectedLesson))?.week ?? weekGroups[0]?.week)
+    : null
+
+  const [openWeeks, setOpenWeeks] = useState(() => new Set(selectedWeek != null ? [selectedWeek] : []))
+
+  useEffect(() => {
+    if (selectedWeek == null) return
+    setOpenWeeks((prev) => {
+      if (prev.has(selectedWeek)) return prev
+      const next = new Set(prev)
+      next.add(selectedWeek)
+      return next
+    })
+  }, [selectedWeek])
+
   if (!lessons?.length) {
     return (
       <p className={styles.empty}>
@@ -20,42 +74,103 @@ export function CourseProgramPanel({
     )
   }
 
+  const renderLesson = (lesson, index) => {
+    const available = lessonAvailable(index)
+    const status = lessonStatus(index)
+    const active = selectedLesson === index
+    const disabled = !canSelectLesson(index)
+    const description = getLessonDescription(lesson, lang)
+
+    return (
+      <li key={lesson.id}>
+        <button
+          type="button"
+          className={`${styles.item} ${active ? styles.itemActive : ''} ${disabled ? styles.itemDisabled : ''}`}
+          onClick={() => !disabled && onSelectLesson(index)}
+          disabled={disabled}
+          aria-current={active ? 'true' : undefined}
+        >
+          <span className={styles.num}>{index + 1}</span>
+          <span className={styles.content}>
+            <span className={styles.title}>{getLessonDisplayTitle(lesson, lang)}</span>
+            {description && <span className={styles.desc}>{description}</span>}
+          </span>
+          <span className={styles.status} aria-hidden>
+            {isFreeTrial && <span className={styles.statusOpen}>●</span>}
+            {!isFreeTrial && index === 0 && <span className={styles.statusFree}>●</span>}
+            {!isFreeTrial && index > 0 && !purchased && (
+              <span className={styles.statusLock} aria-hidden>
+                <UiIcon name="lock" size={14} tone="secondary" />
+              </span>
+            )}
+            {!isFreeTrial && purchased && status === 'open' && <span className={styles.statusOpen}>●</span>}
+            {!isFreeTrial && purchased && status === 'review' && <span className={styles.statusReview}>◐</span>}
+            {!isFreeTrial && purchased && status === 'homework' && !available && (
+              <span className={styles.statusLock} aria-hidden>
+                <UiIcon name="lock" size={14} tone="secondary" />
+              </span>
+            )}
+            {!isFreeTrial && purchased && status === 'homework' && available && <span className={styles.statusHomework}>!</span>}
+          </span>
+        </button>
+      </li>
+    )
+  }
+
+  if (!weekGroups) {
+    return (
+      <ul className={styles.list}>
+        {lessons.map((lesson, index) => renderLesson(lesson, index))}
+      </ul>
+    )
+  }
+
+  const toggleWeek = (week) => {
+    setOpenWeeks((prev) => {
+      const next = new Set(prev)
+      if (next.has(week)) next.delete(week)
+      else next.add(week)
+      return next
+    })
+  }
+
   return (
-    <ul className={styles.list}>
-      {lessons.map((lesson, index) => {
-        const available = lessonAvailable(index)
-        const status = lessonStatus(index)
-        const active = selectedLesson === index
-        const disabled = !canSelectLesson(index)
-        const description = getLessonDescription(lesson, lang)
+    <div className={styles.weeks}>
+      {weekGroups.map((group) => {
+        const open = openWeeks.has(group.week)
+        const lessonsWord = lang === 'ru'
+          ? `${group.items.length} ${group.items.length === 1 ? 'урок' : group.items.length < 5 ? 'урока' : 'уроков'}`
+          : `${group.items.length} lesson${group.items.length === 1 ? '' : 's'}`
 
         return (
-          <li key={lesson.id}>
+          <section key={group.week} className={styles.weekGroup}>
             <button
               type="button"
-              className={`${styles.item} ${active ? styles.itemActive : ''} ${disabled ? styles.itemDisabled : ''}`}
-              onClick={() => !disabled && onSelectLesson(index)}
-              disabled={disabled}
-              aria-current={active ? 'true' : undefined}
+              className={styles.weekHead}
+              onClick={() => toggleWeek(group.week)}
+              aria-expanded={open}
             >
-              <span className={styles.num}>{index + 1}</span>
-              <span className={styles.content}>
-                <span className={styles.title}>{getLessonDisplayTitle(lesson, lang)}</span>
-                {description && <span className={styles.desc}>{description}</span>}
+              <span className={styles.weekHeadText}>
+                <span className={styles.weekTitle}>
+                  {group.kind === 'module'
+                    ? (lang === 'ru' ? `Модуль ${group.week}` : `Module ${group.week}`)
+                    : (lang === 'ru' ? `Неделя ${group.week}` : `Week ${group.week}`)}
+                  <span className={styles.weekCount}>{lessonsWord}</span>
+                </span>
+                {group.goal && <span className={styles.weekGoal}>{group.goal}</span>}
               </span>
-              <span className={styles.status} aria-hidden>
-                {isFreeTrial && <span className={styles.statusOpen}>●</span>}
-                {!isFreeTrial && index === 0 && <span className={styles.statusFree}>●</span>}
-                {!isFreeTrial && index > 0 && !purchased && <span className={styles.statusLock}>🔒</span>}
-                {!isFreeTrial && purchased && status === 'open' && <span className={styles.statusOpen}>●</span>}
-                {!isFreeTrial && purchased && status === 'review' && <span className={styles.statusReview}>◐</span>}
-                {!isFreeTrial && purchased && status === 'homework' && !available && <span className={styles.statusLock}>🔒</span>}
-                {!isFreeTrial && purchased && status === 'homework' && available && <span className={styles.statusHomework}>!</span>}
+              <span className={`${styles.weekChevron} ${open ? styles.weekChevronOpen : ''}`} aria-hidden>
+                <IconChevronDown />
               </span>
             </button>
-          </li>
+            {open && (
+              <ul className={styles.list}>
+                {group.items.map(({ lesson, index }) => renderLesson(lesson, index))}
+              </ul>
+            )}
+          </section>
         )
       })}
-    </ul>
+    </div>
   )
 }

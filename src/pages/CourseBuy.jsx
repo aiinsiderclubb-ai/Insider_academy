@@ -228,8 +228,8 @@ export function CourseBuy() {
             )}
 
             <div className={styles.trustRow}>
-              <span className={styles.trustBadge}>🔒 {lang === 'ru' ? 'Безопасная оплата' : 'Secure payment'}</span>
-              <span className={styles.trustBadge}>⚡ {lang === 'ru' ? 'Мгновенный доступ' : 'Instant access'}</span>
+              <span className={styles.trustBadge}>{lang === 'ru' ? 'Безопасная оплата' : 'Secure payment'}</span>
+              <span className={styles.trustBadge}>{lang === 'ru' ? 'Мгновенный доступ' : 'Instant access'}</span>
             </div>
 
             {showLessonPreview && (

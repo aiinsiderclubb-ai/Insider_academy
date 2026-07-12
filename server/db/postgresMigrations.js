@@ -16,6 +16,9 @@ export async function runPostgresMigrations(pool) {
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TEXT',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TEXT',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS personal_id TEXT',
+    'ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT',
+    'ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub TEXT',
+    'ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_sub TEXT',
     'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS personal_id TEXT',
     'ALTER TABLE reviews ADD COLUMN IF NOT EXISTS contact_email TEXT',
     "ALTER TABLE reviews ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'",
@@ -79,6 +82,16 @@ export async function runPostgresMigrations(pool) {
       note TEXT,
       created_at TEXT NOT NULL,
       paid_at TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS giveaway_entries (
+      id TEXT PRIMARY KEY,
+      giveaway_id TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      email TEXT NOT NULL,
+      telegram_username TEXT,
+      telegram_verified INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL,
+      UNIQUE(giveaway_id, user_id)
     )`,
   ]
 

@@ -1,0 +1,27 @@
+.wrap {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  min-height: 120px;
+}
+
+.host {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+}
+
+.host iframe {
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+.fallback {
+  padding: 32px 20px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  border-radius: 16px;
+  border: 1px dashed var(--border);
+}

@@ -290,7 +290,7 @@
 
 .uploadBtn:hover:not(:disabled) {
   border-color: var(--glow-purple);
-  box-shadow: 0 0 12px var(--glow-purple-dim);
+  box-shadow: none;
 }
 
 .uploadBtn:disabled {
@@ -324,7 +324,7 @@
 .input:focus {
   outline: none;
   border-color: var(--glow-purple);
-  box-shadow: 0 0 0 3px var(--glow-purple-dim);
+  box-shadow: 0 0 0 2px var(--border-strong);
 }
 
 .btnPrimary,

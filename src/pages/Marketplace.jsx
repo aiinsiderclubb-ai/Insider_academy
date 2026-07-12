@@ -7,6 +7,8 @@ import { MarketplaceHero } from '../components/marketplace/MarketplaceHero'
 import { MarketplacePerksBar } from '../components/marketplace/MarketplacePerksBar'
 import { MarketplaceProductCard } from '../components/marketplace/MarketplaceProductCard'
 import { MARKETPLACE_CATEGORIES } from '../data/marketplace/categories'
+import { MARKETPLACE_PRODUCTS } from '../data/marketplace/products'
+import { UiIcon } from '../components/UiIcon'
 import {
   getRecommendedMarketplaceProducts,
   searchMarketplaceProducts,
@@ -17,6 +19,8 @@ import {
   toggleMarketplaceFavorite,
 } from '../utils/marketplaceFavorites'
 import { ScrollReveal } from '../components/ScrollReveal'
+import { StaggerReveal } from '../components/StaggerReveal'
+import { EmptyState } from '../components/EmptyState'
 import styles from './Marketplace.module.css'
 
 const SORT_OPTIONS = [
@@ -81,8 +85,27 @@ export function Marketplace() {
     [purchases]
   )
 
-  const catalogProducts = useMemo(
-    () => searchMarketplaceProducts(query, { categoryId: category, sort }),
+  const featuredHits = useMemo(
+    () => MARKETPLACE_PRODUCTS.filter((p) => p.badge === 'hit').slice(0, 2),
+    []
+  )
+
+  const showFeatured = !query && category === 'all'
+
+  const featuredIds = useMemo(
+    () => (showFeatured ? featuredHits.map((p) => p.id) : []),
+    [showFeatured, featuredHits]
+  )
+
+  const catalogProducts = useMemo(() => {
+    const list = searchMarketplaceProducts(query, { categoryId: category, sort })
+    if (!featuredIds.length) return list
+    const exclude = new Set(featuredIds)
+    return list.filter((p) => !exclude.has(p.id))
+  }, [query, category, sort, featuredIds])
+
+  const resultCount = useMemo(
+    () => searchMarketplaceProducts(query, { categoryId: category, sort }).length,
     [query, category, sort]
   )
 
@@ -90,7 +113,7 @@ export function Marketplace() {
     setFavorites(toggleMarketplaceFavorite(productId))
   }, [])
 
-  const renderCard = (product) => (
+  const renderCard = (product, featured = false) => (
     <MarketplaceProductCard
       key={product.id}
       product={product}
@@ -100,6 +123,7 @@ export function Marketplace() {
       purchases={purchases}
       favorite={favorites.includes(product.id)}
       onToggleFavorite={handleFavorite}
+      featured={featured}
     />
   )
 
@@ -138,91 +162,126 @@ export function Marketplace() {
           />
         ) : (
           <>
-        {recommended.length > 0 && !query && category === 'all' && (
-          <ScrollReveal>
-            <section className={styles.section}>
-              <div className={styles.sectionHead}>
-                <div>
-                  <h2 className={styles.sectionTitle}>
-                    {ru ? 'Рекомендуем для вас' : 'Recommended for you'}
-                  </h2>
-                  <p className={styles.sectionDesc}>
+            {recommended.length > 0 && !query && category === 'all' && (
+              <ScrollReveal>
+                <section className={styles.section}>
+                  <div className={styles.sectionHead}>
+                    <div>
+                      <h2 className={styles.sectionTitle}>
+                        {ru ? 'Рекомендуем для вас' : 'Recommended for you'}
+                      </h2>
+                      <p className={styles.sectionDesc}>
+                        {ru
+                          ? 'На основе ваших курсов и покупок'
+                          : 'Based on your courses and purchases'}
+                      </p>
+                    </div>
+                  </div>
+                  <StaggerReveal className={styles.grid} stagger={60}>
+                    {recommended.map((p) => renderCard(p))}
+                  </StaggerReveal>
+                </section>
+              </ScrollReveal>
+            )}
+
+            <section id="catalog" className={styles.section}>
+              <div className={styles.toolbar}>
+                <div className={styles.toolbarRow}>
+                  <input
+                    type="search"
+                    className={styles.search}
+                    placeholder={ru ? 'Поиск…' : 'Search…'}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    aria-label={ru ? 'Поиск по Marketplace' : 'Search marketplace'}
+                  />
+
+                  <div className={styles.chips} role="tablist" aria-label={ru ? 'Категории' : 'Categories'}>
+                    <button
+                      type="button"
+                      className={`${styles.catBtn} ${category === 'all' ? styles.catActive : ''}`}
+                      onClick={() => setCategory('all')}
+                    >
+                      {ru ? 'Все' : 'All'}
+                    </button>
+                    {MARKETPLACE_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        className={`${styles.catBtn} ${category === cat.id ? styles.catActive : ''}`}
+                        onClick={() => setCategory(cat.id)}
+                      >
+                        <UiIcon
+                          name={cat.icon}
+                          variant="chip"
+                          tone={category === cat.id ? 'accent' : 'secondary'}
+                        />
+                        {ru ? cat.titleRu : cat.titleEn}
+                      </button>
+                    ))}
+                  </div>
+
+                  <select
+                    className={styles.sort}
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value)}
+                    aria-label={ru ? 'Сортировка' : 'Sort'}
+                  >
+                    {SORT_OPTIONS.map((opt) => (
+                      <option key={opt.id} value={opt.id}>
+                        {ru ? opt.ru : opt.en}
+                      </option>
+                    ))}
+                  </select>
+
+                  <span className={styles.resultCount}>
+                    {resultCount}{' '}
                     {ru
-                      ? 'На основе ваших курсов и покупок'
-                      : 'Based on your courses and purchases'}
-                  </p>
+                      ? resultCount === 1
+                        ? 'товар'
+                        : resultCount < 5
+                          ? 'товара'
+                          : 'товаров'
+                      : resultCount === 1
+                        ? 'product'
+                        : 'products'}
+                  </span>
                 </div>
               </div>
-              <div className={styles.grid}>{recommended.map(renderCard)}</div>
-            </section>
-          </ScrollReveal>
-        )}
 
-        <section id="catalog" className={styles.section}>
-          <ScrollReveal>
-            <div className={styles.toolbar}>
-              <div className={styles.searchRow}>
-                <input
-                  type="search"
-                  className={styles.search}
-                  placeholder={ru ? 'Поиск по Marketplace…' : 'Search marketplace…'}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+              {showFeatured && featuredHits.length > 0 && (
+                <StaggerReveal className={styles.featuredRow} stagger={60}>
+                  {featuredHits.map((p) => renderCard(p, true))}
+                </StaggerReveal>
+              )}
+
+              {catalogProducts.length === 0 && !(showFeatured && featuredHits.length) ? (
+                <EmptyState
+                  message={ru ? 'Ничего не найдено по текущим фильтрам' : 'No results for current filters'}
+                  actionLabel={ru ? 'Сбросить фильтры' : 'Reset filters'}
+                  onAction={() => {
+                    setQuery('')
+                    setCategory('all')
+                    setSort('popular')
+                  }}
                 />
-                <select
-                  className={styles.sort}
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                  aria-label={ru ? 'Сортировка' : 'Sort'}
-                >
-                  {SORT_OPTIONS.map((opt) => (
-                    <option key={opt.id} value={opt.id}>
-                      {ru ? opt.ru : opt.en}
-                    </option>
+              ) : catalogProducts.length > 0 ? (
+                <StaggerReveal className={styles.grid} stagger={60}>
+                  {catalogProducts.map((p) => renderCard(p))}
+                </StaggerReveal>
+              ) : null}
+            </section>
+
+            <ScrollReveal>
+              <aside className={styles.future}>
+                <h3>{ru ? 'Скоро в Marketplace' : 'Coming soon'}</h3>
+                <ul>
+                  {(ru ? FUTURE_RU : FUTURE_EN).map((item) => (
+                    <li key={item}>{item}</li>
                   ))}
-                </select>
-              </div>
-              <div className={styles.categories} role="tablist">
-                <button
-                  type="button"
-                  className={`${styles.catBtn} ${category === 'all' ? styles.catActive : ''}`}
-                  onClick={() => setCategory('all')}
-                >
-                  {ru ? 'Все' : 'All'}
-                </button>
-                {MARKETPLACE_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    className={`${styles.catBtn} ${category === cat.id ? styles.catActive : ''}`}
-                    onClick={() => setCategory(cat.id)}
-                  >
-                    {cat.icon} {ru ? cat.titleRu : cat.titleEn}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </ScrollReveal>
-
-          {catalogProducts.length === 0 ? (
-            <p className={styles.empty}>{ru ? 'Ничего не найдено' : 'No products found'}</p>
-          ) : (
-            <div className={`${styles.grid} stagger-grid`}>
-              {catalogProducts.map(renderCard)}
-            </div>
-          )}
-        </section>
-
-        <ScrollReveal>
-          <aside className={styles.future}>
-            <h3>{ru ? 'Скоро в Marketplace' : 'Coming soon'}</h3>
-            <ul>
-              {(ru ? FUTURE_RU : FUTURE_EN).map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </aside>
-        </ScrollReveal>
+                </ul>
+              </aside>
+            </ScrollReveal>
           </>
         )}
       </div>

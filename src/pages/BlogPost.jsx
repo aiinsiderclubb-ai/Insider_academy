@@ -1,13 +1,13 @@
 import { useParams, Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { getBlogPostBySlug } from '../api/blogStore'
+import { getBlogPostLang, getBlogPostLocale } from '../data/blog'
 import styles from './BlogPost.module.css'
 
 export function BlogPost() {
   const { slug } = useParams()
   const post = getBlogPostBySlug(slug)
   const { t, lang } = useLanguage()
-  const locale = lang === 'en' ? 'en-US' : 'ru-RU'
 
   if (!post) {
     return (
@@ -20,6 +20,7 @@ export function BlogPost() {
     )
   }
 
+  const postLang = getBlogPostLang(post)
   const title = lang === 'en' && post.titleEn ? post.titleEn : post.title
   const excerpt = lang === 'en' && post.excerptEn ? post.excerptEn : post.excerpt
   const category = lang === 'en' && post.categoryEn ? post.categoryEn : post.category
@@ -28,15 +29,24 @@ export function BlogPost() {
     <div className={styles.wrap}>
       <article className={styles.container}>
         <Link to="/blog" className={styles.back}>{t('blogPost.backToBlog')}</Link>
-        <span className={styles.category}>{category}</span>
+        <div className={styles.metaRow}>
+          <span className={styles.category}>{category}</span>
+          {postLang === 'uk' && (
+            <span className={styles.langTag} title={lang === 'ru' ? 'Українська' : 'Ukrainian'}>UA</span>
+          )}
+          {postLang === 'ru' && <span className={`${styles.langTag} ${styles.langTagRu}`}>RU</span>}
+        </div>
         <h1 className={styles.title}>{title}</h1>
         <time className={styles.date} dateTime={post.date}>
-          {new Date(post.date).toLocaleDateString(locale, {
+          {new Date(post.date).toLocaleDateString(getBlogPostLocale(post), {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
           })}
         </time>
+        {postLang === 'uk' && lang === 'ru' && (
+          <p className={styles.langNote}>Статья на украинском языке.</p>
+        )}
         <div className={styles.body}>
           <p>{excerpt || title || (lang === 'ru' ? 'Содержание статьи.' : 'Article content.')}</p>
           <p>{lang === 'ru' ? 'Полная версия статьи доступна на сайте AI Insider.' : 'Full article available on AI Insider website.'}</p>

@@ -5,7 +5,11 @@
   <url><loc>https://myinsideracademy.com/learning-map</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://myinsideracademy.com/marketplace?tab=vault</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://myinsideracademy.com/marketplace</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://myinsideracademy.com/giveaway</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://myinsideracademy.com/events</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://myinsideracademy.com/oferta</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://myinsideracademy.com/privacy</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://myinsideracademy.com/refund</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://myinsideracademy.com/giveaway-rules</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://myinsideracademy.com/giveaway/claude-pro</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://myinsideracademy.com/memberships</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://myinsideracademy.com/blog</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>

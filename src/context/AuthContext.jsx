@@ -362,6 +362,21 @@ export function AuthProvider({ children }) {
     return res
   }, [apiMode, setUser, applyReferral, completeAuthSession])
 
+  const loginWithOAuth = useCallback(async (provider, idToken, fullName) => {
+    const online = apiMode || await checkApiOnline({ wake: true })
+    if (!online) {
+      const err = new Error('API unreachable')
+      err.network = true
+      throw err
+    }
+    const res = await api.oauth(provider, idToken, fullName)
+    if (!res?.token || !res?.user) {
+      throw new Error('OAuth failed')
+    }
+    clearPendingVerifyEmail()
+    return completeAuthSession(res.token, res.user)
+  }, [apiMode, completeAuthSession])
+
   const logout = useCallback(() => {
     const prevEmail = user?.email
     setUserState(null)
@@ -445,6 +460,7 @@ export function AuthProvider({ children }) {
       value={{
         user,
         login,
+        loginWithOAuth,
         register,
         logout,
         refreshUser,

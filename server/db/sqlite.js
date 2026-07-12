@@ -323,6 +323,9 @@ function migrateColumns(db) {
   if (!cols.includes('last_login_at')) add('ALTER TABLE users ADD COLUMN last_login_at TEXT')
   if (!cols.includes('personal_id')) add('ALTER TABLE users ADD COLUMN personal_id TEXT')
   if (!cols.includes('telegram_username')) add('ALTER TABLE users ADD COLUMN telegram_username TEXT')
+  if (!cols.includes('auth_provider')) add('ALTER TABLE users ADD COLUMN auth_provider TEXT')
+  if (!cols.includes('google_sub')) add('ALTER TABLE users ADD COLUMN google_sub TEXT')
+  if (!cols.includes('apple_sub')) add('ALTER TABLE users ADD COLUMN apple_sub TEXT')
 
   const regCols = db.prepare('PRAGMA table_info(registrations)').all().map((c) => c.name)
   if (!regCols.includes('personal_id')) add('ALTER TABLE registrations ADD COLUMN personal_id TEXT')
@@ -404,6 +407,17 @@ CREATE TABLE IF NOT EXISTS telegram_link_tokens (
   used INTEGER DEFAULT 0,
   used_at TEXT,
   created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS giveaway_entries (
+  id TEXT PRIMARY KEY,
+  giveaway_id TEXT NOT NULL,
+  user_id INTEGER NOT NULL,
+  email TEXT NOT NULL,
+  telegram_username TEXT,
+  telegram_verified INTEGER DEFAULT 0,
+  created_at TEXT NOT NULL,
+  UNIQUE(giveaway_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS peer_reviews (

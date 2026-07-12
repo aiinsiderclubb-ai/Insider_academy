@@ -3,6 +3,7 @@ export const ACHIEVEMENTS = [
   { id: 'first_hw', titleRu: 'Первое ДЗ', titleEn: 'First homework', descRu: 'Сдали домашнее задание', descEn: 'Submitted homework', icon: '📝' },
   { id: 'streak_3', titleRu: 'Серия 3 дня', titleEn: '3-day streak', descRu: '3 дня подряд в обучении', descEn: '3 days in a row', icon: '🔥' },
   { id: 'streak_7', titleRu: 'Серия 7 дней', titleEn: '7-day streak', descRu: 'Неделя без перерыва', descEn: 'Week without break', icon: '⚡' },
+  { id: 'streak_14', titleRu: 'Серия 14 дней', titleEn: '14-day streak', descRu: 'Две недели подряд', descEn: 'Two weeks in a row', icon: '💎' },
   { id: 'course_50', titleRu: 'Полпути', titleEn: 'Halfway', descRu: '50% курса пройдено', descEn: '50% of course done', icon: '🎯' },
   { id: 'course_100', titleRu: 'Выпускник', titleEn: 'Graduate', descRu: 'Курс завершён на 100%', descEn: 'Course 100% complete', icon: '🏆' },
   { id: 'reviewer', titleRu: 'Критик', titleEn: 'Reviewer', descRu: 'Оставили отзыв', descEn: 'Left a review', icon: '⭐' },
@@ -21,6 +22,7 @@ export function computeAchievements({ progress, purchases, reviews, streak }) {
   }
   if ((streak?.current || 0) >= 3) unlocked.add('streak_3')
   if ((streak?.current || 0) >= 7) unlocked.add('streak_7')
+  if ((streak?.current || 0) >= 14) unlocked.add('streak_14')
   if ((reviews?.length || 0) >= 1) unlocked.add('reviewer')
   if ((purchases?.length || 0) >= 1 && unlocked.size === 0) unlocked.add('first_lesson')
   return ACHIEVEMENTS.filter((a) => unlocked.has(a.id))

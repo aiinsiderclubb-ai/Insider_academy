@@ -25,10 +25,10 @@ const IMAGES = {
 
 function baseCourse({
   id, slug, title, titleEn, shortDescription, shortDescriptionEn,
-  fullDescription, fullDescriptionEn, priceEur, duration, durationEn,
+  fullDescription, fullDescriptionEn, priceEur, oldPriceEur, duration, durationEn,
   category, categoryEn, goals, goalsEn, tools, skills, audience, audienceEn,
   finalProject, finalProjectEn, image, lessons, isFreeTrial, level = 'Basic',
-  hasHomework = false, catalogHidden = false,
+  hasHomework = false, catalogHidden = false, badge, faq,
 }) {
   return {
     id,
@@ -45,6 +45,9 @@ function baseCourse({
     durationEn,
     price: 0,
     priceEur: priceEur ?? 0,
+    oldPriceEur: oldPriceEur ?? null,
+    badge: badge ?? null,
+    faq: faq ?? null,
     isFreeTrial: isFreeTrial ?? priceEur === 0,
     image,
     category,
@@ -180,6 +183,7 @@ const rawAcademyCourses = [
     fullDescriptionEn:
       'ChatGPT, Claude, Gemini, Perplexity, Deep Research, documents, spreadsheets, meetings, sales and a personal AI stack. Capstone: your productivity system.',
     priceEur: 29,
+    oldPriceEur: 39,
     duration: getLessonCountLabel('ai-productivity-master', 'ru'),
     durationEn: getLessonCountLabel('ai-productivity-master', 'en'),
     category: 'Продуктивность',
@@ -210,6 +214,9 @@ const rawAcademyCourses = [
     fullDescriptionEn:
       'Canva AI, Midjourney, Flux, Runway, Kling, Veo, Shorts/Reels and publishing automation. Capstone: full content pipeline.',
     priceEur: 39,
+    oldPriceEur: 49,
+    badge: 'new',
+    level: 'Pro',
     duration: getLessonCountLabel('ai-content-creator', 'ru'),
     durationEn: getLessonCountLabel('ai-content-creator', 'en'),
     category: 'Контент',
@@ -239,6 +246,23 @@ const rawAcademyCourses = [
     fullDescriptionEn:
       'Automations, Telegram/WhatsApp, CRM, AI support agent, ElevenLabs, Vapi, Retell and client delivery.',
     priceEur: 59,
+    oldPriceEur: 79,
+    badge: 'trend-2026',
+    level: 'Pro',
+    faq: [
+      {
+        q: 'Нужен ли опыт в n8n перед этим курсом?',
+        qEn: 'Do I need n8n experience before this course?',
+        a: 'Нет. Первые уроки закрывают базу n8n. Если хотите мягкий старт — пройдите бесплатный «First Automation in n8n», он идеально готовит к этому курсу.',
+        aEn: 'No. The first lessons cover n8n basics. For a softer start, take the free "First Automation in n8n" — it prepares you for this course.',
+      },
+      {
+        q: 'Смогу ли я брать клиентов после курса?',
+        qEn: 'Will I be able to take clients after the course?',
+        a: 'Да, в программе есть блок работы с клиентами: как оформить оффер, передать проект и поддерживать автоматизации в продакшене.',
+        aEn: 'Yes — the program includes a client-delivery block: offers, project handover and maintaining automations in production.',
+      },
+    ],
     duration: getLessonCountLabel('ai-automation-engineer', 'ru'),
     durationEn: getLessonCountLabel('ai-automation-engineer', 'en'),
     category: 'Автоматизация',
@@ -270,6 +294,23 @@ const rawAcademyCourses = [
     fullDescriptionEn:
       'Agent architecture, MCP, embeddings, vector DB, LangChain, CrewAI, LangGraph, memory and monitoring.',
     priceEur: 79,
+    oldPriceEur: 99,
+    badge: 'hit',
+    level: 'Pro',
+    faq: [
+      {
+        q: 'Это курс для разработчиков или можно без кода?',
+        qEn: 'Is this a developer course or can I do it without code?',
+        a: 'Курс ближе к low-code: часть блоков (RAG, LangGraph) требует базового понимания Python, но каждый шаг разобран в видео на готовых шаблонах.',
+        aEn: 'It is low-code: some blocks (RAG, LangGraph) need basic Python understanding, but every step is shown in video with ready templates.',
+      },
+      {
+        q: 'Чем этот курс отличается от Automation Engineer?',
+        qEn: 'How is it different from Automation Engineer?',
+        a: 'Automation Engineer — про workflow и ботов в n8n. Agent Engineer — про полноценных AI-агентов: память, RAG, tool calling, multi-agent системы и деплой.',
+        aEn: 'Automation Engineer covers n8n workflows and bots. Agent Engineer covers full AI agents: memory, RAG, tool calling, multi-agent systems and deployment.',
+      },
+    ],
     duration: getLessonCountLabel('ai-agent-engineer', 'ru'),
     durationEn: getLessonCountLabel('ai-agent-engineer', 'en'),
     category: 'AI-агенты',
@@ -301,6 +342,8 @@ const rawAcademyCourses = [
     fullDescriptionEn:
       'From niche to Stripe: landing, outreach, discovery calls, delivery, Lovable, Bolt, Replit and scaling.',
     priceEur: 79,
+    oldPriceEur: 99,
+    level: 'Pro',
     duration: getLessonCountLabel('ai-business-builder', 'ru'),
     durationEn: getLessonCountLabel('ai-business-builder', 'en'),
     category: 'Бизнес',

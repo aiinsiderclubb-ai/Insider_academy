@@ -36,6 +36,13 @@ import { Admin } from './pages/Admin'
 import { AcceleratorApply } from './pages/AcceleratorApply'
 import { LearningMap } from './pages/LearningMap'
 import { Giveaway } from './pages/Giveaway'
+import { Events } from './pages/Events'
+import { PublicOffer } from './pages/PublicOffer'
+import { PrivacyPolicy } from './pages/PrivacyPolicy'
+import { RefundPolicy } from './pages/RefundPolicy'
+import { GiveawayRules } from './pages/GiveawayRules'
+import { Onboarding } from './pages/Onboarding'
+import { NotFound } from './pages/NotFound'
 import { ToastProvider } from './context/ToastContext'
 import { LEGACY_SLUG_REDIRECTS, LEGACY_PACK_REDIRECTS } from './data/courseAliases'
 function ProtectedRoute({ children }) {
@@ -77,7 +84,8 @@ function AppContent() {
           <Route path="/memberships/:tier" element={<MembershipPlan />} />
           <Route path="/club" element={<Memberships />} />
           <Route path="/learning-map" element={<LearningMap />} />
-          <Route path="/giveaway" element={<Giveaway />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/giveaway" element={<Navigate to="/events" replace />} />
           <Route path="/giveaway/:slug" element={<Giveaway />} />
           <Route path="/courses/ai-insider-accelerator/apply" element={<AcceleratorApply />} />
           {Object.entries(LEGACY_SLUG_REDIRECTS).map(([from, to]) => (
@@ -88,6 +96,7 @@ function AppContent() {
           ))}
           <Route path="/courses/:slug" element={<Course />} />
           <Route path="/courses/:slug/buy" element={<CourseBuy />} />
+          <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
           <Route path="/cabinet" element={<ProtectedRoute><Cabinet /></ProtectedRoute>} />
           <Route path="/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
           <Route path="/blog" element={<Blog />} />
@@ -98,8 +107,12 @@ function AppContent() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/oferta" element={<PublicOffer />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/refund" element={<RefundPolicy />} />
+          <Route path="/giveaway-rules" element={<GiveawayRules />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
       </ToastProvider>

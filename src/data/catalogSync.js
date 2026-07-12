@@ -55,6 +55,9 @@ export function isCatalogStale(storedList) {
     if (!stored) return true
     if (lessonsNeedSync(stored.lessons, def.lessons)) return true
     if (Number(stored.priceEur ?? 0) !== Number(def.priceEur ?? 0)) return true
+    if ((stored.oldPriceEur ?? null) !== (def.oldPriceEur ?? null)) return true
+    if ((stored.badge ?? null) !== (def.badge ?? null)) return true
+    if ((stored.level ?? 'Basic') !== (def.level ?? 'Basic')) return true
     if ((stored.image || '') !== (def.image || '')) return true
     if (Boolean(def.hasHomework) !== Boolean(stored.hasHomework)) return true
     if (def.weeks?.length && (stored.weeks?.length || 0) !== def.weeks.length) return true

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { getLessonCountLabel } from '../data/courseLessonPrograms'
 import { isAcceleratorCourse } from '../data/courseCatalog'
 import { getCourseField, getLessonDisplayTitle, getLessonDescription } from '../data/courses'
-import { getAudienceList, COURSE_FAQ } from '../data/courseLanding'
+import { getAudienceList, COURSE_FAQ, INSTRUCTOR } from '../data/courseLanding'
 import { CERTIFICATE_INFO, COURSE_DETAIL_SECTIONS, TOOLS_BY_COURSE } from '../data/courseDetailContent'
 import { COURSE_BUNDLES } from '../data/coursePacks'
 import { ACCELERATOR_OFFER } from '../data/promo'
@@ -35,6 +35,7 @@ export function CourseLandingSections({ course, lang, purchased, priceEur }) {
   const cert = lang === 'en' ? CERTIFICATE_INFO.en : CERTIFICATE_INFO.ru
   const showEnroll = !purchased || isFree
   const recommendedBundles = COURSE_BUNDLES.filter((bundle) => bundle.courseIds.includes(course.id))
+  const faqItems = [...(course.faq || []), ...COURSE_FAQ]
 
   return (
     <div className={styles.sections}>
@@ -128,6 +129,38 @@ export function CourseLandingSections({ course, lang, purchased, priceEur }) {
         </ScrollReveal>
       )}
 
+      <ScrollReveal delay={150}>
+        <section className={styles.sectionCard} id="instructor">
+          <h2 className={styles.sectionTitle}>
+            {lang === 'ru' ? 'Кто ведёт курс' : 'Your instructor'}
+          </h2>
+          <div className={styles.instructor}>
+            <img
+              src={INSTRUCTOR.avatar}
+              alt={INSTRUCTOR.name}
+              className={styles.instructorAvatar}
+              loading="lazy"
+            />
+            <div className={styles.instructorBody}>
+              <strong className={styles.instructorName}>
+                {lang === 'ru' ? INSTRUCTOR.nameRu : INSTRUCTOR.name}
+              </strong>
+              <span className={styles.instructorRole}>
+                {lang === 'ru' ? INSTRUCTOR.roleRu : INSTRUCTOR.role}
+              </span>
+              <p className={styles.instructorBio}>
+                {lang === 'ru' ? INSTRUCTOR.bioRu : INSTRUCTOR.bio}
+              </p>
+              <div className={styles.instructorStats}>
+                {(lang === 'ru' ? INSTRUCTOR.statsRu : INSTRUCTOR.statsEn).map((item) => (
+                  <span key={item} className={styles.toolChip}>{item}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      </ScrollReveal>
+
       {recommendedBundles.length > 0 && (
         <ScrollReveal delay={160}>
           <CourseBundleOffers
@@ -146,7 +179,7 @@ export function CourseLandingSections({ course, lang, purchased, priceEur }) {
         <section className={styles.sectionCard} id="faq">
           <h2 className={styles.sectionTitle}>{sectionTitle('faq', lang)}</h2>
           <div className={styles.faqList}>
-            {COURSE_FAQ.map((item, i) => {
+            {faqItems.map((item, i) => {
               const open = openFaq === i
               return (
                 <div key={i} className={styles.faqItem}>

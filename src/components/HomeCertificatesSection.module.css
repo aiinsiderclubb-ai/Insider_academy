@@ -114,9 +114,7 @@
   width: min(100%, 380px);
   border-radius: 14px;
   overflow: hidden;
-  box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.45),
-    0 0 40px rgba(168, 85, 247, 0.15);
+  box-shadow: none;
   border: 1px solid color-mix(in srgb, var(--glow-purple) 30%, var(--border));
   background: var(--bg-card);
   animation: certFloat 5s ease-in-out infinite;
@@ -124,9 +122,7 @@
 }
 
 .card:hover {
-  box-shadow:
-    0 32px 70px rgba(0, 0, 0, 0.5),
-    0 0 50px rgba(168, 85, 247, 0.25);
+  box-shadow: none;
   z-index: 3 !important;
 }
 

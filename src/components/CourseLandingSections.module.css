@@ -127,6 +127,59 @@
   color: var(--text);
 }
 
+.instructor {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.instructorAvatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-strong);
+  flex-shrink: 0;
+}
+
+.instructorBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.instructorName {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.instructorRole {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.instructorBio {
+  margin: 8px 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.instructorStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (max-width: 560px) {
+  .instructor {
+    flex-direction: column;
+  }
+}
+
 .certList {
   list-style: none;
   margin: 12px 0 0;

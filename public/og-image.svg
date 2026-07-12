@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#0A0A12"/>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C5CFF" stop-opacity="0.45"/>
+      <stop offset="0.55" stop-color="#7C5CFF" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#0A0A12" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <rect x="64" y="64" width="1072" height="502" rx="24" stroke="rgba(255,255,255,0.08)" fill="rgba(18,18,28,0.55)"/>
+  <text x="100" y="220" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="500" letter-spacing="4" fill="#7C5CFF">AI INSIDER</text>
+  <text x="100" y="310" font-family="ui-sans-serif, system-ui, sans-serif" font-size="72" font-weight="700" fill="#F2F2F8">Academy</text>
+  <text x="100" y="380" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28" fill="#9B9BAF">C@AK · Marketplace · Vault · Club</text>
+  <rect x="100" y="440" width="160" height="48" rx="8" fill="#7C5CFF"/>
+  <text x="128" y="471" font-family="ui-monospace, monospace" font-size="18" font-weight="500" fill="#FFFFFF">v2.1.0</text>
+</svg>

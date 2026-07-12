@@ -1,0 +1,23 @@
+.grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.15;
+  --px: 0px;
+  --py: 0px;
+  background-image:
+    linear-gradient(var(--border-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-strong) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: calc(50% + var(--px)) calc(50% + var(--py));
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 75%);
+  transition: background-position 0.15s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid {
+    display: none;
+  }
+}

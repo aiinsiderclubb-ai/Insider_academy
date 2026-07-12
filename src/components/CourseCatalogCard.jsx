@@ -4,6 +4,7 @@ import { isAcceleratorCourse } from '../data/courseCatalog'
 import { getCourseThemeStyle } from '../data/courseThemes'
 import { CourseCover } from './CourseCover'
 import { CourseBuyAction } from './CourseBuyAction'
+import { ProductBadge } from './ProductBadge'
 import styles from './CourseCatalogCard.module.css'
 
 export function CourseCatalogCard({
@@ -15,6 +16,7 @@ export function CourseCatalogCard({
   completedLabel,
   priceLabel,
   actionLabel,
+  featured = false,
 }) {
   const title = getCourseField(course, 'title', lang)
   const description = getCourseDescription(course, lang)
@@ -23,6 +25,10 @@ export function CourseCatalogCard({
   const isIntake = isAcceleratorCourse(course)
   const isFree = (course.priceEur ?? 0) === 0 && !isIntake
   const price = course.priceEur ?? Math.round((course.price || 0) / 100)
+  const oldPrice = course.oldPriceEur && course.oldPriceEur > price ? course.oldPriceEur : null
+  const level = course.level === 'Pro'
+    ? (lang === 'ru' ? 'Продвинутый' : 'Advanced')
+    : (lang === 'ru' ? 'Базовый' : 'Beginner')
   const detailsPath = `/courses/${course.slug}`
   const primaryPath = isIntake
     ? `/courses/${course.slug}/apply`
@@ -40,17 +46,25 @@ export function CourseCatalogCard({
 
   return (
     <article
-      className={styles.card}
+      className={`${styles.card} ${featured ? styles.featured : ''}`}
       style={getCourseThemeStyle(course.id, theme)}
     >
       <Link to={detailsPath} className={styles.imageWrap} aria-label={title}>
         <CourseCover src={course.image} courseId={course.id} showBrand={false} />
+        {course.badge && <ProductBadge type={course.badge} lang={lang} />}
         {purchased && !isFree && !isIntake && percent != null && completedLabel && (
           <span className={styles.progressBadge}>{percent}% {completedLabel}</span>
         )}
       </Link>
 
       <div className={styles.body}>
+        <div className={styles.metaTop}>
+          <span className={styles.metaChip}>{duration}</span>
+          <span className={styles.metaChip}>
+            {lang === 'ru' ? '100% асинхронно' : '100% async'}
+          </span>
+        </div>
+
         <div className={styles.badges}>
           <span className={styles.category}>{category}</span>
           {isIntake && (
@@ -67,11 +81,21 @@ export function CourseCatalogCard({
 
         <div className={styles.meta}>
           <span>{duration}</span>
+          <span className={styles.metaDot} aria-hidden>·</span>
+          <span>{level}</span>
         </div>
 
         {!isFree && !isIntake && (
           <div className={styles.priceBlock}>
-            <span className={styles.priceMain}>{priceLabel || `${price}€`}</span>
+            <div className={styles.priceRow}>
+              <span className={styles.priceMain}>{priceLabel || `${price}€`}</span>
+              {oldPrice && !priceLabel && (
+                <span className={styles.priceOld}>{oldPrice}€</span>
+              )}
+            </div>
+            <span className={styles.priceNote}>
+              {lang === 'ru' ? 'Оплата частями без комиссии' : 'Split payments, no fees'}
+            </span>
           </div>
         )}
 

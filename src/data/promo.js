@@ -1,6 +1,8 @@
 /** Промо-видео: YouTube/Vimeo URL или путь из public/, например /videos/foo.mp4 */
 export const PROMO_VIDEOS = {
-  accelerator: '',
+  // Когда готово 60–90 сек (лицо основателя + результат) — вставьте URL сюда
+  // или задайте VITE_ACCELERATOR_VIDEO_URL в .env
+  accelerator: import.meta.env.VITE_ACCELERATOR_VIDEO_URL?.trim() || '',
   club: '',
   'ai-content-creator': '/videos/ai-content-creator-promo.mp4',
   'ai-automation-engineer': '/videos/ai-automation-engineer-promo.mp4',
@@ -27,8 +29,8 @@ export function getAcceleratorApplicationUrl() {
 }
 
 export const ACCELERATOR_OFFER = {
-  badgeRu: '🔥 Горящее предложение',
-  badgeEn: '🔥 Hot offer',
+  badgeRu: 'Горящее предложение',
+  badgeEn: 'Hot offer',
   tagRu: 'Набор · отборная программа',
   tagEn: 'Bundle · selection program',
   selectionRu:

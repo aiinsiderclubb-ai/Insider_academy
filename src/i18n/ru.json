@@ -8,7 +8,7 @@
     "marketplaceCatalog": "Каталог",
     "club": "Клуб",
     "memberships": "Memberships",
-    "giveaway": "Розыгрыши",
+    "giveaway": "Розыгрыши и события",
     "school": "Школа",
     "blog": "Блог",
     "calendar": "Календарь",
@@ -21,6 +21,7 @@
     "messages": "Сообщения",
     "notifications": "Уведомления",
     "myCertificates": "Мои сертификаты",
+    "challenge": "Челлендж недели",
     "awards": "Награды",
     "inviteFriend": "Пригласить друга",
     "support": "Служба поддержки"
@@ -173,6 +174,9 @@
   "footer": {
     "tagline": "Видеокурсы по автоматизации, чат-ботам, голосовым агентам и разработке.",
     "telegram": "Telegram-канал",
+    "offer": "Публичная оферта",
+    "privacy": "Политика конфиденциальности",
+    "refund": "Условия возврата",
     "copyright": "© AI Insider Academy"
   },
   "common": {

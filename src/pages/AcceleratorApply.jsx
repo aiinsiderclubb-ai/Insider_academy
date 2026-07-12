@@ -13,6 +13,7 @@ import {
   INTEREST_OPTIONS,
   SOURCE_OPTIONS,
 } from '../data/acceleratorApplication'
+import { UiIcon } from '../components/UiIcon'
 import styles from './AcceleratorApply.module.css'
 
 const emptyForm = {
@@ -175,15 +176,15 @@ export function AcceleratorApply() {
           </p>
           <div className={styles.heroStats}>
             <div className={styles.stat}>
-              <span>🎯</span>
+              <UiIcon name="target" size={16} tone="accent" />
               <span>{lang === 'ru' ? <>Отбор в <strong>Accelerator</strong></> : <>Join the <strong>Accelerator</strong></>}</span>
             </div>
             <div className={styles.stat}>
-              <span>⚡</span>
+              <UiIcon name="zap" size={16} tone="accent" />
               <span>{lang === 'ru' ? <>Ответ в <strong>3–5 дней</strong></> : <>Reply in <strong>3–5 days</strong></>}</span>
             </div>
             <div className={styles.stat}>
-              <span>🚀</span>
+              <UiIcon name="rocket" size={16} tone="accent" />
               <span>{lang === 'ru' ? <strong>7 направлений</strong> : <strong>7 AI tracks</strong>}</span>
             </div>
           </div>

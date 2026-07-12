@@ -6,7 +6,7 @@
   overflow: hidden;
   border: 1px solid var(--border-accent);
   background: var(--bg-card);
-  box-shadow: 0 12px 40px var(--glow-purple-dim);
+  box-shadow: none;
 }
 
 .compact {
@@ -50,7 +50,7 @@
   background: var(--gradient-primary);
   font-size: 1.25rem;
   padding-left: 4px;
-  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.45);
+  box-shadow: none;
 }
 
 .placeholderOverlay p {

@@ -20,7 +20,7 @@
   stroke: url(#progressGradient);
   stroke: var(--accent-primary, var(--glow-purple));
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.6s ease-out;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .inner {

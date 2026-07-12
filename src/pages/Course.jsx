@@ -19,9 +19,9 @@ import { LessonTest } from '../components/LessonTest'
 import { CourseHero } from '../components/CourseHero'
 import { CoursePromoSection } from '../components/CoursePromoSection'
 import { CourseLandingSections } from '../components/CourseLandingSections'
-import { Confetti } from '../components/Confetti'
 import { OnboardingBanner } from '../components/OnboardingBanner'
 import { CourseNextStep } from '../components/CourseNextStep'
+import { UiIcon } from '../components/UiIcon'
 import { useToast } from '../context/ToastContext'
 import { getHomeworkForLesson } from '../data/courseHomework'
 import { getCourseThemeStyle } from '../data/courseThemes'
@@ -57,7 +57,6 @@ export function Course() {
   const [selectedLesson, setSelectedLesson] = useState(Number.isFinite(lessonFromUrl) && lessonFromUrl >= 0 ? lessonFromUrl : 0)
   const certificateRecorded = useRef(false)
   const [showOnboarding, setShowOnboarding] = useState(searchParams.get('paid') === '1')
-  const [showConfetti, setShowConfetti] = useState(false)
   const [hwText, setHwText] = useState({})
   const [hwFile, setHwFile] = useState({})
   const [hwError, setHwError] = useState({})
@@ -196,7 +195,7 @@ export function Course() {
     return lessonAvailable(index)
   }
   const priceEur = course.priceEur ?? Math.round(course.price / 100)
-  const fullPriceEur = Math.round(priceEur * 1.15)
+  const fullPriceEur = course.oldPriceEur && course.oldPriceEur > priceEur ? course.oldPriceEur : priceEur
   const discount = fullPriceEur - priceEur
   const percent = getPercent(course.id, lessonsList.length)
   const isAutomation = course.id === 'ai-automation-builder'
@@ -340,7 +339,6 @@ export function Course() {
   useEffect(() => {
     if (isCourseComplete && user && !certificateRecorded.current) {
       certificateRecorded.current = true
-      setShowConfetti(true)
       recordCertificate({
         email: user.email,
         courseId: course.id,
@@ -383,7 +381,6 @@ export function Course() {
 
   return (
     <div className={styles.wrap} style={getCourseThemeStyle(course.id, theme)}>
-      <Confetti active={showConfetti} />
       <div className={styles.container}>
         <CourseHero
           course={course}
@@ -398,7 +395,9 @@ export function Course() {
 
         {isCourseComplete && (
           <div className={styles.completionBanner} role="alert">
-            <div className={styles.completionIcon}>🎉</div>
+            <div className={styles.completionIcon} aria-hidden>
+              <UiIcon name="check" size={28} tone="accent" />
+            </div>
             <h2 className={styles.completionTitle}>
               {lang === 'ru' ? 'Поздравляем! Вы прошли курс' : 'Congratulations! You completed the course'}
               {' «'}{courseTitle}{'»'}
@@ -563,10 +562,12 @@ export function Course() {
                 ) : (
                   <>
                     <div className={styles.priceRows}>
-                      <div className={styles.priceRow}>
-                        <span>{t('course.fullPrice')}</span>
-                        <span className={styles.priceOld}>{fullPriceEur} €</span>
-                      </div>
+                      {discount > 0 && (
+                        <div className={styles.priceRow}>
+                          <span>{t('course.fullPrice')}</span>
+                          <span className={styles.priceOld}>{fullPriceEur} €</span>
+                        </div>
+                      )}
                       {discount > 0 && (
                         <div className={styles.priceRow}>
                           <span>{t('course.discount')}</span>
@@ -633,6 +634,22 @@ export function Course() {
           priceEur={priceEur}
         />
       </div>
+
+      {!purchased && !isFreeTrial && !isBundle && (
+        <div className={styles.mobileCta}>
+          <div className={styles.mobileCtaPrice}>
+            <span className={styles.mobileCtaCurrent}>{priceEur} €</span>
+            {discount > 0 && <span className={styles.mobileCtaOld}>{fullPriceEur} €</span>}
+          </div>
+          <CourseBuyAction
+            course={course}
+            className={styles.mobileCtaBtn}
+            fallbackPath={`/courses/${course.slug}/buy`}
+          >
+            {t('course.buyCourse')}
+          </CourseBuyAction>
+        </div>
+      )}
     </div>
   )
 }

@@ -11,7 +11,7 @@
   border-radius: 20px;
   border: 1px solid var(--border-accent);
   background: linear-gradient(135deg, rgba(168, 85, 247, 0.14) 0%, rgba(249, 115, 22, 0.08) 50%, var(--bg-card) 100%);
-  box-shadow: var(--shadow-glow-sm);
+  box-shadow: none;
 }
 
 .title {

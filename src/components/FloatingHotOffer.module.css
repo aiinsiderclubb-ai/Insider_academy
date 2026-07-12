@@ -14,18 +14,14 @@
   text-decoration: none;
   background: linear-gradient(135deg, #7c3aed, #a855f7);
   color: var(--text-on-primary);
-  box-shadow:
-    0 4px 20px rgba(124, 58, 237, 0.4),
-    0 0 24px rgba(168, 85, 247, 0.2);
+  box-shadow: none;
   transition: transform 0.2s, box-shadow 0.2s;
   animation: hotFabFloat 3s ease-in-out infinite;
 }
 
 .fab:hover {
   transform: scale(1.08) translateY(-2px);
-  box-shadow:
-    0 8px 28px rgba(124, 58, 237, 0.5),
-    0 0 32px rgba(168, 85, 247, 0.3);
+  box-shadow: none;
 }
 
 .fabIcon {

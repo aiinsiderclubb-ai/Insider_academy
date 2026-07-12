@@ -1,6 +1,102 @@
 // Статьи блога AI Insider (источник: aiinsider.it.com/uk/blog)
 export const blogPosts = [
   {
+    id: 'ru-1',
+    slug: 'kak-sobrat-ai-agenta-za-nedelyu',
+    lang: 'ru',
+    title: 'Как собрать AI-агента за неделю — без кода',
+    titleEn: 'How to build an AI agent in a week — no code',
+    excerpt: 'Пошаговый путь: сценарий, инструменты, оркестратор и первый клиентский кейс. Без созвонов и лишней теории.',
+    excerptEn: 'Step-by-step: scenario, tools, orchestrator and first client case — no calls, no fluff.',
+    date: '2026-07-08',
+    category: 'AI-агенты',
+    categoryEn: 'AI agents',
+  },
+  {
+    id: 'ru-2',
+    slug: 'n8n-pervyy-workflow-za-vecher',
+    lang: 'ru',
+    title: 'Первый n8n-workflow за вечер: форма → CRM → Slack',
+    titleEn: 'First n8n workflow in one evening: form → CRM → Slack',
+    excerpt: 'Схема узлов, типичные ошибки новичков и чеклист запуска в проде для малого бизнеса.',
+    excerptEn: 'Node map, beginner pitfalls and a go-live checklist for small business.',
+    date: '2026-07-05',
+    category: 'Автоматизация',
+    categoryEn: 'Automation',
+  },
+  {
+    id: 'ru-3',
+    slug: 'golosovoy-agent-zapisi-salon',
+    lang: 'ru',
+    title: 'Голосовой агент записи для салона: сценарий на 1 день',
+    titleEn: 'Voice booking agent for salons: 1-day script',
+    excerpt: 'Диалог, квалификация, календарь и эскалация на администратора. Что взять из Vapi/Retell.',
+    excerptEn: 'Dialog, qualification, calendar and admin handoff — what to reuse from Vapi/Retell.',
+    date: '2026-07-02',
+    category: 'Voice Agents',
+    categoryEn: 'Voice Agents',
+  },
+  {
+    id: 'ru-4',
+    slug: 'mcp-dlya-biznesa-za-vecher',
+    lang: 'ru',
+    title: 'MCP для бизнеса за вечер: CRM, Postgres, Slack',
+    titleEn: 'Business MCP in one evening: CRM, Postgres, Slack',
+    excerpt: 'Как подключить AI-агента к своим системам через готовые MCP-конфиги и не утонуть в документации.',
+    excerptEn: 'Connect an AI agent to your stack with ready MCP configs — without drowning in docs.',
+    date: '2026-06-28',
+    category: 'MCP & Skills',
+    categoryEn: 'MCP & Skills',
+  },
+  {
+    id: 'ru-5',
+    slug: 'club-vs-pro-kursy',
+    lang: 'ru',
+    title: 'Club vs разовые Pro-курсы: что покупать первым',
+    titleEn: 'Club vs one-time Pro courses: what to buy first',
+    excerpt: 'Подписка даёт доступ, пока активна. Разовые курсы остаются навсегда. Разбираем, кому что выгоднее.',
+    excerptEn: 'Subscription is access while active. One-time courses stay forever. Who should buy what.',
+    date: '2026-06-22',
+    category: 'Academy',
+    categoryEn: 'Academy',
+  },
+  {
+    id: 'ru-6',
+    slug: 'prompt-vault-kak-ne-poteryat',
+    lang: 'ru',
+    title: 'Как вести библиотеку промптов, чтобы она реально работала',
+    titleEn: 'How to run a prompt library that actually works',
+    excerpt: 'Структура папок, версия, тест на 3 кейса и правило «один промпт — один результат».',
+    excerptEn: 'Folder structure, versioning, 3-case tests and the one-prompt-one-outcome rule.',
+    date: '2026-06-18',
+    category: 'Контент',
+    categoryEn: 'Content',
+  },
+  {
+    id: 'ru-7',
+    slug: 'agent-audit-dlya-klientov',
+    lang: 'ru',
+    title: 'Аудит AI-агента для клиента: чеклист безопасности и ROI',
+    titleEn: 'Client AI agent audit: security checklist and ROI',
+    excerpt: 'Что проверить перед сдачей проекта: доступы, эскалация, лимиты API и калькулятор окупаемости.',
+    excerptEn: 'What to check before delivery: access, escalation, API limits and ROI calculator.',
+    date: '2026-06-12',
+    category: 'Бизнес',
+    categoryEn: 'Business',
+  },
+  {
+    id: 'ru-8',
+    slug: 'multi-agent-ops-komanda',
+    lang: 'ru',
+    title: 'Команда из 4 агентов: триаж почты, лиды, саппорт, отчёты',
+    titleEn: 'A team of 4 agents: inbox, leads, support, reports',
+    excerpt: 'Схема оркестратора и как не превратить multi-agent систему в хаос из тулзов.',
+    excerptEn: 'Orchestrator diagram and how to keep a multi-agent system from becoming tool chaos.',
+    date: '2026-06-08',
+    category: 'AI-агенты',
+    categoryEn: 'AI agents',
+  },
+  {
     id: '1',
     slug: 'kpi-dashboard-salon',
     title: 'Автоматизація KPI-дашборду салону краси: метрики для рішень по виручці',
@@ -434,3 +530,24 @@ export const blogPosts = [
 export function getBlogPostBySlug(slug) {
   return blogPosts.find((p) => p.slug === slug) || null
 }
+
+/** Определяет язык поста: uk — украинский, ru — русский */
+export function getBlogPostLang(post) {
+  if (post?.lang) return post.lang
+  const text = `${post?.title || ''} ${post?.excerpt || ''}`
+  if (/[іїєґІЇЄҐ]/.test(text)) return 'uk'
+  return 'ru'
+}
+
+export function getBlogPostLocale(post) {
+  const lang = getBlogPostLang(post)
+  if (lang === 'uk') return 'uk-UA'
+  if (lang === 'en') return 'en-US'
+  return 'ru-RU'
+}
+
+export const BLOG_CONTENT_LANGS = [
+  { id: 'all', labelRu: 'Все', labelEn: 'All' },
+  { id: 'uk', labelRu: 'Українська', labelEn: 'Ukrainian' },
+  { id: 'ru', labelRu: 'Русский', labelEn: 'Russian' },
+]

@@ -432,6 +432,8 @@ function mapReviewForPublic(r) {
     courseTitleEn: course?.titleEn || course?.title || r.courseId,
     courseSlug: course?.slug || r.courseId,
     userName: r.userName,
+    role: r.role || null,
+    roleEn: r.roleEn || r.role || null,
     rating: r.rating,
     text: r.text,
     date: r.date,

@@ -119,7 +119,7 @@ export function TelegramConnect({ lang, personalId: personalIdProp }) {
       {status?.connected ? (
         <>
           <p className={styles.ok}>
-            {ru ? '✅ Бот подключён' : '✅ Bot connected'}
+            {ru ? 'Бот подключён' : 'Bot connected'}
             {status.username && ` · @${status.username}`}
           </p>
           <p className={styles.muted}>

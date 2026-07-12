@@ -7,6 +7,7 @@ const COURSE_PRODUCT_MAP = {
     'mp-workflow-lead-gen',
     'mp-workflow-crm',
     'mp-agent-lead-qual',
+    'mp-agent-multi-ops',
   ],
   'first-automation-n8n': ['mp-workflow-lead-gen', 'mp-workflow-content'],
   'ai-agent-engineer': [
@@ -14,6 +15,9 @@ const COURSE_PRODUCT_MAP = {
     'mp-agent-sales',
     'mp-agent-knowledge',
     'mp-saas-voice',
+    'mp-agent-multi-ops',
+    'mp-voice-beauty-salon',
+    'mp-mcp-starter-business',
   ],
   'ai-content-creator': [
     'mp-creator-hooks',
@@ -27,6 +31,7 @@ const COURSE_PRODUCT_MAP = {
     'mp-biz-sop',
     'mp-saas-leadgen',
     'mp-agent-sales',
+    'mp-biz-agent-audit',
   ],
 }
 
@@ -82,6 +87,45 @@ export function getRecommendedMarketplaceProducts({ purchases = [], limit = 6 } 
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((row) => row.product)
+}
+
+/**
+ * Апсейлы: «купили A → подойдёт B» по relatedIds + категориям.
+ */
+export function getPersonalUpsells({ purchases = [], limit = 4 } = {}) {
+  const owned = purchases
+    .map((p) => MARKETPLACE_PRODUCTS.find((mp) => mp.id === p.id || mp.slug === p.id))
+    .filter(Boolean)
+  if (!owned.length) {
+    return { products: getRecommendedMarketplaceProducts({ purchases, limit }), seed: null }
+  }
+
+  const ownedIds = new Set(owned.map((p) => p.id))
+  const candidates = new Map()
+
+  for (const product of owned) {
+    for (const relatedId of product.relatedIds || []) {
+      const related = MARKETPLACE_PRODUCTS.find((p) => p.id === relatedId)
+      if (!related || ownedIds.has(related.id)) continue
+      const prev = candidates.get(related.id) || { product: related, score: 0, seed: product }
+      prev.score += 10
+      candidates.set(related.id, prev)
+    }
+    for (const other of MARKETPLACE_PRODUCTS) {
+      if (ownedIds.has(other.id)) continue
+      if (other.categoryId === product.categoryId) {
+        const prev = candidates.get(other.id) || { product: other, score: 0, seed: product }
+        prev.score += 3
+        candidates.set(other.id, prev)
+      }
+    }
+  }
+
+  const ranked = [...candidates.values()].sort((a, b) => b.score - a.score).slice(0, limit)
+  if (!ranked.length) {
+    return { products: getRecommendedMarketplaceProducts({ purchases, limit }), seed: owned[0] }
+  }
+  return { products: ranked.map((r) => r.product), seed: ranked[0].seed }
 }
 
 export function searchMarketplaceProducts(query, { categoryId, sort, products = MARKETPLACE_PRODUCTS } = {}) {

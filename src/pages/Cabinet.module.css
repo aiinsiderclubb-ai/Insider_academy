@@ -107,13 +107,13 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  box-shadow: 0 0 30px var(--glow-purple-dim);
-  animation: avatarGlow 3s ease-in-out infinite;
+  box-shadow: none;
+/* animation removed: anti-pulse */
 }
 
 @keyframes avatarGlow {
-  0%, 100% { box-shadow: 0 0 30px var(--glow-purple-dim); }
-  50% { box-shadow: 0 0 45px var(--glow-purple-dim), 0 0 60px var(--glow-pink-dim); }
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: none; }
 }
 
 .avatarInitial {
@@ -157,16 +157,20 @@
 
 .statValue {
   display: block;
+  font-family: var(--font-mono);
   font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--glow-purple);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  color: var(--accent);
 }
 
 .statLabel {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
+  color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--tracking-label);
 }
 
 .xpBlock {
@@ -494,7 +498,7 @@
 
 .ctaPrimary:hover {
   filter: brightness(1.1);
-  box-shadow: 0 0 25px var(--glow-purple-dim);
+  box-shadow: none;
 }
 
 .section {
@@ -528,6 +532,32 @@
   flex-direction: column;
   gap: 12px;
 }
+
+.certCard {
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.certCardBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 16px;
+  margin-bottom: 4px;
+}
+
+.certScore,
+.certDate {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.communityRow {
+  margin: 0 0 24px;
+}
+
 
 .certItem {
   display: flex;
@@ -646,6 +676,10 @@
 
 .copyBtn:hover {
   filter: brightness(1.1);
+}
+
+.continueBlock {
+  margin: 0 0 24px;
 }
 
 .streakBanner {

@@ -95,7 +95,7 @@
 .backLink:hover {
   color: var(--glow-purple);
   border-color: color-mix(in srgb, var(--glow-purple) 45%, var(--border));
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+  box-shadow: none;
 }
 
 .hero {
@@ -108,7 +108,7 @@
     radial-gradient(ellipse 70% 60% at 100% 100%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
     var(--bg-glass);
   backdrop-filter: blur(var(--glass-blur, 12px));
-  box-shadow: var(--shadow-glow-sm), 0 24px 48px rgba(0, 0, 0, 0.12);
+  box-shadow: none;
 }
 
 .heroTop {
@@ -131,7 +131,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+  box-shadow: none;
 }
 
 .heroPill {
@@ -151,10 +151,7 @@
   font-family: var(--font-display);
   letter-spacing: -0.03em;
   line-height: 1.1;
-  background: linear-gradient(135deg, var(--text) 0%, var(--glow-purple) 55%, var(--glow-pink) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text-primary);
 }
 
 .lead {
@@ -262,7 +259,7 @@
 
 .section:focus-within {
   border-color: color-mix(in srgb, var(--glow-purple) 45%, var(--border));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--glow-purple) 20%, transparent), 0 8px 32px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 0 0 2px var(--border-strong);
 }
 
 .sectionHead {
@@ -284,7 +281,7 @@
   color: var(--text-on-primary);
   font-size: 0.875rem;
   font-weight: 800;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+  box-shadow: none;
 }
 
 .sectionHead h2 {
@@ -350,7 +347,7 @@
 .field input:focus {
   outline: none;
   border-color: var(--glow-purple);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--glow-purple) 18%, transparent);
+  box-shadow: 0 0 0 2px var(--border-strong);
 }
 
 .field input::placeholder {
@@ -407,7 +404,7 @@
   background: linear-gradient(135deg, color-mix(in srgb, var(--glow-purple) 18%, var(--bg)), color-mix(in srgb, var(--glow-pink) 10%, var(--bg)));
   color: var(--text);
   font-weight: 600;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--glow-purple) 25%, transparent), 0 4px 16px rgba(124, 58, 237, 0.15);
+  box-shadow: 0 0 0 2px var(--border-strong);
 }
 
 .chip:has(input:checked)::after {
@@ -438,7 +435,7 @@
 .textarea:focus {
   outline: none;
   border-color: var(--glow-purple);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--glow-purple) 18%, transparent);
+  box-shadow: 0 0 0 2px var(--border-strong);
 }
 
 .wordCountRow {
@@ -478,7 +475,7 @@
   border: 1px solid color-mix(in srgb, var(--glow-purple) 35%, var(--border));
   background: color-mix(in srgb, var(--bg-card) 92%, transparent);
   backdrop-filter: blur(16px);
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.15), var(--shadow-glow-sm);
+  box-shadow: none;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -508,13 +505,13 @@
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-  box-shadow: 0 4px 24px rgba(124, 58, 237, 0.45);
+  box-shadow: none;
   white-space: nowrap;
 }
 
 .submitBtn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.55);
+  box-shadow: none;
   animation: btnShine 2s linear infinite;
 }
 
@@ -604,7 +601,7 @@
   color: var(--text-on-primary);
   text-decoration: none;
   font-weight: 700;
-  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);
+  box-shadow: none;
   transition: transform 0.2s;
 }
 

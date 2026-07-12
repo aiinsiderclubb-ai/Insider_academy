@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import { useAuth, LOGOUT_EVENT } from './AuthContext'
 import { api } from '../api/client'
+import { touchLearningActivity } from '../utils/smartNotifications'
 
 const STORAGE_KEY = 'lms_progress'
 
@@ -70,6 +71,7 @@ export function ProgressProvider({ children }) {
   }, [apiMode, syncToApi])
 
   const markWatched = useCallback((courseId, lessonIndex) => {
+    touchLearningActivity()
     setProgress(courseId, (c) => {
       const watched = c.watched || []
       if (watched.includes(lessonIndex)) return c

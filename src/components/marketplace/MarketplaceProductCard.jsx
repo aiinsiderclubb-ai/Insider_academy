@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom'
+import { Heart } from 'lucide-react'
 import { getMarketplaceCategory } from '../../data/marketplace/categories'
 import { getMarketplacePrice } from '../../data/marketplace/discounts'
+import { getMarketplaceCoverStyle } from '../../utils/marketplaceCover'
+import { ProductBadge } from '../ProductBadge'
+import { UiIcon } from '../UiIcon'
 import styles from './MarketplaceProductCard.module.css'
-
-function formatDownloads(n, lang) {
-  if (n >= 1000) return `${(n / 1000).toFixed(1).replace('.0', '')}k`
-  return String(n)
-}
 
 export function MarketplaceProductCard({
   product,
@@ -16,6 +15,7 @@ export function MarketplaceProductCard({
   purchases = [],
   favorite = false,
   onToggleFavorite,
+  featured = false,
 }) {
   const ru = lang === 'ru'
   const title = ru ? product.titleRu : product.titleEn
@@ -24,28 +24,19 @@ export function MarketplaceProductCard({
   const categoryLabel = category ? (ru ? category.titleRu : category.titleEn) : product.categoryId
   const finalPrice = getMarketplacePrice(product.priceEur, purchases)
   const hasDiscount = discountPercent > 0 && finalPrice < product.priceEur
+  const coverStyle = getMarketplaceCoverStyle(title || product.id)
 
   return (
-    <article
-      className={styles.card}
-      style={{ '--mp-cover': product.coverGradient }}
-    >
-      <Link to={`/marketplace/${product.slug}`} className={styles.cover} aria-label={title}>
-        {product.coverImage ? (
-          <img
-            src={product.coverImage}
-            alt=""
-            className={styles.coverImg}
-            loading="lazy"
-          />
-        ) : (
-          <span className={styles.coverIcon} aria-hidden>
-            {product.coverIcon}
-          </span>
-        )}
-        <div className={styles.coverTint} aria-hidden />
-        <div className={styles.coverOverlay} aria-hidden />
-        <span className={styles.category}>{categoryLabel}</span>
+    <article className={`${styles.card} ${featured ? styles.featured : ''}`}>
+      <div className={styles.cover} style={coverStyle}>
+        <Link to={`/marketplace/${product.slug}`} className={styles.coverHit} aria-label={title} />
+
+        <span className={styles.coverIcon} aria-hidden>
+          <UiIcon name={category?.icon || 'sparkles'} size={32} tone="onAccent" />
+        </span>
+
+        {product.badge && <ProductBadge type={product.badge} lang={lang} />}
+
         {onToggleFavorite && (
           <button
             type="button"
@@ -57,49 +48,53 @@ export function MarketplaceProductCard({
               onToggleFavorite(product.id)
             }}
           >
-            {favorite ? '♥' : '♡'}
+            <Heart size={16} strokeWidth={1.5} fill={favorite ? 'currentColor' : 'none'} aria-hidden />
           </button>
         )}
-      </Link>
+
+        {!purchased && (
+          <div className={styles.previewOverlay}>
+            <Link to={`/marketplace/${product.slug}`} className={styles.previewBtn}>
+              {ru ? 'Превью' : 'Preview'}
+            </Link>
+          </div>
+        )}
+      </div>
 
       <div className={styles.body}>
+        <span className={styles.category}>{categoryLabel}</span>
+
         <h3 className={styles.title}>
           <Link to={`/marketplace/${product.slug}`}>{title}</Link>
         </h3>
+
         <p className={styles.desc}>{desc}</p>
-        <div className={styles.meta}>
-          <span className={styles.rating}>★ {product.rating}</span>
-          <span>({product.reviewCount})</span>
-          <span>↓ {formatDownloads(product.downloads, lang)}</span>
-        </div>
-        <div className={styles.priceRow}>
-          <span className={styles.price}>{finalPrice}€</span>
-          {hasDiscount && (
-            <>
-              <span className={styles.oldPrice}>{product.priceEur}€</span>
-              <span className={styles.discountBadge}>−{discountPercent}%</span>
-            </>
-          )}
-        </div>
-        <div className={styles.actions}>
+
+        <div className={styles.footer}>
+          <div className={styles.priceBlock}>
+            <span className={styles.price}>{finalPrice}€</span>
+            {hasDiscount && (
+              <>
+                <span className={styles.oldPrice}>{product.priceEur}€</span>
+                <span className={styles.discountBadge}>−{discountPercent}%</span>
+              </>
+            )}
+          </div>
+
           {purchased ? (
-            <>
-              <span className={styles.owned}>{ru ? 'Куплено · в кабинете' : 'Owned · in cabinet'}</span>
-              <Link to="/cabinet#marketplace" className={styles.buyBtn}>
-                {ru ? 'Скачать' : 'Download'}
-              </Link>
-            </>
+            <Link to="/cabinet#marketplace" className={styles.buyBtn}>
+              {ru ? 'Скачать' : 'Download'}
+            </Link>
           ) : (
-            <>
-              <Link to={`/marketplace/${product.slug}`} className={styles.previewBtn}>
-                {ru ? 'Превью' : 'Preview'}
-              </Link>
-              <Link to={`/marketplace/${product.slug}/buy`} className={styles.buyBtn}>
-                {ru ? 'Купить' : 'Buy'}
-              </Link>
-            </>
+            <Link to={`/marketplace/${product.slug}/buy`} className={styles.buyBtn}>
+              {ru ? 'Купить' : 'Buy'}
+            </Link>
           )}
         </div>
+
+        {purchased && (
+          <span className={styles.owned}>{ru ? 'Куплено · в кабинете' : 'Owned · in cabinet'}</span>
+        )}
       </div>
     </article>
   )

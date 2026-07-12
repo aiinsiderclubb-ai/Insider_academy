@@ -18,11 +18,13 @@ function product(base) {
     faqRu: FAQ_RU,
     faqEn: FAQ_EN,
     badges: [],
+    badge: null,
     relatedIds: [],
     recommendsForCourses: [],
     screenshots: [],
     videoPreview: null,
-    coverImage: base.coverImage ?? (slug ? `/marketplace/${slug}.png?v=3` : null),
+    freePreview: null,
+    coverImage: base.coverImage ?? null,
     ...base,
   }
 }
@@ -45,9 +47,29 @@ export const MARKETPLACE_PRODUCTS = [
     coverIcon: '✨',
     creatorId: 'creator-insider',
     badges: ['top-selling', 'trending'],
+    badge: 'hit',
     fileTypes: ['ZIP', 'JSON'],
     includedRu: ['500+ ChatGPT prompts', 'Marketing & SEO packs', 'Sales scripts', 'Notion index'],
     includedEn: ['500+ ChatGPT prompts', 'Marketing & SEO packs', 'Sales scripts', 'Notion index'],
+    freePreview: {
+      type: 'prompt',
+      titleRu: 'Бесплатный промпт: оффер за 60 секунд',
+      titleEn: 'Free prompt: offer in 60 seconds',
+      contentRu: `Ты — маркетолог SaaS. Напиши оффер для [продукт] на аудиторию [кто].
+Формат:
+1) Боль (1 предложение)
+2) Обещание результата
+3) Доказательство / механизм
+4) CTA
+Без воды, на русском, максимум 80 слов.`,
+      contentEn: `You are a SaaS marketer. Write an offer for [product] targeting [audience].
+Format:
+1) Pain (1 sentence)
+2) Outcome promise
+3) Proof / mechanism
+4) CTA
+No fluff, max 80 words.`,
+    },
     recommendsForCourses: ['ai-content-creator', 'ai-productivity-master'],
     relatedIds: ['mp-prompt-seo-vault', 'mp-prompt-sales-vault'],
   }),
@@ -146,9 +168,31 @@ export const MARKETPLACE_PRODUCTS = [
     coverIcon: '📈',
     creatorId: 'creator-n8n-lab',
     badges: ['top-selling', 'trending'],
+    badge: 'hit',
     fileTypes: ['ZIP', 'JSON'],
     includedRu: ['n8n workflow JSON', 'Setup guide PDF', 'CRM mapping'],
     includedEn: ['n8n workflow JSON', 'Setup guide PDF', 'CRM mapping'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Бесплатный фрагмент: логика lead capture',
+      titleEn: 'Free sample: lead capture logic',
+      contentRu: `Webhook (form)
+  → IF email valid
+    → Enrich (Clearbit / Apollo)
+    → CRM: create/update lead
+    → Slack #leads notify
+    → IF score >= hot → assign owner
+  ELSE
+    → Reply “invalid email”`,
+      contentEn: `Webhook (form)
+  → IF email valid
+    → Enrich (Clearbit / Apollo)
+    → CRM: create/update lead
+    → Slack #leads notify
+    → IF score >= hot → assign owner
+  ELSE
+    → Reply “invalid email”`,
+    },
     recommendsForCourses: ['ai-automation-engineer', 'first-automation-n8n'],
     relatedIds: ['mp-workflow-crm', 'mp-workflow-whatsapp'],
   }),
@@ -585,6 +629,276 @@ export const MARKETPLACE_PRODUCTS = [
     coverIcon: '🎨',
     creatorId: 'creator-insider',
     relatedIds: ['mp-creator-reels-pack'],
+  }),
+  product({
+    id: 'mp-voice-beauty-salon',
+    slug: 'voice-agent-kit-beauty-salon',
+    categoryId: 'voice-agents',
+    productType: 'agent-pack',
+    titleRu: 'Voice Agent Kit: Beauty Salon',
+    titleEn: 'Voice Agent Kit: Beauty Salon',
+    shortRu: 'Голосовой агент записи для салона: сценарии диалогов, интеграция с календарём, шаблоны Vapi/Retell/ElevenLabs, инструкция запуска за 1 день.',
+    shortEn: 'Voice booking agent for salons: dialog flows, calendar integration, Vapi/Retell/ElevenLabs templates, 1-day launch guide.',
+    priceEur: 79,
+    coverGradient: 'linear-gradient(135deg, #14b8a6, #a855f7)',
+    coverIcon: '💇',
+
+    screenshots: [
+      '/marketplace/voice-agent-kit-beauty-salon-shot-1.svg',
+      '/marketplace/voice-agent-kit-beauty-salon-shot-2.svg',
+    ],
+    creatorId: 'creator-agent-studio',
+    badge: 'trend-2026',
+    badges: ['trending', 'new'],
+    fileTypes: ['ZIP', 'JSON', 'PDF'],
+    includedRu: ['Сценарии диалогов', 'Интеграция с календарём', 'Шаблоны Vapi / Retell / ElevenLabs', 'Инструкция запуска за 1 день'],
+    includedEn: ['Dialog scenarios', 'Calendar integration', 'Vapi / Retell / ElevenLabs templates', '1-day launch guide'],
+    freePreview: {
+      type: 'prompt',
+      titleRu: 'Бесплатный фрагмент: приветствие салона',
+      titleEn: 'Free sample: salon greeting',
+      contentRu: `Ты — голосовой ассистент салона красоты. Цель: записать клиента на услугу.
+Правила:
+1) Уточни услугу, мастера и удобное время.
+2) Проверь слот в календаре (tool: check_slot).
+3) Подтверди запись коротко и тепло.
+4) Если слот занят — предложи 2 альтернативы.
+Тон: дружелюбный, без канцелярита, максимум 2 предложения за реплику.`,
+      contentEn: `You are a beauty salon voice assistant. Goal: book the client.
+Rules:
+1) Confirm service, stylist and preferred time.
+2) Check calendar slot (tool: check_slot).
+3) Confirm booking briefly and warmly.
+4) If busy — offer 2 alternatives.
+Tone: friendly, no jargon, max 2 sentences per turn.`,
+    },
+    recommendsForCourses: ['ai-agent-engineer'],
+    relatedIds: ['mp-voice-clinic-services', 'mp-agent-booking'],
+  }),
+  product({
+    id: 'mp-voice-clinic-services',
+    slug: 'voice-agent-kit-clinic-services',
+    categoryId: 'voice-agents',
+    productType: 'agent-pack',
+    titleRu: 'Voice Agent Kit: Clinic & Services',
+    titleEn: 'Voice Agent Kit: Clinic & Services',
+    shortRu: 'Запись на приём голосом: квалификация, напоминания, перенос записи. Шаблоны под Vapi и Retell.',
+    shortEn: 'Voice appointment booking: qualification, reminders, rescheduling. Vapi and Retell templates.',
+    priceEur: 79,
+    coverGradient: 'linear-gradient(135deg, #06b6d4, #6366f1)',
+    coverIcon: '🏥',
+
+    screenshots: [
+      '/marketplace/voice-agent-kit-clinic-services-shot-1.svg',
+      '/marketplace/voice-agent-kit-clinic-services-shot-2.svg',
+    ],
+    creatorId: 'creator-agent-studio',
+    badge: 'trend-2026',
+    badges: ['trending', 'new'],
+    fileTypes: ['ZIP', 'JSON', 'PDF'],
+    includedRu: ['Сценарии записи на приём', 'Квалификация и напоминания', 'Перенос записи', 'Шаблоны Vapi и Retell'],
+    includedEn: ['Appointment booking flows', 'Qualification and reminders', 'Rescheduling logic', 'Vapi and Retell templates'],
+    freePreview: {
+      type: 'prompt',
+      titleRu: 'Бесплатный фрагмент: квалификация пациента',
+      titleEn: 'Free sample: patient qualification',
+      contentRu: `Перед записью уточни:
+- Новый или повторный визит?
+- Симптом / цель визита (1 фраза)
+- Срочность: сегодня / на этой неделе / планово
+Если срочно и нет слота — эскалируй на администратора (tool: handoff_human).`,
+      contentEn: `Before booking ask:
+- New or returning patient?
+- Visit goal in one sentence
+- Urgency: today / this week / planned
+If urgent and no slots — hand off to admin (tool: handoff_human).`,
+    },
+    recommendsForCourses: ['ai-agent-engineer'],
+    relatedIds: ['mp-voice-beauty-salon', 'mp-agent-booking'],
+  }),
+  product({
+    id: 'mp-mcp-starter-business',
+    slug: 'mcp-starter-pack-business',
+    categoryId: 'mcp-skills',
+    productType: 'agent-pack',
+    titleRu: 'MCP Starter Pack for Business',
+    titleEn: 'MCP Starter Pack for Business',
+    shortRu: 'Готовые конфиги MCP-серверов: CRM, Postgres, Slack, GitHub. Подключи AI-агента к своим системам за вечер.',
+    shortEn: 'Ready MCP server configs: CRM, Postgres, Slack, GitHub. Connect your AI agent to your stack in one evening.',
+    priceEur: 49,
+    coverGradient: 'linear-gradient(135deg, #818cf8, #6366f1)',
+    coverIcon: '🔌',
+
+    screenshots: [
+      '/marketplace/mcp-starter-pack-business-shot-1.svg',
+      '/marketplace/mcp-starter-pack-business-shot-2.svg',
+    ],
+    creatorId: 'creator-agent-studio',
+    badge: 'trend-2026',
+    badges: ['trending', 'new'],
+    fileTypes: ['ZIP', 'JSON', 'MD'],
+    includedRu: ['Конфиги MCP: CRM, Postgres, Slack, GitHub', 'Инструкция подключения', 'Примеры запросов агента'],
+    includedEn: ['MCP configs: CRM, Postgres, Slack, GitHub', 'Setup guide', 'Sample agent prompts'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Бесплатный фрагмент: mcp.json (Slack)',
+      titleEn: 'Free sample: mcp.json (Slack)',
+      contentRu: `{
+  "mcpServers": {
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "xoxb-YOUR_TOKEN",
+        "SLACK_TEAM_ID": "T01234567"
+      }
+    }
+  }
+}`,
+      contentEn: `{
+  "mcpServers": {
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "xoxb-YOUR_TOKEN",
+        "SLACK_TEAM_ID": "T01234567"
+      }
+    }
+  }
+}`,
+    },
+    recommendsForCourses: ['ai-agent-engineer'],
+    relatedIds: ['mp-mcp-claude-skills', 'mp-agent-knowledge'],
+  }),
+  product({
+    id: 'mp-mcp-claude-skills',
+    slug: 'claude-skills-library',
+    categoryId: 'mcp-skills',
+    productType: 'agent-pack',
+    titleRu: 'Claude Skills Library',
+    titleEn: 'Claude Skills Library',
+    shortRu: 'Библиотека готовых Skills под бизнес-задачи: отчёты, лидогенерация, контент. Работает поверх твоих MCP.',
+    shortEn: 'Ready Skills for business tasks: reports, lead gen, content. Works on top of your MCP stack.',
+    priceEur: 39,
+    coverGradient: 'linear-gradient(135deg, #d97757, #8b5cf6)',
+    coverIcon: '🧠',
+
+    screenshots: [
+      '/marketplace/claude-skills-library-shot-1.svg',
+      '/marketplace/claude-skills-library-shot-2.svg',
+    ],
+    creatorId: 'creator-insider',
+    badge: 'trend-2026',
+    badges: ['trending', 'new'],
+    fileTypes: ['ZIP', 'JSON'],
+    includedRu: ['Skills: отчёты, лиды, контент', 'Шаблоны под Claude', 'Связка с MCP-серверами'],
+    includedEn: ['Skills: reports, leads, content', 'Claude templates', 'MCP integration notes'],
+    freePreview: {
+      type: 'prompt',
+      titleRu: 'Бесплатный Skill: weekly report',
+      titleEn: 'Free Skill: weekly report',
+      contentRu: `Skill: weekly-ops-report
+Когда пользователь просит «недельный отчёт»:
+1) Собери метрики из CRM (MCP) за 7 дней
+2) Выдели 3 инсайта и 1 риск
+3) Дай 3 действия на следующую неделю
+Формат: TL;DR → цифры → инсайты → план`,
+      contentEn: `Skill: weekly-ops-report
+When user asks for a weekly report:
+1) Pull CRM metrics (MCP) for last 7 days
+2) Extract 3 insights and 1 risk
+3) Propose 3 actions for next week
+Format: TL;DR → numbers → insights → plan`,
+    },
+    recommendsForCourses: ['ai-agent-engineer', 'ai-content-creator'],
+    relatedIds: ['mp-mcp-starter-business', 'mp-prompt-chatgpt-vault'],
+  }),
+  product({
+    id: 'mp-agent-multi-ops',
+    slug: 'multi-agent-ops-team',
+    categoryId: 'ai-agents',
+    productType: 'agent-pack',
+    titleRu: 'Multi-Agent Ops Team',
+    titleEn: 'Multi-Agent Ops Team',
+    shortRu: 'Команда из 4 агентов с оркестратором: триаж почты, лиды, саппорт, отчёты. Схема, конфиги, инструкция.',
+    shortEn: 'Team of 4 agents with orchestrator: email triage, leads, support, reports. Diagram, configs, setup guide.',
+    priceEur: 129,
+    coverGradient: 'linear-gradient(135deg, #6366f1, #22c55e)',
+    coverIcon: '👥',
+
+    screenshots: [
+      '/marketplace/multi-agent-ops-team-shot-1.svg',
+      '/marketplace/multi-agent-ops-team-shot-2.svg',
+    ],
+    creatorId: 'creator-agent-studio',
+    badge: 'trend-2026',
+    badges: ['trending', 'new'],
+    fileTypes: ['ZIP', 'JSON', 'PDF'],
+    includedRu: ['4 агента + оркестратор', 'Триаж почты, лиды, саппорт, отчёты', 'Схема и конфиги', 'Инструкция внедрения'],
+    includedEn: ['4 agents + orchestrator', 'Email triage, leads, support, reports', 'Architecture diagram and configs', 'Deployment guide'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Бесплатный фрагмент: роутинг оркестратора',
+      titleEn: 'Free sample: orchestrator routing',
+      contentRu: `orchestrator.route(message):
+  if intent == "lead"     → agent.sales.qualify(message)
+  if intent == "support"  → agent.support.answer(message)
+  if intent == "report"   → agent.analyst.summarize(period)
+  if intent == "email"    → agent.inbox.triage(thread)
+  else                    → ask_clarifying_question()`,
+      contentEn: `orchestrator.route(message):
+  if intent == "lead"     → agent.sales.qualify(message)
+  if intent == "support"  → agent.support.answer(message)
+  if intent == "report"   → agent.analyst.summarize(period)
+  if intent == "email"    → agent.inbox.triage(thread)
+  else                    → ask_clarifying_question()`,
+    },
+    recommendsForCourses: ['ai-agent-engineer', 'ai-automation-engineer'],
+    relatedIds: ['mp-agent-support', 'mp-agent-sales', 'mp-workflow-lead-gen'],
+  }),
+  product({
+    id: 'mp-biz-agent-audit',
+    slug: 'agent-audit-kit',
+    categoryId: 'business-templates',
+    productType: 'business-pack',
+    titleRu: 'Agent Audit Kit',
+    titleEn: 'Agent Audit Kit',
+    shortRu: 'Governance-набор: чеклисты безопасности агентов, шаблоны политик, калькулятор ROI для клиентов.',
+    shortEn: 'Governance kit: agent security checklists, policy templates, client ROI calculator.',
+    priceEur: 59,
+    coverGradient: 'linear-gradient(135deg, #0f172a, #f43f5e)',
+    coverIcon: '🛡️',
+
+    screenshots: [
+      '/marketplace/agent-audit-kit-shot-1.svg',
+      '/marketplace/agent-audit-kit-shot-2.svg',
+    ],
+    creatorId: 'creator-insider',
+    badge: 'trend-2026',
+    badges: ['trending', 'new'],
+    fileTypes: ['PDF', 'DOCX', 'XLSX'],
+    includedRu: ['Чеклисты безопасности агентов', 'Шаблоны политик', 'Калькулятор ROI', 'Governance framework'],
+    includedEn: ['Agent security checklists', 'Policy templates', 'ROI calculator', 'Governance framework'],
+    freePreview: {
+      type: 'prompt',
+      titleRu: 'Бесплатный чеклист: безопасность агента',
+      titleEn: 'Free checklist: agent security',
+      contentRu: `□ Логи запросов включены, PII маскируется
+□ Есть human escalation при confidence < 0.6
+□ Инструменты с write-доступом требуют подтверждения
+□ Rate limit и budget cap на API
+□ Политика «что агент НЕ делает» задокументирована
+□ Тестовый сценарий jailbreak пройден`,
+      contentEn: `□ Request logs on, PII masked
+□ Human escalation if confidence < 0.6
+□ Write tools require confirmation
+□ API rate limit and budget cap
+□ Documented “what the agent must NOT do”
+□ Jailbreak test scenario passed`,
+    },
+    recommendsForCourses: ['ai-business-builder', 'ai-agent-engineer'],
+    relatedIds: ['mp-biz-agency-proposal', 'mp-biz-sop'],
   }),
 ]
 

@@ -40,7 +40,7 @@
 
 .planBest {
   border-color: var(--border-accent);
-  box-shadow: var(--shadow-glow-sm);
+  box-shadow: none;
 }
 
 .planMuted {

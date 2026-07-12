@@ -23,7 +23,7 @@
 .cell:focus {
   outline: none;
   border-color: rgba(192, 132, 252, 0.7);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+  box-shadow: 0 0 0 2px var(--border-strong);
   transform: translateY(-2px);
 }
 

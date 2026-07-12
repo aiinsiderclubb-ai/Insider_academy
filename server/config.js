@@ -62,6 +62,15 @@ export const config = {
     serviceAccount: process.env.GOOGLE_SERVICE_ACCOUNT_JSON || '',
     folderId: process.env.GOOGLE_DRIVE_FOLDER_ID || '1JlbsIBxryW8dSemF4XSySdcVabqwxghh',
   },
+  oauth: {
+    google: {
+      clientId: process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '',
+    },
+    apple: {
+      /** Services ID, e.g. com.aiinsider.academy.web */
+      clientId: process.env.APPLE_OAUTH_CLIENT_ID || process.env.VITE_APPLE_CLIENT_ID || '',
+    },
+  },
   tribute: {
     apiKey: process.env.TRIBUTE_API_KEY || '',
     shopId: process.env.TRIBUTE_SHOP_ID ? Number(process.env.TRIBUTE_SHOP_ID) : null,
@@ -110,4 +119,12 @@ export function isTributeEnabled() {
 
 export function isGoogleSheetsEnabled() {
   return Boolean(config.googleSheets.enabled && config.googleSheets.serviceAccount)
+}
+
+export function isGoogleOAuthEnabled() {
+  return Boolean(config.oauth.google.clientId)
+}
+
+export function isAppleOAuthEnabled() {
+  return Boolean(config.oauth.apple.clientId)
 }

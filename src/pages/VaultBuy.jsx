@@ -199,8 +199,8 @@ export function VaultBuy() {
               </ul>
             </section>
             <div className={buyStyles.trustRow}>
-              <span className={buyStyles.trustBadge}>🔒 {ru ? 'Безопасная оплата' : 'Secure payment'}</span>
-              <span className={buyStyles.trustBadge}>⚡ {ru ? 'Мгновенный доступ' : 'Instant access'}</span>
+              <span className={buyStyles.trustBadge}>{ru ? 'Безопасная оплата' : 'Secure payment'}</span>
+              <span className={buyStyles.trustBadge}>{ru ? 'Мгновенный доступ' : 'Instant access'}</span>
             </div>
           </div>
 

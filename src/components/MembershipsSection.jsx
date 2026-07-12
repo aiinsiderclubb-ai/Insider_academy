@@ -156,6 +156,13 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
                       ? 'Доступ открывается сразу после подтверждения оплаты.'
                       : 'Access opens immediately after payment confirmation.'}
                   </p>
+                  {!isPro && (
+                    <p className={styles.clubFootnote}>
+                      {lang === 'ru'
+                        ? 'Разовые Pro-курсы (29–79€) покупаются отдельно и остаются навсегда. Подписка — это доступ к базовым курсам, пока она активна.'
+                        : 'One-time Pro courses (€29–79) are purchased separately and kept forever. Subscription grants access to base courses while active.'}
+                    </p>
+                  )}
                 </article>
               </ScrollReveal>
             )

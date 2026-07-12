@@ -17,6 +17,7 @@ import reviewsRoutes from './routes/reviews.js'
 import applicationsRoutes from './routes/applications.js'
 import teamsRoutes from './routes/teams.js'
 import telegramRoutes from './routes/telegram.js'
+import giveawaysRoutes from './routes/giveaways.js'
 import filesRoutes from './routes/files.js'
 import promoRoutes from './routes/promo.js'
 
@@ -106,6 +107,8 @@ export async function createApp() {
         telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken),
         tribute: Boolean(config.tribute.apiKey),
         googleSheets: isGoogleSheetsEnabled(),
+        googleOAuth: Boolean(config.oauth.google.clientId),
+        appleOAuth: Boolean(config.oauth.apple.clientId),
       },
       config: process.env.NODE_ENV === 'production'
         ? { warnings: warnings.length, errors: errors.length }
@@ -135,6 +138,7 @@ export async function createApp() {
   app.use('/api/applications', applicationsRoutes)
   app.use('/api/teams', teamsRoutes)
   app.use('/api/telegram', telegramRoutes)
+  app.use('/api/giveaways', giveawaysRoutes)
   app.use('/api/files', filesRoutes)
   app.use('/api/promo', promoRoutes)
   app.use('/api', publicRoutes)

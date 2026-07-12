@@ -9,11 +9,13 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.45s ease;
+  transition: transform var(--motion-base) var(--ease-motion);
+  will-change: transform;
 }
 
-.wrap:hover .image {
-  transform: scale(1.06);
+.wrap:hover .image,
+:global(article:hover) .image {
+  transform: scale(1.03);
 }
 
 .overlay {
@@ -53,5 +55,10 @@
 @media (prefers-reduced-motion: reduce) {
   .image {
     transition: none;
+  }
+
+  .wrap:hover .image,
+  :global(article:hover) .image {
+    transform: none;
   }
 }

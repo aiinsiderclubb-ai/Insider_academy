@@ -13,21 +13,40 @@ import { getCertificates, getUserDiscountPercent, getCourseAverageScore, getRefe
 import { getPackProgressForUser } from '../utils/packProgress'
 import { ReferralDashboard } from '../components/ReferralDashboard'
 import { TelegramConnect } from '../components/TelegramConnect'
+import { ContinueLearningPanel } from '../components/ContinueLearningPanel'
+import { ActivityFeed } from '../components/ActivityFeed'
+import { WeeklyChallenge } from '../components/WeeklyChallenge'
+import { CertificateShare } from '../components/CertificateShare'
+import { RecommendationsStrip } from '../components/RecommendationsStrip'
+import { CabinetDashboard } from '../components/CabinetDashboard'
 import { ProgressRing } from '../components/ProgressRing'
 import { api, checkApiOnline } from '../api/client'
+import { buildCommunityFeed } from '../data/activityFeed'
+import { getPersonalUpsells } from '../data/marketplace/recommendations'
+import { hasClubMembership } from '../data/club'
+import { useUserNotifications } from '../hooks/useUserNotifications'
+import { syncSmartNotifications } from '../utils/smartNotifications'
+import { pickContinueTarget } from '../utils/continueLearning'
+import { getActiveGiveaways } from '../data/giveaways'
 import styles from './Cabinet.module.css'
 
 export function Cabinet() {
-  const { user, purchases, apiMode } = useAuth()
-  const { getPercent, syncHomeworkAccepted } = useProgress()
+  const { user, purchases, apiMode, hasPurchased } = useAuth()
+  const { getPercent, getProgress, syncHomeworkAccepted } = useProgress()
   const { t, lang } = useLanguage()
   const { getCourseById, courses } = useCourses()
+  const { notifications, unreadCount } = useUserNotifications(user?.email)
   const [copied, setCopied] = useState(false)
   const [stats, setStats] = useState(null)
   const [team, setTeam] = useState(null)
   const [teamName, setTeamName] = useState('')
   const [inviteCode, setInviteCode] = useState('')
   const [myCertificates, setMyCertificates] = useState([])
+  const [feedItems, setFeedItems] = useState(() => buildCommunityFeed({ lang }))
+  const [giveawayCount, setGiveawayCount] = useState(null)
+
+  const hasPriority = hasClubMembership(purchases)
+  const { products: recProducts, seed: recSeed } = getPersonalUpsells({ purchases, limit: 3 })
 
   const myCourses = purchases
     .filter((p) => !isVaultProductId(p.id) && !isMarketplaceProductId(p.id))
@@ -71,6 +90,40 @@ export function Cabinet() {
     }
     load()
   }, [user, apiMode])
+
+  useEffect(() => {
+    let cancelled = false
+    checkApiOnline().then(async (ok) => {
+      if (cancelled) return
+      if (!ok) {
+        setFeedItems(buildCommunityFeed({ lang }))
+        return
+      }
+      try {
+        const list = await api.getGiveaways()
+        const map = {}
+        list.forEach((g) => { map[g.slug] = g.participantCount })
+        const active = getActiveGiveaways()[0]
+        if (active && map[active.slug] != null) setGiveawayCount(map[active.slug])
+        if (!cancelled) setFeedItems(buildCommunityFeed({ giveawayCounts: map, lang }))
+      } catch (_) {
+        if (!cancelled) setFeedItems(buildCommunityFeed({ lang }))
+      }
+    })
+    return () => { cancelled = true }
+  }, [lang])
+
+  useEffect(() => {
+    if (!user?.email) return
+    const continueTarget = pickContinueTarget({ purchases, courses, getPercent, getProgress })
+    syncSmartNotifications({
+      email: user.email,
+      purchases,
+      continueTarget,
+      certificates: myCertificates,
+      lang,
+    })
+  }, [user?.email, purchases, courses, getPercent, getProgress, myCertificates, lang])
 
   useEffect(() => {
     if (!user?.email || myCourses.length === 0) return
@@ -138,6 +191,13 @@ export function Cabinet() {
           </ProgressRing>
         </div>
 
+        <CabinetDashboard
+          lang={lang}
+          notifications={notifications}
+          unreadCount={unreadCount}
+          giveawayCount={giveawayCount}
+        />
+
         {(user?.personalId || user?.id) && (
           <div className={styles.accountIdBanner}>
             <span>
@@ -149,17 +209,22 @@ export function Cabinet() {
           </div>
         )}
 
-        {stats?.streak && (
-          <div className={styles.streakBanner}>
-            🔥 {lang === 'ru' ? 'Серия' : 'Streak'}: {stats.streak.current} {lang === 'ru' ? 'дн.' : 'days'}
-            {stats.streak.current < 7 && (
-              <span className={styles.streakGoal}>
-                {' '}
-                · {lang === 'ru' ? `цель 7 дней` : `goal: 7 days`}
-              </span>
-            )}
-          </div>
-        )}
+        <div className={styles.continueBlock}>
+          <ContinueLearningPanel
+            streakCurrent={stats?.streak?.current || 0}
+            compact
+          />
+        </div>
+
+        <div className={styles.communityRow}>
+          <ActivityFeed items={feedItems} lang={lang} />
+        </div>
+
+        <WeeklyChallenge
+          lang={lang}
+          email={user?.email}
+          hasPriority={hasPriority}
+        />
 
         {packProgress.length > 0 && (
           <section className={styles.section}>
@@ -278,6 +343,22 @@ export function Cabinet() {
             </>
           )}
         </section>
+
+        {recProducts.length > 0 && (
+          <RecommendationsStrip
+            products={recProducts}
+            lang={lang}
+            purchases={purchases}
+            hasPurchased={hasPurchased}
+            reason={
+              recSeed
+                ? (lang === 'ru'
+                  ? `Раз у вас есть «${recSeed.titleRu}» — вам подойдёт следующее${hasPriority ? ' (−10% Club)' : ''}`
+                  : `Since you own “${recSeed.titleEn}” — try these next${hasPriority ? ' (Club −10%)' : ''}`)
+                : (lang === 'ru' ? 'Подборка под ваш прогресс' : 'Picked for your progress')
+            }
+          />
+        )}
 
         {myVault.length > 0 && (
           <section id="vault" className={styles.section}>
@@ -403,7 +484,20 @@ export function Cabinet() {
           ) : (
             <ul className={styles.certList}>
               {myCertificates.map((cert, i) => (
-                <li key={i}><span>{cert.courseTitle}</span></li>
+                <li key={cert.id || i} className={styles.certCard}>
+                  <div className={styles.certCardBody}>
+                    <strong>{cert.courseTitle}</strong>
+                    {cert.score != null && (
+                      <span className={styles.certScore}>{formatCompactScore(cert.score)}</span>
+                    )}
+                    {(cert.date || cert.updatedAt) && (
+                      <span className={styles.certDate}>
+                        {new Date(cert.date || cert.updatedAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-GB')}
+                      </span>
+                    )}
+                  </div>
+                  <CertificateShare cert={cert} lang={lang} userName={user?.name || user?.email} />
+                </li>
               ))}
             </ul>
           )}

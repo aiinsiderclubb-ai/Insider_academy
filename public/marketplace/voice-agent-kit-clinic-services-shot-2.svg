@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600">
+  <rect width="960" height="600" rx="16" fill="#0f0e17"/>
+  <text x="48" y="64" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="#fff">Voice Agent · Clinic</text>
+  <text x="48" y="100" font-family="system-ui,sans-serif" font-size="16" fill="#9ca3af">Preview · step-by-step setup</text>
+  <rect x="48" y="140" width="864" height="80" rx="12" fill="#16141f" stroke="#06b6d4" stroke-opacity="0.4"/>
+  <rect x="48" y="240" width="864" height="80" rx="12" fill="#16141f"/>
+  <rect x="48" y="340" width="864" height="80" rx="12" fill="#16141f"/>
+  <rect x="48" y="440" width="420" height="100" rx="12" fill="#06b6d4" opacity="0.85"/>
+  <rect x="492" y="440" width="420" height="100" rx="12" fill="#6366f1" opacity="0.85"/>
+  <text x="258" y="498" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="#fff">Config</text>
+  <text x="702" y="498" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="#fff">Deploy</text>
+</svg>

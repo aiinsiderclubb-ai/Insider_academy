@@ -1,0 +1,158 @@
+.dash {
+  margin: 0 0 28px;
+  padding: 22px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+
+.head {
+  margin-bottom: 16px;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.lead {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.card {
+  grid-column: span 2;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 140px;
+  box-shadow: none;
+  transition: border-color 200ms ease-out, transform 200ms ease-out;
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.goalCard {
+  grid-column: span 3;
+  border-color: var(--border-subtle);
+}
+
+.eventCard {
+  grid-column: span 3;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--glow-purple);
+}
+
+.badge {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent-orange);
+  color: #fff;
+  font-size: 0.625rem;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  flex: 1;
+}
+
+.progressLine {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.cta {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.link {
+  margin-top: auto;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--glow-purple);
+}
+
+.notifList,
+.favList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.notifList a,
+.favList a {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.notifList a:hover,
+.favList a:hover {
+  color: var(--glow-purple);
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .card,
+  .goalCard,
+  .eventCard {
+    grid-column: span 1;
+  }
+}

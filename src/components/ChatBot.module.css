@@ -46,11 +46,7 @@
     rgba(14, 10, 28, 0.99) 100%
   );
   border: 1px solid rgba(168, 85, 247, 0.22);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-    0 24px 80px rgba(0, 0, 0, 0.55),
-    0 0 60px rgba(124, 58, 237, 0.15),
-    0 0 40px rgba(249, 115, 22, 0.08);
+  box-shadow: var(--shadow-inset);
 }
 
 .panel::before {
@@ -133,10 +129,7 @@
   font-weight: 700;
   font-size: 1.0625rem;
   letter-spacing: -0.02em;
-  background: var(--gradient-text);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text-primary);
 }
 
 .headerStatus {
@@ -188,7 +181,7 @@
   inset: 3px;
   border-radius: 50%;
   background: var(--gradient-primary);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  box-shadow: none;
 }
 
 .orbGlow {
@@ -261,7 +254,7 @@
   width: calc(50% - 4px);
   border-radius: 10px;
   background: var(--gradient-primary);
-  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.35);
+  box-shadow: none;
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
@@ -358,7 +351,7 @@
   transform: translateY(-2px);
   background: rgba(168, 85, 247, 0.22);
   border-color: rgba(249, 115, 22, 0.4);
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.2);
+  box-shadow: none;
 }
 
 /* Messages */
@@ -417,9 +410,7 @@
   line-height: 1.5;
   color: var(--text-on-primary);
   background: var(--gradient-primary);
-  box-shadow:
-    0 4px 16px rgba(124, 58, 237, 0.35),
-    0 0 24px rgba(249, 115, 22, 0.12);
+  box-shadow: none;
 }
 
 .bubbleBot {
@@ -481,7 +472,7 @@
 
 .inputWrap:focus-within {
   border-color: rgba(192, 132, 252, 0.5);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12);
+  box-shadow: 0 0 0 2px var(--border-strong);
 }
 
 .input {
@@ -516,12 +507,12 @@
   color: var(--text-on-primary);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
+  box-shadow: none;
 }
 
 .sendBtn:hover:not(:disabled) {
   transform: scale(1.06);
-  box-shadow: 0 6px 24px rgba(168, 85, 247, 0.5), 0 0 20px rgba(249, 115, 22, 0.2);
+  box-shadow: none;
 }
 
 .sendBtn:disabled {

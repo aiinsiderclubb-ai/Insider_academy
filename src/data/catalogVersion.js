@@ -1,2 +1,2 @@
 /** Увеличивайте при обновлении программы / видео-уроков — сбросит устаревший кэш */
-export const CATALOG_VERSION = 18
+export const CATALOG_VERSION = 20

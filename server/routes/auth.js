@@ -5,7 +5,7 @@ import { getDb } from '../db.js'
 import { signUserToken } from '../middleware/auth.js'
 import { sendPasswordResetEmail } from '../services/email.js'
 import { issueEmailVerificationCode, verifyEmailCode } from '../services/emailVerification.js'
-import { config, isEmailEnabled } from '../config.js'
+import { config, isEmailEnabled, isGoogleOAuthEnabled, isAppleOAuthEnabled } from '../config.js'
 import { createUserNotification } from '../services/notifications.js'
 import { nowIso } from '../db/time.js'
 import * as sheetsTrack from '../services/sheetsTrack.js'
@@ -14,6 +14,7 @@ import { TEST_ACCOUNT_EMAIL, TEST_ACCOUNT_PASSWORD } from '../../src/data/testAc
 import { ensurePersonalId } from '../services/personalId.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { rateLimitMiddleware } from '../middleware/rateLimit.js'
+import { verifyOAuthIdToken } from '../services/oauthVerify.js'
 
 const router = Router()
 
@@ -51,6 +52,169 @@ async function insertUser(db, email, hash, name) {
   )
   return result?.lastInsertRowid || null
 }
+
+async function insertOAuthUser(db, { email, name, provider, sub }) {
+  const hash = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10)
+  const googleSub = provider === 'google' ? sub : null
+  const appleSub = provider === 'apple' ? sub : null
+  if (db.driver === 'postgres') {
+    const inserted = await db.get(
+      `INSERT INTO users (email, password_hash, name, email_verified, auth_provider, google_sub, apple_sub)
+       VALUES (?, ?, ?, 1, ?, ?, ?) RETURNING id`,
+      [email, hash, name, provider, googleSub, appleSub]
+    )
+    return inserted?.id
+  }
+  const result = await db.run(
+    `INSERT INTO users (email, password_hash, name, email_verified, auth_provider, google_sub, apple_sub)
+     VALUES (?, ?, ?, 1, ?, ?, ?)`,
+    [email, hash, name, provider, googleSub, appleSub]
+  )
+  return result?.lastInsertRowid || null
+}
+
+router.get('/oauth/config', (_req, res) => {
+  res.json({
+    google: isGoogleOAuthEnabled(),
+    apple: isAppleOAuthEnabled(),
+    googleClientId: isGoogleOAuthEnabled() ? config.oauth.google.clientId : null,
+    appleClientId: isAppleOAuthEnabled() ? config.oauth.apple.clientId : null,
+  })
+})
+
+router.post('/oauth', asyncHandler(async (req, res) => {
+  const provider = String(req.body.provider || '').trim().toLowerCase()
+  const idToken = String(req.body.idToken || req.body.credential || '').trim()
+  const fullName = req.body.fullName || null
+
+  if (!['google', 'apple'].includes(provider)) {
+    return res.status(400).json({ error: 'Invalid provider', errorRu: 'Неизвестный провайдер входа' })
+  }
+  if (!idToken) {
+    return res.status(400).json({ error: 'Missing id token', errorRu: 'Нет токена авторизации' })
+  }
+
+  let identity
+  try {
+    identity = await verifyOAuthIdToken(provider, idToken, fullName)
+  } catch (err) {
+    const status = err.status || 401
+    console.warn(`[auth/oauth] ${provider} verify failed:`, err.message)
+    return res.status(status).json({
+      error: err.message || 'OAuth verification failed',
+      errorRu: err.errorRu || 'Не удалось подтвердить вход через соцсеть. Попробуйте снова.',
+    })
+  }
+
+  if (!identity.emailVerified && provider === 'google') {
+    return res.status(403).json({
+      error: 'Google email not verified',
+      errorRu: 'Email Google-аккаунта не подтверждён.',
+    })
+  }
+
+  const db = getDb()
+  const email = identity.email
+  const subCol = provider === 'google' ? 'google_sub' : 'apple_sub'
+
+  let row = await db.get(
+    `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider
+     FROM users WHERE ${subCol} = ?`,
+    [identity.sub]
+  )
+
+  if (!row) {
+    row = await db.get(
+      `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider
+       FROM users WHERE email = ?`,
+      [email]
+    )
+  }
+
+  let isNew = false
+  if (!row) {
+    isNew = true
+    let userId
+    try {
+      userId = await insertOAuthUser(db, {
+        email,
+        name: identity.name,
+        provider,
+        sub: identity.sub,
+      })
+    } catch (err) {
+      if (isUniqueViolation(err)) {
+        row = await db.get(
+          `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider
+           FROM users WHERE email = ?`,
+          [email]
+        )
+      } else {
+        throw err
+      }
+    }
+    if (!row && userId) {
+      row = await db.get(
+        `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider
+         FROM users WHERE id = ?`,
+        [userId]
+      )
+    }
+  }
+
+  if (!row) {
+    return res.status(500).json({ error: 'OAuth registration failed', errorRu: 'Не удалось создать аккаунт' })
+  }
+
+  const updates = []
+  const params = []
+  if (provider === 'google' && row.google_sub !== identity.sub) {
+    updates.push('google_sub = ?')
+    params.push(identity.sub)
+  }
+  if (provider === 'apple' && row.apple_sub !== identity.sub) {
+    updates.push('apple_sub = ?')
+    params.push(identity.sub)
+  }
+  if (!row.email_verified) {
+    updates.push('email_verified = 1')
+  }
+  if (!row.name && identity.name) {
+    updates.push('name = ?')
+    params.push(identity.name)
+  }
+  updates.push('auth_provider = ?')
+  params.push(provider)
+  const loginAt = new Date().toISOString()
+  updates.push('last_login_at = ?')
+  params.push(loginAt)
+  params.push(row.id)
+  await db.run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params)
+
+  const personalId = row.personal_id || await ensurePersonalId(db, row.id)
+  const name = row.name || identity.name
+
+  if (isNew) {
+    await db.run('INSERT INTO registrations (id, email, name, personal_id, date) VALUES (?, ?, ?, ?, ?)', [
+      `reg-${Date.now()}`, email, name, personalId, new Date().toISOString(),
+    ]).catch((err) => {
+      console.warn('[auth/oauth] registrations insert:', err.message)
+    })
+    sheetsTrack.trackUserRegistered({ personalId, userId: row.id, email, name }).catch(() => {})
+  }
+
+  sheetsTrack.trackLogin({ email, personalId, userId: row.id }).catch(() => {})
+
+  const user = {
+    id: row.id,
+    email,
+    name,
+    emailVerified: true,
+    personalId,
+    authProvider: provider,
+  }
+  res.json({ token: signUserToken(user), user, isNew, lastLoginAt: loginAt })
+}))
 
 router.post('/register', asyncHandler(async (req, res) => {
   const db = getDb()
@@ -127,7 +291,7 @@ router.post('/login', asyncHandler(async (req, res) => {
   const db = getDb()
   const email = normalizeEmail(req.body.email)
   const password = String(req.body.password || '').trim()
-  let row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id FROM users WHERE email = ?', [email])
+  let row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id, auth_provider, google_sub, apple_sub FROM users WHERE email = ?', [email])
 
   const allowTestAccount = process.env.NODE_ENV !== 'production' || process.env.ALLOW_TEST_ACCOUNT === '1'
   const isTestLogin = allowTestAccount
@@ -135,15 +299,18 @@ router.post('/login', asyncHandler(async (req, res) => {
     && password === TEST_ACCOUNT_PASSWORD
   if (isTestLogin && (!row || !bcrypt.compareSync(password, row.password_hash))) {
     await seedTestAccount(db)
-    row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id FROM users WHERE email = ?', [email])
+    row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id, auth_provider, google_sub, apple_sub FROM users WHERE email = ?', [email])
   }
 
   if (!row || !bcrypt.compareSync(password, row.password_hash)) {
+    const oauthOnly = row && (row.google_sub || row.apple_sub) && row.auth_provider && row.auth_provider !== 'email'
     return res.status(401).json({
       error: 'Invalid email or password',
-      errorRu: row
-        ? 'Неверный пароль. Проверьте раскладку или восстановите пароль.'
-        : 'Аккаунт с таким email не найден. Зарегистрируйтесь или проверьте опечатку.',
+      errorRu: !row
+        ? 'Аккаунт с таким email не найден. Зарегистрируйтесь или проверьте опечатку.'
+        : oauthOnly
+          ? 'Этот аккаунт создан через Google/Apple. Войдите кнопкой соцсети или сбросьте пароль.'
+          : 'Неверный пароль. Проверьте раскладку или восстановите пароль.',
     })
   }
 

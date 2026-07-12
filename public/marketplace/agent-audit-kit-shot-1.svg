@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600">
+  <rect width="960" height="600" rx="16" fill="#0f0e17"/>
+  <rect x="24" y="24" width="912" height="48" rx="8" fill="#1a1825"/>
+  <circle cx="52" cy="48" r="6" fill="#f87171"/><circle cx="72" cy="48" r="6" fill="#fbbf24"/><circle cx="92" cy="48" r="6" fill="#34d399"/>
+  <rect x="24" y="92" width="280" height="484" rx="12" fill="#16141f"/>
+  <rect x="48" y="120" width="180" height="16" rx="4" fill="#0f172a" opacity="0.9"/>
+  <rect x="48" y="160" width="220" height="12" rx="3" fill="#2a2738"/>
+  <rect x="48" y="188" width="200" height="12" rx="3" fill="#2a2738"/>
+  <rect x="48" y="216" width="160" height="12" rx="3" fill="#2a2738"/>
+  <rect x="320" y="92" width="616" height="484" rx="12" fill="#12101a"/>
+  <rect x="352" y="128" width="280" height="24" rx="6" fill="#fff" opacity="0.9"/>
+  <rect x="352" y="172" width="520" height="12" rx="3" fill="#2a2738"/>
+  <rect x="352" y="196" width="480" height="12" rx="3" fill="#2a2738"/>
+  <rect x="352" y="240" width="552" height="200" rx="12" fill="url(#sg)"/>
+  <defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0f172a"/><stop offset="1" stop-color="#f43f5e"/></linearGradient></defs>
+  <text x="628" y="350" text-anchor="middle" font-family="system-ui,sans-serif" font-size="36" fill="#fff">🛡️</text>
+</svg>

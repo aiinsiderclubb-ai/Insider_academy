@@ -104,3 +104,82 @@
   color: var(--text-muted);
   margin: 0;
 }
+
+.weeks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weekGroup {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.weekHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-elevated);
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.weekHead:hover {
+  background: var(--glow-purple-dim);
+}
+
+.weekHeadText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.weekTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.weekCount {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.weekGoal {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.weekChevron {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s;
+  color: var(--text-muted);
+}
+
+.weekChevronOpen {
+  transform: rotate(180deg);
+}
+
+.weekGroup .list {
+  padding: 6px;
+}

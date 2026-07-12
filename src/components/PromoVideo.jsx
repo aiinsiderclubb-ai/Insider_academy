@@ -50,16 +50,6 @@ export function PromoVideo({ url, poster, title, compact = false }) {
     )
   }
 
-  return (
-    <div
-      className={`${styles.wrap} ${styles.placeholder} ${compact ? styles.compact : ''}`}
-      style={poster ? { backgroundImage: `url(${poster})` } : undefined}
-    >
-      <div className={styles.placeholderOverlay}>
-        <span className={styles.playIcon} aria-hidden>▶</span>
-        <p>{title}</p>
-        <span className={styles.placeholderHint}>Видео скоро</span>
-      </div>
-    </div>
-  )
+  // No empty «Видео скоро» — caller should hide PromoVideo when URL is empty
+  return null
 }

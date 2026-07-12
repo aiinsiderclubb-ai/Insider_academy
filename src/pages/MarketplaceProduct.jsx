@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
-import { Confetti } from '../components/Confetti'
+import { ProductBadge, productHasPublicStats } from '../components/ProductBadge'
 import { StarRating } from '../components/StarRating'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
@@ -13,7 +13,10 @@ import {
   isMarketplaceProductIncludedForUser,
 } from '../data/marketplace/discounts'
 import { MarketplaceProductCard } from '../components/marketplace/MarketplaceProductCard'
+import { MarketplaceFreePreview } from '../components/MarketplaceFreePreview'
 import { ScrollReveal } from '../components/ScrollReveal'
+import { UiIcon } from '../components/UiIcon'
+import { getMarketplaceCoverStyle } from '../utils/marketplaceCover'
 import styles from './MarketplaceProduct.module.css'
 
 const MOCK_REVIEWS_RU = [
@@ -49,7 +52,6 @@ export function MarketplaceProduct() {
   const creator = getMarketplaceCreator(product.creatorId)
   const related = getRelatedProducts(product)
   const reviews = ru ? MOCK_REVIEWS_RU : MOCK_REVIEWS_EN
-  const showConfetti = searchParams.get('paid') === '1'
 
   useEffect(() => {
     if (searchParams.get('paid') !== '1') return
@@ -85,7 +87,6 @@ export function MarketplaceProduct() {
 
   return (
     <div className={styles.wrap}>
-      <Confetti active={showConfetti} />
       <div
         className={styles.container}
         style={{ '--mp-cover': product.coverGradient }}
@@ -104,17 +105,29 @@ export function MarketplaceProduct() {
 
         <div className={styles.layout}>
           <div>
-            <div className={styles.preview}>
-              {product.coverImage ? (
-                <img src={product.coverImage} alt="" className={styles.previewCover} />
-              ) : (
-                <span className={styles.previewIcon} aria-hidden>
-                  {product.coverIcon}
-                </span>
-              )}
-              <div className={styles.previewTint} aria-hidden />
-              <div className={styles.previewOverlay} aria-hidden />
+            <div className={styles.preview} style={getMarketplaceCoverStyle(title)}>
+              <span className={styles.previewIcon} aria-hidden>
+                <UiIcon name={category?.icon || 'sparkles'} size={40} tone="onAccent" />
+              </span>
             </div>
+
+            {product.screenshots?.length > 0 && (
+              <div className={styles.shots}>
+                {product.screenshots.map((src) => (
+                  <img key={src} src={src} alt="" className={styles.shot} loading="lazy" />
+                ))}
+              </div>
+            )}
+
+            {!purchased && product.freePreview && (
+              <ScrollReveal>
+                <MarketplaceFreePreview
+                  preview={product.freePreview}
+                  lang={lang}
+                  productTitle={title}
+                />
+              </ScrollReveal>
+            )}
 
             <ScrollReveal>
               <section className={styles.block}>
@@ -215,9 +228,15 @@ export function MarketplaceProduct() {
           <aside className={styles.sidebar}>
             <h1 className={styles.title}>{title}</h1>
             <div className={styles.meta}>
-              <span className={styles.reviewStars}>★ {product.rating}</span>
-              <span>({product.reviewCount})</span>
-              <span>↓ {product.downloads.toLocaleString()}</span>
+              {productHasPublicStats(product) ? (
+                <>
+                  <span className={styles.reviewStars}>★ {product.rating}</span>
+                  <span>({product.reviewCount})</span>
+                  <span>↓ {product.downloads.toLocaleString()}</span>
+                </>
+              ) : product.badge ? (
+                <ProductBadge type={product.badge} lang={lang} variant="inline" />
+              ) : null}
             </div>
             <div>
               <span className={styles.price}>{finalPrice}€</span>
@@ -242,7 +261,7 @@ export function MarketplaceProduct() {
                   <span className={styles.creatorName}>{creator.name}</span>
                   {creator.verified && (
                     <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      ✓ {ru ? 'Проверенный креатор' : 'Verified creator'}
+                      {ru ? 'Проверенный креатор' : 'Verified creator'}
                     </span>
                   )}
                 </span>

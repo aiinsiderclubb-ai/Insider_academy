@@ -10,6 +10,7 @@ import { CourseGridSkeleton } from '../components/SkeletonLoader'
 import { CourseCatalogCard } from '../components/CourseCatalogCard'
 import { CourseBundleOffers, CourseCatalogSections } from '../components/CourseCatalogSections'
 import { VaultSection } from '../components/VaultSection'
+import { EmptyState } from '../components/EmptyState'
 import styles from './Courses.module.css'
 
 const SEGMENTS = [
@@ -81,7 +82,7 @@ export function Courses() {
           </Link>
         </div>
 
-        {!showSectionedCatalog && segment !== 'packs' && segment !== 'vault' && (
+        {segment !== 'packs' && segment !== 'vault' && (
           <div className={styles.toolbar}>
             <input
               type="search"
@@ -123,7 +124,15 @@ export function Courses() {
             completedLabel={t('courses.completed')}
           />
         ) : filtered.length === 0 ? (
-          <p className={styles.empty}>{lang === 'ru' ? 'Курсы не найдены' : 'No courses found'}</p>
+          <EmptyState
+            message={lang === 'ru' ? 'Курсы не найдены' : 'No courses found'}
+            actionLabel={lang === 'ru' ? 'Сбросить фильтры' : 'Reset filters'}
+            onAction={() => {
+              setQuery('')
+              setCategory('all')
+              setSegment('all')
+            }}
+          />
         ) : (
           <div className={`${styles.grid} stagger-grid`}>
             {filtered.map((course) => (

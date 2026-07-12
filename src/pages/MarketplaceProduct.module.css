@@ -83,9 +83,32 @@
 
 .previewIcon {
   position: relative;
-  z-index: 1;
-  font-size: 4rem;
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
+  z-index: 3;
+  display: flex;
+  color: #fff;
+  opacity: 0.9;
+}
+
+.shots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: -12px 0 24px;
+}
+
+.shot {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: var(--bg-elevated);
+}
+
+@media (max-width: 640px) {
+  .shots {
+    grid-template-columns: 1fr;
+  }
 }
 
 .block {
@@ -203,15 +226,16 @@
 }
 
 .price {
-  font-family: var(--font-display);
-  font-size: 2.5rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
 }
 
 .oldPrice {
+  font-family: var(--font-mono);
   font-size: 1rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-decoration: line-through;
   margin-left: 8px;
 }

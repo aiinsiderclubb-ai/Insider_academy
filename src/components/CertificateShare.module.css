@@ -1,0 +1,45 @@
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btnPrimary,
+.btn,
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid var(--border);
+}
+
+.btnPrimary {
+  border: none;
+  background: var(--gradient-primary);
+  color: var(--text-on-primary);
+}
+
+.btn {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+.btn:hover {
+  border-color: var(--glow-purple);
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.btnGhost:hover {
+  color: var(--text);
+}

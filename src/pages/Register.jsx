@@ -6,6 +6,7 @@ import { mapAuthApiError } from '../utils/authErrors'
 import { formatApiError } from '../utils/formatApiError'
 import { getPendingVerifyEmail } from '../utils/pendingVerification'
 import { NeuronGlow } from '../components/NeuronGlow'
+import { SocialAuthButtons } from '../components/SocialAuthButtons'
 import styles from './Login.module.css'
 
 export function Register() {
@@ -13,7 +14,7 @@ export function Register() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname || '/cabinet'
+  const from = location.state?.from?.pathname || '/onboarding'
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -149,13 +150,19 @@ export function Register() {
             <h1 className={styles.title}>{t('register.title')}</h1>
             <p className={styles.subtitle}>{t('register.subtitle')}</p>
 
-            <form ref={formRef} onSubmit={handleRegister} className={styles.form}>
-              {error && (
-                <div className={styles.error} role="alert">
-                  {error}
-                </div>
-              )}
+            {error && (
+              <div className={styles.error} role="alert">
+                {error}
+              </div>
+            )}
 
+            <SocialAuthButtons
+              mode="register"
+              onError={setError}
+              onSuccess={() => navigate(from, { replace: true })}
+            />
+
+            <form ref={formRef} onSubmit={handleRegister} className={styles.form}>
               <label className={styles.label}>
                 <span className={styles.labelText}>{t('register.name')}</span>
                 <input

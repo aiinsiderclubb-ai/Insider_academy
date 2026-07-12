@@ -40,7 +40,7 @@ export function VerifyEmail() {
       .then(async (res) => {
         if (res.token) await completeAuthSession(res.token, res.user)
         setStatus('ok')
-        setTimeout(() => navigate('/cabinet', { replace: true }), 2200)
+        setTimeout(() => navigate('/onboarding', { replace: true }), 2200)
       })
       .catch(() => setStatus('link-error'))
   }, [tokenFromUrl, completeAuthSession, navigate])
@@ -64,7 +64,7 @@ export function VerifyEmail() {
       await completeAuthSession(res.token, res.user)
       clearPendingVerifyEmail()
       setStatus('ok')
-      setTimeout(() => navigate('/cabinet', { replace: true }), 2200)
+      setTimeout(() => navigate('/onboarding', { replace: true }), 2200)
     } catch (err) {
       setError(formatApiError(err, lang) || t('verifyEmail.error'))
     } finally {

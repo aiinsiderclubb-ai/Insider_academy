@@ -6,7 +6,9 @@ export const ACADEMY_COURSES = `${ACADEMY_URL}/courses`
 export const MAIN_SITE_URL = import.meta.env.VITE_MAIN_SITE_URL || 'https://insiderai.it.com'
 export const MAIN_SITE_COURSES = `${MAIN_SITE_URL}/courses`
 export const MAIN_SITE_COMMUNITY = `${MAIN_SITE_URL}/community`
-export const TELEGRAM_COMMUNITY = import.meta.env.VITE_TELEGRAM_COMMUNITY_URL || 'https://t.me/aiinsiderclub'
+export const TELEGRAM_COMMUNITY = import.meta.env.VITE_TELEGRAM_COMMUNITY_URL || 'https://t.me/+gu0HQTZLad9lOWE0'
+/** Invite link specifically for Claude Pro giveaway entry */
+export const TELEGRAM_GIVEAWAY_CLAUDE = import.meta.env.VITE_TELEGRAM_GIVEAWAY_CLAUDE_URL || 'https://t.me/+ECZbsUy0bD03NGFk'
 export const TELEGRAM_MANAGER = import.meta.env.VITE_TELEGRAM_MANAGER_URL || 'https://t.me/vladyslavarcher'
 
 /** Бот уведомлений Academy (ДЗ, промо, новости) — username или полная ссылка */

@@ -6,10 +6,13 @@ import {
 } from './siteLinks'
 
 export const SOCIAL_PROOF = {
-  students: 6000,
-  rating: 4.9,
-  reviews: 340,
-  certificates: 100,
+  courses: 9,
+  lessons: '60+',
+  community: '6 000+',
+  communityLabelRu: 'в сообществе AI Insider',
+  communityLabelEn: 'in the AI Insider community',
+  certificateNoteRu: 'Сертификат после Pro-курсов',
+  certificateNoteEn: 'Certificate after Pro courses',
 }
 
 export const INSTRUCTOR = {
@@ -111,8 +114,8 @@ export const COURSE_FAQ = [
   {
     q: 'Как связаться с менеджером?',
     qEn: 'How do I contact the manager?',
-    a: `Telegram: @vladyslavarcher · Сообщество: ${TELEGRAM_COMMUNITY.replace('https://t.me/', '@')} · Email: hello@aiinsider.com`,
-    aEn: `Telegram: @vladyslavarcher · Community: ${TELEGRAM_COMMUNITY.replace('https://t.me/', '@')} · Email: hello@aiinsider.com`,
+    a: `Telegram: @vladyslavarcher · Сообщество: ${TELEGRAM_COMMUNITY} · Email: hello@aiinsider.com`,
+    aEn: `Telegram: @vladyslavarcher · Community: ${TELEGRAM_COMMUNITY} · Email: hello@aiinsider.com`,
   },
 ]
 

@@ -6,6 +6,7 @@ import { isTestAccountEmail } from '../data/testAccount'
 import { formatApiError } from '../utils/formatApiError'
 import { setPendingVerifyEmail } from '../utils/pendingVerification'
 import { NeuronGlow } from '../components/NeuronGlow'
+import { SocialAuthButtons } from '../components/SocialAuthButtons'
 import styles from './Login.module.css'
 
 export function Login() {
@@ -117,13 +118,19 @@ export function Login() {
             <h1 className={styles.title}>{t('login.title')}</h1>
             <p className={styles.subtitle}>{t('login.subtitle')}</p>
 
-            <form onSubmit={handleSubmit} className={styles.form}>
-              {error && (
-                <div className={styles.error} role="alert">
-                  {error}
-                </div>
-              )}
+            {error && (
+              <div className={styles.error} role="alert">
+                {error}
+              </div>
+            )}
 
+            <SocialAuthButtons
+              mode="login"
+              onError={setError}
+              onSuccess={() => navigate(from, { replace: true })}
+            />
+
+            <form onSubmit={handleSubmit} className={styles.form}>
               <label className={styles.label}>
                 <span className={styles.labelText}>{t('login.email')}</span>
                 <input

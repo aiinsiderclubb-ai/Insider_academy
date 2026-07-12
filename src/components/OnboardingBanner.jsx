@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { UiIcon } from './UiIcon'
 import styles from './OnboardingBanner.module.css'
 
 export function OnboardingBanner({ course, lang, onDismiss }) {
@@ -6,7 +7,9 @@ export function OnboardingBanner({ course, lang, onDismiss }) {
 
   return (
     <div className={styles.banner} role="alert">
-      <div className={styles.icon} aria-hidden>🎉</div>
+      <div className={styles.icon} aria-hidden>
+        <UiIcon name="check" size={22} tone="accent" />
+      </div>
       <div className={styles.content}>
         <h2 className={styles.title}>
           {lang === 'ru' ? 'Оплата прошла успешно!' : 'Payment successful!'}

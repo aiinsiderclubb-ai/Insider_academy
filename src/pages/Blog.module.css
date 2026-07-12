@@ -17,8 +17,90 @@
 
 .desc {
   color: var(--text-muted);
-  margin-bottom: 40px;
+  margin-bottom: 24px;
   max-width: 560px;
+}
+
+.langFilter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.langBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-glass);
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.langBtn:hover {
+  border-color: var(--border-accent);
+  color: var(--text);
+}
+
+.langBtnActive {
+  border-color: var(--glow-purple);
+  color: var(--text);
+  background: var(--glow-purple-dim);
+}
+
+.langBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(135deg, #005bbb, #ffd500);
+}
+
+.empty {
+  margin: 0 0 24px;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cardHead .category {
+  margin-bottom: 0;
+}
+
+.langTag {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #1a1a1a;
+  background: linear-gradient(135deg, #005bbb 0%, #ffd500 100%);
+}
+
+.langTagRu {
+  color: var(--text-on-primary);
+  background: rgba(7, 6, 15, 0.75);
+  border: 1px solid var(--border-accent);
 }
 
 .grid {
@@ -37,7 +119,7 @@
 
 .card:hover {
   border-color: var(--border);
-  box-shadow: 0 0 40px var(--glow-purple-dim, rgba(192, 132, 252, 0.08));
+  box-shadow: none;
 }
 
 .category {

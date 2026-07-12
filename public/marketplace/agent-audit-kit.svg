@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#g)"/>
+  <circle cx="980" cy="120" r="180" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="160" cy="620" r="220" fill="rgba(0,0,0,0.12)"/>
+  <text x="80" y="120" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="rgba(255,255,255,0.7)" letter-spacing="4">AI INSIDER · MARKETPLACE</text>
+  <text x="80" y="340" font-family="system-ui,sans-serif" font-size="72">🛡️</text>
+  <text x="80" y="440" font-family="system-ui,sans-serif" font-size="52" font-weight="800" fill="#fff">Agent Audit Kit</text>
+  <text x="80" y="500" font-family="system-ui,sans-serif" font-size="28" fill="rgba(255,255,255,0.85)">Governance · ROI · policies</text>
+  <rect x="80" y="560" width="220" height="48" rx="24" fill="rgba(255,255,255,0.18)"/>
+  <text x="190" y="592" text-anchor="middle" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="#fff">TREND 2026</text>
+</svg>
