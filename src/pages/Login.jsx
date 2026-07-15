@@ -184,7 +184,7 @@ export function Login() {
               </Link>
             </p>
 
-            <p className={styles.demoHint}>{t('login.demoHint')}</p>
+            {!import.meta.env.PROD && <p className={styles.demoHint}>{t('login.demoHint')}</p>}
             <Link to="/forgot-password" className={styles.backLink} style={{ marginTop: 12, display: 'inline-block' }}>
               {t('login.forgotPassword')}
             </Link>

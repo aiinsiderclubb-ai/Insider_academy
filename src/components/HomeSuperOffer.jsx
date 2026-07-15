@@ -25,12 +25,37 @@ export function HomeSuperOffer({ course, lang }) {
 
   return (
     <section id="super-offer" className={styles.section} aria-label={title}>
-      <div className={styles.hotStrip}>
-        <UiIcon name="flame" variant="inline" size={20} tone="onAccent" className={styles.hotFlame} />
-        <span className={styles.hotText}>
-          {lang === 'ru' ? 'ГОРЯЩЕЕ ПРЕДЛОЖЕНИЕ — набор спецкурсов' : 'HOT OFFER — special course bundle'}
-        </span>
-        <span className={styles.hotPulse} aria-hidden />
+      <div className={styles.hotWrap} aria-label={lang === 'ru' ? 'Горящее предложение — набор спецкурсов' : 'Hot offer — special course bundle'}>
+        <div className={`${styles.hotRibbon} ${styles.hotRibbonGhost}`} aria-hidden>
+          <div className={styles.hotTrack}>
+            {[0, 1].map((copy) => (
+              <div key={copy} className={styles.hotSegmentRow}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <span key={i} className={styles.hotSegment}>
+                    AI INSIDER ACCELERATOR <i className={styles.hotStar}>✦</i>
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className={styles.hotRibbon} aria-hidden>
+          <div className={styles.hotTrack}>
+            {[0, 1].map((copy) => (
+              <div key={copy} className={styles.hotSegmentRow}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <span key={i} className={styles.hotSegment}>
+                    <UiIcon name="flame" variant="inline" size={16} tone="onAccent" className={styles.hotFlame} />
+                    {lang === 'ru' ? 'ГОРЯЩЕЕ ПРЕДЛОЖЕНИЕ' : 'HOT OFFER'}
+                    <i className={styles.hotStar}>✦</i>
+                    {lang === 'ru' ? 'НАБОР СПЕЦКУРСОВ' : 'SPECIAL COURSE BUNDLE'}
+                    <i className={styles.hotStar}>✦</i>
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
       <div className={styles.container}>
         <div className={styles.card}>

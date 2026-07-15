@@ -131,6 +131,13 @@ router.post('/liqpay/create', requireUser, async (req, res) => {
 })
 
 router.post('/demo', requireUser, async (req, res) => {
+  // Демо-оплата бесплатно выдаёт курс — в проде только по явному флагу.
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_PURCHASE !== '1') {
+    return res.status(403).json({
+      error: 'Demo purchase disabled in production',
+      errorRu: 'Тестовая оплата отключена. Выберите другой способ оплаты.',
+    })
+  }
   const db = getDb()
   const { courseId, courseTitle, amount, promoCode } = req.body
   let finalAmount = Number(amount) || 0

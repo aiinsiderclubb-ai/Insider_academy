@@ -45,8 +45,6 @@ import { useAdminPushNotifications, useAdminStaleApplicationAlert, requestAdminN
 import { getAdminRole, setAdminRole, canAccessTab, resolveLocalRole, ROLE_LABELS } from '../utils/adminAuth'
 import styles from './Admin.module.css'
 
-const ADMIN_PASSWORD = 'admin123'
-
 const SEARCH_TABS = new Set(['registrations', 'purchases', 'homework', 'reviews', ACCELERATOR_ADMIN_TAB, 'certificates', 'referrals', 'courses', 'blog'])
 
 function exportCsv(filename, rows, headers) {
@@ -275,7 +273,7 @@ export function Admin() {
       localStorage.setItem('lms_admin_auth', localRole)
       setAuthenticated(true)
     } else {
-      setError(online ? 'Неверный пароль (admin123 / editor123 / moderator123)' : 'Неверный пароль')
+      setError('Неверный пароль')
     }
   }
 
@@ -450,7 +448,7 @@ export function Admin() {
             <button type="submit" className={styles.loginBtn}>Войти в панель</button>
           </form>
           <p className={styles.loginHint}>
-            {online ? 'API: admin123 · editor123 · moderator123' : 'Локально: admin123 / editor123 / moderator123'}
+            {online ? 'Пароль задаётся переменной ADMIN_PASSWORD на сервере' : 'Оффлайн-режим: пароль локальной демо-версии'}
           </p>
         </div>
       </div>

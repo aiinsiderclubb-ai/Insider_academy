@@ -4,16 +4,71 @@
   border-bottom: none;
 }
 
-/* ---------- hot strip ---------- */
-.hotStrip {
+/* ---------- hot ribbon (tilted infinite marquee) ---------- */
+.hotWrap {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 14px 24px;
-  background: var(--gradient-primary);
+  padding: 26px 0 20px;
   overflow: hidden;
+}
+
+.hotRibbon {
+  position: relative;
+  width: 106%;
+  margin-left: -3%;
+  transform: rotate(-1.4deg);
+  background: var(--gradient-primary);
+  box-shadow: 0 12px 44px rgba(112, 65, 230, 0.4);
+  overflow: hidden;
+}
+
+.hotRibbonGhost {
+  position: absolute;
+  top: 26px;
+  left: -3%;
+  transform: rotate(1.1deg);
+  background: linear-gradient(92deg, rgba(112, 65, 230, 0.28), rgba(217, 76, 165, 0.24));
+  box-shadow: none;
+  opacity: 0.55;
+}
+
+.hotRibbonGhost .hotSegment {
+  color: rgba(247, 246, 251, 0.5);
+  text-shadow: none;
+}
+
+.hotRibbonGhost .hotTrack {
+  animation-direction: reverse;
+  animation-duration: 34s;
+}
+
+.hotTrack {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: hotMarquee 26s linear infinite;
+}
+
+.hotWrap:hover .hotTrack {
+  animation-play-state: paused;
+}
+
+.hotSegmentRow {
+  display: flex;
+  flex: none;
+}
+
+.hotSegment {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 14px 13px 0;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-on-primary);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
 }
 
 .hotFlame {
@@ -21,20 +76,26 @@
   color: #fff;
 }
 
-.hotText {
-  font-size: 0.8125rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-on-primary);
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+.hotStar {
+  font-style: normal;
+  font-size: 0.7rem;
+  opacity: 0.65;
 }
 
-.hotPulse {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-  pointer-events: none;
+@keyframes hotMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hotTrack {
+    animation: none;
+    will-change: auto;
+  }
+
+  .hotRibbonGhost {
+    display: none;
+  }
 }
 
 /* ---------- card ---------- */
@@ -410,8 +471,4 @@
     grid-template-columns: 1fr;
   }
 
-  .hotText {
-    font-size: 0.6875rem;
-    text-align: center;
-  }
 }

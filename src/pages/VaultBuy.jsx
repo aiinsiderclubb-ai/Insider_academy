@@ -15,7 +15,7 @@ const PAY_METHODS = [
   { id: 'stripe', label: 'Stripe', descRu: 'Visa, Mastercard', descEn: 'Visa, Mastercard', icon: CreditCard },
   { id: 'liqpay', label: 'LiqPay', descRu: 'Украина', descEn: 'Ukraine', icon: Landmark },
   { id: 'demo', label: 'Demo', descRu: 'Тестовая оплата', descEn: 'Test payment', icon: FlaskConical },
-]
+].filter((m) => m.id !== 'demo' || !import.meta.env.PROD || import.meta.env.VITE_ENABLE_DEMO_PAYMENT === '1')
 
 const BENEFITS_RU = [
   'Пожизненный доступ к материалам Vault',

@@ -248,7 +248,7 @@
   border-radius: 28px;
   background:
     linear-gradient(90deg, rgba(8, 8, 12, 0.98) 0%, rgba(8, 8, 12, 0.84) 46%, rgba(8, 8, 12, 0.16) 100%),
-    url('/design/ai-insider-mentor.png') 88% 35% / 560px auto no-repeat,
+    url('/design/ai-insider-mentor.webp') 88% 35% / 560px auto no-repeat,
     #111016;
 }
 
@@ -425,7 +425,7 @@
     padding: 28px 22px;
     background:
       linear-gradient(180deg, rgba(8, 8, 12, 0.1) 28%, rgba(8, 8, 12, 0.96) 72%),
-      url('/design/ai-insider-mentor.png') 50% 18% / 410px auto no-repeat,
+      url('/design/ai-insider-mentor.webp') 50% 18% / 410px auto no-repeat,
       #111016;
   }
 

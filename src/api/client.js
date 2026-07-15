@@ -123,7 +123,8 @@ export const api = {
   resendVerificationCode: (email) => apiRequest('/auth/resend-verification-code', { method: 'POST', body: { email }, auth: false }),
   forgotPassword: (email) => apiRequest('/auth/forgot-password', { method: 'POST', body: { email }, auth: false }),
   resetPassword: (token, password) => apiRequest('/auth/reset-password', { method: 'POST', body: { token, password }, auth: false }),
-  getCourses: () => apiRequest('/courses', { auth: false }),
+  // auth: true — сервер отдаёт videoUrl только по купленным курсам
+  getCourses: () => apiRequest('/courses'),
   getMe: () => apiRequest('/me'),
   getStats: () => apiRequest('/me/stats'),
   purchaseCourse: (payload) => apiRequest('/me/purchases', { method: 'POST', body: payload }),

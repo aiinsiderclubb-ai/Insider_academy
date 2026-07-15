@@ -24,7 +24,7 @@
   background:
     linear-gradient(90deg, rgba(8, 8, 12, 0.98) 0%, rgba(8, 8, 12, 0.82) 46%, rgba(8, 8, 12, 0.08) 100%),
     linear-gradient(180deg, transparent 45%, rgba(8, 8, 12, 0.72) 100%),
-    url('/design/ai-insider-mentor.png') 88% 34% / 560px auto no-repeat,
+    url('/design/ai-insider-mentor.webp') 88% 34% / 560px auto no-repeat,
     #111016;
 }
 
@@ -140,26 +140,26 @@
   border-radius: 16px;
   background:
     linear-gradient(180deg, transparent 40%, rgba(7, 7, 11, 0.55)),
-    url('/design/course-ai-agents.png') center / cover no-repeat,
+    url('/design/course-ai-agents.webp') center / cover no-repeat,
     #0b0a0f;
 }
 
 .card:nth-child(4n + 2) .cardVisual {
   background-image:
     linear-gradient(180deg, transparent 40%, rgba(7, 7, 11, 0.55)),
-    url('/design/course-ai-automation.png');
+    url('/design/course-ai-automation.webp');
 }
 
 .card:nth-child(4n + 3) .cardVisual {
   background-image:
     linear-gradient(180deg, transparent 40%, rgba(7, 7, 11, 0.55)),
-    url('/design/course-ai-content-business.png');
+    url('/design/course-ai-content-business.webp');
 }
 
 .card:nth-child(4n + 4) .cardVisual {
   background-image:
     linear-gradient(180deg, transparent 40%, rgba(7, 7, 11, 0.55)),
-    url('/design/course-ai-data.png');
+    url('/design/course-ai-data.webp');
 }
 
 .cardHead,
@@ -251,7 +251,7 @@
     border-radius: 22px;
     background:
       linear-gradient(180deg, rgba(8, 8, 12, 0.04) 28%, rgba(8, 8, 12, 0.97) 72%),
-      url('/design/ai-insider-mentor.png') 50% 4% / 430px auto no-repeat,
+      url('/design/ai-insider-mentor.webp') 50% 4% / 430px auto no-repeat,
       #111016;
   }
 

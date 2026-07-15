@@ -631,7 +631,7 @@
   background:
     linear-gradient(90deg, rgba(6, 6, 10, 0.82), rgba(8, 7, 12, 0.32) 44%, rgba(7, 7, 11, 0.72)),
     linear-gradient(0deg, rgba(7, 7, 11, 0.72), transparent 38%),
-    url('/design/course-ai-data.png') center / cover no-repeat,
+    url('/design/course-ai-data.webp') center / cover no-repeat,
     #08090d;
 }
 

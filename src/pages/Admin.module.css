@@ -3179,7 +3179,7 @@
   inset: 0;
   background:
     linear-gradient(90deg, rgba(7, 9, 15, 0.94) 0%, rgba(7, 9, 15, 0.84) 52%, rgba(7, 9, 15, 0.42) 100%),
-    url('/design/course-ai-data.png') center / cover no-repeat;
+    url('/design/course-ai-data.webp') center / cover no-repeat;
   opacity: 0.78;
 }
 
