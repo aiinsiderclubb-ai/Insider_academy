@@ -14,7 +14,7 @@
    npm run dev:all
    ```
 2. Откройте **http://localhost:5173** — платформа.
-3. Админка: **http://localhost:5173/admin**, пароль из `server/.env` (по умолчанию **admin123**).
+3. Админка: **http://localhost:5173/admin** — пароль задайте в `server/.env` через `ADMIN_PASSWORD` (минимум 12 символов; дефолтов больше нет).
 
 API доступен на **http://localhost:3001/api/health**.
 

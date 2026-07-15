@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { ApiProvider } from './context/ApiContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -32,7 +33,7 @@ import { Marketplace } from './pages/Marketplace'
 import { MarketplaceProduct } from './pages/MarketplaceProduct'
 import { MarketplaceBuy } from './pages/MarketplaceBuy'
 import { MarketplaceCreators } from './pages/MarketplaceCreators'
-import { Admin } from './pages/Admin'
+const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
 import { AcceleratorApply } from './pages/AcceleratorApply'
 import { LearningMap } from './pages/LearningMap'
 import { Giveaway } from './pages/Giveaway'
@@ -111,7 +112,7 @@ function AppContent() {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/refund" element={<RefundPolicy />} />
           <Route path="/giveaway-rules" element={<GiveawayRules />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<Suspense fallback={<LoadingSpinner fullPage />}><Admin /></Suspense>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
