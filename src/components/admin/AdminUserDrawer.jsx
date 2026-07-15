@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { CheckCircle2, Star, X } from 'lucide-react'
 import { api } from '../../api/client'
 import { courses as catalogCourses } from '../../data/courses'
 import styles from '../../pages/Admin.module.css'
@@ -91,7 +92,7 @@ export function AdminUserDrawer({
             )}
           </div>
           <button type="button" className={styles.drawerClose} onClick={onClose} aria-label="Закрыть">
-            ×
+            <X size={20} aria-hidden />
           </button>
         </header>
 
@@ -147,7 +148,7 @@ export function AdminUserDrawer({
               {userApps.map((a) => (
                 <li key={a.id}>
                   {formatDate(a.date)} · {a.status || 'new'}
-                  {a.accessGranted ? ' · доступ ✓' : ''}
+                  {a.accessGranted && <span className={styles.inlineStatus}> · <CheckCircle2 size={13} aria-hidden /> доступ</span>}
                 </li>
               ))}
             </ul>
@@ -192,7 +193,7 @@ export function AdminUserDrawer({
             ) : (
               userRev.map((r) => (
                 <li key={r.id}>
-                  {r.courseId} · ★{r.rating} · {r.status || 'pending'}
+                  {r.courseId} · <span className={styles.inlineStatus}><Star size={13} aria-hidden /> {r.rating}</span> · {r.status || 'pending'}
                 </li>
               ))
             )}

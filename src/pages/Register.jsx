@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { mapAuthApiError } from '../utils/authErrors'
@@ -128,7 +129,7 @@ export function Register() {
       <div className={styles.content}>
         <div className={styles.topBar}>
           <Link to="/" className={styles.backLink}>
-            <span className={styles.backArrow}>←</span>
+            <ArrowLeft className={styles.backArrow} size={17} aria-hidden="true" />
             {t('login.back')}
           </Link>
           <Link

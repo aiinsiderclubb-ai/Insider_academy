@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { timingSafeEqual } from 'node:crypto'
 import { getDb, parseJson } from '../db.js'
 import { requireAdmin, signAdminToken } from '../middleware/auth.js'
 import { sendEmail, sendHomeworkFeedbackEmail } from '../services/email.js'
@@ -29,11 +30,21 @@ import { deleteUserAccount } from '../services/deleteUser.js'
 
 const router = Router()
 
+const WEAK_ADMIN_PASSWORDS = new Set(['admin123', 'editor123', 'moderator123'])
+
+function securePasswordMatch(candidate, configured) {
+  const input = String(candidate || '')
+  const expected = String(configured || '')
+  if (!input || !expected || expected.length < 12 || WEAK_ADMIN_PASSWORDS.has(expected)) return false
+  const inputBuffer = Buffer.from(input)
+  const expectedBuffer = Buffer.from(expected)
+  return inputBuffer.length === expectedBuffer.length && timingSafeEqual(inputBuffer, expectedBuffer)
+}
+
 function resolveAdminRole(password) {
-  const p = String(password || '')
-  if (p === config.adminPassword) return 'admin'
-  if (p === config.editorPassword) return 'editor'
-  if (p === config.moderatorPassword) return 'moderator'
+  if (securePasswordMatch(password, config.adminPassword)) return 'admin'
+  if (securePasswordMatch(password, config.editorPassword)) return 'editor'
+  if (securePasswordMatch(password, config.moderatorPassword)) return 'moderator'
   return null
 }
 

@@ -1,10 +1,10 @@
 .wrap {
   min-height: 60vh;
-  padding: 32px 0 72px;
+  padding: 18px 0 88px;
 }
 
 .container {
-  max-width: 880px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -25,8 +25,8 @@
 
 .hero {
   margin-bottom: 20px;
-  padding: 28px 28px 24px;
-  border-radius: 20px;
+  padding: clamp(34px, 5vw, 68px);
+  border-radius: 28px;
   border: 1px solid var(--border);
   background:
     linear-gradient(180deg, var(--surface-shine-top), transparent),
@@ -54,8 +54,9 @@
 .title {
   margin: 0 0 8px;
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 800;
+  max-width: 14ch;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 700;
   letter-spacing: -0.03em;
 }
 
@@ -73,9 +74,9 @@
 
 .coverRow {
   position: relative;
-  height: 120px;
+  height: clamp(200px, 28vw, 320px);
   margin: 0 0 24px;
-  border-radius: 18px;
+  border-radius: 26px;
   overflow: hidden;
   background:
     radial-gradient(circle at 30% 20%, rgba(168, 85, 247, 0.2), transparent 45%),
@@ -85,12 +86,12 @@
 
 .coverThumb {
   position: absolute;
-  top: 16px;
-  left: calc(12px + (var(--thumb-index) * 52px));
-  width: 108px;
-  height: 82px;
+  top: 12%;
+  left: calc(5% + (var(--thumb-index) * 15%));
+  width: min(36%, 340px);
+  height: 76%;
   object-fit: cover;
-  border-radius: 14px;
+  border-radius: 20px;
   border: 1px solid var(--bundle-image-border);
   box-shadow: var(--bundle-image-shadow);
   transform: rotate(calc((var(--thumb-index) - 2) * -3deg));
@@ -112,7 +113,7 @@
 .priceCard {
   margin-bottom: 32px;
   padding: 24px 26px;
-  border-radius: 18px;
+  border-radius: 24px;
   border: 1px solid var(--border);
   background: var(--bg-card);
 }
@@ -251,7 +252,7 @@
 
 .block {
   padding: 22px 24px;
-  border-radius: 16px;
+  border-radius: 22px;
   border: 1px solid var(--border);
   background: var(--bg-card);
 }

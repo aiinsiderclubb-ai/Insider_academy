@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -62,11 +63,29 @@ export function Courses() {
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
-        <span className={styles.heroPill}>AI Insider Academy</span>
-        <h1 className={styles.title}>{t('courses.title')}</h1>
-        <p className={styles.desc}>{t('courses.desc')}</p>
+        <section className={styles.catalogHero}>
+          <div className={styles.heroCopy}>
+            <span className={styles.heroPill}>AI Insider Academy</span>
+            <h1 className={styles.title}>{t('courses.title')}</h1>
+            <p className={styles.desc}>{t('courses.desc')}</p>
+            <div className={styles.heroFacts} aria-label={lang === 'ru' ? 'О каталоге' : 'About the catalog'}>
+              <span>{lang === 'ru' ? 'От starter до Pro' : 'Starter to Pro'}</span>
+              <span>{lang === 'ru' ? 'Навсегда или по подписке' : 'Lifetime or membership'}</span>
+              <span>{lang === 'ru' ? 'Практика и сертификаты' : 'Practice and certificates'}</span>
+            </div>
+          </div>
+          <div className={styles.heroVisual} aria-hidden="true">
+            <img src="/design/course-ai-data.webp" alt="" />
+            <div className={styles.heroVisualLabel}>
+              <span>AI INSIDER</span>
+              <strong>{lang === 'ru' ? 'Обучение, которое превращается в результат' : 'Learning that becomes output'}</strong>
+            </div>
+          </div>
+        </section>
 
-        <div className={styles.segmentRow}>
+        <div className={styles.catalogNav}>
+          <span className={styles.catalogNavLabel}>{lang === 'ru' ? 'Каталог' : 'Catalog'}</span>
+          <div className={styles.segmentRow}>
           {SEGMENTS.map((seg) => (
             <button
               key={seg.id}
@@ -78,8 +97,10 @@ export function Courses() {
             </button>
           ))}
           <Link to="/memberships" className={styles.clubLink}>
-            {lang === 'ru' ? 'Memberships →' : 'Memberships →'}
+            Memberships
+            <ArrowRight size={14} strokeWidth={1.8} aria-hidden style={{ marginLeft: 6, flexShrink: 0 }} />
           </Link>
+          </div>
         </div>
 
         {segment !== 'packs' && segment !== 'vault' && (

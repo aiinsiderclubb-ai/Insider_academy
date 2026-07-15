@@ -1,9 +1,10 @@
 import styles from '../../pages/Admin.module.css'
+import { Search, X } from 'lucide-react'
 
 export function AdminSearchBar({ value, onChange, placeholder = 'Поиск по email, названию…' }) {
   return (
     <div className={styles.searchWrap}>
-      <span className={styles.searchIcon} aria-hidden>🔍</span>
+      <span className={styles.searchIcon} aria-hidden><Search size={16} /></span>
       <input
         type="search"
         value={value}
@@ -13,7 +14,7 @@ export function AdminSearchBar({ value, onChange, placeholder = 'Поиск по
       />
       {value && (
         <button type="button" className={styles.searchClear} onClick={() => onChange('')} aria-label="Очистить">
-          ×
+          <X size={15} aria-hidden />
         </button>
       )}
     </div>

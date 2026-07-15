@@ -14,18 +14,19 @@ export function NotFound() {
         description={ru ? 'Страница не найдена' : 'Page not found'}
         path="/404"
       />
-      <p className={styles.code} aria-hidden>404</p>
-      <h1 className={styles.title}>
-        {ru ? 'Здесь пусто' : 'Nothing here'}
-      </h1>
-      <p className={styles.text}>
-        {ru
-          ? 'Маршрут сломан или страница переехала. Вернёмся на главную.'
-          : 'Broken route or a moved page. Let’s head home.'}
-      </p>
-      <Link to="/" className={styles.btn}>
-        {ru ? 'На главную' : 'Go home'}
-      </Link>
+      <div className={styles.copy}>
+        <p className={styles.code} aria-hidden>404</p>
+        <h1 className={styles.title}>{ru ? 'Маршрут потерян' : 'Route lost'}</h1>
+        <p className={styles.text}>
+          {ru
+            ? 'Инсайдер уже ищет нужную страницу. А пока вернёмся в Академию.'
+            : 'The Insider is already looking for it. Meanwhile, let’s return to the Academy.'}
+        </p>
+        <Link to="/" className={styles.btn}>{ru ? 'Вернуться на главную' : 'Return home'}</Link>
+      </div>
+      <div className={styles.visual} aria-hidden="true">
+        <img src="/design/mentor-404.webp" alt="" />
+      </div>
     </div>
   )
 }

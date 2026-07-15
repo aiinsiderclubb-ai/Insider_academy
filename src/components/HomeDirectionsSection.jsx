@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { useCourses } from '../context/CoursesContext'
 import { HOME_DIRECTIONS } from '../data/homeDirections'
 import { CourseCatalogCard } from './CourseCatalogCard'
@@ -34,7 +35,7 @@ export function HomeDirectionsSection({ lang, theme }) {
         </div>
 
         <div className={styles.tabs} role="tablist">
-          {HOME_DIRECTIONS.map((dir) => (
+          {HOME_DIRECTIONS.map((dir, index) => (
             <button
               key={dir.id}
               type="button"
@@ -43,13 +44,17 @@ export function HomeDirectionsSection({ lang, theme }) {
               className={`${styles.tab} ${dir.id === activeId ? styles.tabActive : ''}`}
               onClick={() => setActiveId(dir.id)}
             >
-              {lang === 'ru' ? dir.labelRu : dir.labelEn}
+              <span className={styles.tabNum}>0{index + 1}</span>
+              <span>{lang === 'ru' ? dir.labelRu : dir.labelEn}</span>
             </button>
           ))}
         </div>
 
         <div className={styles.panel} key={active.id}>
           <div className={styles.panelAside}>
+            <span className={styles.panelKicker}>
+              {lang === 'ru' ? 'Ваш маршрут' : 'Your route'} / {lang === 'ru' ? active.labelRu : active.labelEn}
+            </span>
             <p className={styles.panelDesc}>{lang === 'ru' ? active.descRu : active.descEn}</p>
             <blockquote className={styles.quote}>
               <p className={styles.quoteText}>
@@ -60,9 +65,13 @@ export function HomeDirectionsSection({ lang, theme }) {
                 <span>{lang === 'ru' ? active.quote.roleRu : active.quote.roleEn}</span>
               </footer>
             </blockquote>
-            <Link to="/courses" className={styles.allLink}>
-              {lang === 'ru' ? 'Все курсы →' : 'All courses →'}
-            </Link>
+            <div className={styles.panelFooter}>
+              <span>{activeCourses.length} {lang === 'ru' ? 'курса в маршруте' : 'courses in route'}</span>
+              <Link to="/courses" className={styles.allLink}>
+                {lang === 'ru' ? 'Все курсы' : 'All courses'}
+                <ArrowRight size={14} strokeWidth={1.8} aria-hidden style={{ marginLeft: 6, flexShrink: 0 }} />
+              </Link>
+            </div>
           </div>
           <div className={styles.panelCourses}>
             {activeCourses.map((course) => (

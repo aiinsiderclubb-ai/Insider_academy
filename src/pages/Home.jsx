@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight, BadgeCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -10,12 +11,10 @@ import { SOCIAL_PROOF } from '../data/courseLanding'
 import { getCourseField, getCourseDescription, formatCourseDuration } from '../data/courses'
 import { api, checkApiOnline } from '../api/client'
 import { UiIcon } from '../components/UiIcon'
-import { HeroProductPreview } from '../components/HeroProductPreview'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { StaggerReveal } from '../components/StaggerReveal'
 import { CountUp } from '../components/CountUp'
 import { TelegramWidget } from '../components/TelegramWidget'
-import { ThemePreview } from '../components/ThemePreview'
 import { CourseCatalogCard } from '../components/CourseCatalogCard'
 import { useTheme } from '../context/ThemeContext'
 import { HomeSuperOffer } from '../components/HomeSuperOffer'
@@ -25,7 +24,7 @@ import { HomeCertificatesSection } from '../components/HomeCertificatesSection'
 import { HomeReviewsSection } from '../components/HomeReviewsSection'
 import { HomeDirectionsSection } from '../components/HomeDirectionsSection'
 import { PlatformBridge } from '../components/PlatformBridge'
-import { TELEGRAM_COMMUNITY } from '../data/siteLinks'
+import { TELEGRAM_COMMUNITY, TELEGRAM_MANAGER } from '../data/siteLinks'
 import { PageMeta } from '../components/PageMeta'
 import { ContinueLearningPanel } from '../components/ContinueLearningPanel'
 import { ActivityFeed } from '../components/ActivityFeed'
@@ -34,6 +33,8 @@ import { RecommendationsStrip } from '../components/RecommendationsStrip'
 import { buildCommunityFeed } from '../data/activityFeed'
 import { getPersonalUpsells } from '../data/marketplace/recommendations'
 import { hasClubMembership } from '../data/club'
+import { MARKETPLACE_CREATORS } from '../data/marketplace/creators'
+import { AI_INSIDER_MENTOR_IMAGE } from '../utils/designAssets'
 import styles from './Home.module.css'
 
 export function Home() {
@@ -112,7 +113,7 @@ export function Home() {
   const flagshipLesson = flagshipCourse?.lessons?.[0]
 
   return (
-    <>
+    <div className={styles.page}>
       <PageMeta
         title={lang === 'ru' ? 'AI Insider Academy' : 'AI Insider Academy'}
         description={t('home.heroDesc')}
@@ -170,7 +171,23 @@ export function Home() {
             </a>
           </div>
           <div className={`${styles.heroPreview} ${styles.heroEnter} ${styles.heroEnterDelay2}`}>
-            <HeroProductPreview lang={lang} />
+            <div className={styles.mentorFrame}>
+              <div className={styles.mentorHalo} aria-hidden />
+              <img
+                className={styles.mentorImage}
+                src="/design/ai-insider-mentor.webp"
+                alt=""
+                aria-hidden="true"
+              />
+              <div className={styles.mentorCaption}>
+                <span className={styles.mentorCaptionDot} aria-hidden />
+                <span>{lang === 'ru' ? 'Практика с AI-ментором' : 'Practice with an AI mentor'}</span>
+              </div>
+              <div className={styles.mentorSignal} aria-hidden>
+                <strong>24/7</strong>
+                <span>{lang === 'ru' ? 'доступ к платформе' : 'platform access'}</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -231,7 +248,8 @@ export function Home() {
                     </p>
                   </div>
                   <Link to="/cabinet" className={styles.progressPanelLink}>
-                    {lang === 'ru' ? 'Кабинет →' : 'Dashboard →'}
+                    {lang === 'ru' ? 'Кабинет' : 'Dashboard'}
+                    <ArrowRight size={14} strokeWidth={1.8} aria-hidden style={{ marginLeft: 6, verticalAlign: '-0.15em' }} />
                   </Link>
                 </div>
 
@@ -315,26 +333,58 @@ export function Home() {
                 : 'From lesson to practice, review and certificate — a clear learning path in one place.'}
             </p>
           </div>
-          <StaggerReveal as="ol" className={styles.stepper} stagger={60}>
-            <li className={styles.step}>
-              <span className={styles.stepNum}>01</span>
-              <UiIcon name="headphones" variant="box" tone="accent" />
-              <h3 className={styles.stepTitle}>{t('home.support247')}</h3>
-              <p className={styles.stepText}>{t('home.support247Desc')}</p>
+          <StaggerReveal as="ol" className={styles.flowGrid} stagger={80}>
+            <li className={`${styles.flowStep} ${styles.flowViolet}`}>
+              <span className={styles.flowNum}>01</span>
+              <span className={styles.flowIcon}><UiIcon name="play" tone="inherit" /></span>
+              <h3 className={styles.flowTitle}>{lang === 'ru' ? 'Видеоурок' : 'Video lesson'}</h3>
+              <p className={styles.flowText}>
+                {lang === 'ru'
+                  ? 'Смотрите в своём темпе — доступ к урокам остаётся у вас.'
+                  : 'Watch at your own pace — lesson access stays with you.'}
+              </p>
             </li>
-            <li className={styles.step}>
-              <span className={styles.stepNum}>02</span>
-              <UiIcon name="target" variant="box" tone="accent" />
-              <h3 className={styles.stepTitle}>{t('home.checkingTasks')}</h3>
-              <p className={styles.stepText}>{t('home.checkingTasksDesc')}</p>
+            <li className={`${styles.flowStep} ${styles.flowMagenta}`}>
+              <span className={styles.flowNum}>02</span>
+              <span className={styles.flowIcon}><UiIcon name="penLine" tone="inherit" /></span>
+              <h3 className={styles.flowTitle}>{lang === 'ru' ? 'Практика' : 'Practice'}</h3>
+              <p className={styles.flowText}>
+                {lang === 'ru'
+                  ? 'Домашние задания после уроков — навык закрепляется делом.'
+                  : 'Homework after lessons — skills stick through doing.'}
+              </p>
             </li>
-            <li className={styles.step}>
-              <span className={styles.stepNum}>03</span>
-              <UiIcon name="graduationCap" variant="box" tone="accent" />
-              <h3 className={styles.stepTitle}>{t('home.certificates')}</h3>
-              <p className={styles.stepText}>{t('home.certificatesDesc')}</p>
+            <li className={`${styles.flowStep} ${styles.flowSage}`}>
+              <span className={styles.flowNum}>03</span>
+              <span className={styles.flowIcon}><UiIcon name="target" tone="inherit" /></span>
+              <h3 className={styles.flowTitle}>{t('home.checkingTasks')}</h3>
+              <p className={styles.flowText}>{t('home.checkingTasksDesc')}</p>
+            </li>
+            <li className={`${styles.flowStep} ${styles.flowEmber}`}>
+              <span className={styles.flowNum}>04</span>
+              <span className={styles.flowIcon}><UiIcon name="graduationCap" tone="inherit" /></span>
+              <h3 className={styles.flowTitle}>{t('home.certificates')}</h3>
+              <p className={styles.flowText}>{t('home.certificatesDesc')}</p>
             </li>
           </StaggerReveal>
+
+          <div className={styles.supportStrip}>
+            <span className={styles.supportIcon} aria-hidden>
+              <UiIcon name="headphones" tone="inherit" />
+            </span>
+            <div className={styles.supportBody}>
+              <strong>{t('home.support247')}</strong>
+              <span>{t('home.support247Desc')}</span>
+            </div>
+            <a
+              className={styles.supportBtn}
+              href={TELEGRAM_MANAGER}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {lang === 'ru' ? 'Задать вопрос' : 'Ask a question'}
+            </a>
+          </div>
         </div>
       </ScrollReveal>
 
@@ -494,27 +544,100 @@ export function Home() {
 
       <ScrollReveal as="section" className={`${styles.teamSection} ${styles.bandBase}`}>
         <div className={styles.container}>
-          <div className={styles.sectionHead}>
-            <span className={styles.sectionPill}>{lang === 'ru' ? 'Команда' : 'Team'}</span>
-            <h2 className={styles.sectionTitle}>{t('home.teamTitle')}</h2>
+          <div className={`${styles.sectionHead} ${styles.teamHead}`}>
+            <div>
+              <span className={styles.sectionPill}>{lang === 'ru' ? 'Команда' : 'Team'}</span>
+              <h2 className={styles.sectionTitle}>{t('home.teamTitle')}</h2>
+            </div>
+            <Link to="/marketplace/creators" className={styles.teamAllLink}>
+              {lang === 'ru' ? 'Все создатели' : 'All creators'}
+              <ArrowRight size={16} strokeWidth={2} aria-hidden />
+            </Link>
           </div>
-          <StaggerReveal className={styles.teamGrid} stagger={60}>
-            <div className={styles.teamCard}>
-              <UiIcon name="users" variant="box" tone="accent" className={styles.teamCardIcon} />
-              <h3 className={styles.teamCardTitle}>{t('home.teamCreators')}</h3>
-              <p className={styles.teamCardText}>{t('home.teamCreatorsDesc')}</p>
-            </div>
-            <div className={styles.teamCard}>
-              <UiIcon name="trendingUp" variant="box" tone="accent" className={styles.teamCardIcon} />
-              <h3 className={styles.teamCardTitle}>{t('home.teamSeo')}</h3>
-              <p className={styles.teamCardText}>{t('home.teamSeoDesc')}</p>
-            </div>
-            <div className={styles.teamCard}>
-              <UiIcon name="graduationCap" variant="box" tone="accent" className={styles.teamCardIcon} />
-              <h3 className={styles.teamCardTitle}>{t('home.teamMentors')}</h3>
-              <p className={styles.teamCardText}>{t('home.teamMentorsDesc')}</p>
-            </div>
-          </StaggerReveal>
+
+          <div className={styles.teamLayout}>
+            <article className={styles.mentorCard}>
+              <img
+                className={styles.mentorImg}
+                src={AI_INSIDER_MENTOR_IMAGE}
+                alt={lang === 'ru' ? 'AI Insider — ментор академии' : 'AI Insider — academy mentor'}
+                loading="lazy"
+              />
+              <div className={styles.mentorScrim} aria-hidden />
+              <div className={styles.mentorBody}>
+                <span className={styles.mentorTag}>
+                  {lang === 'ru' ? 'Основатель · AI-ментор' : 'Founder · AI mentor'}
+                </span>
+                <h3 className={styles.mentorName}>AI Insider</h3>
+                <p className={styles.mentorText}>
+                  {lang === 'ru'
+                    ? 'Строит AI-системы и учит этому без воды: голосовые агенты, автоматизация, продукт.'
+                    : 'Builds AI systems and teaches them hands-on: voice agents, automation, product.'}
+                </p>
+                <a
+                  className={styles.mentorLink}
+                  href={TELEGRAM_COMMUNITY}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {lang === 'ru' ? 'Канал в Telegram' : 'Telegram channel'}
+                  <ArrowRight size={15} strokeWidth={2} aria-hidden />
+                </a>
+              </div>
+            </article>
+
+            <StaggerReveal className={styles.teamRoles} stagger={60}>
+              <div className={`${styles.roleCard} ${styles.roleViolet}`}>
+                <span className={styles.roleIcon}><UiIcon name="users" tone="inherit" /></span>
+                <div className={styles.roleBody}>
+                  <h3 className={styles.roleTitle}>{t('home.teamCreators')}</h3>
+                  <p className={styles.roleText}>{t('home.teamCreatorsDesc')}</p>
+                </div>
+              </div>
+              <div className={`${styles.roleCard} ${styles.roleSage}`}>
+                <span className={styles.roleIcon}><UiIcon name="graduationCap" tone="inherit" /></span>
+                <div className={styles.roleBody}>
+                  <h3 className={styles.roleTitle}>{t('home.teamMentors')}</h3>
+                  <p className={styles.roleText}>{t('home.teamMentorsDesc')}</p>
+                </div>
+              </div>
+              <div className={`${styles.roleCard} ${styles.roleEmber}`}>
+                <span className={styles.roleIcon}><UiIcon name="trendingUp" tone="inherit" /></span>
+                <div className={styles.roleBody}>
+                  <h3 className={styles.roleTitle}>{t('home.teamSeo')}</h3>
+                  <p className={styles.roleText}>{t('home.teamSeoDesc')}</p>
+                </div>
+              </div>
+            </StaggerReveal>
+          </div>
+
+          <div className={styles.creatorsStrip}>
+            <span className={styles.creatorsStripLabel}>
+              {lang === 'ru' ? 'Создатели Marketplace' : 'Marketplace creators'}
+            </span>
+            {MARKETPLACE_CREATORS.map((creator) => (
+              <Link
+                key={creator.id}
+                to={`/marketplace/creators/${creator.slug}`}
+                className={styles.creatorPill}
+              >
+                <span className={styles.creatorAvatar} style={{ background: creator.avatarGradient }}>
+                  {creator.name[0]}
+                </span>
+                <span className={styles.creatorMeta}>
+                  <span className={styles.creatorName}>
+                    {creator.name}
+                    {creator.verified && (
+                      <BadgeCheck size={14} className={styles.creatorVerified} aria-label={lang === 'ru' ? 'Проверенный создатель' : 'Verified creator'} />
+                    )}
+                  </span>
+                  <span className={styles.creatorCount}>
+                    {creator.productCount} {lang === 'ru' ? 'продуктов' : 'products'}
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </ScrollReveal>
 
@@ -526,15 +649,35 @@ export function Home() {
 
       <ScrollReveal>
       <section className={`${styles.ctaBlock} ${styles.bandSurface}`}>
-        <div className={styles.container}>
-          <h2 className={styles.ctaTitle}>{t('home.ctaTitle')}</h2>
+        <div className={styles.ctaGlow} aria-hidden />
+        <div className={`${styles.container} ${styles.ctaInner}`}>
+          <span className={styles.ctaEyebrow}>
+            {lang === 'ru' ? 'Следующий шаг' : 'Next step'}
+          </span>
+          <h2 className={styles.ctaTitle}>
+            {lang === 'ru' ? (
+              <>Готовы <span className={styles.ctaTitleAccent}>начать?</span></>
+            ) : (
+              <>Ready to <span className={styles.ctaTitleAccent}>start?</span></>
+            )}
+          </h2>
           <p className={styles.ctaText}>{t('home.ctaText')}</p>
-          <Link to="/courses" className={styles.ctaButtonGradient}>
-            {t('home.toCatalog')}
-          </Link>
+          <div className={styles.ctaActions}>
+            <Link to="/courses" className={styles.ctaButtonGradient}>
+              {t('home.toCatalog')}
+            </Link>
+            <Link to="/memberships" className={styles.ctaGhost}>
+              {lang === 'ru' ? 'Смотреть подписки' : 'View memberships'}
+            </Link>
+          </div>
+          <div className={styles.ctaPerks}>
+            <span>{lang === 'ru' ? '✓ Доступ сразу после оплаты' : '✓ Instant access after payment'}</span>
+            <span>{lang === 'ru' ? '✓ Сертификаты и домашки' : '✓ Certificates and homework'}</span>
+            <span>{lang === 'ru' ? '✓ Поддержка ментора' : '✓ Mentor support'}</span>
+          </div>
         </div>
       </section>
       </ScrollReveal>
-    </>
+    </div>
   )
 }

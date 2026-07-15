@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Check, ChevronDown, ChevronRight, Circle, CircleDot } from 'lucide-react'
 import {
   getRoadmap,
   saveRoadmap,
@@ -78,7 +79,7 @@ export function AdminRoadmap({ onToast }) {
         <div>
           <h2 className={styles.sectionTitle}>Роадмап платформы</h2>
           <p className={styles.sectionDesc}>
-            Кликайте по задачам, чтобы менять статус: запланировано → в работе → готово
+            Кликайте по задачам, чтобы менять статус: «запланировано», «в работе», затем «готово».
           </p>
         </div>
         <div className={styles.roadmapActions}>
@@ -136,7 +137,7 @@ export function AdminRoadmap({ onToast }) {
                   </div>
                   <span>{progress}%</span>
                 </div>
-                <span className={styles.phaseChevron}>{open ? '▾' : '▸'}</span>
+                <span className={styles.phaseChevron}>{open ? <ChevronDown size={17} aria-hidden /> : <ChevronRight size={17} aria-hidden />}</span>
               </button>
 
               {open && (
@@ -154,21 +155,22 @@ export function AdminRoadmap({ onToast }) {
                     ))}
                   </div>
                   <ul className={styles.taskList}>
-                    {phase.tasks.map((task) => (
-                      <li key={task.id}>
-                        <button
-                          type="button"
-                          className={`${styles.taskBtn} ${statusClass[task.status]}`}
-                          onClick={() => toggleTask(phase.id, task.id)}
-                        >
-                          <span className={styles.taskCheck}>
-                            {task.status === 'done' ? '✓' : task.status === 'in_progress' ? '◐' : '○'}
-                          </span>
-                          <span>{task.title}</span>
-                          <span className={styles.taskStatus}>{ROADMAP_STATUS[task.status]?.label}</span>
-                        </button>
-                      </li>
-                    ))}
+                    {phase.tasks.map((task) => {
+                      const TaskIcon = task.status === 'done' ? Check : task.status === 'in_progress' ? CircleDot : Circle
+                      return (
+                        <li key={task.id}>
+                          <button
+                            type="button"
+                            className={`${styles.taskBtn} ${statusClass[task.status]}`}
+                            onClick={() => toggleTask(phase.id, task.id)}
+                          >
+                            <span className={styles.taskCheck}><TaskIcon size={16} strokeWidth={1.9} aria-hidden /></span>
+                            <span>{task.title}</span>
+                            <span className={styles.taskStatus}>{ROADMAP_STATUS[task.status]?.label}</span>
+                          </button>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               )}

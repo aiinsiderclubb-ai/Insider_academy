@@ -5,6 +5,7 @@ import { getCourseThemeStyle } from '../data/courseThemes'
 import { CourseCover } from './CourseCover'
 import { CourseBuyAction } from './CourseBuyAction'
 import { ProductBadge } from './ProductBadge'
+import { getCourseDesignCover } from '../utils/designAssets'
 import styles from './CourseCatalogCard.module.css'
 
 export function CourseCatalogCard({
@@ -30,6 +31,7 @@ export function CourseCatalogCard({
     ? (lang === 'ru' ? 'Продвинутый' : 'Advanced')
     : (lang === 'ru' ? 'Базовый' : 'Beginner')
   const detailsPath = `/courses/${course.slug}`
+  const cover = getCourseDesignCover(course)
   const primaryPath = isIntake
     ? `/courses/${course.slug}/apply`
     : isFree
@@ -50,10 +52,16 @@ export function CourseCatalogCard({
       style={getCourseThemeStyle(course.id, theme)}
     >
       <Link to={detailsPath} className={styles.imageWrap} aria-label={title}>
-        <CourseCover src={course.image} courseId={course.id} showBrand={false} />
+        <CourseCover src={cover} courseId={course.id} showBrand={false} />
+        <span className={styles.coverLabel}>AI INSIDER / {level}</span>
         {course.badge && <ProductBadge type={course.badge} lang={lang} />}
         {purchased && !isFree && !isIntake && percent != null && completedLabel && (
-          <span className={styles.progressBadge}>{percent}% {completedLabel}</span>
+          <span className={styles.progressBadge}>
+            <span className={styles.progressText}>{percent}% {completedLabel}</span>
+            <span className={styles.progressTrack} aria-hidden>
+              <span className={styles.progressFill} style={{ width: `${Math.min(100, Math.max(0, percent))}%` }} />
+            </span>
+          </span>
         )}
       </Link>
 

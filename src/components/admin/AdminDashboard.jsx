@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { AlertTriangle, ArrowUpRight, ClipboardCheck, CreditCard, GraduationCap, Lightbulb, UserRound } from 'lucide-react'
 import { useAnimatedNumber } from '../../hooks/useAnimatedNumber'
 import { adminRecommendations } from '../../data/adminRoadmap'
 import styles from '../../pages/Admin.module.css'
@@ -66,7 +67,7 @@ function buildActivityFeed({ registrations, purchases, homeworkList, certificate
     .slice(0, 8)
 }
 
-const typeIcons = { reg: '👤', purchase: '💳', hw: '📝', cert: '🎓' }
+const typeIcons = { reg: UserRound, purchase: CreditCard, hw: ClipboardCheck, cert: GraduationCap }
 
 function hoursSince(iso) {
   if (!iso) return 0
@@ -160,7 +161,7 @@ export function AdminDashboard({
       {staleApplications.length > 0 && canAccessTab(adminRole, ACCELERATOR_ADMIN_TAB) && (
         <div className={styles.staleBanner} role="status">
           <div>
-            <strong>⚠️ {staleApplications.length} заявок в статусе «Новая» более 24 часов</strong>
+            <strong className={styles.inlineStatus}><AlertTriangle size={17} aria-hidden /> {staleApplications.length} заявок в статусе «Новая» более 24 часов</strong>
             <p className={styles.sectionDesc} style={{ margin: '6px 0 0' }}>
               Рекомендуем проверить очередь и одобрить или отклонить заявки.
             </p>
@@ -238,18 +239,21 @@ export function AdminDashboard({
             {activity.length === 0 ? (
               <li className={styles.activityEmpty}>Пока нет событий</li>
             ) : (
-              activity.map((ev, i) => (
-                <li key={i}>
-                  <button type="button" className={styles.activityItem} onClick={() => onTabChange(ev.tab)}>
-                    <span className={styles.activityIcon}>{typeIcons[ev.type]}</span>
+              activity.map((ev, i) => {
+                const ActivityIcon = typeIcons[ev.type] || UserRound
+                return (
+                  <li key={i}>
+                    <button type="button" className={styles.activityItem} onClick={() => onTabChange(ev.tab)}>
+                    <span className={styles.activityIcon}><ActivityIcon size={16} strokeWidth={1.8} aria-hidden /></span>
                     <span className={styles.activityBody}>
                       <strong>{ev.label}</strong>
                       {ev.sub && <small>{ev.sub}</small>}
                       <time>{formatDate(ev.date)}</time>
                     </span>
                   </button>
-                </li>
-              ))
+                  </li>
+                )
+              })
             )}
           </ul>
         </section>
@@ -265,12 +269,12 @@ export function AdminDashboard({
               className={`${styles.recCard} ${styles[`rec_${r.priority}`]}`}
               onClick={() => onTabChange(r.tab)}
             >
-              <span className={styles.recIcon}>{r.icon}</span>
+              <span className={styles.recIcon}><Lightbulb size={18} strokeWidth={1.8} aria-hidden /></span>
               <div>
                 <strong>{r.title}</strong>
                 <p>{r.desc}</p>
               </div>
-              <span className={styles.recArrow}>→</span>
+              <span className={styles.recArrow}><ArrowUpRight size={17} aria-hidden /></span>
             </button>
           ))}
         </div>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
+import { ArrowLeft, Check, LoaderCircle, Rocket, Send, Target, Zap } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import { useApi } from '../context/ApiContext'
@@ -13,7 +14,6 @@ import {
   INTEREST_OPTIONS,
   SOURCE_OPTIONS,
 } from '../data/acceleratorApplication'
-import { UiIcon } from '../components/UiIcon'
 import styles from './AcceleratorApply.module.css'
 
 const emptyForm = {
@@ -137,7 +137,7 @@ export function AcceleratorApply() {
       <div className={styles.successWrap}>
         {bg}
         <div className={styles.successCard}>
-          <span className={styles.successIcon} aria-hidden>✓</span>
+          <span className={styles.successIcon} aria-hidden><Check size={34} strokeWidth={2.3} /></span>
           <h1>{lang === 'ru' ? 'Заявка отправлена!' : 'Application submitted!'}</h1>
           <p>
             {lang === 'ru'
@@ -145,7 +145,8 @@ export function AcceleratorApply() {
               : 'AI Insider Academy mentors will review your application and contact you via email or Telegram.'}
           </p>
           <Link to={`/courses/${course.slug}`} className={styles.backBtn}>
-            {lang === 'ru' ? '← К странице программы' : '← Back to program'}
+            <ArrowLeft size={17} aria-hidden />
+            {lang === 'ru' ? 'К странице программы' : 'Back to program'}
           </Link>
         </div>
       </div>
@@ -157,36 +158,43 @@ export function AcceleratorApply() {
       {bg}
       <div className={styles.container}>
         <Link to={`/courses/${course.slug}`} className={styles.backLink}>
-          ← {lang === 'ru' ? 'AI Insider Accelerator' : 'AI Insider Accelerator'}
+          <ArrowLeft size={16} aria-hidden />
+          AI Insider Accelerator
         </Link>
 
         <header className={styles.hero}>
-          <div className={styles.heroTop}>
-            <span className={styles.badge}>
-              {lang === 'ru' ? 'Заявка на участие' : 'Apply now'}
-            </span>
-            <span className={styles.heroPill}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>
-            <span className={styles.heroPill}>5–10 min</span>
+          <div className={styles.heroCopy}>
+            <div className={styles.heroTop}>
+              <span className={styles.badge}>
+                {lang === 'ru' ? 'Заявка на участие' : 'Apply now'}
+              </span>
+              <span className={styles.heroPill}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>
+              <span className={styles.heroPill}>5–10 min</span>
+            </div>
+            <h1 className={styles.title}>AI Insider Accelerator</h1>
+            <p className={styles.lead}>
+              {lang === 'ru'
+                ? 'Бесплатная отборочная программа, которая поможет познакомиться со всеми направлениями AI и выбрать свою специализацию.'
+                : 'A free selection program to explore all AI tracks and choose your specialization.'}
+            </p>
+            <div className={styles.heroStats}>
+              <div className={styles.stat}>
+                <Target size={17} aria-hidden />
+                <span>{lang === 'ru' ? <>Отбор в <strong>Accelerator</strong></> : <>Join the <strong>Accelerator</strong></>}</span>
+              </div>
+              <div className={styles.stat}>
+                <Zap size={17} aria-hidden />
+                <span>{lang === 'ru' ? <>Ответ в <strong>3–5 дней</strong></> : <>Reply in <strong>3–5 days</strong></>}</span>
+              </div>
+              <div className={styles.stat}>
+                <Rocket size={17} aria-hidden />
+                <span>{lang === 'ru' ? <strong>7 направлений</strong> : <strong>7 AI tracks</strong>}</span>
+              </div>
+            </div>
           </div>
-          <h1 className={styles.title}>AI Insider Accelerator</h1>
-          <p className={styles.lead}>
-            {lang === 'ru'
-              ? 'Бесплатная отборочная программа, которая поможет познакомиться со всеми направлениями AI и выбрать свою специализацию.'
-              : 'A free selection program to explore all AI tracks and choose your specialization.'}
-          </p>
-          <div className={styles.heroStats}>
-            <div className={styles.stat}>
-              <UiIcon name="target" size={16} tone="accent" />
-              <span>{lang === 'ru' ? <>Отбор в <strong>Accelerator</strong></> : <>Join the <strong>Accelerator</strong></>}</span>
-            </div>
-            <div className={styles.stat}>
-              <UiIcon name="zap" size={16} tone="accent" />
-              <span>{lang === 'ru' ? <>Ответ в <strong>3–5 дней</strong></> : <>Reply in <strong>3–5 days</strong></>}</span>
-            </div>
-            <div className={styles.stat}>
-              <UiIcon name="rocket" size={16} tone="accent" />
-              <span>{lang === 'ru' ? <strong>7 направлений</strong> : <strong>7 AI tracks</strong>}</span>
-            </div>
+          <div className={styles.heroVisual}>
+            <img src="/design/mentor-accelerator.webp" alt="" aria-hidden />
+            <span className={styles.visualCaption}>{lang === 'ru' ? 'Отбор с ментором Academy' : 'Mentor-led selection'}</span>
           </div>
         </header>
 
@@ -321,7 +329,7 @@ export function AcceleratorApply() {
 
           <section className={styles.section}>
             <SectionHead
-              num="✦"
+              num="6"
               title={lang === 'ru' ? 'Мотивационное письмо' : 'Motivation letter'}
               hint={lang === 'ru'
                 ? 'Почему вы хотите попасть в Accelerator? Расскажите о целях, мотивации и почему мы должны выбрать вас.'
@@ -349,7 +357,7 @@ export function AcceleratorApply() {
 
           <section className={styles.section}>
             <SectionHead
-              num="★"
+              num="7"
               title={lang === 'ru' ? 'Финальный вопрос' : 'Final question'}
               hint={lang === 'ru'
                 ? 'Представьте, что прошло 12 месяцев. Какой результат вы хотите получить благодаря AI?'
@@ -374,9 +382,10 @@ export function AcceleratorApply() {
                 : (lang === 'ru' ? 'Нажимая кнопку, вы соглашаетесь на обработку данных для рассмотрения заявки.' : 'By submitting, you agree to data processing for application review.')}
             </p>
             <button type="submit" className={styles.submitBtn} disabled={submitting || form.interests.length === 0}>
+              {submitting ? <LoaderCircle className={styles.spin} size={18} aria-hidden /> : <Send size={17} aria-hidden />}
               {submitting
                 ? (lang === 'ru' ? 'Отправка…' : 'Submitting…')
-                : (lang === 'ru' ? 'Отправить заявку →' : 'Submit application →')}
+                : (lang === 'ru' ? 'Отправить заявку' : 'Submit application')}
             </button>
           </div>
         </form>

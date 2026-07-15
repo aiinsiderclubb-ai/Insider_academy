@@ -47,28 +47,31 @@ export function Blog() {
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
-        <h1 className={styles.title}>{t('blog.title')}</h1>
-        <p className={styles.desc}>{t('blog.desc')}</p>
+        <header className={styles.hero}>
+          <span className={styles.eyebrow}>AI INSIDER · EDITORIAL</span>
+          <h1 className={styles.title}>{t('blog.title')}</h1>
+          <p className={styles.desc}>{t('blog.desc')}</p>
 
-        <div className={styles.langFilter} role="tablist" aria-label={lang === 'ru' ? 'Язык статей' : 'Article language'}>
-          {BLOG_CONTENT_LANGS.map((item) => {
-            const label = lang === 'en' ? item.labelEn : item.labelRu
-            const active = contentLang === item.id
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                className={`${styles.langBtn} ${active ? styles.langBtnActive : ''}`}
-                onClick={() => setContentLang(item.id)}
-              >
-                {item.id === 'uk' && <span className={styles.langBadge}>UA</span>}
-                {label}
-              </button>
-            )
-          })}
-        </div>
+          <div className={styles.langFilter} role="tablist" aria-label={lang === 'ru' ? 'Язык статей' : 'Article language'}>
+            {BLOG_CONTENT_LANGS.map((item) => {
+              const label = lang === 'en' ? item.labelEn : item.labelRu
+              const active = contentLang === item.id
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  className={`${styles.langBtn} ${active ? styles.langBtnActive : ''}`}
+                  onClick={() => setContentLang(item.id)}
+                >
+                  {item.id === 'uk' && <span className={styles.langBadge}>UA</span>}
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </header>
 
         {filteredPosts.length === 0 && (
           <EmptyState
@@ -83,6 +86,7 @@ export function Blog() {
             const postLang = getBlogPostLang(post)
             return (
               <article key={post.id} className={styles.card}>
+                <div className={styles.cardVisual} aria-hidden />
                 <div className={styles.cardHead}>
                   <span className={styles.category}>{getCategory(post)}</span>
                   {postLang === 'uk' && (

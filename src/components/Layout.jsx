@@ -8,37 +8,47 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { useProgress } from '../context/ProgressContext'
-import { IconHome, IconBriefcase, IconVideo, IconCalendar, IconBlog, IconBell, IconMessage, IconUser, IconCart, IconAward } from './Icons'
 import { ChatBot } from './ChatBot'
-import { ContinueLearningBar } from './ContinueLearningBar'
 import { ScrollProgressBar } from './ScrollProgressBar'
 import { InactivityBanner } from './InactivityBanner'
-import { NeuronGlow } from './NeuronGlow'
 import { isRegistrationOnboardingDone } from '../utils/onboardingStorage'
-import { ThemeToggle } from './ThemeToggle'
 import { ProgressRing } from './ProgressRing'
 import { UiIcon } from './UiIcon'
-import { MAIN_SITE_COURSES, MAIN_SITE_URL, TELEGRAM_COMMUNITY, TELEGRAM_MANAGER, TELEGRAM_NOTIFY_BOT } from '../data/siteLinks'
+import { MAIN_SITE_URL, TELEGRAM_COMMUNITY, TELEGRAM_MANAGER, TELEGRAM_NOTIFY_BOT } from '../data/siteLinks'
 import { SITE_VERSION } from '../data/siteMeta'
+import {
+  Award,
+  Bell,
+  BookOpen,
+  CalendarDays,
+  ChevronRight,
+  CircleUserRound,
+  ExternalLink,
+  GraduationCap,
+  Home as HomeIcon,
+  LogIn,
+  LogOut,
+  Map,
+  Menu,
+  MessageCircle,
+  Newspaper,
+  Settings,
+  ShoppingBag,
+  Sparkles,
+  X,
+} from 'lucide-react'
 import styles from './Layout.module.css'
 
 const navItemsKeys = [
-  { to: '/', labelKey: 'nav.home', Icon: IconHome },
-  { to: '/courses', labelKey: 'nav.catalog', Icon: IconVideo },
-  {
-    to: '/marketplace',
-    labelKey: 'nav.marketplace',
-    Icon: IconCart,
-    children: [
-      { to: '/marketplace', labelKey: 'nav.marketplaceCatalog', section: 'catalog' },
-      { to: '/marketplace?tab=vault', labelKey: 'nav.vault', section: 'vault' },
-    ],
-  },
-  { to: '/memberships', labelKey: 'nav.memberships', Icon: IconUser },
-  { to: '/events', labelKey: 'nav.giveaway', Icon: IconAward },
-  { to: '/cabinet', labelKey: 'nav.myCourses', Icon: IconBriefcase, auth: true },
-  { to: '/calendar', labelKey: 'nav.calendar', Icon: IconCalendar },
-  { to: '/blog', labelKey: 'nav.blog', Icon: IconBlog },
+  { to: '/', labelKey: 'nav.home', Icon: HomeIcon },
+  { to: '/courses', labelKey: 'nav.catalog', Icon: BookOpen },
+  { to: '/learning-map', labelRu: 'Программы', labelEn: 'Programs', Icon: Map },
+  { to: '/marketplace', labelKey: 'nav.marketplace', Icon: ShoppingBag },
+  { to: '/memberships', labelKey: 'nav.memberships', Icon: Sparkles },
+  { to: '/events', labelKey: 'nav.giveaway', Icon: Award },
+  { to: '/blog', labelKey: 'nav.blog', Icon: Newspaper },
+  { to: '/cabinet', labelKey: 'nav.myCourses', Icon: GraduationCap, auth: true },
+  { to: '/calendar', labelKey: 'nav.calendar', Icon: CalendarDays, auth: true },
 ]
 
 const cabinetMenuKeys = [
@@ -69,10 +79,16 @@ export function Layout({ children }) {
   const notifRef = useRef(null)
   const { notifications, unreadCount: notifCount, markRead: markNotificationReadApi, markAllRead: markAllNotificationsReadApi } = useUserNotifications(user?.email)
 
-  const navItems = navItemsKeys.map(({ labelKey, ...rest }) => ({ ...rest, label: t(labelKey) }))
+  const navItems = navItemsKeys.map(({ labelKey, labelRu, labelEn, ...rest }) => ({
+    ...rest,
+    label: labelKey ? t(labelKey) : (lang === 'ru' ? labelRu : labelEn),
+  }))
   const cabinetMenuItems = cabinetMenuKeys.map(({ labelKey, ...rest }) => ({ ...rest, label: t(labelKey) }))
 
   const [searchParams] = useSearchParams()
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
+  useEffect(() => setMobileNavOpen(false), [location.pathname, location.search])
 
   useEffect(() => {
     const onScroll = () => setHeaderScrolled(window.scrollY > 8)
@@ -136,6 +152,9 @@ export function Layout({ children }) {
     : 0
 
   const isAdminPage = location.pathname === '/admin'
+  const isAuthPage = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/onboarding'].includes(location.pathname)
+  const isLessonPage = /^\/courses\/[^/]+$/.test(location.pathname) && searchParams.has('lesson')
+  const isImmersive = isAdminPage || isAuthPage || isLessonPage
 
   const isMarketplaceSection =
     location.pathname.startsWith('/marketplace') || location.pathname.startsWith('/vault')
@@ -150,6 +169,19 @@ export function Layout({ children }) {
   }
 
   const userInitial = user?.name?.[0] || user?.email?.[0] || '?'
+  const pageTitle = (() => {
+    if (location.pathname === '/') return lang === 'ru' ? 'Школа AI-систем' : 'AI systems school'
+    if (location.pathname.startsWith('/courses')) return lang === 'ru' ? 'Каталог курсов' : 'Course catalog'
+    if (location.pathname.startsWith('/marketplace') || location.pathname.startsWith('/vault')) return 'Marketplace'
+    if (location.pathname.startsWith('/memberships')) return lang === 'ru' ? 'Подписки' : 'Memberships'
+    if (location.pathname.startsWith('/cabinet')) return lang === 'ru' ? 'Панель обучения' : 'Learning dashboard'
+    if (location.pathname.startsWith('/learning-map')) return lang === 'ru' ? 'Карта обучения' : 'Learning map'
+    if (location.pathname.startsWith('/calendar')) return lang === 'ru' ? 'Календарь' : 'Calendar'
+    if (location.pathname.startsWith('/events')) return lang === 'ru' ? 'События' : 'Events'
+    if (location.pathname.startsWith('/blog')) return lang === 'ru' ? 'Блог' : 'Blog'
+    if (location.pathname.startsWith('/account')) return lang === 'ru' ? 'Настройки профиля' : 'Profile settings'
+    return 'AI Insider Academy'
+  })()
 
   const getNotificationTitle = (notification) => {
     if (notification.type === 'certificate_added') {
@@ -256,304 +288,217 @@ export function Layout({ children }) {
   }
 
   return (
-    <div className={`${styles.wrapper} ${!user ? styles.guestLayout : ''} ${isAdminPage ? styles.adminLayout : ''}`}>
-      {user && !isAdminPage && (
-      <aside className={styles.sidebar}>
-        <Link to="/" className={styles.sidebarLogo}>
-          <span className={styles.logoText}>AI Insider Academy</span>
-        </Link>
-        <nav className={styles.sidebarNav}>
-          {navItems.map(({ to, label, Icon, auth, children }) => {
-            if (auth && !user) return null
-
-            if (children?.length) {
-              return (
-                <div key={to + label} className={styles.sidebarGroup}>
-                  <Link
-                    to={to}
-                    className={`${styles.sidebarLink} ${isMarketplaceSection ? styles.sidebarLinkActive : ''}`}
-                  >
-                    <span className={styles.sidebarIcon}><Icon /></span>
+    <div className={`${styles.wrapper} ${isImmersive ? styles.immersive : ''} ${isAdminPage ? styles.adminLayout : ''}`}>
+      {!isImmersive && (
+        <>
+          <button
+            type="button"
+            className={`${styles.mobileOverlay} ${mobileNavOpen ? styles.mobileOverlayVisible : ''}`}
+            aria-label={lang === 'ru' ? 'Закрыть меню' : 'Close menu'}
+            onClick={() => setMobileNavOpen(false)}
+          />
+          <aside className={`${styles.sidebar} ${mobileNavOpen ? styles.sidebarOpen : ''}`}>
+            <Link to="/" className={styles.sidebarLogo} aria-label="AI Insider Academy">
+              <span className={styles.brandMark}>AI</span>
+              <span className={styles.brandName}>INSIDER<br />ACADEMY</span>
+            </Link>
+            <div className={styles.sidebarEyebrow}>{lang === 'ru' ? 'Платформа' : 'Platform'}</div>
+            <nav className={styles.sidebarNav} aria-label={lang === 'ru' ? 'Основная навигация' : 'Main navigation'}>
+              {navItems.map(({ to, label, Icon, auth }) => {
+                if (auth && !user) return null
+                const isActive = to === '/'
+                  ? location.pathname === '/'
+                  : location.pathname.startsWith(to)
+                return (
+                  <Link key={to} to={to} className={`${styles.sidebarLink} ${isActive ? styles.sidebarLinkActive : ''}`}>
+                    <span className={styles.sidebarIcon}><Icon size={19} strokeWidth={1.8} /></span>
                     <span className={styles.sidebarLabel}>{label}</span>
+                    {isActive && <ChevronRight className={styles.activeArrow} size={15} />}
                   </Link>
-                  <div className={styles.sidebarSubNav}>
-                    {children.map((child) => {
-                      const childLabel = t(child.labelKey)
-                      const childActive =
-                        child.section === 'vault' ? isMarketplaceVaultActive : isMarketplaceCatalogActive
-                      return (
-                        <Link
-                          key={child.to + childLabel}
-                          to={child.to}
-                          className={`${styles.sidebarSubLink} ${childActive ? styles.sidebarSubLinkActive : ''}`}
-                        >
-                          {childLabel}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            }
+                )
+              })}
+            </nav>
 
-            const isActive = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
-            return (
-              <Link
-                key={to + label}
-                to={to}
-                className={`${styles.sidebarLink} ${isActive ? styles.sidebarLinkActive : ''}`}
-              >
-                <span className={styles.sidebarIcon}><Icon /></span>
-                <span className={styles.sidebarLabel}>{label}</span>
-              </Link>
-            )
-          })}
-        </nav>
-      </aside>
+            <div className={styles.sidebarBottom}>
+              <a className={styles.supportLink} href={TELEGRAM_MANAGER} target="_blank" rel="noreferrer noopener">
+                <MessageCircle size={18} />
+                <span>{lang === 'ru' ? 'Поддержка' : 'Support'}</span>
+              </a>
+              {user ? (
+                <Link to="/account" className={styles.sidebarProfile}>
+                  <span className={styles.sidebarAvatar}>{userInitial.toUpperCase()}</span>
+                  <span className={styles.sidebarUserText}>
+                    <strong>{user.name || (lang === 'ru' ? 'Мой профиль' : 'My profile')}</strong>
+                    <small>{user.email}</small>
+                  </span>
+                  <Settings size={16} />
+                </Link>
+              ) : (
+                <>
+                  <Link to="/register" className={styles.sidebarCta}>
+                    {lang === 'ru' ? 'Начать бесплатно' : 'Start free'}
+                    <ChevronRight size={17} />
+                  </Link>
+                  <Link to="/login" className={styles.sidebarLogin}>
+                    <LogIn size={17} />
+                    {t('nav.login')}
+                  </Link>
+                </>
+              )}
+              <div className={styles.sidebarProof}>
+                <span className={styles.proofFaces} aria-hidden>
+                  <i /><i /><i /><i />
+                </span>
+                <span><strong>6 000+</strong>{lang === 'ru' ? ' учатся с AI Insider' : ' learn with AI Insider'}</span>
+              </div>
+            </div>
+          </aside>
+        </>
       )}
 
       <div className={styles.mainWrap}>
         <ApiStatusBanner />
-        <InactivityBanner lang={lang} />
-        <div className={styles.neuronBg} aria-hidden><NeuronGlow /></div>
-        <header className={`${styles.header} ${headerScrolled ? styles.headerScrolled : ''}`}>
-          <Link to="/" className={styles.logo}>AI Insider Academy</Link>
-          {!user && (
-            <nav className={styles.guestNav}>
-              <Link to="/">{t('nav.school')}</Link>
-              <Link to="/courses">{t('nav.catalog')}</Link>
-              <Link to="/marketplace">{t('nav.marketplace')}</Link>
-              <Link to="/events">{t('nav.giveaway')}</Link>
-              <Link to="/blog">{t('nav.blog')}</Link>
-              <a href={MAIN_SITE_COURSES} target="_blank" rel="noreferrer noopener">
-                {lang === 'ru' ? 'Курсы на сайте' : 'Website courses'} ↗
-              </a>
-            </nav>
-          )}
-          <div className={styles.headerRight}>
-            <ThemeToggle darkLabel={t('common.themeDark')} lightLabel={t('common.themeLight')} />
-            <button
-              type="button"
-              className={styles.langToggle}
-              onClick={toggleLang}
-              title={lang === 'ru' ? 'English' : 'Русский'}
-              aria-label={lang === 'ru' ? 'Switch to English' : 'Переключить на русский'}
-            >
-              <span className={lang === 'ru' ? styles.langActive : ''}>{t('common.langRu')}</span>
-              <span className={styles.langDivider}>/</span>
-              <span className={lang === 'en' ? styles.langActive : ''}>{t('common.langEn')}</span>
+        {!isImmersive && <InactivityBanner lang={lang} />}
+        {!isImmersive && (
+          <header className={`${styles.header} ${headerScrolled ? styles.headerScrolled : ''}`}>
+            <button type="button" className={styles.mobileMenu} onClick={() => setMobileNavOpen((value) => !value)} aria-expanded={mobileNavOpen}>
+              {mobileNavOpen ? <X size={21} /> : <Menu size={21} />}
             </button>
-            <button
-              type="button"
-              className={styles.iconBtn}
-              title={t('nav.messages')}
-              aria-label={t('nav.messages')}
-              onClick={() => openChat('ai')}
-            >
-              <IconMessage />
-            </button>
-            <div className={styles.notifWrap} ref={notifRef}>
-              <button type="button" className={styles.iconBtn} title={t('nav.notifications')} onClick={() => setNotifOpen((v) => !v)} aria-expanded={notifOpen}>
-                <IconBell />
-                {notifCount > 0 && <span className={styles.badge}>{notifCount > 99 ? '99+' : notifCount}</span>}
+            <div className={styles.pageIdentity}>
+              <span>{lang === 'ru' ? 'AI INSIDER / ОБУЧЕНИЕ' : 'AI INSIDER / LEARNING'}</span>
+              <strong>{pageTitle}</strong>
+            </div>
+            <div className={styles.headerRight}>
+              <button type="button" className={styles.langToggle} onClick={toggleLang} aria-label={lang === 'ru' ? 'Switch to English' : 'Переключить на русский'}>
+                <span className={lang === 'ru' ? styles.langActive : ''}>RU</span>
+                <span className={styles.langDivider}>/</span>
+                <span className={lang === 'en' ? styles.langActive : ''}>EN</span>
               </button>
-              {notifOpen && (
-                <div className={styles.notifDropdown}>
-                  <div className={styles.notifDropdownHead}>
-                    <span className={styles.notifDropdownTitle}>{t('nav.notifications')}</span>
-                    {notifications.length > 0 && (
-                      <button
-                        type="button"
-                        className={styles.notifMarkAll}
-                        onClick={handleMarkAllNotificationsRead}
-                        disabled={notifCount === 0}
-                      >
-                        {lang === 'ru' ? 'Все прочитано' : 'Mark all read'}
-                      </button>
+              <button type="button" className={styles.iconBtn} onClick={() => openChat('ai')} aria-label={t('nav.messages')}>
+                <MessageCircle size={19} />
+              </button>
+              <div className={styles.notifWrap} ref={notifRef}>
+                <button type="button" className={styles.iconBtn} onClick={() => setNotifOpen((value) => !value)} aria-label={t('nav.notifications')} aria-expanded={notifOpen}>
+                  <Bell size={19} />
+                  {notifCount > 0 && <span className={styles.badge}>{notifCount > 99 ? '99+' : notifCount}</span>}
+                </button>
+                {notifOpen && (
+                  <div className={styles.notifDropdown}>
+                    <div className={styles.notifDropdownHead}>
+                      <span className={styles.notifDropdownTitle}>{t('nav.notifications')}</span>
+                      {notifications.length > 0 && (
+                        <button type="button" className={styles.notifMarkAll} onClick={handleMarkAllNotificationsRead} disabled={notifCount === 0}>
+                          {lang === 'ru' ? 'Прочитать все' : 'Mark all read'}
+                        </button>
+                      )}
+                    </div>
+                    {notifications.length === 0 ? (
+                      <div className={styles.notifEmpty}>{lang === 'ru' ? 'Пока нет уведомлений' : 'No notifications yet'}</div>
+                    ) : (
+                      <div className={styles.notifList}>
+                        {notifications.map((notification) => {
+                          const body = getNotificationBody(notification)
+                          return (
+                            <button key={notification.id} type="button" className={`${styles.notifItem} ${!notification.read ? styles.notifItemUnread : ''}`} onClick={() => handleNotificationClick(notification)}>
+                              <span className={styles.notifItemIcon}><UiIcon name={getNotificationIcon(notification)} size={16} tone="accent" /></span>
+                              <span className={styles.notifItemBody}>
+                                <span className={styles.notifItemTop}>
+                                  <span className={styles.notifItemTitle}>{getNotificationTitle(notification)}</span>
+                                  {notification.date && <span className={styles.notifItemTime}>{formatNotificationTime(notification.date)}</span>}
+                                </span>
+                                {body && <span className={styles.notifItemText}>{body}</span>}
+                              </span>
+                              {!notification.read && <span className={styles.notifUnreadDot} />}
+                            </button>
+                          )
+                        })}
+                      </div>
                     )}
                   </div>
-                  {notifications.length === 0 ? (
-                    <div className={styles.notifEmpty}>{lang === 'ru' ? 'Нет уведомлений' : 'No notifications'}</div>
-                  ) : (
-                    <div className={styles.notifList}>
-                      {notifications.map((n) => {
-                        const body = getNotificationBody(n)
-                        return (
-                          <button
-                            key={n.id}
-                            type="button"
-                            className={`${styles.notifItem} ${!n.read ? styles.notifItemUnread : ''}`}
-                            onClick={() => handleNotificationClick(n)}
-                          >
-                            <span className={styles.notifItemIcon} aria-hidden>
-                              <UiIcon name={getNotificationIcon(n)} size={16} tone="accent" />
-                            </span>
-                            <span className={styles.notifItemBody}>
-                              <span className={styles.notifItemTop}>
-                                <span className={styles.notifItemTitle}>{getNotificationTitle(n)}</span>
-                                {n.date && (
-                                  <span className={styles.notifItemTime}>{formatNotificationTime(n.date)}</span>
-                                )}
-                              </span>
-                              {body && <span className={styles.notifItemText}>{body}</span>}
-                            </span>
-                            {!n.read && <span className={styles.notifUnreadDot} aria-hidden />}
-                          </button>
-                        )
-                      })}
+                )}
+              </div>
+              {user ? (
+                <div className={styles.avatarWrap} ref={cabinetRef}>
+                  <button type="button" className={styles.avatar} onClick={() => setCabinetOpen((value) => !value)} aria-expanded={cabinetOpen} aria-label={t('nav.cabinet')}>
+                    <ProgressRing percent={overallProgress} size={40} stroke={2.5}>
+                      {user.avatarUrl ? <img src={user.avatarUrl} alt="" className={styles.avatarImg} /> : <span className={styles.avatarInitial}>{userInitial.toUpperCase()}</span>}
+                    </ProgressRing>
+                  </button>
+                  {cabinetOpen && (
+                    <div className={styles.cabinetDropdown}>
+                      <div className={styles.cabinetDropdownUser}>
+                        <span className={styles.cabinetDropdownName}>{user.name || user.email}</span>
+                        <span className={styles.cabinetDropdownEmail}>{user.email}</span>
+                      </div>
+                      {cabinetMenuItems.map((item) => (
+                        <Link key={item.to} to={item.to} className={styles.cabinetDropdownItem} onClick={() => setCabinetOpen(false)}>
+                          <UiIcon name={item.icon} size={16} tone="secondary" />
+                          {item.label}
+                        </Link>
+                      ))}
+                      <button type="button" className={styles.cabinetDropdownLogout} onClick={() => { setCabinetOpen(false); setChatOpen(false); logout() }}>
+                        <LogOut size={16} />
+                        {t('nav.logout')}
+                      </button>
                     </div>
                   )}
                 </div>
+              ) : (
+                <Link to="/login" className={styles.headerLogin}><CircleUserRound size={18} />{t('nav.login')}</Link>
               )}
             </div>
-            {user ? (
-              <div className={styles.avatarWrap} ref={cabinetRef}>
-                <button
-                  type="button"
-                  className={styles.avatar}
-                  onClick={() => setCabinetOpen((v) => !v)}
-                  title={t('nav.cabinet')}
-                  aria-expanded={cabinetOpen}
-                  aria-haspopup="true"
-                >
-                  <ProgressRing percent={overallProgress} size={40} stroke={2.5}>
-                    {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt="" className={styles.avatarImg} />
-                    ) : (
-                      <span className={styles.avatarInitial}>{userInitial.toUpperCase()}</span>
-                    )}
-                  </ProgressRing>
-                </button>
-                {cabinetOpen && (
-                  <div className={styles.cabinetDropdown}>
-                    <div className={styles.cabinetDropdownUser}>
-                      <span className={styles.cabinetDropdownName}>{user.name || user.email}</span>
-                      <span className={styles.cabinetDropdownEmail}>{user.email}</span>
-                    </div>
-                    {cabinetMenuItems.map((item) => (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        className={styles.cabinetDropdownItem}
-                        onClick={() => setCabinetOpen(false)}
-                      >
-                        <span className={styles.cabinetDropdownIcon}>
-                          <UiIcon name={item.icon} size={16} tone="secondary" />
-                        </span>
-                        {item.label}
-                      </Link>
-                    ))}
-                    <button type="button" className={styles.cabinetDropdownLogout} onClick={() => { setCabinetOpen(false); setChatOpen(false); logout(); }}>
-                      <span className={styles.cabinetDropdownIcon}>
-                        <UiIcon name="logOut" size={16} tone="secondary" />
-                      </span>
-                      {t('nav.logout')}
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className={styles.authLinks}>
-                <Link to="/register" className={styles.registerLink}>{t('nav.register')}</Link>
-                <Link to="/login" className={styles.avatarLink}>{t('nav.login')}</Link>
-              </div>
-            )}
-          </div>
-        </header>
+          </header>
+        )}
 
-        <ScrollProgressBar />
-        <main className={isHome ? styles.mainHero : styles.main}>
-          {user
-            && !location.pathname.startsWith('/admin')
-            && !['/', '/cabinet', '/onboarding'].includes(location.pathname)
-            && (
-            <div className={styles.continueWrap}>
-              <ContinueLearningBar />
-            </div>
-          )}
-          {children}
-        </main>
+        {!isAdminPage && <ScrollProgressBar />}
+        <main className={`${styles.main} ${isImmersive ? styles.mainImmersive : ''}`}>{children}</main>
 
-        <footer className={styles.footer}>
-          <div className={styles.footerInner}>
-            <div className={styles.footerGrid}>
-              <div className={styles.footerCol}>
-                <span className={styles.footerLabel}>{lang === 'ru' ? 'Продукт' : 'Product'}</span>
-                <Link to="/courses">{lang === 'ru' ? 'Курсы' : 'Courses'}</Link>
-                <Link to="/marketplace">{lang === 'ru' ? 'Marketplace' : 'Marketplace'}</Link>
-                <Link to="/memberships">{lang === 'ru' ? 'Подписки' : 'Memberships'}</Link>
-                <Link to="/events">{lang === 'ru' ? 'Ивенты' : 'Events'}</Link>
-              </div>
-              <div className={styles.footerCol}>
-                <span className={styles.footerLabel}>{lang === 'ru' ? 'Ресурсы' : 'Resources'}</span>
-                <Link to="/blog">{lang === 'ru' ? 'Блог' : 'Blog'}</Link>
-                <Link to="/learning-map">{lang === 'ru' ? 'Карта обучения' : 'Learning map'}</Link>
-                <a href={MAIN_SITE_URL} target="_blank" rel="noreferrer noopener">
-                  {lang === 'ru' ? 'Сайт AI Insider' : 'AI Insider site'}
-                </a>
-                <a href={MAIN_SITE_COURSES} target="_blank" rel="noreferrer noopener">
-                  {lang === 'ru' ? 'Курсы на сайте' : 'Website courses'}
-                </a>
-              </div>
-              <div className={styles.footerCol}>
-                <span className={styles.footerLabel}>{lang === 'ru' ? 'Правовое' : 'Legal'}</span>
-                <Link to="/oferta">{t('footer.offer')}</Link>
-                <Link to="/privacy">{t('footer.privacy')}</Link>
-                <Link to="/refund">{t('footer.refund')}</Link>
-                <Link to="/giveaway-rules">{lang === 'ru' ? 'Правила розыгрышей' : 'Giveaway rules'}</Link>
-              </div>
-              <div className={styles.footerCol}>
-                <span className={styles.footerLabel}>{lang === 'ru' ? 'Соцсети' : 'Social'}</span>
-                <a href={TELEGRAM_COMMUNITY} target="_blank" rel="noreferrer noopener">
-                  {t('footer.telegram')}
-                </a>
-                <a href={TELEGRAM_MANAGER} target="_blank" rel="noreferrer noopener">
-                  @vladyslavarcher
-                </a>
-                {TELEGRAM_NOTIFY_BOT && (
-                  <a href={TELEGRAM_NOTIFY_BOT} target="_blank" rel="noreferrer noopener">
-                    {lang === 'ru' ? 'Бот уведомлений' : 'Notify bot'}
-                  </a>
-                )}
-                <Link to="/admin">{lang === 'ru' ? 'Админ' : 'Admin'}</Link>
-              </div>
+        {!isImmersive && (
+          <footer className={styles.footer}>
+            <div className={styles.footerBrand}>
+              <span className={styles.brandMark}>AI</span>
+              <span className={styles.brandName}>INSIDER<br />ACADEMY</span>
             </div>
-            <div className={styles.footerBottom}>
+            <div className={styles.footerLinks}>
+              <Link to="/courses">{lang === 'ru' ? 'Курсы' : 'Courses'}</Link>
+              <Link to="/marketplace">Marketplace</Link>
+              <Link to="/memberships">{lang === 'ru' ? 'Подписки' : 'Memberships'}</Link>
+              <Link to="/blog">{lang === 'ru' ? 'Блог' : 'Blog'}</Link>
+              <a href={MAIN_SITE_URL} target="_blank" rel="noreferrer noopener">
+                insiderai.it.com
+                <ExternalLink size={12} strokeWidth={1.8} aria-hidden style={{ marginLeft: 4, verticalAlign: '-0.12em' }} />
+              </a>
+            </div>
+            <div className={styles.footerLinks}>
+              <Link to="/oferta">{t('footer.offer')}</Link>
+              <Link to="/privacy">{t('footer.privacy')}</Link>
+              <Link to="/refund">{t('footer.refund')}</Link>
+              <a href={TELEGRAM_COMMUNITY} target="_blank" rel="noreferrer noopener">
+                Telegram
+                <ExternalLink size={12} strokeWidth={1.8} aria-hidden style={{ marginLeft: 4, verticalAlign: '-0.12em' }} />
+              </a>
+              {TELEGRAM_NOTIFY_BOT && (
+                <a href={TELEGRAM_NOTIFY_BOT} target="_blank" rel="noreferrer noopener">
+                  Notify bot
+                  <ExternalLink size={12} strokeWidth={1.8} aria-hidden style={{ marginLeft: 4, verticalAlign: '-0.12em' }} />
+                </a>
+              )}
+            </div>
+            <div className={styles.footerMeta}>
               <span>{t('footer.copyright')}</span>
-              <span className={styles.footerMade}>
-                {lang === 'ru' ? 'Сделано AI Insider' : 'Made by AI Insider'}
-              </span>
-              <span className={styles.footerVersion}>v{SITE_VERSION}</span>
+              <span>v{SITE_VERSION}</span>
             </div>
-          </div>
-        </footer>
+          </footer>
+        )}
 
-        <button
-          type="button"
-          className={`${styles.callFab} ${chatOpen ? styles.callFabOpen : ''}`}
-          onClick={() => (chatOpen ? setChatOpen(false) : openChat('ai'))}
-          title={t('chatbot.title')}
-          aria-label={t('chatbot.title')}
-          aria-expanded={chatOpen}
-        >
-          <span className={styles.callFabInner}>
-            {chatOpen ? (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-              </svg>
-            ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path
-                  d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
-                  fill="currentColor"
-                  stroke="currentColor"
-                  strokeWidth="0.5"
-                />
-              </svg>
-            )}
-          </span>
-        </button>
-        <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} initialTab={chatTab} />
+        {!isAdminPage && !isAuthPage && (
+          <>
+            <button type="button" className={`${styles.callFab} ${chatOpen ? styles.callFabOpen : ''}`} onClick={() => (chatOpen ? setChatOpen(false) : openChat('ai'))} aria-label={t('chatbot.title')} aria-expanded={chatOpen}>
+              {chatOpen ? <X size={21} /> : <MessageCircle size={22} />}
+            </button>
+            <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} initialTab={chatTab} />
+          </>
+        )}
       </div>
     </div>
   )

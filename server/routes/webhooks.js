@@ -91,9 +91,12 @@ export async function handleTributeWebhook(req, res) {
       let courseTitle = payload.product_name || payload.name || courseId
       let amount = payload.amount ? (payload.amount > 1000 ? payload.amount / 100 : payload.amount) : null
 
+      // Strict match only: pending payment created for this exact product.
+      // (Previously matched ANY pending tribute payment — could grant access
+      // to the wrong user when two purchases were in flight.)
       const pendingByProduct = await db.get(
         `SELECT user_id, email, course_id, course_title, amount FROM payments
-         WHERE (external_id = ? OR course_id IS NOT NULL) AND provider = 'tribute' AND status = 'pending'
+         WHERE external_id = ? AND provider = 'tribute' AND status = 'pending'
          ORDER BY created_at DESC LIMIT 1`,
         [String(productId)]
       )
@@ -114,31 +117,62 @@ export async function handleTributeWebhook(req, res) {
         }
       }
 
+      // Fallback by courseId: only when the buyer email matches the pending
+      // payment (or webhook carries no email at all AND there is exactly one
+      // recent pending payment for this course — unambiguous).
       if (!userId && courseId) {
-        const pending = await db.get(
-          `SELECT user_id, email, course_title, amount FROM payments
-           WHERE course_id = ? AND provider = 'tribute' AND status = 'pending'
-           ORDER BY created_at DESC LIMIT 1`,
-          [courseId]
-        )
-        if (pending) {
-          userId = pending.user_id
-          email = email || pending.email
-          amount = amount ?? pending.amount
+        const windowStart = new Date(Date.now() - 2 * 3600_000).toISOString()
+        if (email) {
+          const pending = await db.get(
+            `SELECT user_id, email, course_title, amount FROM payments
+             WHERE course_id = ? AND provider = 'tribute' AND status = 'pending'
+               AND email = ? COLLATE NOCASE AND created_at >= ?
+             ORDER BY created_at DESC LIMIT 1`,
+            [courseId, email, windowStart]
+          )
+          if (pending) {
+            userId = pending.user_id
+            amount = amount ?? pending.amount
+          }
+        } else {
+          const candidates = await db.all(
+            `SELECT user_id, email, course_title, amount FROM payments
+             WHERE course_id = ? AND provider = 'tribute' AND status = 'pending'
+               AND created_at >= ?
+             ORDER BY created_at DESC LIMIT 2`,
+            [courseId, windowStart]
+          )
+          if (candidates.length === 1) {
+            userId = candidates[0].user_id
+            email = candidates[0].email
+            amount = amount ?? candidates[0].amount
+          } else if (candidates.length > 1) {
+            console.warn('[tribute webhook] ambiguous pending payments for course, skipping auto-grant:', courseId)
+          }
         }
       }
 
       if (!courseId && config.tribute.defaultProductId && String(productId) === String(config.tribute.defaultProductId)) {
-        const latestPending = await db.get(
+        // Default-product fallback: grant only when unambiguous (exactly one
+        // recent pending payment). Never guess between concurrent buyers.
+        const windowStart = new Date(Date.now() - 2 * 3600_000).toISOString()
+        const candidates = await db.all(
           `SELECT user_id, email, course_id, course_title, amount FROM payments
-           WHERE provider = 'tribute' AND status = 'pending' ORDER BY created_at DESC LIMIT 1`
+           WHERE provider = 'tribute' AND status = 'pending' AND created_at >= ?
+           ORDER BY created_at DESC LIMIT 2`,
+          [windowStart]
         )
-        if (latestPending) {
-          userId = latestPending.user_id
-          email = email || latestPending.email
-          courseId = latestPending.course_id
-          courseTitle = latestPending.course_title || courseTitle
-          amount = latestPending.amount ?? amount
+        const match = email
+          ? candidates.find((c) => String(c.email || '').toLowerCase() === String(email).toLowerCase())
+          : (candidates.length === 1 ? candidates[0] : null)
+        if (match) {
+          userId = match.user_id
+          email = email || match.email
+          courseId = match.course_id
+          courseTitle = match.course_title || courseTitle
+          amount = match.amount ?? amount
+        } else if (candidates.length > 1) {
+          console.warn('[tribute webhook] ambiguous default-product payment, skipping auto-grant (manual review needed)')
         }
       }
 

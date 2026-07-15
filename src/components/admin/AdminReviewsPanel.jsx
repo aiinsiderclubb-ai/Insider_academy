@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Mail, Star } from 'lucide-react'
 import { api } from '../../api/client'
 import {
   getReviewSubmissions,
@@ -174,7 +175,7 @@ export function AdminReviewsPanel({
                     {r.personalId && <span className={styles.reviewAdminCourse}>ID: {r.personalId}</span>}
                     <span className={styles.reviewAdminCourse}>{r.contactEmail || r.email}</span>
                   </div>
-                  <span className={styles.reviewAdminStars}>{'★'.repeat(Number(r.rating) || 0)}</span>
+                  <span className={styles.reviewAdminStars}><Star size={15} aria-hidden /> {Number(r.rating) || 0}/5</span>
                 </div>
                 <p className={styles.reviewAdminText}>
                   {emptyText ? (
@@ -191,7 +192,7 @@ export function AdminReviewsPanel({
                 </div>
                 <div className={styles.reviewAdminContact}>
                   <a href={`mailto:${r.contactEmail || r.email}`} className={styles.mailLink}>
-                    ✉ {r.contactEmail || r.email}
+                    <Mail size={14} aria-hidden /> {r.contactEmail || r.email}
                   </a>
                   <span className={styles.reviewAdminHint}>Полный email — только в админке</span>
                 </div>

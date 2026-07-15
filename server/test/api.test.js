@@ -15,9 +15,9 @@ function setupTestEnv(dbPath) {
   process.env.UPLOADS_DIR = path.join(os.tmpdir(), 'lms-test-uploads')
   process.env.JWT_SECRET = 'test-jwt-secret'
   process.env.ADMIN_JWT_SECRET = 'test-admin-jwt'
-  process.env.ADMIN_PASSWORD = 'admin123'
-  process.env.EDITOR_PASSWORD = 'editor123'
-  process.env.MODERATOR_PASSWORD = 'moderator123'
+  process.env.ADMIN_PASSWORD = 'AdminTest-2026-Only!'
+  process.env.EDITOR_PASSWORD = 'EditorTest-2026-Only!'
+  process.env.MODERATOR_PASSWORD = 'ModeratorTest-2026!'
   process.env.CORS_ORIGIN = 'http://localhost:5173'
 }
 
@@ -105,7 +105,7 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   const adminLogin = await fetch(`${base}/api/admin/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: 'admin123' }),
+    body: JSON.stringify({ password: 'AdminTest-2026-Only!' }),
   })
   assert.equal(adminLogin.status, 200)
   assert.equal((await adminLogin.json()).role, 'admin')

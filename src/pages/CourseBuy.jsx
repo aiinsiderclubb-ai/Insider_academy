@@ -1,5 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
+import {
+  ArrowRight,
+  Check,
+  ChevronDown,
+  Circle,
+  CircleCheck,
+  CreditCard,
+  FlaskConical,
+  Landmark,
+  ShieldCheck,
+  Target,
+  WalletCards,
+  Zap,
+} from 'lucide-react'
 import { useCourses } from '../context/CoursesContext'
 import { getCourseField } from '../data/courses'
 import { getCourseThemeStyle } from '../data/courseThemes'
@@ -13,21 +27,20 @@ import { PageMeta } from '../components/PageMeta'
 import { VideoPlayer } from '../components/VideoPlayer'
 import { getLessonDisplayTitle } from '../data/courses'
 import { ScrollReveal } from '../components/ScrollReveal'
-import { CourseHero } from '../components/CourseHero'
+import { CourseHero, getCourseVisual } from '../components/CourseHero'
 import { CoursePromoSection } from '../components/CoursePromoSection'
 import { COURSE_FAQ } from '../data/courseLanding'
 import { PlatformBridge } from '../components/PlatformBridge'
-import { IconChevronDown } from '../components/Icons'
 import { api, checkApiOnline } from '../api/client'
 import { formatApiError } from '../utils/formatApiError'
 import { getCourseTributePaymentUrl } from '../data/tributePayments'
 import styles from './CourseBuy.module.css'
 
 const PAY_METHODS = [
-  { id: 'tribute', label: 'Tribute', descRu: 'Карта, СБП, Stars, TON', descEn: 'Card, SBP, Stars, TON', icon: '✦' },
-  { id: 'stripe', label: 'Stripe', descRu: 'Visa, Mastercard', descEn: 'Visa, Mastercard', icon: '◈' },
-  { id: 'liqpay', label: 'LiqPay', descRu: 'Украина', descEn: 'Ukraine', icon: '◉' },
-  { id: 'demo', label: 'Demo', descRu: 'Тестовая оплата', descEn: 'Test payment', icon: '◇' },
+  { id: 'tribute', label: 'Tribute', descRu: 'Карта, СБП, Stars, TON', descEn: 'Card, SBP, Stars, TON', icon: WalletCards },
+  { id: 'stripe', label: 'Stripe', descRu: 'Visa, Mastercard', descEn: 'Visa, Mastercard', icon: CreditCard },
+  { id: 'liqpay', label: 'LiqPay', descRu: 'Украина', descEn: 'Ukraine', icon: Landmark },
+  { id: 'demo', label: 'Demo', descRu: 'Тестовая оплата', descEn: 'Test payment', icon: FlaskConical },
 ]
 
 const BENEFITS_RU = [
@@ -95,6 +108,7 @@ export function CourseBuy() {
   const fullPriceEur = Math.round(priceEur * 1.15)
   const discount = fullPriceEur - priceAfterReferral
   const courseTitle = getCourseField(course, 'title', lang)
+  const courseVisual = getCourseVisual(course)
   const tributePaymentUrl = getCourseTributePaymentUrl(course.id)
   const goalsList = getCourseField(course, 'goals', lang) || []
   const benefits = lang === 'ru' ? BENEFITS_RU : BENEFITS_EN
@@ -168,13 +182,13 @@ export function CourseBuy() {
       <div className={styles.wrap} style={themeStyle}>
         <div className={styles.container}>
           <div className={styles.purchasedCard}>
-            <div className={styles.purchasedIcon}>✓</div>
+            <div className={styles.purchasedIcon}><Check size={26} strokeWidth={2.2} aria-hidden /></div>
             <h2 className={styles.purchasedTitle}>
               {lang === 'ru' ? 'Курс уже куплен' : 'Course already purchased'}
             </h2>
             <p className={styles.purchasedDesc}>{courseTitle}</p>
-            <Link to={`/courses/${course.slug}`} className={styles.submit}>
-              {lang === 'ru' ? 'Перейти к курсу →' : 'Go to course →'}
+            <Link to={`/courses/${course.slug}?lesson=0`} className={styles.submit}>
+              {lang === 'ru' ? 'Перейти к курсу' : 'Go to course'} <ArrowRight size={16} aria-hidden />
             </Link>
           </div>
         </div>
@@ -209,7 +223,10 @@ export function CourseBuy() {
               </h2>
               <ul className={styles.benefitsList}>
                 {benefits.map((item) => (
-                  <li key={item} className={styles.benefitItem}>{item}</li>
+                  <li key={item} className={styles.benefitItem}>
+                    <Check className={styles.itemIcon} size={15} aria-hidden />
+                    <span>{item}</span>
+                  </li>
                 ))}
               </ul>
             </section>
@@ -221,15 +238,18 @@ export function CourseBuy() {
                 </h2>
                 <ul className={styles.goalsList}>
                   {goalsList.slice(0, 4).map((goal, i) => (
-                    <li key={i} className={styles.goalItem}>{goal}</li>
+                    <li key={i} className={styles.goalItem}>
+                      <Target className={styles.itemIcon} size={15} aria-hidden />
+                      <span>{goal}</span>
+                    </li>
                   ))}
                 </ul>
               </section>
             )}
 
             <div className={styles.trustRow}>
-              <span className={styles.trustBadge}>{lang === 'ru' ? 'Безопасная оплата' : 'Secure payment'}</span>
-              <span className={styles.trustBadge}>{lang === 'ru' ? 'Мгновенный доступ' : 'Instant access'}</span>
+              <span className={styles.trustBadge}><ShieldCheck size={14} aria-hidden />{lang === 'ru' ? 'Безопасная оплата' : 'Secure payment'}</span>
+              <span className={styles.trustBadge}><Zap size={14} aria-hidden />{lang === 'ru' ? 'Мгновенный доступ' : 'Instant access'}</span>
             </div>
 
             {showLessonPreview && (
@@ -263,7 +283,7 @@ export function CourseBuy() {
                         >
                           {lang === 'ru' ? item.q : item.qEn}
                           <span className={`${styles.faqChevron} ${open ? styles.faqChevronOpen : ''}`}>
-                            <IconChevronDown />
+                            <ChevronDown size={16} aria-hidden />
                           </span>
                         </button>
                         {open && (
@@ -281,6 +301,14 @@ export function CourseBuy() {
 
           <aside className={styles.checkoutCol}>
             <form className={styles.checkoutCard} onSubmit={handleSubmit}>
+              <div className={styles.orderSummary}>
+                <img src={courseVisual} alt="" className={styles.orderImage} aria-hidden="true" />
+                <div className={styles.orderCopy}>
+                  <span>{lang === 'ru' ? 'Ваш курс' : 'Your course'}</span>
+                  <strong>{courseTitle}</strong>
+                </div>
+              </div>
+
               <div className={styles.checkoutHeader}>
                 <h2 className={styles.checkoutTitle}>
                   {lang === 'ru' ? 'Оформление' : 'Checkout'}
@@ -332,6 +360,7 @@ export function CourseBuy() {
               <div className={styles.payMethods}>
                 {PAY_METHODS.map((pm) => {
                   const disabled = pm.id === 'tribute' && !tributeEnabled
+                  const PayIcon = pm.icon
                   return (
                     <button
                       key={pm.id}
@@ -341,7 +370,7 @@ export function CourseBuy() {
                       disabled={disabled}
                       aria-pressed={method === pm.id}
                     >
-                      <span className={styles.payIcon} aria-hidden>{pm.icon}</span>
+                      <span className={styles.payIcon} aria-hidden><PayIcon size={16} strokeWidth={1.8} /></span>
                       <span className={styles.payInfo}>
                         <span className={styles.payName}>
                           {pm.label}
@@ -351,7 +380,9 @@ export function CourseBuy() {
                         </span>
                         <span className={styles.payDesc}>{lang === 'ru' ? pm.descRu : pm.descEn}</span>
                       </span>
-                      <span className={styles.payRadio} aria-hidden />
+                      {method === pm.id
+                        ? <CircleCheck className={`${styles.payRadio} ${styles.payRadioActive}`} size={16} aria-hidden />
+                        : <Circle className={styles.payRadio} size={16} aria-hidden />}
                     </button>
                   )
                 })}
@@ -369,7 +400,7 @@ export function CourseBuy() {
                 {loading ? (
                   <span className={styles.spinner} aria-hidden />
                 ) : (
-                  lang === 'ru' ? `Оплатить ${priceAfterReferral} €` : `Pay ${priceAfterReferral} €`
+                  lang === 'ru' ? `Оплатить ${checkoutPrice} €` : `Pay ${checkoutPrice} €`
                 )}
               </button>
 

@@ -13,20 +13,18 @@ import { getCertificates, getUserDiscountPercent, getCourseAverageScore, getRefe
 import { getPackProgressForUser } from '../utils/packProgress'
 import { ReferralDashboard } from '../components/ReferralDashboard'
 import { TelegramConnect } from '../components/TelegramConnect'
-import { ContinueLearningPanel } from '../components/ContinueLearningPanel'
-import { ActivityFeed } from '../components/ActivityFeed'
 import { WeeklyChallenge } from '../components/WeeklyChallenge'
 import { CertificateShare } from '../components/CertificateShare'
 import { RecommendationsStrip } from '../components/RecommendationsStrip'
 import { CabinetDashboard } from '../components/CabinetDashboard'
-import { ProgressRing } from '../components/ProgressRing'
 import { api, checkApiOnline } from '../api/client'
-import { buildCommunityFeed } from '../data/activityFeed'
 import { getPersonalUpsells } from '../data/marketplace/recommendations'
 import { hasClubMembership } from '../data/club'
 import { useUserNotifications } from '../hooks/useUserNotifications'
 import { syncSmartNotifications } from '../utils/smartNotifications'
 import { pickContinueTarget } from '../utils/continueLearning'
+import { getCourseDesignCover } from '../utils/designAssets'
+import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
 import { getActiveGiveaways } from '../data/giveaways'
 import styles from './Cabinet.module.css'
 
@@ -42,7 +40,6 @@ export function Cabinet() {
   const [teamName, setTeamName] = useState('')
   const [inviteCode, setInviteCode] = useState('')
   const [myCertificates, setMyCertificates] = useState([])
-  const [feedItems, setFeedItems] = useState(() => buildCommunityFeed({ lang }))
   const [giveawayCount, setGiveawayCount] = useState(null)
 
   const hasPriority = hasClubMembership(purchases)
@@ -65,9 +62,6 @@ export function Cabinet() {
   const referralLink = user?.email ? `${window.location.origin}/?ref=${btoa(user.email)}` : ''
   const referralsCount = user?.email
     ? getReferrals().filter((r) => r.referrerEmail?.toLowerCase() === user.email.toLowerCase()).length
-    : 0
-  const overallProgress = myCourses.length
-    ? Math.round(myCourses.reduce((s, c) => s + getPercent(c.id, c.lessons?.length ?? 0), 0) / myCourses.length)
     : 0
   const packProgress = getPackProgressForUser(purchases, getPercent, courses)
 
@@ -95,20 +89,14 @@ export function Cabinet() {
     let cancelled = false
     checkApiOnline().then(async (ok) => {
       if (cancelled) return
-      if (!ok) {
-        setFeedItems(buildCommunityFeed({ lang }))
-        return
-      }
+      if (!ok) return
       try {
         const list = await api.getGiveaways()
         const map = {}
         list.forEach((g) => { map[g.slug] = g.participantCount })
         const active = getActiveGiveaways()[0]
         if (active && map[active.slug] != null) setGiveawayCount(map[active.slug])
-        if (!cancelled) setFeedItems(buildCommunityFeed({ giveawayCounts: map, lang }))
-      } catch (_) {
-        if (!cancelled) setFeedItems(buildCommunityFeed({ lang }))
-      }
+      } catch (_) {}
     })
     return () => { cancelled = true }
   }, [lang])
@@ -184,18 +172,13 @@ export function Cabinet() {
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
-        <div className={styles.headerRow}>
-          <h1 className={styles.pageTitle}>{t('cabinet.title')}</h1>
-          <ProgressRing percent={overallProgress} size={56} stroke={3}>
-            <span className={styles.ringLabel}>{overallProgress}%</span>
-          </ProgressRing>
-        </div>
-
         <CabinetDashboard
           lang={lang}
           notifications={notifications}
           unreadCount={unreadCount}
           giveawayCount={giveawayCount}
+          stats={stats}
+          certificateCount={myCertificates.length}
         />
 
         {(user?.personalId || user?.id) && (
@@ -208,17 +191,6 @@ export function Cabinet() {
             </span>
           </div>
         )}
-
-        <div className={styles.continueBlock}>
-          <ContinueLearningPanel
-            streakCurrent={stats?.streak?.current || 0}
-            compact
-          />
-        </div>
-
-        <div className={styles.communityRow}>
-          <ActivityFeed items={feedItems} lang={lang} />
-        </div>
 
         <WeeklyChallenge
           lang={lang}
@@ -284,13 +256,14 @@ export function Cabinet() {
                   <Link to={`/marketplace/${item.slug}`} key={item.id} className={styles.card}>
                     <div
                       className={styles.cardImageWrap}
-                      style={{ background: item.coverGradient, minHeight: 120 }}
+                      style={{ minHeight: 120 }}
                     >
-                      {item.coverImage ? (
-                        <img src={item.coverImage} alt="" className={styles.cardImage} />
-                      ) : (
-                        <span style={{ fontSize: '2.5rem', padding: 16 }} aria-hidden>{item.coverIcon}</span>
-                      )}
+                      <img
+                        src={getMarketplaceCoverImage(item)}
+                        alt=""
+                        className={styles.cardImage}
+                        loading="lazy"
+                      />
                       <span className={styles.cardBadge}>{lang === 'ru' ? 'Скачать' : 'Download'}</span>
                     </div>
                     <h3 className={styles.cardTitle}>{title}</h3>
@@ -322,13 +295,14 @@ export function Cabinet() {
                     <Link to={`/marketplace/${item.slug}`} key={item.id} className={styles.card}>
                       <div
                         className={styles.cardImageWrap}
-                        style={{ background: item.coverGradient, minHeight: 100 }}
+                        style={{ minHeight: 100 }}
                       >
-                        {item.coverImage ? (
-                          <img src={item.coverImage} alt="" className={styles.cardImage} />
-                        ) : (
-                          <span style={{ fontSize: '2rem', padding: 12 }} aria-hidden>{item.coverIcon}</span>
-                        )}
+                        <img
+                          src={getMarketplaceCoverImage(item)}
+                          alt=""
+                          className={styles.cardImage}
+                          loading="lazy"
+                        />
                       </div>
                       <h3 className={styles.cardTitle}>{title}</h3>
                       <p className={styles.cardMeta}>
@@ -377,13 +351,14 @@ export function Cabinet() {
                   <Link to={`/vault/${vault.slug}`} key={vault.id} className={styles.card}>
                     <div
                       className={styles.cardImageWrap}
-                      style={{ background: vault.gradient, minHeight: 120 }}
+                      style={{ minHeight: 120 }}
                     >
-                      {vault.coverImage ? (
-                        <img src={vault.coverImage} alt="" className={styles.cardImage} />
-                      ) : (
-                        <span style={{ fontSize: '2.5rem', padding: 16 }} aria-hidden>{vault.icon}</span>
-                      )}
+                      <img
+                        src={vault.coverImage}
+                        alt=""
+                        className={styles.cardImage}
+                        loading="lazy"
+                      />
                       <span className={styles.cardBadge}>Vault</span>
                     </div>
                     <h3 className={styles.cardTitle}>{title}</h3>
@@ -412,7 +387,7 @@ export function Cabinet() {
               return (
                 <Link to={`/courses/${course.slug}`} key={course.id} className={styles.card}>
                   <div className={styles.cardImageWrap}>
-                    <img src={course.image} alt="" className={styles.cardImage} />
+                    <img src={getCourseDesignCover(course)} alt="" className={styles.cardImage} />
                     <span className={styles.cardBadge}>{t('cabinet.accessOpen')}</span>
                     <div className={styles.cardProgressBar}><div className={styles.cardProgressFill} style={{ width: `${percent}%` }} /></div>
                     <span className={styles.cardPercent}>{percent}% {t('cabinet.completed')}</span>

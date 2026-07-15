@@ -29,6 +29,7 @@ export function BlogPost() {
     <div className={styles.wrap}>
       <article className={styles.container}>
         <Link to="/blog" className={styles.back}>{t('blogPost.backToBlog')}</Link>
+        <div className={styles.cover} aria-hidden />
         <div className={styles.metaRow}>
           <span className={styles.category}>{category}</span>
           {postLang === 'uk' && (

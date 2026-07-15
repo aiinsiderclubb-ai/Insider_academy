@@ -1,79 +1,72 @@
 .bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 54px;
 }
 
 .chip {
-  display: inline-flex;
+  display: flex;
+  min-height: 58px;
   align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 17px;
+  border: 1px solid #292830;
+  border-radius: 16px;
+  color: #b7b4bd;
+  background: #121216;
+  font-size: 0.73rem;
+  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+a.chip:hover {
+  transform: translateY(-2px);
+  border-color: #51476f;
+  background: #17151d;
 }
 
 .chipTier {
-  text-decoration: none;
-  color: var(--text);
-}
-
-.chipTier:hover {
-  border-color: var(--glow-purple);
-  background: var(--glow-purple-dim);
-  transform: translateY(-1px);
+  color: #d8d2f1;
 }
 
 .chipLabel {
-  font-weight: 600;
-  color: var(--text-muted);
+  font-weight: 650;
 }
 
 .chipValue {
-  font-weight: 800;
-  color: var(--accent-orange);
+  color: #a995ff;
+  font-size: 0.96rem;
+  font-weight: 780;
 }
 
 .chipActive {
-  border-color: color-mix(in srgb, var(--accent-orange) 45%, var(--border));
-  background: color-mix(in srgb, var(--accent-orange) 10%, var(--bg-card));
+  border-color: rgba(143, 174, 147, 0.34);
+  color: #c9dbc9;
+  background: rgba(91, 125, 95, 0.1);
 }
 
-.chipActive .chipLabel {
-  color: var(--text);
+.chipActive .chipValue {
+  color: #9fbea2;
 }
 
 .chipMuted {
-  color: var(--text-muted);
-  font-size: 0.75rem;
+  justify-content: flex-start;
+  color: #75737d;
 }
 
 .chipIcon {
-  font-size: 0.5rem;
-  color: var(--glow-purple);
-  opacity: 0.8;
+  color: #f59472;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .bar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    margin-bottom: 24px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
-  .bar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .chip {
-    flex-shrink: 0;
+@media (max-width: 520px) {
+  .bar {
+    grid-template-columns: 1fr;
   }
 }

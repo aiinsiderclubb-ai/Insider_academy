@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Check } from 'lucide-react'
 import { api, checkApiOnline } from '../api/client'
 import { useLanguage } from '../context/LanguageContext'
 import { formatApiError } from '../utils/formatApiError'
@@ -58,7 +59,9 @@ export function ForgotPassword() {
             {sent ? (
               <div className={styles.successBlock}>
                 <div className={styles.successHeader}>
-                  <div className={styles.successIcon} aria-hidden>✓</div>
+                  <div className={styles.successIcon} aria-hidden="true">
+                    <Check size={22} strokeWidth={2.5} />
+                  </div>
                   <div>
                     <div className={styles.successTitle}>
                       {lang === 'ru' ? 'Письмо отправлено' : 'Email sent'}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Check } from 'lucide-react'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -109,7 +110,9 @@ export function VerifyEmail() {
           <div className={styles.card}>
             <div className={styles.cardInner}>
               <div className={styles.successBlock}>
-                <div className={styles.successIcon} aria-hidden>✓</div>
+                <div className={styles.successIcon} aria-hidden="true">
+                  <Check size={22} strokeWidth={2.5} />
+                </div>
                 <h1 className={styles.title}>{t('register.successTitle')}</h1>
                 <p className={styles.subtitle}>{t('register.successSubtitle')}</p>
                 <p className={styles.successRedirect}>{t('register.successRedirect')}</p>

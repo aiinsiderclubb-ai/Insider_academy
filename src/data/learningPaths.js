@@ -18,7 +18,7 @@ export const LEARNING_PATHS = [
   {
     id: 'automation',
     icon: '⚙️',
-    accent: '#22c55e',
+    accent: '#8da783',
     titleRu: 'Automation',
     titleEn: 'Automation',
     descRu: 'n8n, воркфлоу, интеграции с CRM',

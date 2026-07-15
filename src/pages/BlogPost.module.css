@@ -1,97 +1,159 @@
 .wrap {
-  padding: 48px 0 80px;
+  min-height: calc(100svh - 72px);
+  padding: clamp(30px, 5vw, 68px) 0 90px;
+  color: #f6f4fa;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(124, 58, 237, 0.12), transparent 25rem),
+    #08080c;
+  font-family: 'Onest', var(--font-body, sans-serif);
 }
 
 .container {
-  max-width: 720px;
+  width: min(900px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 0 24px;
 }
 
 .back {
-  display: inline-block;
-  font-size: 0.9375rem;
-  color: var(--text-muted);
-  margin-bottom: 24px;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-bottom: 20px;
+  color: #8d8994;
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-decoration: none;
 }
 
 .back:hover {
-  color: var(--glow-pink, #ec4899);
+  color: #c4b5fd;
 }
 
-.category {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--glow-pink, #ec4899);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+.cover {
+  min-height: clamp(300px, 48vw, 520px);
+  margin-bottom: 34px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, transparent 45%, rgba(8, 8, 12, 0.72)),
+    url('/design/ai-insider-mentor.png') center 34% / cover no-repeat,
+    #111016;
 }
 
 .metaRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.category {
+  color: #a78bfa;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .langTag {
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 0.625rem;
-  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 7px;
+  color: #08080c;
+  background: #b9c9a7;
+  font-size: 0.58rem;
+  font-weight: 850;
   letter-spacing: 0.06em;
-  color: #1a1a1a;
-  background: linear-gradient(135deg, #005bbb 0%, #ffd500 100%);
 }
 
 .langTagRu {
-  color: var(--text-on-primary);
-  background: rgba(7, 6, 15, 0.75);
-  border: 1px solid var(--border-accent);
-}
-
-.langNote {
-  margin: -20px 0 24px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-  background: color-mix(in srgb, var(--glow-purple) 8%, transparent);
-  border: 1px solid var(--border);
+  color: #f6f4fa;
+  background: rgba(139, 92, 246, 0.16);
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 12px;
-  line-height: 1.25;
+  max-width: 15ch;
+  margin: 0 0 16px;
+  color: #fbfaff;
+  font-family: 'Onest', var(--font-display, sans-serif);
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-weight: 660;
+  letter-spacing: -0.065em;
+  line-height: 0.98;
 }
 
 .date {
-  font-size: 0.9375rem;
-  color: var(--text-muted);
-  margin-bottom: 32px;
   display: block;
+  margin-bottom: 34px;
+  color: #77727e;
+  font-size: 0.75rem;
+}
+
+.langNote {
+  margin: -16px 0 26px;
+  padding: 12px 14px;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 13px;
+  color: #a9a1bd;
+  background: rgba(139, 92, 246, 0.07);
+  font-size: 0.76rem;
 }
 
 .body {
-  font-size: 1.0625rem;
-  line-height: 1.7;
-  color: var(--text-muted);
+  max-width: 720px;
+  padding: clamp(26px, 4vw, 44px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 24px;
+  color: #aaa5af;
+  background: #111016;
+  font-size: clamp(1rem, 1.8vw, 1.12rem);
+  line-height: 1.8;
 }
 
 .body p {
-  margin-bottom: 1em;
+  margin: 0 0 1.15em;
 }
 
 .externalLink {
-  display: inline-block;
-  margin-top: 16px;
-  font-weight: 600;
-  color: var(--glow-purple);
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 14px;
+  padding: 0 18px;
+  border-radius: 14px;
+  color: #0b0910;
+  background: #a78bfa;
+  font-size: 0.8rem;
+  font-weight: 780;
+  text-decoration: none;
 }
 
 .externalLink:hover {
-  text-decoration: underline;
+  filter: brightness(1.06);
+}
+
+.back:focus-visible,
+.externalLink:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    width: min(100% - 24px, 900px);
+  }
+
+  .cover {
+    min-height: 390px;
+    border-radius: 22px;
+    background-size: auto 420px;
+  }
+
+  .body {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
 }

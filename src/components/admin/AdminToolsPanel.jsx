@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AlertTriangle, Check, CheckCircle2, RefreshCw, UserRound, X } from 'lucide-react'
 import { api } from '../../api/client'
 import { courses } from '../../data/courses'
 import styles from '../../pages/Admin.module.css'
@@ -32,6 +33,11 @@ const AUDIT_ACTION_OPTIONS = [
   { value: 'flags.update', label: 'Feature flags' },
   { value: 'telegram.broadcast', label: 'Telegram' },
 ]
+
+function ToolStatus({ ok = false, children }) {
+  const Icon = ok ? CheckCircle2 : AlertTriangle
+  return <span className={styles.inlineStatus}><Icon size={15} aria-hidden />{children}</span>
+}
 
 function formatAction(action) {
   const map = {
@@ -199,7 +205,8 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
     <div>
       <div className={styles.courseActions} style={{ marginBottom: 16 }}>
         <button type="button" className={styles.smallBtn} disabled={loading} onClick={load}>
-          {loading ? 'Обновление…' : '↻ Обновить данные'}
+          {!loading && <RefreshCw size={14} aria-hidden />}
+          {loading ? 'Обновление…' : 'Обновить данные'}
         </button>
         {onTabChange && (
           <button
@@ -207,7 +214,8 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
             className={styles.quickBtn}
             onClick={() => onTabChange('registrations')}
           >
-            👤 Удалить пользователя → Регистрации
+            <UserRound size={15} aria-hidden />
+            Удалить пользователя · Регистрации
           </button>
         )}
         {Object.keys(loadErrors).length > 0 && (
@@ -224,8 +232,10 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
             <>
               <p className={styles.sectionDesc} style={{ margin: '0 0 8px' }}>
                 {sheetsStatus.enabled
-                  ? (sheetsStatus.ok ? '✅ Подключено · события пишутся автоматически' : `⚠️ ${sheetsStatus.error || sheetsStatus.message}`)
-                  : `⚠️ ${sheetsStatus.message}`}
+                  ? (sheetsStatus.ok
+                    ? <ToolStatus ok>Подключено · события пишутся автоматически</ToolStatus>
+                    : <ToolStatus>{sheetsStatus.error || sheetsStatus.message}</ToolStatus>)
+                  : <ToolStatus>{sheetsStatus.message}</ToolStatus>}
               </p>
               {sheetsStatus.folderUrl && (
                 <a href={sheetsStatus.folderUrl} target="_blank" rel="noreferrer noopener" className={styles.inlineBtn}>
@@ -479,7 +489,7 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
                         disabled={payoutBusy === p.id}
                         onClick={() => updatePayoutStatus(p.id, 'paid')}
                       >
-                        ✓ Выплачено
+                        <Check size={14} aria-hidden /> Выплачено
                       </button>
                       <button
                         type="button"
@@ -487,7 +497,7 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
                         disabled={payoutBusy === p.id}
                         onClick={() => updatePayoutStatus(p.id, 'cancelled')}
                       >
-                        ✕ Отменить
+                        <X size={14} aria-hidden /> Отменить
                       </button>
                     </span>
                   )}

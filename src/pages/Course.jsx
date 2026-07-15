@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check } from 'lucide-react'
 import { useCourses } from '../context/CoursesContext'
 import { getCourseField, getLessonDisplayTitle } from '../data/courses'
 import { applyLessonProgramToCourse } from '../data/courseLessonPrograms'
@@ -9,6 +10,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { recordCertificate, trackCourseClick, recordHomeworkSubmission, getHomeworkByUserAndLesson } from '../api/adminStore'
 import { api, canUseAuthenticatedApi } from '../api/client'
 import { VideoPlayer } from '../components/VideoPlayer'
+import { MENTOR_IMAGES } from '../utils/designAssets'
 import { LessonReminderButton } from '../components/LessonReminderButton'
 import { PeerReviewPanel } from '../components/PeerReviewPanel'
 import { CourseProgramPanel } from '../components/CourseProgramPanel'
@@ -16,7 +18,7 @@ import { CourseHomeworkPanel } from '../components/CourseHomeworkPanel'
 import { CourseOverviewSection } from '../components/CourseOverviewSection'
 import { CourseReviews } from '../components/CourseReviews'
 import { LessonTest } from '../components/LessonTest'
-import { CourseHero } from '../components/CourseHero'
+import { CourseHero, getCourseVisual } from '../components/CourseHero'
 import { CoursePromoSection } from '../components/CoursePromoSection'
 import { CourseLandingSections } from '../components/CourseLandingSections'
 import { OnboardingBanner } from '../components/OnboardingBanner'
@@ -63,6 +65,9 @@ export function Course() {
   const [homeworkMap, setHomeworkMap] = useState({})
 
   const lessonCount = course?.lessons?.length ?? 0
+  const isLessonMode = Number.isFinite(lessonFromUrl)
+    && lessonFromUrl >= 0
+    && lessonFromUrl < lessonCount
 
   useEffect(() => {
     if (course && Number.isFinite(lessonFromUrl) && lessonFromUrl >= 0 && (course.lessons || []).length > 0 && lessonFromUrl < (course.lessons || []).length) {
@@ -201,6 +206,7 @@ export function Course() {
   const isAutomation = course.id === 'ai-automation-builder'
   const showTestAfterLesson0 = !isFreeTrial && isAutomation && progress.watched.includes(0) && !progress.homeworkSubmitted.includes(0)
   const courseTitle = getCourseField(course, 'title', lang)
+  const courseVisual = getCourseVisual(course)
   const currentHomework = currentLesson ? getHomeworkForLesson(currentLesson, course) : null
   const hwLessonStartIndex = course.hasHomework ? 0 : 1
   const currentHwEntry = homeworkEntriesByLesson[safeSelectedLesson]
@@ -215,8 +221,7 @@ export function Course() {
     setSelectedLesson(index)
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
-      if (index > 0) next.set('lesson', String(index))
-      else next.delete('lesson')
+      next.set('lesson', String(index))
       return next
     }, { replace: true })
   }
@@ -380,14 +385,64 @@ export function Course() {
   }
 
   return (
-    <div className={styles.wrap} style={getCourseThemeStyle(course.id, theme)}>
+    <div
+      className={`${styles.wrap} ${isLessonMode ? styles.lessonMode : styles.salesMode}`}
+      style={getCourseThemeStyle(course.id, theme)}
+    >
       <div className={styles.container}>
-        <CourseHero
-          course={course}
-          lang={lang}
-          backTo="/courses"
-          backLabel={t('course.backToCourses')}
-        />
+        {!isLessonMode && (
+          <CourseHero
+            course={course}
+            lang={lang}
+            backTo="/courses"
+            backLabel={t('course.backToCourses')}
+          >
+            <div className={styles.heroActions}>
+              {(purchased || isFreeTrial) ? (
+                <Link to={`/courses/${course.slug}?lesson=0`} className={styles.heroPrimary}>
+                  {lang === 'ru' ? 'Перейти к обучению' : 'Start learning'} <ArrowUpRight size={16} aria-hidden />
+                </Link>
+              ) : isBundle ? (
+                <BundleCourseActions
+                  courseSlug={course.slug}
+                  lang={lang}
+                  showLearnMore={false}
+                  variant="sidebar"
+                />
+              ) : (
+                <CourseBuyAction
+                  course={course}
+                  className={styles.heroPrimary}
+                  fallbackPath={`/courses/${course.slug}/buy`}
+                >
+                  {t('course.buyCourse')} <ArrowUpRight size={16} aria-hidden />
+                </CourseBuyAction>
+              )}
+              <a href="#program" className={styles.heroSecondary}>
+                {lang === 'ru' ? 'Смотреть программу' : 'View curriculum'}
+              </a>
+            </div>
+          </CourseHero>
+        )}
+
+        {isLessonMode && (
+          <header className={styles.workspaceHeader}>
+            <Link to={`/courses/${course.slug}`} className={styles.workspaceBack}>
+              <ArrowLeft size={16} aria-hidden /> {lang === 'ru' ? 'О курсе' : 'Course details'}
+            </Link>
+            <div className={styles.workspaceIdentity}>
+              <img src={courseVisual} alt="" aria-hidden="true" />
+              <div>
+                <span>{lang === 'ru' ? 'Учебное пространство' : 'Learning workspace'}</span>
+                <strong>{courseTitle}</strong>
+              </div>
+            </div>
+            <div className={styles.workspaceProgress}>
+              <span>{percent}%</span>
+              <div><i style={{ width: `${percent}%` }} /></div>
+            </div>
+          </header>
+        )}
 
         {showOnboarding && purchased && (
           <OnboardingBanner course={course} lang={lang} onDismiss={dismissOnboarding} />
@@ -415,7 +470,7 @@ export function Course() {
 
         <div className={styles.grid}>
           <div className={styles.main}>
-            {(purchased || isFreeTrial) && lessonsList.length > 0 && (
+            {isLessonMode && (purchased || isFreeTrial) && lessonsList.length > 0 && (
               <div className={styles.progressWrap}>
                 <div className={styles.progressTrack}>
                   <div className={styles.progressFill} style={{ width: `${percent}%` }} />
@@ -426,123 +481,186 @@ export function Course() {
               </div>
             )}
 
-            {nextStep && (
+            {isLessonMode && nextStep && (
               <CourseNextStep lang={lang} courseSlug={course.slug} {...nextStep} />
             )}
 
-            <CoursePromoSection course={course} lang={lang} title={courseTitle} />
+            {!isLessonMode && (
+              <>
+                <CoursePromoSection course={course} lang={lang} title={courseTitle} />
+                <CourseOverviewSection course={course} lang={lang} />
+              </>
+            )}
 
-            <CourseOverviewSection course={course} lang={lang} />
+            {isLessonMode && (
+              <section className={styles.videoSection}>
+                <div className={styles.lessonCanvas}>
+                  {currentLesson && (
+                    <header className={styles.lessonHead} key={currentLesson.id}>
+                      <span className={styles.lessonHeadNum}>{safeSelectedLesson + 1}</span>
+                      <div className={styles.lessonHeadText}>
+                        <span className={styles.lessonEyebrow}>
+                          {lang === 'ru' ? 'Текущий урок' : 'Current lesson'}
+                        </span>
+                        <h2 className={styles.lessonHeadTitle}>{lessonTitle}</h2>
+                        {currentLesson.duration && (
+                          <span className={styles.lessonHeadMeta}>{currentLesson.duration}</span>
+                        )}
+                      </div>
+                    </header>
+                  )}
 
-            <section className={styles.videoSection}>
-              {currentLesson && (
-                <header className={styles.lessonHead} key={currentLesson.id}>
-                  <span className={styles.lessonHeadNum}>{safeSelectedLesson + 1}</span>
-                  <div className={styles.lessonHeadText}>
-                    <h2 className={styles.lessonHeadTitle}>{lessonTitle}</h2>
-                    {currentLesson.duration && (
-                      <span className={styles.lessonHeadMeta}>{currentLesson.duration}</span>
-                    )}
+                  <div className={styles.videoFrame}>
+                    <VideoPlayer
+                      lesson={currentLesson}
+                      title={lessonTitle}
+                      poster={MENTOR_IMAGES.lessonPoster}
+                      locked={!lessonAvailable(safeSelectedLesson)}
+                      lockedMessage={safeSelectedLesson > 0 && !purchased ? t('course.lockedMessage') : undefined}
+                      onEnded={(purchased || isFreeTrial) ? handleWatch : undefined}
+                      initialTime={course?.id ? getVideoPosition(course.id, safeSelectedLesson) : 0}
+                      onTimeUpdate={(sec) => {
+                        if (!course?.id) return
+                        clearTimeout(videoSaveTimer.current)
+                        videoSaveTimer.current = setTimeout(() => {
+                          saveVideoPosition(course.id, safeSelectedLesson, sec)
+                        }, 2000)
+                      }}
+                    />
                   </div>
-                </header>
-              )}
 
-              <VideoPlayer
-                lesson={currentLesson}
-                title={lessonTitle}
-                locked={!lessonAvailable(safeSelectedLesson)}
-                lockedMessage={safeSelectedLesson > 0 && !purchased ? t('course.lockedMessage') : undefined}
-                onEnded={(purchased || isFreeTrial) ? handleWatch : undefined}
-                initialTime={course?.id ? getVideoPosition(course.id, safeSelectedLesson) : 0}
-                onTimeUpdate={(sec) => {
-                  if (!course?.id) return
-                  clearTimeout(videoSaveTimer.current)
-                  videoSaveTimer.current = setTimeout(() => {
-                    saveVideoPosition(course.id, safeSelectedLesson, sec)
-                  }, 2000)
-                }}
-              />
+                  <div className={styles.videoActions}>
+                    <button
+                      type="button"
+                      className={styles.videoNavBtn}
+                      disabled={safeSelectedLesson === 0}
+                      onClick={() => selectLesson(safeSelectedLesson - 1)}
+                    >
+                      <ArrowLeft size={16} aria-hidden /> {t('course.prevLesson')}
+                    </button>
+                    {lessonAvailable(safeSelectedLesson) && (purchased || isFreeTrial || safeSelectedLesson === 0) && (
+                      <button type="button" className={styles.watchedBtn} onClick={handleWatch}>
+                        {t('course.markWatched')}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={styles.videoNavBtn}
+                      disabled={safeSelectedLesson >= lessonsList.length - 1 || !lessonAvailable(safeSelectedLesson + 1)}
+                      onClick={() => selectLesson(safeSelectedLesson + 1)}
+                    >
+                      {t('course.nextLesson')} <ArrowRight size={16} aria-hidden />
+                    </button>
+                  </div>
 
-              {(purchased || isFreeTrial) && course?.id && (
-                <LessonReminderButton courseId={course.id} lessonIndex={safeSelectedLesson} lang={lang} />
-              )}
+                  {showTestAfterLesson0 && (
+                    <LessonTest
+                      questions={lessonsList[0]?.quiz}
+                      lang={lang}
+                      onPass={() => submitHomework(course.id, 0)}
+                    />
+                  )}
 
-              {currentLesson && currentHomework && (
-                <CourseHomeworkPanel
-                  lang={lang}
-                  t={t}
-                  lessonIndex={safeSelectedLesson}
-                  homework={currentHomework}
-                  hwText={hwText[safeSelectedLesson]}
-                  hwFile={hwFile[safeSelectedLesson]}
-                  hwError={hwError[safeSelectedLesson]}
-                  homeworkEntry={currentHwEntry}
-                  showForm={showHwForm}
-                  canSubmit={showHwForm}
-                  onTextChange={(v) => setHwText((prev) => ({ ...prev, [safeSelectedLesson]: v }))}
-                  onFileChange={(file) => handleHomeworkFileChange(safeSelectedLesson, file)}
-                  onSubmit={() => handleHomeworkSubmit(safeSelectedLesson)}
-                />
-              )}
+                  <PeerReviewPanel
+                    courseId={course.id}
+                    lessonIndex={safeSelectedLesson}
+                    lang={lang}
+                    enabled={peerReviewEnabled && (purchased || isFreeTrial)}
+                  />
+                </div>
 
-              <div className={styles.videoActions}>
-                <button
-                  type="button"
-                  className={styles.videoNavBtn}
-                  disabled={safeSelectedLesson === 0}
-                  onClick={() => selectLesson(safeSelectedLesson - 1)}
-                >
-                  {t('course.prevLesson')}
-                </button>
-                {lessonAvailable(safeSelectedLesson) && (purchased || isFreeTrial || safeSelectedLesson === 0) && (
-                  <button type="button" className={styles.watchedBtn} onClick={handleWatch}>
-                    {t('course.markWatched')}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className={styles.videoNavBtn}
-                  disabled={safeSelectedLesson >= lessonsList.length - 1 || !lessonAvailable(safeSelectedLesson + 1)}
-                  onClick={() => selectLesson(safeSelectedLesson + 1)}
-                >
-                  {t('course.nextLesson')}
-                </button>
-              </div>
+                <aside className={styles.lessonSupport}>
+                  <section className={styles.mentorCard}>
+                    <div className={styles.mentorMedia}>
+                      <img src="/design/mentor-study.webp" alt="" aria-hidden="true" />
+                    </div>
+                    <div className={styles.mentorCopy}>
+                      <span><i /> AI Insider mentor</span>
+                      <h3>{lang === 'ru' ? 'Двигайтесь через практику' : 'Learn through practice'}</h3>
+                      <p>
+                        {lang === 'ru'
+                          ? 'Посмотрите урок, выполните задачу и отправьте результат на проверку.'
+                          : 'Watch the lesson, complete the task and submit your result for review.'}
+                      </p>
+                    </div>
+                  </section>
 
-              {showTestAfterLesson0 && (
-                <LessonTest
-                  questions={lessonsList[0]?.quiz}
-                  lang={lang}
-                  onPass={() => submitHomework(course.id, 0)}
-                />
-              )}
+                  {!purchased && !isFreeTrial && (
+                    <section className={styles.lessonUnlock}>
+                      <span>{lang === 'ru' ? 'Полный доступ' : 'Full access'}</span>
+                      <strong>{isBundle ? (lang === 'ru' ? 'По заявке' : 'By application') : `${priceEur} €`}</strong>
+                      {isBundle ? (
+                        <BundleCourseActions
+                          courseSlug={course.slug}
+                          lang={lang}
+                          showLearnMore={false}
+                          variant="sidebar"
+                        />
+                      ) : (
+                        <CourseBuyAction
+                          course={course}
+                          className={styles.lessonUnlockBtn}
+                          fallbackPath={`/courses/${course.slug}/buy`}
+                        >
+                          {t('course.buyCourse')}
+                        </CourseBuyAction>
+                      )}
+                    </section>
+                  )}
 
-              <PeerReviewPanel
-                courseId={course.id}
-                lessonIndex={safeSelectedLesson}
-                lang={lang}
-                enabled={peerReviewEnabled && (purchased || isFreeTrial)}
-              />
-            </section>
+                  {(purchased || isFreeTrial) && course?.id && (
+                    <div className={styles.reminderWrap}>
+                      <LessonReminderButton courseId={course.id} lessonIndex={safeSelectedLesson} lang={lang} />
+                    </div>
+                  )}
+
+                  {currentLesson && currentHomework ? (
+                    <CourseHomeworkPanel
+                      lang={lang}
+                      t={t}
+                      lessonIndex={safeSelectedLesson}
+                      homework={currentHomework}
+                      hwText={hwText[safeSelectedLesson]}
+                      hwFile={hwFile[safeSelectedLesson]}
+                      hwError={hwError[safeSelectedLesson]}
+                      homeworkEntry={currentHwEntry}
+                      showForm={showHwForm}
+                      canSubmit={showHwForm}
+                      onTextChange={(v) => setHwText((prev) => ({ ...prev, [safeSelectedLesson]: v }))}
+                      onFileChange={(file) => handleHomeworkFileChange(safeSelectedLesson, file)}
+                      onSubmit={() => handleHomeworkSubmit(safeSelectedLesson)}
+                    />
+                  ) : (
+                    <section className={styles.practiceNote}>
+                      <span>{lang === 'ru' ? 'Практика' : 'Practice'}</span>
+                      <p>{lang === 'ru' ? 'Для этого урока отдельное ДЗ не требуется.' : 'This lesson has no separate homework.'}</p>
+                    </section>
+                  )}
+                </aside>
+              </section>
+            )}
           </div>
 
           <aside className={styles.sidebar}>
-            <div className={styles.priceCard}>
+            {!isLessonMode && <div className={styles.priceCard}>
               <div className={styles.priceCardInner}>
-                <div className={styles.priceCardIcon}>✓</div>
+                <div className={styles.priceCardIcon}><Check size={18} aria-hidden /></div>
                 <h3 className={styles.priceCardTitle}>{courseTitle}</h3>
                 {isFreeTrial ? (
                   <div className={styles.priceCardPurchased}>
                     <span className={styles.priceCardBadge}>{lang === 'ru' ? 'Бесплатный пробный курс' : 'Free trial course'}</span>
                     <p className={styles.priceCardPercent}>{t('course.completed')}: <strong>{percent}%</strong></p>
-                    <Link to="/courses" className={styles.priceCardWatch}>
-                      {lang === 'ru' ? 'Полный каталог курсов →' : 'Full course catalog →'}
+                    <Link to={`/courses/${course.slug}?lesson=0`} className={styles.priceCardWatch}>
+                      {lang === 'ru' ? 'Начать обучение' : 'Start learning'} <ArrowUpRight size={16} aria-hidden />
                     </Link>
                   </div>
                 ) : purchased ? (
                   <div className={styles.priceCardPurchased}>
                     <span className={styles.priceCardBadge}>{t('course.accessOpen')}</span>
                     <p className={styles.priceCardPercent}>{t('course.completed')}: <strong>{percent}%</strong></p>
+                    <Link to={`/courses/${course.slug}?lesson=${safeSelectedLesson}`} className={styles.priceCardWatch}>
+                      {lang === 'ru' ? 'Продолжить курс' : 'Continue course'} <ArrowUpRight size={16} aria-hidden />
+                    </Link>
                   </div>
                 ) : isBundle ? (
                   <>
@@ -590,9 +708,9 @@ export function Course() {
                   </>
                 )}
               </div>
-            </div>
+            </div>}
 
-            <section className={styles.programSidebar} aria-label={lang === 'ru' ? 'Содержание курса' : 'Course content'}>
+            <section id="program" className={styles.programSidebar} aria-label={lang === 'ru' ? 'Содержание курса' : 'Course content'}>
               <div className={styles.programSidebarHead}>
                 <h2 className={styles.sectionTitle}>{t('course.program')}</h2>
                 <span className={styles.programCount}>{lessonsList.length}</span>
@@ -623,16 +741,20 @@ export function Course() {
           </aside>
         </div>
 
-        <div className={styles.container}>
-          <CourseReviews courseId={course.id} courseTitle={courseTitle} />
-        </div>
+        {!isLessonMode && (
+          <>
+            <div className={styles.reviewsWrap}>
+              <CourseReviews courseId={course.id} courseTitle={courseTitle} />
+            </div>
 
-        <CourseLandingSections
-          course={course}
-          lang={lang}
-          purchased={purchased}
-          priceEur={priceEur}
-        />
+            <CourseLandingSections
+              course={course}
+              lang={lang}
+              purchased={purchased}
+              priceEur={priceEur}
+            />
+          </>
+        )}
       </div>
 
       {!purchased && !isFreeTrial && !isBundle && (

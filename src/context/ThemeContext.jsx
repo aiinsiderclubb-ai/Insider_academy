@@ -1,33 +1,16 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import { createContext, useContext, useEffect, useMemo } from 'react'
 
 const ThemeContext = createContext(null)
 
-const STORAGE_KEY = 'lms_theme'
-
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEY) || 'dark'
-    } catch {
-      return 'dark'
-    }
-  })
-
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, theme)
-      document.documentElement.setAttribute('data-theme', theme)
-    } catch (_) {}
-  }, [theme])
-
-  const toggleTheme = useMemo(
-    () => () => setTheme((t) => (t === 'dark' ? 'light' : 'dark')),
-    []
-  )
+    document.documentElement.setAttribute('data-theme', 'dark')
+    try { localStorage.setItem('lms_theme', 'dark') } catch (_) {}
+  }, [])
 
   const value = useMemo(
-    () => ({ theme, setTheme, toggleTheme }),
-    [theme, toggleTheme]
+    () => ({ theme: 'dark', setTheme: () => {}, toggleTheme: () => {} }),
+    []
   )
 
   return (

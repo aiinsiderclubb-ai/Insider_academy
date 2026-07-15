@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { ArrowDownRight, ArrowUpRight, Check, ChevronRight, Dot, Plus } from 'lucide-react'
 import { Confetti } from '../components/Confetti'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
@@ -17,23 +18,21 @@ export function VaultProduct() {
   const showConfetti = searchParams.get('paid') === '1'
 
   useEffect(() => {
-    if (searchParams.get('paid') !== '1') return
-    const t = setTimeout(() => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev)
+    if (searchParams.get('paid') !== '1') return undefined
+    const timer = setTimeout(() => {
+      setSearchParams((previous) => {
+        const next = new URLSearchParams(previous)
         next.delete('paid')
         return next
       }, { replace: true })
     }, 4000)
-    return () => clearTimeout(t)
+    return () => clearTimeout(timer)
   }, [searchParams, setSearchParams])
 
   const product = getVaultProduct(vaultSlug)
   const details = product ? getVaultDetails(product.id) : null
 
-  if (!product) {
-    return <Navigate to="/marketplace?tab=vault" replace />
-  }
+  if (!product) return <Navigate to="/marketplace?tab=vault" replace />
 
   const purchased = hasPurchased(product.id)
   const title = ru ? product.titleRu : product.titleEn
@@ -43,101 +42,129 @@ export function VaultProduct() {
   const outcomes = details ? (ru ? details.outcomesRu : details.outcomesEn) : []
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} style={{ '--vault-accent': product.accent }}>
       <Confetti active={showConfetti} />
-      <div
-        className={styles.container}
-        style={{
-          '--vault-accent': product.accent,
-          '--vault-gradient': product.gradient,
-        }}
-      >
-        <ScrollReveal>
-          <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-            <Link to="/marketplace?tab=vault">{ru ? 'Vault' : 'Vault'}</Link>
-            <span aria-hidden>/</span>
-            <span>{title}</span>
-          </nav>
-        </ScrollReveal>
+      <div className={styles.container}>
+        {showConfetti && (
+          <div className={styles.paidNotice} role="status">
+            <span className={styles.paidIcon} aria-hidden><Check size={15} strokeWidth={2.4} /></span>
+            <strong>{ru ? 'Оплата прошла успешно' : 'Payment complete'}</strong>
+            <span>{ru ? 'Материалы уже доступны в вашем Vault.' : 'The materials are now available in your Vault.'}</span>
+          </div>
+        )}
 
-        <ScrollReveal>
-          <header className={styles.hero}>
-            {product.coverImage ? (
-              <img src={product.coverImage} alt="" className={styles.heroCover} />
-            ) : (
-              <span className={styles.heroIcon} aria-hidden>
-                {product.icon}
-              </span>
-            )}
-            <div className={styles.heroOverlay} aria-hidden />
-            <span className={styles.category}>
-              {ru ? product.categoryRu : product.categoryEn}
-            </span>
-            <h1 className={styles.title}>{title}</h1>
-            <p className={styles.heroLead}>{heroLead}</p>
-          </header>
-        </ScrollReveal>
+        <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+          <Link to="/marketplace?tab=vault">Marketplace</Link>
+          <ChevronRight className={styles.breadcrumbIcon} size={14} aria-hidden />
+          <Link to="/marketplace?tab=vault">Vault</Link>
+          <ChevronRight className={styles.breadcrumbIcon} size={14} aria-hidden />
+          <span>{title}</span>
+        </nav>
 
-        <div className={styles.grid}>
-          <ScrollReveal className={styles.main}>
-            <h2>{ru ? 'Что внутри' : 'What\'s inside'}</h2>
-            <div className={styles.accordion}>
-              {includes.map((item, i) => (
-                <details key={item} className={styles.accordionItem} open={i < 3}>
-                  <summary>{item}</summary>
-                  <p className={styles.accordionBody}>
-                    {ru
-                      ? 'Материал входит в состав Vault и доступен после покупки.'
-                      : 'Included in Vault — available after purchase.'}
-                  </p>
-                </details>
-              ))}
-            </div>
+        <div className={styles.layout}>
+          <main className={styles.main}>
+            <ScrollReveal>
+              <figure className={styles.gallery}>
+                <img src={product.coverImage} alt={title} className={styles.galleryImage} />
+                <figcaption>
+                  <span>{ru ? product.categoryRu : product.categoryEn}</span>
+                  <strong>{ru ? product.highlightRu : product.highlightEn}</strong>
+                </figcaption>
+              </figure>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <section className={styles.contentBlock}>
+                <div className={styles.sectionHeading}>
+                  <span>
+                    <span>01</span>
+                    <Dot size={13} aria-hidden />
+                    {ru ? 'Содержание' : 'Contents'}
+                  </span>
+                  <h2>{ru ? 'Что внутри' : 'What is inside'}</h2>
+                </div>
+                <div className={styles.accordion}>
+                  {includes.map((item, index) => (
+                    <details key={item} className={styles.accordionItem} open={index < 2}>
+                      <summary>
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        {item}
+                        <Plus className={styles.accordionToggle} size={16} aria-hidden />
+                      </summary>
+                      <p className={styles.accordionBody}>
+                        {ru
+                          ? 'Материал входит в состав Vault и становится доступен сразу после покупки.'
+                          : 'This resource is included in the Vault and unlocks immediately after purchase.'}
+                      </p>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            </ScrollReveal>
 
             {outcomes.length > 0 && (
-              <>
-                <h2>{ru ? 'Результат' : 'Outcomes'}</h2>
-                <ul className={styles.outcomes}>
-                  {outcomes.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </>
+              <ScrollReveal>
+                <section className={styles.contentBlock}>
+                  <div className={styles.sectionHeading}>
+                    <span>
+                      <span>02</span>
+                      <Dot size={13} aria-hidden />
+                      {ru ? 'Практика' : 'Practical value'}
+                    </span>
+                    <h2>{ru ? 'Что вы получите' : 'What you will achieve'}</h2>
+                  </div>
+                  <ul className={styles.outcomes}>
+                    {outcomes.map((item) => (
+                      <li key={item}>
+                        <ArrowUpRight size={14} aria-hidden />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              </ScrollReveal>
             )}
 
-            <p className={styles.forWho}>
-              <strong>{ru ? 'Кому подходит: ' : 'Best for: '}</strong>
-              {forWho}
-            </p>
-          </ScrollReveal>
+            <ScrollReveal>
+              <aside className={styles.forWho}>
+                <span>{ru ? 'Для кого' : 'Best for'}</span>
+                <p>{forWho}</p>
+              </aside>
+            </ScrollReveal>
+          </main>
 
-          <ScrollReveal>
-            <aside className={styles.sidebar}>
-              {purchased && (
-                <span className={styles.ownedBadge}>
-                  {ru ? 'Уже в вашем Vault' : 'In your Vault'}
-                </span>
-              )}
+          <aside className={styles.sidebar}>
+            <span className={styles.category}>{ru ? product.categoryRu : product.categoryEn}</span>
+            <h1 className={styles.title}>{title}</h1>
+            <p className={styles.heroLead}>{heroLead}</p>
+
+            <div className={styles.priceRow}>
               <span className={styles.price}>{product.priceEur}€</span>
-              <p className={styles.priceNote}>
-                {ru
-                  ? 'Разовая покупка · доступ в личном кабинете'
-                  : 'One-time purchase · access in your account'}
-              </p>
-              {purchased ? (
+              <span>{ru ? 'разовая покупка' : 'one-time purchase'}</span>
+            </div>
+
+            <ul className={styles.railPerks}>
+              <li><Check size={14} aria-hidden />{ru ? 'Мгновенный доступ' : 'Instant access'}</li>
+              <li><Check size={14} aria-hidden />{ru ? 'Пожизненные обновления' : 'Lifetime updates'}</li>
+              <li><Check size={14} aria-hidden />{ru ? 'Коммерческая лицензия' : 'Commercial license'}</li>
+            </ul>
+
+            {purchased ? (
+              <>
+                <span className={styles.ownedBadge}>{ru ? 'Уже в вашем Vault' : 'In your Vault'}</span>
                 <Link to="/cabinet#vault" className={styles.btnPrimary}>
-                  {ru ? 'Открыть в кабинете →' : 'Open in cabinet →'}
+                  {ru ? 'Открыть в кабинете' : 'Open in cabinet'} <ArrowDownRight size={16} aria-hidden />
                 </Link>
-              ) : (
-                <Link to={`/vault/${product.slug}/buy`} className={styles.btnPrimary}>
-                  {ru ? 'Купить' : 'Buy'}
-                </Link>
-              )}
-              <Link to="/marketplace?tab=vault" className={styles.btnSecondary}>
-                {ru ? 'Все Vault-продукты' : 'All Vault products'}
+              </>
+            ) : (
+              <Link to={`/vault/${product.slug}/buy`} className={styles.btnPrimary}>
+                {ru ? 'Купить сейчас' : 'Buy now'} <ArrowUpRight size={16} aria-hidden />
               </Link>
-            </aside>
-          </ScrollReveal>
+            )}
+            <Link to="/marketplace?tab=vault" className={styles.btnSecondary}>
+              {ru ? 'Все Vault-продукты' : 'All Vault products'}
+            </Link>
+          </aside>
         </div>
       </div>
     </div>

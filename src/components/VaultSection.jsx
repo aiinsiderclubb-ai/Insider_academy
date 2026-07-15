@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ArrowRight, Check, Circle } from 'lucide-react'
 import {
   VAULT_HUB,
   VAULT_PRODUCTS,
@@ -29,7 +30,10 @@ export function VaultSection({
     >
       {!hideHeader && (
         <div className={styles.sectionHead}>
-          <span className={styles.pill}>Vault</span>
+          <span className={styles.pill}>
+            <Circle size={7} fill="currentColor" aria-hidden />
+            Vault
+          </span>
           <h2 className={styles.sectionTitle}>
             {ru ? VAULT_HUB.titleRu : VAULT_HUB.titleEn}
           </h2>
@@ -67,11 +71,19 @@ export function VaultSection({
 
       <ul className={styles.benefits}>
         {benefits.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item}>
+            <Check size={14} aria-hidden />
+            <span>{item}</span>
+          </li>
         ))}
       </ul>
 
       <article className={styles.bundle}>
+        <div className={styles.bundleVisual} aria-hidden>
+          {VAULT_PRODUCTS.slice(0, 3).map((product) => (
+            <img key={product.id} src={product.coverImage} alt="" />
+          ))}
+        </div>
         <div className={styles.bundleText}>
           <span className={styles.bundleBadge}>
             {ru ? 'Все Vault' : 'All Vaults'}
@@ -111,12 +123,12 @@ export function VaultSection({
       <div className={styles.footerLinks}>
         {showMoreLink && (
           <Link to="/marketplace?tab=vault" className={styles.moreLink}>
-            {ru ? 'Все Vault-продукты →' : 'All Vault products →'}
+            {ru ? 'Все Vault-продукты' : 'All Vault products'} <ArrowRight size={14} aria-hidden />
           </Link>
         )}
         {showMarketLink && (
           <Link to="/marketplace" className={styles.marketLink}>
-            {ru ? 'Больше шаблонов в Marketplace →' : 'More templates in Marketplace →'}
+            {ru ? 'Больше шаблонов в Marketplace' : 'More templates in Marketplace'} <ArrowRight size={14} aria-hidden />
           </Link>
         )}
       </div>

@@ -1,118 +1,254 @@
 .section {
-  padding: 72px 0;
-  border-top: 1px solid var(--border);
+  --bg-base: #08080b;
+  --bg-surface: #111116;
+  --bg-elevated: #18171f;
+  --bg-card: #111116;
+  --bg-glass: rgba(17, 17, 22, 0.9);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(168, 128, 255, 0.36);
+  --text: #f7f5fb;
+  --text-primary: #f7f5fb;
+  --text-secondary: #a39eaa;
+  --text-muted: #a39eaa;
+  --accent: #8b5cf6;
+  --accent-primary: #8b5cf6;
+  position: relative;
+  overflow: hidden;
+  padding: clamp(78px, 9vw, 124px) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  background:
+    radial-gradient(circle at 82% 18%, rgba(124, 58, 237, 0.12), transparent 24rem),
+    #08080b;
+  color: #f7f5fb;
 }
 
 .container {
-  width: 100%;
-  max-width: var(--container-max, 1120px);
+  width: min(100%, 1336px);
   margin: 0 auto;
-  padding: 0 var(--container-pad, 20px);
+  padding: 0 clamp(20px, 4vw, 48px);
 }
 
-.srOnly {
-  position: absolute;
-  width: 1px;
+.sectionHead {
+  max-width: 760px;
+  margin-bottom: 44px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 18px;
+  color: #bca8f6;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 22px;
   height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  background: #8b5cf6;
+}
+
+.sectionTitle {
+  max-width: 13ch;
+  margin: 0 0 16px;
+  color: #faf8fd;
+  font-family: var(--font-display);
+  font-size: clamp(2.15rem, 4.4vw, 4rem);
+  font-weight: 650;
+  line-height: 1.02;
+  letter-spacing: -0.052em;
+}
+
+.sectionDesc {
+  max-width: 680px;
+  margin: 0;
+  color: #a39eaa;
+  font-size: clamp(0.98rem, 1.3vw, 1.08rem);
+  line-height: 1.68;
 }
 
 .introGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-@media (min-width: 768px) {
-  .introGrid {
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 40px;
-  }
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  margin-bottom: 44px;
 }
 
 .introCard {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 24px 26px;
-  border-radius: 18px;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  min-height: 100%;
+  gap: 13px;
+  min-height: 286px;
+  overflow: hidden;
+  padding: clamp(26px, 3vw, 36px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 26px;
+  background: #111116;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms ease;
+}
+
+.introCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 36px;
+  left: 36px;
+  height: 1px;
+}
+
+.introCard:hover {
+  transform: translateY(-4px);
 }
 
 .introMarket {
   background:
-    radial-gradient(ellipse at 100% 0%, rgba(52, 211, 153, 0.1), transparent 55%),
-    var(--bg-card);
+    radial-gradient(circle at 100% 0%, rgba(242, 138, 59, 0.15), transparent 18rem),
+    #111116;
+}
+
+.introMarket::before {
+  background: linear-gradient(90deg, transparent, #f28a3b, transparent);
+}
+
+.introMarket:hover {
+  border-color: rgba(242, 138, 59, 0.34);
 }
 
 .introVault {
   background:
-    radial-gradient(ellipse at 0% 100%, rgba(168, 85, 247, 0.12), transparent 55%),
-    var(--bg-card);
-  border-color: color-mix(in srgb, #8b5cf6 28%, var(--border));
+    radial-gradient(circle at 100% 0%, rgba(124, 58, 237, 0.22), transparent 20rem),
+    #111116;
+}
+
+.introVault::before {
+  background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
+}
+
+.introVault:hover {
+  border-color: rgba(168, 128, 255, 0.38);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
 }
 
 .pillMarket,
 .pillVault {
   display: inline-flex;
-  align-self: flex-start;
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.67rem;
+  font-weight: 750;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
 .pillMarket {
-  color: var(--success);
-  background: var(--success-dim);
-  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #f1a86e;
 }
 
 .pillVault {
-  color: #c4b5fd;
-  background: color-mix(in srgb, #8b5cf6 18%, transparent);
-  border: 1px solid color-mix(in srgb, #8b5cf6 35%, var(--border));
+  color: #bdaaf2;
+}
+
+.pillMarket::before,
+.pillVault::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.pillMarket::before {
+  background: #91aa96;
+}
+
+.pillVault::before {
+  background: #8b5cf6;
+}
+
+.cardGlyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  color: #d7d1dd;
+  font-size: 1.05rem;
 }
 
 .introTitle {
+  max-width: 17ch;
   margin: 0;
+  color: #f7f5fb;
   font-family: var(--font-display);
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
+  font-size: clamp(1.45rem, 2.6vw, 2.15rem);
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
 }
 
 .introDesc {
+  max-width: 52ch;
   margin: 0;
-  flex: 1;
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: var(--text-muted);
+  color: #9994a1;
+  font-size: 0.9rem;
+  line-height: 1.62;
 }
 
 .introLink {
-  margin-top: 4px;
-  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  align-self: flex-start;
+  margin-top: auto;
+  padding-top: 0;
+  color: #bca8f6;
+  font-size: 0.84rem;
   font-weight: 700;
-  color: var(--glow-purple);
-}
-
-.introLink:hover {
-  text-decoration: underline;
 }
 
 .introMarket .introLink {
-  color: var(--success);
+  color: #f1a86e;
+}
+
+.introLink:hover {
+  color: #fff;
+}
+
+@media (max-width: 760px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .introGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .introCard {
+    min-height: 250px;
+    border-radius: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .introCard {
+    transition: none;
+  }
+
+  .introCard:hover {
+    transform: none;
+  }
 }

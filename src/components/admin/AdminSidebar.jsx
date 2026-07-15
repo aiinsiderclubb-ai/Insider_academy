@@ -1,44 +1,64 @@
 import styles from '../../pages/Admin.module.css'
 import { canAccessTab } from '../../utils/adminAuth'
 import { ACCELERATOR_ADMIN_TAB } from '../../data/acceleratorApplication'
+import {
+  BookOpen,
+  CalendarDays,
+  ChartNoAxesCombined,
+  ClipboardCheck,
+  CreditCard,
+  FileText,
+  Flag,
+  GraduationCap,
+  Inbox,
+  LayoutDashboard,
+  Link2,
+  Map,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Settings,
+  Star,
+  UserRound,
+  Wrench,
+} from 'lucide-react'
 
 const navGroups = [
   {
     label: 'Обзор',
     items: [
-      { id: 'dashboard', label: 'Дашборд', icon: '📊' },
-      { id: 'inbox', label: 'Модерация', icon: '📥', roles: ['admin', 'moderator'] },
-      { id: 'roadmap', label: 'Роадмап', icon: '🗺️', roles: ['admin'] },
-      { id: 'analytics', label: 'Аналитика', icon: '📈', roles: ['admin'] },
-      { id: 'settings', label: 'Настройки', icon: '⚙️', roles: ['admin'] },
-      { id: 'tools', label: 'Операции', icon: '🛠️', roles: ['admin'] },
+      { id: 'dashboard', label: 'Дашборд', icon: LayoutDashboard },
+      { id: 'inbox', label: 'Модерация', icon: Inbox, roles: ['admin', 'moderator'] },
+      { id: 'roadmap', label: 'Роадмап', icon: Map, roles: ['admin'] },
+      { id: 'analytics', label: 'Аналитика', icon: ChartNoAxesCombined, roles: ['admin'] },
+      { id: 'settings', label: 'Настройки', icon: Settings, roles: ['admin'] },
+      { id: 'tools', label: 'Операции', icon: Wrench, roles: ['admin'] },
     ],
   },
   {
     label: 'Отбор',
     roles: ['admin', 'moderator'],
     items: [
-      { id: ACCELERATOR_ADMIN_TAB, label: 'Отборочный курс', icon: '🏁' },
+      { id: ACCELERATOR_ADMIN_TAB, label: 'Отборочный курс', icon: Flag },
     ],
   },
   {
     label: 'Пользователи',
     roles: ['admin', 'moderator'],
     items: [
-      { id: 'registrations', label: 'Регистрации', icon: '👤' },
-      { id: 'purchases', label: 'Покупки', icon: '💳' },
-      { id: 'referrals', label: 'Рефералы', icon: '🔗', roles: ['admin'] },
+      { id: 'registrations', label: 'Регистрации', icon: UserRound },
+      { id: 'purchases', label: 'Покупки', icon: CreditCard },
+      { id: 'referrals', label: 'Рефералы', icon: Link2, roles: ['admin'] },
     ],
   },
   {
     label: 'Контент',
     items: [
-      { id: 'homework', label: 'ДЗ', icon: '📝', roles: ['admin', 'moderator'] },
-      { id: 'reviews', label: 'Отзывы', icon: '⭐', roles: ['admin', 'moderator'] },
-      { id: 'certificates', label: 'Сертификаты', icon: '🎓', roles: ['admin', 'moderator'] },
-      { id: 'courses', label: 'Курсы', icon: '📚', roles: ['admin', 'editor'] },
-      { id: 'blog', label: 'Блог', icon: '✍️', roles: ['admin', 'editor'] },
-      { id: 'calendar', label: 'Календарь', icon: '📅', roles: ['admin', 'editor'] },
+      { id: 'homework', label: 'ДЗ', icon: ClipboardCheck, roles: ['admin', 'moderator'] },
+      { id: 'reviews', label: 'Отзывы', icon: Star, roles: ['admin', 'moderator'] },
+      { id: 'certificates', label: 'Сертификаты', icon: GraduationCap, roles: ['admin', 'moderator'] },
+      { id: 'courses', label: 'Курсы', icon: BookOpen, roles: ['admin', 'editor'] },
+      { id: 'blog', label: 'Блог', icon: FileText, roles: ['admin', 'editor'] },
+      { id: 'calendar', label: 'Календарь', icon: CalendarDays, roles: ['admin', 'editor'] },
     ],
   },
 ]
@@ -72,28 +92,31 @@ export function AdminSidebar({ activeTab, onTabChange, unreadByTab, online, coll
           return (
             <div key={group.label} className={styles.navGroup}>
               {!collapsed && <span className={styles.navGroupLabel}>{group.label}</span>}
-              {visibleItems.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`${styles.navItem} ${activeTab === item.id ? styles.navItemActive : ''}`}
-                  onClick={() => onTabChange(item.id)}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <span className={styles.navIcon}>{item.icon}</span>
-                  {!collapsed && <span>{item.label}</span>}
-                  {!collapsed && unreadByTab[item.id] > 0 && (
-                    <span className={styles.navBadge}>{unreadByTab[item.id]}</span>
-                  )}
-                </button>
-              ))}
+              {visibleItems.map((item) => {
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`${styles.navItem} ${activeTab === item.id ? styles.navItemActive : ''}`}
+                    onClick={() => onTabChange(item.id)}
+                    title={collapsed ? item.label : undefined}
+                  >
+                    <span className={styles.navIcon}><Icon size={17} strokeWidth={1.8} aria-hidden /></span>
+                    {!collapsed && <span>{item.label}</span>}
+                    {!collapsed && unreadByTab[item.id] > 0 && (
+                      <span className={styles.navBadge}>{unreadByTab[item.id]}</span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           )
         })}
       </nav>
 
       <button type="button" className={styles.sidebarToggle} onClick={onToggleCollapse}>
-        {collapsed ? '→' : '← Свернуть'}
+        {collapsed ? <PanelLeftOpen size={17} aria-label="Развернуть меню" /> : <><PanelLeftClose size={17} aria-hidden /><span>Свернуть</span></>}
       </button>
     </aside>
   )

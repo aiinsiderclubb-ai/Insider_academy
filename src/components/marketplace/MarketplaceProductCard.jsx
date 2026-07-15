@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom'
-import { Heart } from 'lucide-react'
+import { ArrowUpRight, CircleCheck, Heart, Star } from 'lucide-react'
 import { getMarketplaceCategory } from '../../data/marketplace/categories'
 import { getMarketplacePrice } from '../../data/marketplace/discounts'
-import { getMarketplaceCoverStyle } from '../../utils/marketplaceCover'
+import { getMarketplaceCoverImage } from '../../utils/marketplaceCover'
 import { ProductBadge } from '../ProductBadge'
-import { UiIcon } from '../UiIcon'
 import styles from './MarketplaceProductCard.module.css'
 
 export function MarketplaceProductCard({
@@ -24,16 +23,13 @@ export function MarketplaceProductCard({
   const categoryLabel = category ? (ru ? category.titleRu : category.titleEn) : product.categoryId
   const finalPrice = getMarketplacePrice(product.priceEur, purchases)
   const hasDiscount = discountPercent > 0 && finalPrice < product.priceEur
-  const coverStyle = getMarketplaceCoverStyle(title || product.id)
+  const coverImage = getMarketplaceCoverImage(product)
 
   return (
     <article className={`${styles.card} ${featured ? styles.featured : ''}`}>
-      <div className={styles.cover} style={coverStyle}>
+      <div className={styles.cover}>
+        <img className={styles.coverImage} src={coverImage} alt="" loading="lazy" />
         <Link to={`/marketplace/${product.slug}`} className={styles.coverHit} aria-label={title} />
-
-        <span className={styles.coverIcon} aria-hidden>
-          <UiIcon name={category?.icon || 'sparkles'} size={32} tone="onAccent" />
-        </span>
 
         {product.badge && <ProductBadge type={product.badge} lang={lang} />}
 
@@ -52,17 +48,21 @@ export function MarketplaceProductCard({
           </button>
         )}
 
-        {!purchased && (
-          <div className={styles.previewOverlay}>
-            <Link to={`/marketplace/${product.slug}`} className={styles.previewBtn}>
-              {ru ? 'Превью' : 'Preview'}
-            </Link>
-          </div>
-        )}
+        <span className={styles.previewLabel}>
+          {ru ? 'Открыть' : 'View'} <ArrowUpRight size={13} aria-hidden />
+        </span>
       </div>
 
       <div className={styles.body}>
-        <span className={styles.category}>{categoryLabel}</span>
+        <div className={styles.kickerRow}>
+          <span className={styles.category}>{categoryLabel}</span>
+          {product.rating > 0 && (
+            <span className={styles.rating}>
+              <Star size={12} fill="currentColor" aria-hidden />
+              {product.rating}
+            </span>
+          )}
+        </div>
 
         <h3 className={styles.title}>
           <Link to={`/marketplace/${product.slug}`}>{title}</Link>
@@ -93,7 +93,10 @@ export function MarketplaceProductCard({
         </div>
 
         {purchased && (
-          <span className={styles.owned}>{ru ? 'Куплено · в кабинете' : 'Owned · in cabinet'}</span>
+          <span className={styles.owned}>
+            <CircleCheck size={13} aria-hidden />
+            {ru ? 'Куплено, в кабинете' : 'Owned, in cabinet'}
+          </span>
         )}
       </div>
     </article>

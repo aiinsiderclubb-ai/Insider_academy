@@ -1,5 +1,6 @@
 import { AdminGoogleSheets } from './AdminGoogleSheets'
 import { AdminEmail } from './AdminEmail'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import styles from '../../pages/Admin.module.css'
 
 export function AdminSettings({ settings, webhookLog, dataHealth, emailStatus, online, onCopy, onEnablePush, onToast }) {
@@ -45,7 +46,10 @@ export function AdminSettings({ settings, webhookLog, dataHealth, emailStatus, o
           )}
         </div>
         <ul className={styles.settingsList}>
-          <li>Tribute API: {settings?.tributeEnabled ? '✅ подключён' : '❌ не настроен'}</li>
+          <li className={styles.inlineStatus}>
+            {settings?.tributeEnabled ? <CheckCircle2 size={15} aria-hidden /> : <XCircle size={15} aria-hidden />}
+            Tribute API: {settings?.tributeEnabled ? 'подключён' : 'не настроен'}
+          </li>
           <li>Локально webhook не работает — используйте ngrok или деплой</li>
           <li>Prod: заголовок <code>trbt-signature</code> (HMAC SHA256 от тела запроса)</li>
         </ul>

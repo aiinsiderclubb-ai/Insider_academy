@@ -1,7 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  ArrowUpRight,
+  BadgeCheck,
+  Check,
+  ChevronRight,
+  Dot,
+  Download,
+  Plus,
+  Star,
+} from 'lucide-react'
 import { ProductBadge, productHasPublicStats } from '../components/ProductBadge'
-import { StarRating } from '../components/StarRating'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import { getMarketplaceProduct, getRelatedProducts } from '../data/marketplace/products'
@@ -15,8 +24,7 @@ import {
 import { MarketplaceProductCard } from '../components/marketplace/MarketplaceProductCard'
 import { MarketplaceFreePreview } from '../components/MarketplaceFreePreview'
 import { ScrollReveal } from '../components/ScrollReveal'
-import { UiIcon } from '../components/UiIcon'
-import { getMarketplaceCoverStyle } from '../utils/marketplaceCover'
+import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
 import styles from './MarketplaceProduct.module.css'
 
 const MOCK_REVIEWS_RU = [
@@ -30,14 +38,54 @@ const MOCK_REVIEWS_EN = [
   { name: 'Dev Studio', rating: 4, text: 'Great base, customized for a client in one day.' },
 ]
 
+function LucideStarRating({ rating, className = '' }) {
+  const filled = Math.floor(Math.min(5, Math.max(0, Number(rating) || 0)))
+
+  return (
+    <span className={className} aria-label={`${filled}/5`}>
+      {Array.from({ length: 5 }, (_, index) => (
+        <Star
+          key={index}
+          className={index < filled ? '' : styles.starDim}
+          size={12}
+          fill={index < filled ? 'currentColor' : 'none'}
+          aria-hidden
+        />
+      ))}
+    </span>
+  )
+}
+
 export function MarketplaceProduct() {
   const { productSlug } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
+  const [activeMedia, setActiveMedia] = useState(0)
   const { lang } = useLanguage()
   const { hasPurchased, purchases } = useAuth()
   const ru = lang === 'ru'
-
   const product = getMarketplaceProduct(productSlug)
+
+  useEffect(() => {
+    setActiveMedia(0)
+  }, [productSlug])
+
+  useEffect(() => {
+    if (searchParams.get('paid') !== '1') return undefined
+    const timer = setTimeout(() => {
+      setSearchParams((previous) => {
+        const next = new URLSearchParams(previous)
+        next.delete('paid')
+        return next
+      }, { replace: true })
+    }, 4000)
+    return () => clearTimeout(timer)
+  }, [searchParams, setSearchParams])
+
+  const gallery = useMemo(() => {
+    if (!product) return []
+    return [...new Set([getMarketplaceCoverImage(product), ...(product.screenshots || [])])]
+  }, [product])
+
   if (!product) return <Navigate to="/marketplace" replace />
 
   const purchased =
@@ -46,146 +94,174 @@ export function MarketplaceProduct() {
   const finalPrice = getMarketplacePrice(product.priceEur, purchases)
   const title = ru ? product.titleRu : product.titleEn
   const short = ru ? product.shortRu : product.shortEn
-  const included = ru ? product.includedRu : product.includedEn
-  const faq = ru ? product.faqRu : product.faqEn
+  const productIncluded = (ru ? product.includedRu : product.includedEn) || []
+  const included = productIncluded.length > 0
+    ? productIncluded
+    : (ru
+        ? [
+            `Файлы продукта (${(product.fileTypes || ['ZIP']).join(', ')})`,
+            'Пошаговая инструкция по внедрению',
+            'Коммерческая лицензия и обновления',
+          ]
+        : [
+            `Product files (${(product.fileTypes || ['ZIP']).join(', ')})`,
+            'Step-by-step implementation guide',
+            'Commercial license and updates',
+          ])
+  const faq = (ru ? product.faqRu : product.faqEn) || []
   const category = getMarketplaceCategory(product.categoryId)
   const creator = getMarketplaceCreator(product.creatorId)
   const related = getRelatedProducts(product)
   const reviews = ru ? MOCK_REVIEWS_RU : MOCK_REVIEWS_EN
+  const showPaid = searchParams.get('paid') === '1'
+  const activeImage = gallery[Math.min(activeMedia, gallery.length - 1)]
 
-  useEffect(() => {
-    if (searchParams.get('paid') !== '1') return
-    const t = setTimeout(() => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev)
-        next.delete('paid')
-        return next
-      }, { replace: true })
-    }, 4000)
-    return () => clearTimeout(t)
-  }, [searchParams, setSearchParams])
-
-  const requirementsRu = [
-    'Аккаунт AI Insider Academy',
-    product.categoryId === 'n8n-workflows' ? 'Self-hosted или cloud n8n' : null,
-    product.productType === 'agent-pack' ? 'API ключ LLM (OpenAI / Anthropic)' : null,
+  const requirements = [
+    ru ? 'Аккаунт AI Insider Academy' : 'AI Insider Academy account',
+    product.categoryId === 'n8n-workflows'
+      ? (ru ? 'Self-hosted или cloud n8n' : 'Self-hosted or cloud n8n')
+      : null,
+    product.productType === 'agent-pack'
+      ? (ru ? 'API ключ LLM (OpenAI / Anthropic)' : 'LLM API key (OpenAI / Anthropic)')
+      : null,
   ].filter(Boolean)
-  const requirementsEn = [
-    'AI Insider Academy account',
-    product.categoryId === 'n8n-workflows' ? 'Self-hosted or cloud n8n' : null,
-    product.productType === 'agent-pack' ? 'LLM API key (OpenAI / Anthropic)' : null,
-  ].filter(Boolean)
-  const requirements = ru ? requirementsRu : requirementsEn
 
-  const installRu = [
-    'Оплатите продукт',
-    'Откройте Личный кабинет → Marketplace',
-    'Скачайте ZIP и следуйте PDF-гайду',
-  ]
-  const installEn = ['Purchase the product', 'Open Account → Marketplace', 'Download ZIP and follow the PDF guide']
-  const install = ru ? installRu : installEn
+  const installation = ru
+    ? ['Оплатите продукт', 'Откройте раздел Marketplace в Личном кабинете', 'Скачайте ZIP и следуйте PDF-гайду']
+    : ['Purchase the product', 'Open the Marketplace section in Account', 'Download ZIP and follow the PDF guide']
 
   return (
     <div className={styles.wrap}>
-      <div
-        className={styles.container}
-        style={{ '--mp-cover': product.coverGradient }}
-      >
+      <div className={styles.container}>
+        {showPaid && (
+          <div className={styles.paidNotice} role="status">
+            <span className={styles.paidIcon} aria-hidden><Check size={15} strokeWidth={2.4} /></span>
+            <strong>{ru ? 'Оплата прошла успешно' : 'Payment complete'}</strong>
+            <span>{ru ? 'Продукт уже доступен в личном кабинете.' : 'Your product is ready in the cabinet.'}</span>
+          </div>
+        )}
+
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">
           <Link to="/marketplace">Marketplace</Link>
-          <span aria-hidden>/</span>
-          {category && (
-            <>
-              <span>{ru ? category.titleRu : category.titleEn}</span>
-              <span aria-hidden>/</span>
-            </>
-          )}
+          <ChevronRight className={styles.breadcrumbIcon} size={14} aria-hidden />
+          {category && <span>{ru ? category.titleRu : category.titleEn}</span>}
+          <ChevronRight className={styles.breadcrumbIcon} size={14} aria-hidden />
           <span>{title}</span>
         </nav>
 
         <div className={styles.layout}>
-          <div>
-            <div className={styles.preview} style={getMarketplaceCoverStyle(title)}>
-              <span className={styles.previewIcon} aria-hidden>
-                <UiIcon name={category?.icon || 'sparkles'} size={40} tone="onAccent" />
-              </span>
-            </div>
-
-            {product.screenshots?.length > 0 && (
-              <div className={styles.shots}>
-                {product.screenshots.map((src) => (
-                  <img key={src} src={src} alt="" className={styles.shot} loading="lazy" />
-                ))}
+          <main className={styles.main}>
+            <section className={styles.gallery} aria-label={ru ? 'Галерея продукта' : 'Product gallery'}>
+              <div className={styles.preview}>
+                <img src={activeImage} alt={title} className={styles.previewCover} />
+                <span className={styles.previewTag}>
+                  {ru ? 'Реальный файл продукта' : 'Actual product artwork'}
+                </span>
               </div>
-            )}
+              {gallery.length > 1 && (
+                <div className={styles.shots}>
+                  {gallery.map((src, index) => (
+                    <button
+                      key={src}
+                      type="button"
+                      className={`${styles.shotButton} ${index === activeMedia ? styles.shotActive : ''}`}
+                      onClick={() => setActiveMedia(index)}
+                      aria-label={`${ru ? 'Открыть изображение' : 'Open image'} ${index + 1}`}
+                    >
+                      <img src={src} alt="" className={styles.shot} loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
 
             {!purchased && product.freePreview && (
               <ScrollReveal>
-                <MarketplaceFreePreview
-                  preview={product.freePreview}
-                  lang={lang}
-                  productTitle={title}
-                />
+                <MarketplaceFreePreview preview={product.freePreview} lang={lang} productTitle={title} />
               </ScrollReveal>
             )}
 
             <ScrollReveal>
               <section className={styles.block}>
-                <h2>{ru ? 'Обзор' : 'Overview'}</h2>
-                <p style={{ margin: 0, color: 'var(--text-muted)', lineHeight: 1.6 }}>{short}</p>
+                <span className={styles.blockIndex}>01</span>
+                <div>
+                  <h2>{ru ? 'О продукте' : 'About this product'}</h2>
+                  <p className={styles.lead}>{short}</p>
+                </div>
               </section>
             </ScrollReveal>
 
             <ScrollReveal>
               <section className={styles.block}>
-                <h2>{ru ? 'Что входит' : 'What\'s included'}</h2>
-                <ul className={styles.list}>
-                  {included.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-                <p style={{ margin: '12px 0 0', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                  {ru ? 'Форматы: ' : 'Formats: '}
-                  {product.fileTypes.join(', ')}
-                </p>
+                <span className={styles.blockIndex}>02</span>
+                <div>
+                  <h2>{ru ? 'Что входит' : 'What is included'}</h2>
+                  <ul className={styles.list}>
+                    {included.map((item) => (
+                      <li key={item}>
+                        <Check className={styles.listIcon} size={14} aria-hidden />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className={styles.formats}>
+                    <span>{ru ? 'Форматы' : 'Formats'}</span>
+                    {(product.fileTypes || ['ZIP']).map((type) => (
+                      <span key={type} className={styles.formatType}>
+                        <Dot size={13} aria-hidden />
+                        {type}
+                      </span>
+                    ))}
+                  </p>
+                </div>
               </section>
             </ScrollReveal>
 
-            <ScrollReveal>
-              <section className={styles.block}>
-                <h2>{ru ? 'Требования' : 'Requirements'}</h2>
-                <ul className={styles.list}>
-                  {requirements.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </section>
-            </ScrollReveal>
+            <div className={styles.splitBlocks}>
+              <ScrollReveal>
+                <section className={styles.miniBlock}>
+                  <span>03</span>
+                  <h2>{ru ? 'Требования' : 'Requirements'}</h2>
+                  <ul className={styles.compactList}>
+                    {requirements.map((item) => (
+                      <li key={item}>
+                        <Dot className={styles.listIcon} size={16} aria-hidden />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              </ScrollReveal>
+              <ScrollReveal>
+                <section className={styles.miniBlock}>
+                  <span>04</span>
+                  <h2>{ru ? 'Как начать' : 'Get started'}</h2>
+                  <ol className={styles.compactList}>
+                    {installation.map((item) => (
+                      <li key={item}>
+                        <Dot className={styles.listIcon} size={16} aria-hidden />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              </ScrollReveal>
+            </div>
 
             <ScrollReveal>
-              <section className={styles.block}>
-                <h2>{ru ? 'Установка' : 'Installation'}</h2>
-                <ul className={styles.list}>
-                  {install.map((item, i) => (
-                    <li key={item}>
-                      {i + 1}. {item}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            </ScrollReveal>
-
-            <ScrollReveal>
-              <section className={styles.block}>
-                <h2>{ru ? 'Отзывы' : 'Reviews'}</h2>
+              <section className={styles.blockStack}>
+                <div className={styles.sectionHeading}>
+                  <span>{ru ? 'Проверено сообществом' : 'Community tested'}</span>
+                  <h2>{ru ? 'Отзывы покупателей' : 'Customer reviews'}</h2>
+                </div>
                 <div className={styles.reviews}>
-                  {reviews.map((r) => (
-                    <article key={r.name} className={styles.review}>
+                  {reviews.map((review) => (
+                    <article key={review.name} className={styles.review}>
                       <div className={styles.reviewHead}>
-                        <strong>{r.name}</strong>
-                        <StarRating rating={r.rating} className={styles.reviewStars} />
+                        <strong>{review.name}</strong>
+                        <LucideStarRating rating={review.rating} className={styles.reviewStars} />
                       </div>
-                      <p>{r.text}</p>
+                      <p>{review.text}</p>
                     </article>
                   ))}
                 </div>
@@ -193,102 +269,116 @@ export function MarketplaceProduct() {
             </ScrollReveal>
 
             <ScrollReveal>
-              <section className={styles.block}>
-                <h2>FAQ</h2>
-                {faq.map((item) => (
-                  <div key={item.q} className={styles.faqItem}>
-                    <strong>{item.q}</strong>
-                    <p>{item.a}</p>
-                  </div>
-                ))}
+              <section className={styles.blockStack}>
+                <div className={styles.sectionHeading}>
+                  <span>{ru ? 'Перед покупкой' : 'Before you buy'}</span>
+                  <h2>FAQ</h2>
+                </div>
+                <div className={styles.faq}>
+                  {faq.map((item, index) => (
+                    <details key={item.q} className={styles.faqItem} open={index === 0}>
+                      <summary>{item.q}<Plus size={17} aria-hidden /></summary>
+                      <p>{item.a}</p>
+                    </details>
+                  ))}
+                </div>
               </section>
             </ScrollReveal>
-
-            {related.length > 0 && (
-              <ScrollReveal>
-                <section className={styles.block}>
-                  <h2>{ru ? 'Похожие продукты' : 'Related products'}</h2>
-                  <div className={styles.relatedGrid}>
-                    {related.map((p) => (
-                      <MarketplaceProductCard
-                        key={p.id}
-                        product={p}
-                        lang={lang}
-                        purchased={hasPurchased(p.id)}
-                        discountPercent={discountPercent}
-                        purchases={purchases}
-                      />
-                    ))}
-                  </div>
-                </section>
-              </ScrollReveal>
-            )}
-          </div>
+          </main>
 
           <aside className={styles.sidebar}>
+            <span className={styles.categoryLabel}>
+              {category ? (ru ? category.titleRu : category.titleEn) : product.productType}
+            </span>
             <h1 className={styles.title}>{title}</h1>
+            <p className={styles.short}>{short}</p>
+
             <div className={styles.meta}>
               {productHasPublicStats(product) ? (
                 <>
-                  <span className={styles.reviewStars}>★ {product.rating}</span>
-                  <span>({product.reviewCount})</span>
-                  <span>↓ {product.downloads.toLocaleString()}</span>
+                  <span className={styles.reviewStars}>
+                    <Star size={13} fill="currentColor" aria-hidden />
+                    {product.rating}
+                  </span>
+                  <span>{product.reviewCount} {ru ? 'отзывов' : 'reviews'}</span>
+                  <span className={styles.metaItem}>
+                    <Download size={13} aria-hidden />
+                    {product.downloads.toLocaleString()}
+                  </span>
                 </>
               ) : product.badge ? (
                 <ProductBadge type={product.badge} lang={lang} variant="inline" />
               ) : null}
             </div>
-            <div>
+
+            <div className={styles.priceRow}>
               <span className={styles.price}>{finalPrice}€</span>
               {discountPercent > 0 && finalPrice < product.priceEur && (
                 <span className={styles.oldPrice}>{product.priceEur}€</span>
               )}
             </div>
-            {discountPercent > 0 && (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--accent-orange)', margin: '8px 0 0' }}>
-                {ru ? `Скидка подписки −${discountPercent}%` : `Membership discount −${discountPercent}%`}
+            {discountPercent > 0 && finalPrice < product.priceEur && (
+              <p className={styles.discount}>
+                {ru ? `Ваша скидка по подписке −${discountPercent}%` : `Your membership discount −${discountPercent}%`}
               </p>
             )}
 
-            {creator && (
-              <Link to={`/marketplace/creators/${creator.slug}`} className={styles.creator}>
-                <span
-                  className={styles.creatorAvatar}
-                  style={{ background: creator.avatarGradient }}
-                  aria-hidden
-                />
-                <span>
-                  <span className={styles.creatorName}>{creator.name}</span>
-                  {creator.verified && (
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {ru ? 'Проверенный креатор' : 'Verified creator'}
-                    </span>
-                  )}
-                </span>
-              </Link>
-            )}
+            <ul className={styles.railPerks}>
+              <li><Check size={14} aria-hidden />{ru ? 'Мгновенный доступ' : 'Instant access'}</li>
+              <li><Check size={14} aria-hidden />{ru ? 'Коммерческая лицензия' : 'Commercial license'}</li>
+              <li><Check size={14} aria-hidden />{ru ? 'Обновления включены' : 'Updates included'}</li>
+            </ul>
 
             {purchased ? (
               <>
                 <Link to="/cabinet#marketplace" className={styles.btnPrimary}>
-                  {ru ? 'Скачать →' : 'Download →'}
+                  {ru ? 'Скачать продукт' : 'Download product'} <Download size={16} aria-hidden />
                 </Link>
-                <Link to={`/marketplace/${product.slug}`} className={styles.btnSecondary}>
-                  {ru ? 'Уже куплено' : 'Already owned'}
-                </Link>
+                <span className={styles.ownedRail}>{ru ? 'Уже в вашей библиотеке' : 'Already in your library'}</span>
               </>
             ) : (
-              <>
-                <Link to={`/marketplace/${product.slug}/buy`} className={styles.btnPrimary}>
-                  {ru ? 'Купить' : 'Purchase'}
-                </Link>
-                <Link to={`/marketplace/${product.slug}`} className={styles.btnSecondary}>
-                  {ru ? 'Превью описания' : 'Preview details'}
-                </Link>
-              </>
+              <Link to={`/marketplace/${product.slug}/buy`} className={styles.btnPrimary}>
+                {ru ? 'Купить сейчас' : 'Buy now'} <ArrowUpRight size={16} aria-hidden />
+              </Link>
+            )}
+
+            {creator && (
+              <Link to={`/marketplace/creators/${creator.slug}`} className={styles.creator}>
+                <span className={styles.creatorAvatar} style={{ background: creator.avatarGradient }} aria-hidden />
+                <span>
+                  <span className={styles.creatorOverline}>{ru ? 'Автор продукта' : 'Created by'}</span>
+                  <strong className={styles.creatorName}>
+                    {creator.name}
+                    {creator.verified && <BadgeCheck size={14} aria-label={ru ? 'Проверенный автор' : 'Verified creator'} />}
+                  </strong>
+                </span>
+              </Link>
             )}
           </aside>
         </div>
+
+        {related.length > 0 && (
+          <ScrollReveal>
+            <section className={styles.relatedSection}>
+              <div className={styles.sectionHeading}>
+                <span>{ru ? 'Продолжить собирать стек' : 'Keep building your stack'}</span>
+                <h2>{ru ? 'Похожие продукты' : 'Related products'}</h2>
+              </div>
+              <div className={styles.relatedGrid}>
+                {related.map((relatedProduct) => (
+                  <MarketplaceProductCard
+                    key={relatedProduct.id}
+                    product={relatedProduct}
+                    lang={lang}
+                    purchased={hasPurchased(relatedProduct.id)}
+                    discountPercent={discountPercent}
+                    purchases={purchases}
+                  />
+                ))}
+              </div>
+            </section>
+          </ScrollReveal>
+        )}
       </div>
     </div>
   )

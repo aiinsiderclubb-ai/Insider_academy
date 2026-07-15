@@ -1,4 +1,5 @@
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { ArrowLeft, ArrowUpRight, BadgeCheck, Store, WalletCards } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import {
@@ -30,18 +31,21 @@ export function MarketplaceCreators() {
       <div className={styles.wrap}>
         <div className={styles.container}>
           <Link to="/marketplace/creators" className={styles.link}>
-            {ru ? '← Все креаторы' : '← All creators'}
+            <ArrowLeft size={16} aria-hidden />
+            {ru ? 'Все креаторы' : 'All creators'}
           </Link>
           <header className={styles.profileHeader}>
             <span
               className={styles.profileAvatar}
               style={{ background: creator.avatarGradient }}
               aria-hidden
-            />
+            >
+              <Store size={30} strokeWidth={1.7} />
+            </span>
             <div>
-              <h1 className={styles.title} style={{ WebkitTextFillColor: 'unset', color: 'var(--text)' }}>
+              <h1 className={styles.title}>
                 {creator.name}
-                {creator.verified && ' ✓'}
+                {creator.verified && <BadgeCheck className={styles.verifiedIcon} size={24} aria-label={ru ? 'Проверенный креатор' : 'Verified creator'} />}
               </h1>
               <p className={styles.lead}>{bio}</p>
               <p className={styles.creatorMeta}>
@@ -72,33 +76,51 @@ export function MarketplaceCreators() {
       <div className={styles.container}>
         <ScrollReveal>
           <header className={styles.hero}>
-            <h1 className={styles.title}>
-              {ru ? 'Стать креатором Marketplace' : 'Become a Marketplace Creator'}
-            </h1>
-            <p className={styles.lead}>
-              {ru
-                ? 'Продавайте AI-шаблоны, workflow и агентов студентам Academy. Выбранные партнёры и выпускники Accelerator получают доступ к публикации.'
-                : 'Sell AI templates, workflows and agents to Academy students. Selected partners and Accelerator graduates can publish.'}
-            </p>
-            <div className={styles.split}>
-              <div className={styles.stat}>
-                <strong>{CREATOR_REVENUE_SHARE.creator * 100}%</strong>
-                <span>{ru ? 'доход креатору' : 'creator revenue'}</span>
+            <div className={styles.heroCopy}>
+              <span className={styles.eyebrow}>{ru ? 'CREATOR PROGRAM' : 'CREATOR PROGRAM'}</span>
+              <h1 className={styles.title}>
+                {ru ? 'Превратите AI-экспертизу в продукт' : 'Turn AI expertise into a product'}
+              </h1>
+              <p className={styles.lead}>
+                {ru
+                  ? 'Публикуйте AI-шаблоны, workflow и агентов для сообщества Academy. Мы берём на себя витрину, оплату и доступ покупателей.'
+                  : 'Publish AI templates, workflows and agents for the Academy community. We handle the storefront, payments, and buyer access.'}
+              </p>
+              <div className={styles.split}>
+                <div className={styles.stat}>
+                  <WalletCards size={20} aria-hidden />
+                  <div>
+                    <strong>{CREATOR_REVENUE_SHARE.creator * 100}%</strong>
+                    <span>{ru ? 'доход креатору' : 'creator revenue'}</span>
+                  </div>
+                </div>
+                <div className={styles.stat}>
+                  <Store size={20} aria-hidden />
+                  <div>
+                    <strong>{CREATOR_REVENUE_SHARE.platform * 100}%</strong>
+                    <span>{ru ? 'сервис платформы' : 'platform service'}</span>
+                  </div>
+                </div>
               </div>
-              <div className={styles.stat}>
-                <strong>{CREATOR_REVENUE_SHARE.platform * 100}%</strong>
-                <span>{ru ? 'платформа AI Insider' : 'AI Insider platform'}</span>
-              </div>
+              <Link to="/cabinet#support" className={styles.ctaLink}>
+                {ru ? 'Подать заявку' : 'Apply via support'}
+                <ArrowUpRight size={17} aria-hidden />
+              </Link>
             </div>
-            <Link to="/cabinet#support" className={styles.link}>
-              {ru ? 'Подать заявку в поддержку →' : 'Apply via support →'}
-            </Link>
+            <div className={styles.heroVisual}>
+              <img src="/design/course-ai-content-business.webp" alt="" aria-hidden />
+              <span className={styles.visualBadge}>
+                <BadgeCheck size={16} aria-hidden />
+                {ru ? 'Отборная коллекция' : 'Curated collection'}
+              </span>
+            </div>
           </header>
         </ScrollReveal>
 
-        <h2 className={styles.title} style={{ fontSize: '1.25rem', marginBottom: 20 }}>
-          {ru ? 'Креаторы' : 'Creators'}
-        </h2>
+        <div className={styles.sectionHead}>
+          <span className={styles.eyebrow}>{ru ? 'MARKETPLACE' : 'MARKETPLACE'}</span>
+          <h2>{ru ? 'Креаторы Academy' : 'Academy creators'}</h2>
+        </div>
         <div className={styles.creatorGrid}>
           {MARKETPLACE_CREATORS.map((creator) => (
             <article key={creator.id} className={styles.creatorCard}>
@@ -106,15 +128,21 @@ export function MarketplaceCreators() {
                 className={styles.avatar}
                 style={{ background: creator.avatarGradient }}
                 aria-hidden
-              />
-              <h3 className={styles.creatorName}>{creator.name}</h3>
+              >
+                <Store size={22} strokeWidth={1.7} />
+              </span>
+              <h3 className={styles.creatorName}>
+                {creator.name}
+                {creator.verified && <BadgeCheck className={styles.verifiedIcon} size={17} aria-label={ru ? 'Проверенный креатор' : 'Verified creator'} />}
+              </h3>
               <p className={styles.creatorBio}>{ru ? creator.bioRu : creator.bioEn}</p>
               <p className={styles.creatorMeta}>
                 {creator.productCount} {ru ? 'продуктов' : 'products'} ·{' '}
                 {creator.salesCount.toLocaleString()} {ru ? 'продаж' : 'sales'}
               </p>
               <Link to={`/marketplace/creators/${creator.slug}`} className={styles.link}>
-                {ru ? 'Смотреть магазин →' : 'View store →'}
+                {ru ? 'Смотреть магазин' : 'View store'}
+                <ArrowUpRight size={15} aria-hidden />
               </Link>
             </article>
           ))}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, Check, Circle, CircleCheck, CreditCard, FlaskConical, Landmark, ShieldCheck, WalletCards, Zap } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { getUserDiscountPercent } from '../api/adminStore'
@@ -10,10 +11,10 @@ import buyStyles from './CourseBuy.module.css'
 import styles from './VaultProduct.module.css'
 
 const PAY_METHODS = [
-  { id: 'tribute', label: 'Tribute', descRu: 'Карта, СБП, Stars, TON', descEn: 'Card, SBP, Stars, TON', icon: '✦' },
-  { id: 'stripe', label: 'Stripe', descRu: 'Visa, Mastercard', descEn: 'Visa, Mastercard', icon: '◈' },
-  { id: 'liqpay', label: 'LiqPay', descRu: 'Украина', descEn: 'Ukraine', icon: '◉' },
-  { id: 'demo', label: 'Demo', descRu: 'Тестовая оплата', descEn: 'Test payment', icon: '◇' },
+  { id: 'tribute', label: 'Tribute', descRu: 'Карта, СБП, Stars, TON', descEn: 'Card, SBP, Stars, TON', icon: WalletCards },
+  { id: 'stripe', label: 'Stripe', descRu: 'Visa, Mastercard', descEn: 'Visa, Mastercard', icon: CreditCard },
+  { id: 'liqpay', label: 'LiqPay', descRu: 'Украина', descEn: 'Ukraine', icon: Landmark },
+  { id: 'demo', label: 'Demo', descRu: 'Тестовая оплата', descEn: 'Test payment', icon: FlaskConical },
 ]
 
 const BENEFITS_RU = [
@@ -153,13 +154,13 @@ export function VaultBuy() {
       <div className={buyStyles.wrap}>
         <div className={buyStyles.container}>
           <div className={buyStyles.purchasedCard}>
-            <div className={buyStyles.purchasedIcon}>✓</div>
+            <div className={buyStyles.purchasedIcon}><Check size={26} strokeWidth={2.2} aria-hidden /></div>
             <h2 className={buyStyles.purchasedTitle}>
               {ru ? 'Vault уже куплен' : 'Vault already purchased'}
             </h2>
             <p className={buyStyles.purchasedDesc}>{title}</p>
             <Link to={`/vault/${product.slug}`} className={buyStyles.submit}>
-              {ru ? 'Открыть Vault →' : 'Open Vault →'}
+              {ru ? 'Открыть Vault' : 'Open Vault'} <ArrowRight size={16} aria-hidden />
             </Link>
           </div>
         </div>
@@ -168,22 +169,28 @@ export function VaultBuy() {
   }
 
   return (
-    <div
-      className={buyStyles.wrap}
-      style={{
-        '--vault-accent': product.accent,
-        '--vault-gradient': product.gradient,
-      }}
-    >
+    <div className={`${buyStyles.wrap} ${styles.buyPage}`} style={{ '--vault-accent': product.accent }}>
       <div className={buyStyles.container}>
-        <header
-          className={styles.hero}
-          style={{ marginBottom: 24 }}
-        >
-          <span className={styles.heroIcon} aria-hidden>{product.icon}</span>
-          <span className={styles.category}>{ru ? product.categoryRu : product.categoryEn}</span>
-          <h1 className={styles.title}>{title}</h1>
-          <p className={styles.heroLead}>{ru ? product.shortRu : product.shortEn}</p>
+        <header className={styles.checkoutIntro}>
+          <div className={styles.checkoutSteps} aria-label={ru ? 'Этапы оформления' : 'Checkout steps'}>
+            <span className={`${styles.checkoutStep} ${styles.checkoutStepDone}`}>
+              <strong>1</strong>{ru ? 'Детали заказа' : 'Order details'}
+            </span>
+            <span className={`${styles.checkoutStep} ${styles.checkoutStepActive}`} aria-current="step">
+              <strong>2</strong>{ru ? 'Оплата' : 'Payment'}
+            </span>
+            <span className={styles.checkoutStep}>
+              <strong>3</strong>{ru ? 'Доступ' : 'Access'}
+            </span>
+          </div>
+          <div className={styles.checkoutProduct}>
+            <img src={product.coverImage} alt="" className={styles.checkoutProductImage} />
+            <div className={styles.checkoutProductCopy}>
+              <span>{ru ? product.categoryRu : product.categoryEn}</span>
+              <h1>{title}</h1>
+              <p>{ru ? product.shortRu : product.shortEn}</p>
+            </div>
+          </div>
         </header>
 
         <div className={buyStyles.layout}>
@@ -194,13 +201,16 @@ export function VaultBuy() {
               </h2>
               <ul className={buyStyles.benefitsList}>
                 {benefits.map((item) => (
-                  <li key={item} className={buyStyles.benefitItem}>{item}</li>
+                  <li key={item} className={buyStyles.benefitItem}>
+                    <Check className={buyStyles.itemIcon} size={15} aria-hidden />
+                    <span>{item}</span>
+                  </li>
                 ))}
               </ul>
             </section>
             <div className={buyStyles.trustRow}>
-              <span className={buyStyles.trustBadge}>{ru ? 'Безопасная оплата' : 'Secure payment'}</span>
-              <span className={buyStyles.trustBadge}>{ru ? 'Мгновенный доступ' : 'Instant access'}</span>
+              <span className={buyStyles.trustBadge}><ShieldCheck size={14} aria-hidden />{ru ? 'Безопасная оплата' : 'Secure payment'}</span>
+              <span className={buyStyles.trustBadge}><Zap size={14} aria-hidden />{ru ? 'Мгновенный доступ' : 'Instant access'}</span>
             </div>
           </div>
 
@@ -244,6 +254,7 @@ export function VaultBuy() {
               <div className={buyStyles.payMethods}>
                 {PAY_METHODS.map((pm) => {
                   const disabled = pm.id === 'tribute' && !tributeEnabled
+                  const PayIcon = pm.icon
                   return (
                     <button
                       key={pm.id}
@@ -253,12 +264,14 @@ export function VaultBuy() {
                       disabled={disabled}
                       aria-pressed={method === pm.id}
                     >
-                      <span className={buyStyles.payIcon} aria-hidden>{pm.icon}</span>
+                      <span className={buyStyles.payIcon} aria-hidden><PayIcon size={16} strokeWidth={1.8} /></span>
                       <span className={buyStyles.payInfo}>
                         <span className={buyStyles.payName}>{pm.label}</span>
                         <span className={buyStyles.payDesc}>{ru ? pm.descRu : pm.descEn}</span>
                       </span>
-                      <span className={buyStyles.payRadio} aria-hidden />
+                      {method === pm.id
+                        ? <CircleCheck className={`${buyStyles.payRadio} ${buyStyles.payRadioActive}`} size={16} aria-hidden />
+                        : <Circle className={buyStyles.payRadio} size={16} aria-hidden />}
                     </button>
                   )
                 })}
@@ -277,8 +290,8 @@ export function VaultBuy() {
                   ? 'После оплаты материалы появятся в личном кабинете'
                   : 'Materials appear in your account after payment'}
               </p>
-              <Link to={`/vault/${product.slug}`} className={buyStyles.secureNote} style={{ display: 'block', marginTop: 8 }}>
-                {ru ? '← Назад к описанию' : '← Back to details'}
+              <Link to={`/vault/${product.slug}`} className={`${buyStyles.secureNote} ${buyStyles.secureLink}`}>
+                <ArrowLeft size={13} aria-hidden /> {ru ? 'Назад к описанию' : 'Back to details'}
               </Link>
             </form>
           </aside>

@@ -4,6 +4,7 @@ import { getCourseBundle } from '../data/coursePacks'
 import { getCoursePackDetails } from '../data/coursePackDetails'
 import { getCourseById, getCourseField } from '../data/courses'
 import { ScrollReveal } from '../components/ScrollReveal'
+import { getCourseDesignCover } from '../utils/designAssets'
 import styles from './CoursePack.module.css'
 
 export function CoursePack() {
@@ -57,7 +58,7 @@ export function CoursePack() {
             {bundleCourses.map((course, index) => (
               <img
                 key={course.id}
-                src={course.image}
+                src={getCourseDesignCover(course)}
                 alt=""
                 className={styles.coverThumb}
                 style={{ '--thumb-index': index }}
@@ -136,7 +137,7 @@ export function CoursePack() {
                   to={`/courses/${course.slug}`}
                   className={styles.courseCard}
                 >
-                  <img src={course.image} alt="" className={styles.courseImg} />
+                  <img src={getCourseDesignCover(course)} alt="" className={styles.courseImg} />
                   <div>
                     <strong>{getCourseField(course, 'title', lang)}</strong>
                     <span>{course.priceEur}€</span>

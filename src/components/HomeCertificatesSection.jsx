@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { ScrollReveal } from './ScrollReveal'
 import styles from './HomeCertificatesSection.module.css'
 
@@ -46,7 +47,8 @@ export function HomeCertificatesSection({ lang }) {
                 <li>{isRu ? 'Готов к LinkedIn и портфолио' : 'Ready for LinkedIn and your portfolio'}</li>
               </ul>
               <Link to="/courses" className={styles.cta}>
-                {isRu ? 'Выбрать курс с сертификатом →' : 'Choose a certified course →'}
+                {isRu ? 'Выбрать курс с сертификатом' : 'Choose a certified course'}
+                <ArrowRight size={16} strokeWidth={1.8} aria-hidden style={{ marginLeft: 7, flexShrink: 0 }} />
               </Link>
             </div>
 

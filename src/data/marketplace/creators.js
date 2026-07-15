@@ -19,7 +19,7 @@ export const MARKETPLACE_CREATORS = [
     name: 'n8n Automation Lab',
     bioRu: 'Специализация: n8n, CRM и мессенджеры для агентств.',
     bioEn: 'Specializing in n8n, CRM and messenger automations for agencies.',
-    avatarGradient: 'linear-gradient(135deg, #16a34a, #06b6d4)',
+    avatarGradient: 'linear-gradient(135deg, #8da783, #8b5cf6)',
     verified: true,
     salesCount: 3200,
     productCount: 8,
