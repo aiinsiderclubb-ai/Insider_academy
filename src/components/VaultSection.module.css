@@ -133,6 +133,7 @@
 .benefits li svg { flex: 0 0 auto; margin-top: 1px; color: #95b098; }
 
 .bundle {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1fr) auto;
   align-items: center;

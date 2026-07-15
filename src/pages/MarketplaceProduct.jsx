@@ -25,6 +25,8 @@ import { MarketplaceProductCard } from '../components/marketplace/MarketplacePro
 import { MarketplaceFreePreview } from '../components/MarketplaceFreePreview'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
+import { ComingSoonAction } from '../components/ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import styles from './MarketplaceProduct.module.css'
 
 const MOCK_REVIEWS_RU = [
@@ -115,6 +117,7 @@ export function MarketplaceProduct() {
   const reviews = ru ? MOCK_REVIEWS_RU : MOCK_REVIEWS_EN
   const showPaid = searchParams.get('paid') === '1'
   const activeImage = gallery[Math.min(activeMedia, gallery.length - 1)]
+  const comingSoon = isComingSoon('marketplace')
 
   const requirements = [
     ru ? 'Аккаунт AI Insider Academy' : 'AI Insider Academy account',
@@ -329,7 +332,9 @@ export function MarketplaceProduct() {
               <li><Check size={14} aria-hidden />{ru ? 'Обновления включены' : 'Updates included'}</li>
             </ul>
 
-            {purchased ? (
+            {comingSoon ? (
+              <ComingSoonAction kind="marketplace" lang={lang} className={styles.btnPrimary} />
+            ) : purchased ? (
               <>
                 <Link to="/cabinet#marketplace" className={styles.btnPrimary}>
                   {ru ? 'Скачать продукт' : 'Download product'} <Download size={16} aria-hidden />

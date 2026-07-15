@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom'
 import { ArrowDownRight, Check, Circle } from 'lucide-react'
 import { MARKETPLACE_PRODUCTS } from '../../data/marketplace/products'
 import { getMarketplaceCoverImage } from '../../utils/marketplaceCover'
+import { ComingSoonLock } from '../ComingSoonLock'
+import { isComingSoon } from '../../config/availability'
 import styles from './MarketplaceHero.module.css'
 
 const FEATURED_SLUGS = [
@@ -12,6 +14,7 @@ const FEATURED_SLUGS = [
 
 export function MarketplaceHero({ lang }) {
   const ru = lang === 'ru'
+  const comingSoon = isComingSoon('marketplace')
   const products = FEATURED_SLUGS
     .map((slug) => MARKETPLACE_PRODUCTS.find((product) => product.slug === slug))
     .filter(Boolean)
@@ -71,6 +74,14 @@ export function MarketplaceHero({ lang }) {
           <span className={styles.dropLabel}>
             {ru ? 'Дроп недели' : 'Drop of the week'}
           </span>
+        )}
+        {comingSoon && (
+          <ComingSoonLock
+            kind="marketplace"
+            lang={lang}
+            compact
+            className={styles.comingSoonVisual}
+          />
         )}
       </div>
     </header>

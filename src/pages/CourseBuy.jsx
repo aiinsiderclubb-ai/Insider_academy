@@ -34,6 +34,8 @@ import { PlatformBridge } from '../components/PlatformBridge'
 import { api, checkApiOnline } from '../api/client'
 import { formatApiError } from '../utils/formatApiError'
 import { getCourseTributePaymentUrl } from '../data/tributePayments'
+import { ComingSoonPage } from '../components/ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import styles from './CourseBuy.module.css'
 
 const PAY_METHODS = [
@@ -96,6 +98,10 @@ export function CourseBuy() {
         </div>
       </div>
     )
+  }
+
+  if (isComingSoon('courses')) {
+    return <ComingSoonPage kind="courses" lang={lang} backTo="/courses" />
   }
 
   const purchased = hasPurchased(course.id)

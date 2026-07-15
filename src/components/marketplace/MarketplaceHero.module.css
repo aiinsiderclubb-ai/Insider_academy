@@ -139,6 +139,11 @@
   perspective: 1000px;
 }
 
+.comingSoonVisual {
+  border: 1px solid rgba(168, 128, 255, 0.2);
+  border-radius: 30px;
+}
+
 .orbit {
   position: absolute;
   inset: 42px 20px 20px 32px;

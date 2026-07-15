@@ -7,6 +7,8 @@ import { useAuth } from '../context/AuthContext'
 import { getVaultProduct } from '../data/vaultProducts'
 import { getVaultDetails } from '../data/vaultDetails'
 import { ScrollReveal } from '../components/ScrollReveal'
+import { ComingSoonAction } from '../components/ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import styles from './VaultProduct.module.css'
 
 export function VaultProduct() {
@@ -40,6 +42,7 @@ export function VaultProduct() {
   const forWho = ru ? product.forWhoRu : product.forWhoEn
   const heroLead = details ? (ru ? details.heroRu : details.heroEn) : (ru ? product.shortRu : product.shortEn)
   const outcomes = details ? (ru ? details.outcomesRu : details.outcomesEn) : []
+  const comingSoon = isComingSoon('vault')
 
   return (
     <div className={styles.wrap} style={{ '--vault-accent': product.accent }}>
@@ -149,7 +152,9 @@ export function VaultProduct() {
               <li><Check size={14} aria-hidden />{ru ? 'Коммерческая лицензия' : 'Commercial license'}</li>
             </ul>
 
-            {purchased ? (
+            {comingSoon ? (
+              <ComingSoonAction kind="vault" lang={lang} className={styles.btnPrimary} />
+            ) : purchased ? (
               <>
                 <span className={styles.ownedBadge}>{ru ? 'Уже в вашем Vault' : 'In your Vault'}</span>
                 <Link to="/cabinet#vault" className={styles.btnPrimary}>

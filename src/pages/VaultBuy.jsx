@@ -7,6 +7,8 @@ import { getUserDiscountPercent } from '../api/adminStore'
 import { api, checkApiOnline } from '../api/client'
 import { getVaultProduct } from '../data/vaultProducts'
 import { getCourseTributePaymentUrl } from '../data/tributePayments'
+import { ComingSoonPage } from '../components/ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import buyStyles from './CourseBuy.module.css'
 import styles from './VaultProduct.module.css'
 
@@ -66,6 +68,10 @@ export function VaultBuy() {
         </div>
       </div>
     )
+  }
+
+  if (isComingSoon('vault')) {
+    return <ComingSoonPage kind="vault" lang={lang} backTo="/marketplace?tab=vault" />
   }
 
   const purchased = hasPurchased(product.id)

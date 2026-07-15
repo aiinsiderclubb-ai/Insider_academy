@@ -4,6 +4,8 @@ import { getMarketplaceCategory } from '../../data/marketplace/categories'
 import { getMarketplacePrice } from '../../data/marketplace/discounts'
 import { getMarketplaceCoverImage } from '../../utils/marketplaceCover'
 import { ProductBadge } from '../ProductBadge'
+import { ComingSoonLock } from '../ComingSoonLock'
+import { isComingSoon } from '../../config/availability'
 import styles from './MarketplaceProductCard.module.css'
 
 export function MarketplaceProductCard({
@@ -24,6 +26,7 @@ export function MarketplaceProductCard({
   const finalPrice = getMarketplacePrice(product.priceEur, purchases)
   const hasDiscount = discountPercent > 0 && finalPrice < product.priceEur
   const coverImage = getMarketplaceCoverImage(product)
+  const comingSoon = isComingSoon('marketplace')
 
   return (
     <article className={`${styles.card} ${featured ? styles.featured : ''}`}>
@@ -99,6 +102,7 @@ export function MarketplaceProductCard({
           </span>
         )}
       </div>
+      {comingSoon && <ComingSoonLock kind="marketplace" lang={lang} compact />}
     </article>
   )
 }

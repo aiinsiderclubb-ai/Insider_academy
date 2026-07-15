@@ -5,6 +5,8 @@ import { COURSE_BUNDLES } from '../data/coursePacks'
 import { VaultSection } from './VaultSection'
 import { getCourseById, getCourseField } from '../data/courses'
 import { getCourseDesignCover } from '../utils/designAssets'
+import { ComingSoonLock } from './ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import styles from './CourseCatalogSections.module.css'
 
 const COURSE_BADGE_LABELS = {
@@ -56,6 +58,7 @@ function CourseGrid({ courses, lang, theme, hasPurchased, getPercent, completedL
 
 export function CourseBundleOffers({ lang, bundles = COURSE_BUNDLES, title, desc, compact = false }) {
   const ru = lang === 'ru'
+  const comingSoon = isComingSoon('courses')
 
   if (!bundles?.length) return null
 
@@ -135,6 +138,7 @@ export function CourseBundleOffers({ lang, bundles = COURSE_BUNDLES, title, desc
                   {ru ? 'Подробнее' : 'Details'}
                 </Link>
               </div>
+              {comingSoon && <ComingSoonLock kind="courses" lang={lang} compact />}
             </article>
           )
         })}

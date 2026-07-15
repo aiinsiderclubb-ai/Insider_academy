@@ -30,7 +30,7 @@
   background:
     linear-gradient(90deg, rgba(8, 8, 12, 0.98) 0%, rgba(8, 8, 12, 0.82) 45%, rgba(8, 8, 12, 0.12) 100%),
     linear-gradient(180deg, transparent 48%, rgba(8, 8, 12, 0.82) 100%),
-    url('/design/ai-insider-mentor.webp') 88% 34% / 590px auto no-repeat,
+    url('/design/mentor-giveaway.webp') 88% 34% / 590px auto no-repeat,
     #111016;
 }
 
@@ -410,7 +410,7 @@
     border-radius: 22px;
     background:
       linear-gradient(180deg, rgba(8, 8, 12, 0.05) 28%, rgba(8, 8, 12, 0.97) 74%),
-      url('/design/ai-insider-mentor.webp') 50% 6% / 440px auto no-repeat,
+      url('/design/mentor-giveaway.webp') 50% 6% / 440px auto no-repeat,
       #111016;
   }
 

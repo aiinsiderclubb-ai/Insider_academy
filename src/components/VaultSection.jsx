@@ -6,6 +6,8 @@ import {
   VAULT_COMPLETE_BUNDLE,
 } from '../data/vaultProducts'
 import { VaultCatalogCard } from './VaultCatalogCard'
+import { ComingSoonLock } from './ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import styles from './VaultSection.module.css'
 
 export function VaultSection({
@@ -22,6 +24,7 @@ export function VaultSection({
   const stats = VAULT_HUB.stats || []
   const bundle = VAULT_COMPLETE_BUNDLE
   const savings = bundle.oldPriceEur - bundle.priceEur
+  const comingSoon = isComingSoon('vault')
 
   return (
     <section
@@ -107,6 +110,7 @@ export function VaultSection({
             {ru ? 'Купить bundle' : 'Buy bundle'}
           </Link>
         </div>
+        {comingSoon && <ComingSoonLock kind="vault" lang={lang} compact />}
       </article>
 
       <div className={styles.grid}>

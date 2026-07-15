@@ -6,6 +6,8 @@ import { CourseCover } from './CourseCover'
 import { CourseBuyAction } from './CourseBuyAction'
 import { ProductBadge } from './ProductBadge'
 import { getCourseDesignCover } from '../utils/designAssets'
+import { ComingSoonLock } from './ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import styles from './CourseCatalogCard.module.css'
 
 export function CourseCatalogCard({
@@ -32,6 +34,7 @@ export function CourseCatalogCard({
     : (lang === 'ru' ? 'Базовый' : 'Beginner')
   const detailsPath = `/courses/${course.slug}`
   const cover = getCourseDesignCover(course)
+  const comingSoon = isComingSoon('courses')
   const primaryPath = isIntake
     ? `/courses/${course.slug}/apply`
     : isFree
@@ -120,6 +123,7 @@ export function CourseCatalogCard({
           </Link>
         </div>
       </div>
+      {comingSoon && <ComingSoonLock kind="courses" lang={lang} />}
     </article>
   )
 }

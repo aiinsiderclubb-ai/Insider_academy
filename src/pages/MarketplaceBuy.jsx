@@ -9,6 +9,8 @@ import { getMarketplaceProduct } from '../data/marketplace/products'
 import { getMarketplacePrice } from '../data/marketplace/discounts'
 import { getCourseTributePaymentUrl } from '../data/tributePayments'
 import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
+import { ComingSoonPage } from '../components/ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import buyStyles from './CourseBuy.module.css'
 import styles from './MarketplaceProduct.module.css'
 
@@ -55,6 +57,10 @@ export function MarketplaceBuy() {
         </div>
       </div>
     )
+  }
+
+  if (isComingSoon('marketplace')) {
+    return <ComingSoonPage kind="marketplace" lang={lang} backTo="/marketplace" />
   }
 
   const purchased = hasPurchased(product.id)

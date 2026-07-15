@@ -31,6 +31,8 @@ import { isAcceleratorCourse } from '../data/courseCatalog'
 import { ACCELERATOR_OFFER } from '../data/promo'
 import { BundleCourseActions } from '../components/BundleCourseActions'
 import { CourseBuyAction } from '../components/CourseBuyAction'
+import { ComingSoonAction, ComingSoonPage } from '../components/ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import { useTheme } from '../context/ThemeContext'
 import styles from './Course.module.css'
 
@@ -65,6 +67,7 @@ export function Course() {
   const [homeworkMap, setHomeworkMap] = useState({})
 
   const lessonCount = course?.lessons?.length ?? 0
+  const coursesComingSoon = isComingSoon('courses')
   const isLessonMode = Number.isFinite(lessonFromUrl)
     && lessonFromUrl >= 0
     && lessonFromUrl < lessonCount
@@ -148,6 +151,10 @@ export function Course() {
         </div>
       </div>
     )
+  }
+
+  if (isLessonMode && coursesComingSoon) {
+    return <ComingSoonPage kind="courses" lang={lang} backTo="/courses" />
   }
 
   const progress = getProgress(course.id)
@@ -398,7 +405,9 @@ export function Course() {
             backLabel={t('course.backToCourses')}
           >
             <div className={styles.heroActions}>
-              {(purchased || isFreeTrial) ? (
+              {coursesComingSoon ? (
+                <ComingSoonAction kind="courses" lang={lang} className={styles.heroPrimary} />
+              ) : (purchased || isFreeTrial) ? (
                 <Link to={`/courses/${course.slug}?lesson=0`} className={styles.heroPrimary}>
                   {lang === 'ru' ? 'Перейти к обучению' : 'Start learning'} <ArrowUpRight size={16} aria-hidden />
                 </Link>

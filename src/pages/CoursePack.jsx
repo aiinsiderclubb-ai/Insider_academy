@@ -5,6 +5,8 @@ import { getCoursePackDetails } from '../data/coursePackDetails'
 import { getCourseById, getCourseField } from '../data/courses'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { getCourseDesignCover } from '../utils/designAssets'
+import { ComingSoonAction } from '../components/ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import styles from './CoursePack.module.css'
 
 export function CoursePack() {
@@ -26,6 +28,7 @@ export function CoursePack() {
   const individualTotal = bundleCourses.reduce((sum, c) => sum + (c.priceEur ?? 0), 0)
   const oldPrice = Math.max(bundle.oldPriceEur ?? 0, individualTotal)
   const savings = Math.max(0, oldPrice - bundle.priceEur)
+  const comingSoon = isComingSoon('courses')
 
   return (
     <div className={styles.wrap}>
@@ -88,9 +91,13 @@ export function CoursePack() {
               </p>
             )}
             <div className={styles.priceActions}>
-              <Link to="/cabinet#support" className={styles.btnBuy}>
-                {ru ? 'Купить пакет' : 'Buy pack'}
-              </Link>
+              {comingSoon ? (
+                <ComingSoonAction kind="courses" lang={lang} className={styles.btnBuy} />
+              ) : (
+                <Link to="/cabinet#support" className={styles.btnBuy}>
+                  {ru ? 'Купить пакет' : 'Buy pack'}
+                </Link>
+              )}
               <Link to="/courses" className={styles.btnSecondary}>
                 {ru ? 'Все курсы' : 'All courses'}
               </Link>
@@ -188,9 +195,13 @@ export function CoursePack() {
                 : `Ready to start with ${bundle.title}?`}
             </p>
             <div className={styles.priceActions}>
-              <Link to="/cabinet#support" className={styles.btnBuy}>
-                {ru ? 'Купить' : 'Buy'}
-              </Link>
+              {comingSoon ? (
+                <ComingSoonAction kind="courses" lang={lang} className={styles.btnBuy} />
+              ) : (
+                <Link to="/cabinet#support" className={styles.btnBuy}>
+                  {ru ? 'Купить' : 'Buy'}
+                </Link>
+              )}
               <Link to="/courses#packs" className={styles.btnSecondary}>
                 {ru ? 'Другие пакеты' : 'Other packs'}
               </Link>

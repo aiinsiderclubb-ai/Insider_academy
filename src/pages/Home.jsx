@@ -34,7 +34,7 @@ import { buildCommunityFeed } from '../data/activityFeed'
 import { getPersonalUpsells } from '../data/marketplace/recommendations'
 import { hasClubMembership } from '../data/club'
 import { MARKETPLACE_CREATORS } from '../data/marketplace/creators'
-import { AI_INSIDER_MENTOR_IMAGE } from '../utils/designAssets'
+import { MENTOR_IMAGES } from '../utils/designAssets'
 import styles from './Home.module.css'
 
 export function Home() {
@@ -559,7 +559,7 @@ export function Home() {
             <article className={styles.mentorCard}>
               <img
                 className={styles.mentorImg}
-                src={AI_INSIDER_MENTOR_IMAGE}
+                src={MENTOR_IMAGES.founder}
                 alt={lang === 'ru' ? 'AI Insider — ментор академии' : 'AI Insider — academy mentor'}
                 loading="lazy"
               />
