@@ -1,25 +1,26 @@
 .section {
-  --bg-base: #08080b;
-  --bg-surface: #111116;
-  --bg-elevated: #18171f;
-  --bg-card: #111116;
-  --bg-glass: rgba(17, 17, 22, 0.9);
-  --border: rgba(255, 255, 255, 0.09);
-  --border-subtle: rgba(255, 255, 255, 0.09);
+  --bg-base: #121a1f;
+  --bg-surface: #182229;
+  --bg-elevated: #212c34;
+  --bg-card: #1a242c;
+  --bg-glass: rgba(24, 34, 41, 0.88);
+  --border: rgba(180, 200, 185, 0.12);
+  --border-subtle: rgba(180, 200, 185, 0.12);
   --border-strong: rgba(168, 128, 255, 0.36);
   --text: #f7f5fb;
   --text-primary: #f7f5fb;
-  --text-secondary: #a39eaa;
-  --text-muted: #a39eaa;
+  --text-secondary: #a3abb6;
+  --text-muted: #a3abb6;
   --accent: #8b5cf6;
   --accent-primary: #8b5cf6;
   position: relative;
   overflow: hidden;
   padding: clamp(78px, 9vw, 124px) 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(180, 200, 185, 0.1);
   background:
-    radial-gradient(circle at 82% 18%, rgba(124, 58, 237, 0.12), transparent 24rem),
-    #08080b;
+    radial-gradient(circle at 82% 18%, rgba(124, 58, 237, 0.14), transparent 24rem),
+    radial-gradient(circle at 12% 70%, rgba(141, 167, 131, 0.12), transparent 20rem),
+    transparent;
   color: #f7f5fb;
 }
 

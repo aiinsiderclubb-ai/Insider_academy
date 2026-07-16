@@ -1,11 +1,11 @@
 .wrap {
-  --cab-bg: #09090c;
-  --cab-panel: #121116;
-  --cab-panel-2: #18161e;
-  --cab-line: rgba(255, 255, 255, 0.09);
+  --cab-bg: #121a1f;
+  --cab-panel: #1a242c;
+  --cab-panel-2: #212c34;
+  --cab-line: rgba(180, 200, 185, 0.12);
   --cab-line-strong: rgba(175, 141, 255, 0.3);
   --cab-text: #f5f3f8;
-  --cab-muted: #9e9aa8;
+  --cab-muted: #a3abb6;
   --cab-violet: #a98bff;
   --cab-violet-deep: #7657e8;
   --cab-sage: #a8b7a2;
@@ -14,8 +14,9 @@
   padding: 0 0 88px;
   color: var(--cab-text);
   background:
-    radial-gradient(circle at 78% 0%, rgba(126, 85, 232, 0.1), transparent 28%),
-    linear-gradient(180deg, #0c0b10 0%, var(--cab-bg) 34%, #08080a 100%);
+    radial-gradient(circle at 78% 0%, rgba(126, 85, 232, 0.14), transparent 32%),
+    radial-gradient(circle at 10% 18%, rgba(141, 167, 131, 0.16), transparent 28%),
+    transparent;
   font-family: 'Onest', system-ui, sans-serif;
   animation: cabinetFadeIn 0.45s ease-out;
 }

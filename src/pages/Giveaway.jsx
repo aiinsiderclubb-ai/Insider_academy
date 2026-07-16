@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Check, Send, Share2, Ticket, Trophy, UserPlus, Users } from 'lucide-react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -440,18 +441,21 @@ function GiveawayDetail({ giveaway, lang }) {
             <section className={styles.section}>
               <h2 className={styles.sectionTitle}>{ru ? 'Как участвовать' : 'How to enter'}</h2>
               <ol className={styles.stepper}>
-                <li className={styles.step}>
-                  <span className={styles.stepNum}>1</span>
+                <li className={`${styles.step} ${styles.stepViolet}`}>
+                  <span className={styles.stepGhost} aria-hidden>01</span>
+                  <span className={styles.stepIcon}><UserPlus size={22} strokeWidth={1.8} aria-hidden /></span>
                   <strong>{ru ? 'Регистрация' : 'Sign up'}</strong>
                   <p>{ru ? 'Аккаунт Academy за минуту' : 'Academy account in a minute'}</p>
                 </li>
-                <li className={styles.step}>
-                  <span className={styles.stepNum}>2</span>
+                <li className={`${styles.step} ${styles.stepMagenta}`}>
+                  <span className={styles.stepGhost} aria-hidden>02</span>
+                  <span className={styles.stepIcon}><Send size={22} strokeWidth={1.8} aria-hidden /></span>
                   <strong>{ru ? 'Участие' : 'Enter'}</strong>
                   <p>{ru ? 'Telegram + кнопка участия' : 'Telegram + enter button'}</p>
                 </li>
-                <li className={styles.step}>
-                  <span className={styles.stepNum}>3</span>
+                <li className={`${styles.step} ${styles.stepEmber}`}>
+                  <span className={styles.stepGhost} aria-hidden>03</span>
+                  <span className={styles.stepIcon}><Trophy size={22} strokeWidth={1.8} aria-hidden /></span>
                   <strong>{ru ? 'Итоги в Telegram' : 'Results on Telegram'}</strong>
                   <p>{ru ? 'Анонс победителя в канале' : 'Winner announced in the channel'}</p>
                 </li>
@@ -478,14 +482,22 @@ function GiveawayDetail({ giveaway, lang }) {
               </div>
 
               <div className={styles.chanceGrid}>
-                <article className={`${styles.chanceCard} ${entered ? styles.chanceDone : ''}`}>
-                  <span className={styles.chancePlus}>+{1}</span>
+                <article className={`${styles.chanceCard} ${styles.chanceViolet} ${entered ? styles.chanceDone : ''}`}>
+                  <span className={styles.chanceTop}>
+                    <span className={styles.chanceIcon}><Ticket size={20} strokeWidth={1.8} aria-hidden /></span>
+                    <span className={styles.chancePlus}>+{1}</span>
+                    {entered && <span className={styles.chanceCheck} aria-label={ru ? 'Выполнено' : 'Done'}><Check size={13} strokeWidth={3} /></span>}
+                  </span>
                   <h3>{ru ? 'Базовое участие' : 'Base entry'}</h3>
                   <p>{ru ? '1 шанс за регистрацию в розыгрыше' : '1 chance for joining the giveaway'}</p>
                 </article>
 
-                <article className={`${styles.chanceCard} ${entered && state?.channelSubscribed ? styles.chanceDone : ''}`}>
-                  <span className={styles.chancePlus}>+{CHANCE_TELEGRAM}</span>
+                <article className={`${styles.chanceCard} ${styles.chanceBlue} ${entered && state?.channelSubscribed ? styles.chanceDone : ''}`}>
+                  <span className={styles.chanceTop}>
+                    <span className={styles.chanceIcon}><Send size={20} strokeWidth={1.8} aria-hidden /></span>
+                    <span className={styles.chancePlus}>+{CHANCE_TELEGRAM}</span>
+                    {entered && state?.channelSubscribed && <span className={styles.chanceCheck} aria-label={ru ? 'Выполнено' : 'Done'}><Check size={13} strokeWidth={3} /></span>}
+                  </span>
                   <h3>{ru ? 'Telegram-канал' : 'Telegram channel'}</h3>
                   <p>{ru ? 'Подписка на канал AI Insider' : 'Subscribe to AI Insider channel'}</p>
                   <div className={styles.chanceActions}>
@@ -505,8 +517,12 @@ function GiveawayDetail({ giveaway, lang }) {
                   </div>
                 </article>
 
-                <article className={`${styles.chanceCard} ${entered && bonus.referralCount > 0 ? styles.chanceDone : ''}`}>
-                  <span className={styles.chancePlus}>+{CHANCE_REFERRAL}</span>
+                <article className={`${styles.chanceCard} ${styles.chanceEmber} ${entered && bonus.referralCount > 0 ? styles.chanceDone : ''}`}>
+                  <span className={styles.chanceTop}>
+                    <span className={styles.chanceIcon}><Users size={20} strokeWidth={1.8} aria-hidden /></span>
+                    <span className={styles.chancePlus}>+{CHANCE_REFERRAL}</span>
+                    {entered && bonus.referralCount > 0 && <span className={styles.chanceCheck} aria-label={ru ? 'Выполнено' : 'Done'}><Check size={13} strokeWidth={3} /></span>}
+                  </span>
                   <h3>{ru ? 'Пригласи друга' : 'Invite a friend'}</h3>
                   <p>{ru ? '+3 шанса за каждого друга по ссылке' : '+3 chances per friend who joins via your link'}</p>
                   {entered && referralLink ? (
@@ -526,8 +542,12 @@ function GiveawayDetail({ giveaway, lang }) {
                   )}
                 </article>
 
-                <article className={`${styles.chanceCard} ${entered && bonus.shared ? styles.chanceDone : ''}`}>
-                  <span className={styles.chancePlus}>+{CHANCE_SHARE}</span>
+                <article className={`${styles.chanceCard} ${styles.chanceMagenta} ${entered && bonus.shared ? styles.chanceDone : ''}`}>
+                  <span className={styles.chanceTop}>
+                    <span className={styles.chanceIcon}><Share2 size={20} strokeWidth={1.8} aria-hidden /></span>
+                    <span className={styles.chancePlus}>+{CHANCE_SHARE}</span>
+                    {entered && bonus.shared && <span className={styles.chanceCheck} aria-label={ru ? 'Выполнено' : 'Done'}><Check size={13} strokeWidth={3} /></span>}
+                  </span>
                   <h3>{ru ? 'Поделись страницей' : 'Share the page'}</h3>
                   <p>{ru ? '+2 шанса за шаринг розыгрыша' : '+2 chances for sharing this giveaway'}</p>
                   <button type="button" className={styles.btnSecondary} onClick={handleShare} disabled={!entered}>
@@ -574,15 +594,21 @@ function GiveawayDetail({ giveaway, lang }) {
                 {ru ? 'Полные правила →' : 'Full rules →'}
               </Link>
             </div>
-            <Accordion
-              idPrefix="rules"
-              numbered
-              items={(ru ? giveaway.rulesRu : giveaway.rulesEn).map((r) => (
-                typeof r === 'string'
-                  ? { q: r, a: r }
-                  : { q: r.title, a: r.text }
-              ))}
-            />
+            <ol className={styles.rulesGrid}>
+              {(ru ? giveaway.rulesRu : giveaway.rulesEn).map((r, index) => {
+                const title = typeof r === 'string' ? null : r.title
+                const text = typeof r === 'string' ? r : r.text
+                return (
+                  <li key={index} className={styles.ruleCard}>
+                    <span className={styles.ruleNum} aria-hidden>{String(index + 1).padStart(2, '0')}</span>
+                    <div className={styles.ruleBody}>
+                      {title && <strong>{title}</strong>}
+                      <p>{text}</p>
+                    </div>
+                  </li>
+                )
+              })}
+            </ol>
           </section>
         </ScrollReveal>
 

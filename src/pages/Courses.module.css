@@ -1,25 +1,26 @@
 .wrap {
-  --bg-base: #08080b;
-  --bg-surface: #111116;
-  --bg-elevated: #18171f;
-  --bg-card: #111116;
-  --bg-glass: rgba(17, 17, 22, 0.9);
-  --border: rgba(255, 255, 255, 0.09);
-  --border-subtle: rgba(255, 255, 255, 0.09);
+  --bg-base: #121a1f;
+  --bg-surface: #182229;
+  --bg-elevated: #212c34;
+  --bg-card: #1a242c;
+  --bg-glass: rgba(24, 34, 41, 0.88);
+  --border: rgba(180, 200, 185, 0.12);
+  --border-subtle: rgba(180, 200, 185, 0.12);
   --border-strong: rgba(168, 128, 255, 0.42);
   --text: #f7f5fb;
   --text-primary: #f7f5fb;
-  --text-secondary: #aaa6b2;
-  --text-muted: #aaa6b2;
+  --text-secondary: #a3abb6;
+  --text-muted: #a3abb6;
   --accent: #8b5cf6;
   --accent-primary: #8b5cf6;
   min-height: 100vh;
   padding: 0 0 clamp(80px, 10vw, 136px);
   color: #f7f5fb;
   background:
-    radial-gradient(circle at 79% 8%, rgba(124, 58, 237, 0.16), transparent 24rem),
-    radial-gradient(circle at 18% 24%, rgba(145, 173, 151, 0.055), transparent 18rem),
-    #08080b;
+    radial-gradient(circle at 79% 8%, rgba(124, 58, 237, 0.18), transparent 24rem),
+    radial-gradient(circle at 14% 22%, rgba(141, 167, 131, 0.22), transparent 20rem),
+    radial-gradient(circle at 60% 90%, rgba(141, 167, 131, 0.1), transparent 22rem),
+    transparent;
 }
 
 .container {

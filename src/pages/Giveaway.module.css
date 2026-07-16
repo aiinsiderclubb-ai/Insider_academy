@@ -308,31 +308,81 @@
 
 .step {
   position: relative;
-  padding: 22px 18px;
+  padding: 24px 22px;
   border-radius: var(--radius-card);
-  background: var(--bg-surface);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-inset);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
+  overflow: hidden;
+  transition: border-color var(--motion-base) var(--ease-motion), transform var(--motion-base) var(--ease-motion);
 }
 
-.stepNum {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.step:hover {
+  transform: translateY(-4px);
+}
+
+.step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -16px;
+  width: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-strong), transparent);
+}
+
+.stepGhost {
+  position: absolute;
+  top: 14px;
+  right: 18px;
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: 1.9rem;
   font-weight: 600;
-  color: var(--text-on-primary);
-  background: var(--gradient-primary);
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+.stepIcon {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  border: 1px solid transparent;
+  margin-bottom: 3px;
+}
+
+.stepViolet:hover { border-color: rgba(139, 92, 246, 0.4); }
+.stepViolet .stepIcon {
+  color: var(--accent-soft);
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.15);
+}
+
+.stepMagenta:hover { border-color: rgba(217, 76, 165, 0.4); }
+.stepMagenta .stepIcon {
+  color: #e88ac8;
+  background: rgba(217, 76, 165, 0.11);
+  border-color: rgba(217, 76, 165, 0.3);
+  box-shadow: 0 0 24px rgba(217, 76, 165, 0.13);
+}
+
+.stepEmber:hover { border-color: rgba(242, 139, 67, 0.4); }
+.stepEmber .stepIcon {
+  color: var(--accent-hot, #f28b43);
+  background: rgba(242, 139, 67, 0.1);
+  border-color: rgba(242, 139, 67, 0.3);
+  box-shadow: 0 0 24px rgba(242, 139, 67, 0.13);
 }
 
 .step strong {
-  font-size: 1rem;
+  font-size: 1.02rem;
+  color: var(--text-primary);
 }
 
 .step p {
@@ -393,26 +443,95 @@
 }
 
 .chanceCard {
-  padding: 22px 20px;
+  position: relative;
+  padding: 22px;
   border-radius: var(--radius-card);
-  background: var(--bg-surface);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-inset);
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: border-color var(--motion-base) var(--ease-motion);
+  overflow: hidden;
+  transition: border-color var(--motion-base) var(--ease-motion), transform var(--motion-base) var(--ease-motion);
 }
+
+.chanceCard:hover {
+  transform: translateY(-3px);
+}
+
+.chanceTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chanceIcon {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  border: 1px solid transparent;
+}
+
+.chanceViolet:hover { border-color: rgba(139, 92, 246, 0.42); }
+.chanceViolet .chanceIcon {
+  color: var(--accent-soft);
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+.chanceViolet .chancePlus { color: var(--accent-soft); }
+
+.chanceBlue:hover { border-color: rgba(46, 159, 224, 0.42); }
+.chanceBlue .chanceIcon {
+  color: #59a8e8;
+  background: rgba(46, 159, 224, 0.11);
+  border-color: rgba(46, 159, 224, 0.3);
+}
+.chanceBlue .chancePlus { color: #59a8e8; }
+
+.chanceEmber:hover { border-color: rgba(242, 139, 67, 0.42); }
+.chanceEmber .chanceIcon {
+  color: var(--accent-hot, #f28b43);
+  background: rgba(242, 139, 67, 0.1);
+  border-color: rgba(242, 139, 67, 0.3);
+}
+.chanceEmber .chancePlus { color: var(--accent-hot, #f28b43); }
+
+.chanceMagenta:hover { border-color: rgba(217, 76, 165, 0.42); }
+.chanceMagenta .chanceIcon {
+  color: #e88ac8;
+  background: rgba(217, 76, 165, 0.11);
+  border-color: rgba(217, 76, 165, 0.3);
+}
+.chanceMagenta .chancePlus { color: #e88ac8; }
 
 .chanceDone {
   border-color: color-mix(in srgb, var(--success) 45%, var(--border-subtle));
-  background: color-mix(in srgb, var(--success) 6%, var(--bg-surface));
+  background:
+    radial-gradient(320px 120px at 100% 0%, color-mix(in srgb, var(--success) 10%, transparent), transparent 70%),
+    var(--bg-elevated);
 }
 
 .chancePlus {
   font-family: var(--font-mono);
-  font-size: 1.25rem;
+  font-size: 1.6rem;
   font-weight: 600;
-  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.chanceCheck {
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
 }
 
 .chanceCard h3 {
@@ -437,6 +556,66 @@
 .chanceHint {
   font-size: 0.75rem !important;
   color: var(--text-secondary);
+}
+
+/* ── Rules grid ── */
+.rulesGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ruleCard {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  padding: 19px 20px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-inset);
+  transition: border-color var(--motion-base) var(--ease-motion);
+}
+
+.ruleCard:hover {
+  border-color: var(--border-strong);
+}
+
+.ruleNum {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-on-primary);
+  background: var(--gradient-primary);
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.3);
+}
+
+.ruleBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ruleBody strong {
+  font-size: 0.98rem;
+  color: var(--text-primary);
+}
+
+.ruleBody p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .refRow {
@@ -867,7 +1046,10 @@
   min-height: calc(100svh - 72px);
   padding-bottom: 96px;
   color: #f6f4fa;
-  background: #08080c;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(141, 167, 131, 0.18), transparent 22rem),
+    radial-gradient(circle at 88% 20%, rgba(139, 92, 246, 0.12), transparent 24rem),
+    transparent;
   font-family: 'Onest', var(--font-body, sans-serif);
 }
 
@@ -1325,5 +1507,15 @@
 
   .accordionRules .accBodyOpen {
     padding-left: 20px;
+  }
+}
+
+@media (max-width: 760px) {
+  .rulesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .step:not(:last-child)::after {
+    display: none;
   }
 }
