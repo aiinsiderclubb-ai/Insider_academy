@@ -3,10 +3,8 @@
   padding-bottom: 96px;
   color: #f3f1ed;
   background:
-    radial-gradient(circle at 78% 6%, rgba(100, 69, 220, 0.16), transparent 28rem),
-    radial-gradient(circle at 12% 20%, rgba(141, 167, 131, 0.18), transparent 22rem),
-    radial-gradient(circle at 50% 100%, rgba(141, 167, 131, 0.08), transparent 28rem),
-    transparent;
+    radial-gradient(circle at 78% 6%, rgba(100, 69, 220, 0.13), transparent 28rem),
+    linear-gradient(180deg, #09090c 0%, #0b0b0f 62%, #08080a 100%);
 }
 
 .container {

@@ -1046,10 +1046,7 @@
   min-height: calc(100svh - 72px);
   padding-bottom: 96px;
   color: #f6f4fa;
-  background:
-    radial-gradient(circle at 12% 10%, rgba(141, 167, 131, 0.18), transparent 22rem),
-    radial-gradient(circle at 88% 20%, rgba(139, 92, 246, 0.12), transparent 24rem),
-    transparent;
+  background: #08080c;
   font-family: 'Onest', var(--font-body, sans-serif);
 }
 

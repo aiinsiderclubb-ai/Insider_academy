@@ -804,29 +804,28 @@
 /* ========== Approved graphite commerce art direction ========== */
 
 .page {
-  --bg-base: #121a1f;
-  --bg-surface: #182229;
-  --bg-elevated: #212c34;
-  --bg-card: #1a242c;
-  --bg-glass: rgba(24, 34, 41, 0.88);
-  --border: rgba(180, 200, 185, 0.12);
-  --border-subtle: rgba(180, 200, 185, 0.12);
+  --bg-base: #08080b;
+  --bg-surface: #0c0c10;
+  --bg-elevated: #18171f;
+  --bg-card: #111116;
+  --bg-glass: rgba(17, 17, 22, 0.9);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.09);
   --border-strong: rgba(168, 128, 255, 0.4);
   --text: #f7f5fb;
   --text-primary: #f7f5fb;
-  --text-secondary: #a3abb6;
-  --text-muted: #a3abb6;
+  --text-secondary: #a39eaa;
+  --text-muted: #a39eaa;
   --accent: #8b5cf6;
   --accent-primary: #8b5cf6;
   --accent-orange: #f28a3b;
   --glow-orange: #f28a3b;
   --success: #91aa96;
-  --success-dim: rgba(145, 170, 150, 0.16);
+  --success-dim: rgba(145, 170, 150, 0.13);
   --gradient-primary: linear-gradient(135deg, #7135dc, #8b5cf6);
   min-height: 100vh;
   color: #f7f5fb;
-  /* Let global aurora show; soft local wash only */
-  background: transparent;
+  background: #08080b;
 }
 
 .page .container {
@@ -837,25 +836,24 @@
 
 .page .bandBase,
 .page .bandSurface {
-  background: transparent;
+  background: #08080b;
 }
 
 .page .bandSurface {
-  background: rgba(24, 34, 41, 0.35);
+  background: #0c0c10;
 }
 
 .page .hero {
   min-height: min(820px, calc(100vh - 72px));
   padding: clamp(58px, 8vw, 100px) 0 clamp(64px, 8vw, 96px);
-  border-bottom: 1px solid rgba(180, 200, 185, 0.1);
-  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: #08080b;
 }
 
 .page .heroBg {
   background:
-    radial-gradient(circle at 72% 28%, rgba(124, 58, 237, 0.2), transparent 28rem),
-    radial-gradient(circle at 12% 68%, rgba(141, 167, 131, 0.2), transparent 24rem),
-    radial-gradient(circle at 48% 8%, rgba(179, 202, 170, 0.1), transparent 20rem);
+    radial-gradient(circle at 72% 32%, rgba(124, 58, 237, 0.17), transparent 30rem),
+    radial-gradient(circle at 8% 72%, rgba(145, 170, 150, 0.045), transparent 22rem);
 }
 
 .page .heroGrid {

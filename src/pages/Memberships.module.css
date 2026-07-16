@@ -1,25 +1,24 @@
 .wrap {
-  --bg-base: #121a1f;
-  --bg-surface: #182229;
-  --bg-elevated: #212c34;
-  --bg-card: #1a242c;
-  --bg-glass: rgba(24, 34, 41, 0.88);
-  --border: rgba(180, 200, 185, 0.12);
-  --border-subtle: rgba(180, 200, 185, 0.12);
+  --bg-base: #08080b;
+  --bg-surface: #111116;
+  --bg-elevated: #18171f;
+  --bg-card: #111116;
+  --bg-glass: rgba(17, 17, 22, 0.9);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.09);
   --border-strong: rgba(168, 128, 255, 0.4);
   --text: #f7f5fb;
   --text-primary: #f7f5fb;
-  --text-secondary: #a3abb6;
-  --text-muted: #a3abb6;
+  --text-secondary: #a39eaa;
+  --text-muted: #a39eaa;
   --accent: #8b5cf6;
   --accent-primary: #8b5cf6;
   min-height: 100vh;
   color: #f7f5fb;
   background:
-    radial-gradient(circle at 80% 7%, rgba(124, 58, 237, 0.2), transparent 25rem),
-    radial-gradient(circle at 10% 24%, rgba(141, 167, 131, 0.22), transparent 20rem),
-    radial-gradient(circle at 55% 85%, rgba(141, 167, 131, 0.1), transparent 22rem),
-    transparent;
+    radial-gradient(circle at 80% 7%, rgba(124, 58, 237, 0.18), transparent 25rem),
+    radial-gradient(circle at 10% 24%, rgba(145, 170, 150, 0.055), transparent 18rem),
+    #08080b;
 }
 
 .hero {
