@@ -1,7 +1,8 @@
 .wrapper {
   min-height: 100vh;
   display: flex;
-  background: var(--bg-base);
+  /* прозрачный: aurora-фон из body::before просвечивает */
+  background: transparent;
 }
 
 .sidebar {

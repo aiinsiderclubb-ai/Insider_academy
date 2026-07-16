@@ -825,7 +825,7 @@
   --gradient-primary: linear-gradient(135deg, #7135dc, #8b5cf6);
   min-height: 100vh;
   color: #f7f5fb;
-  background: #08080b;
+  background: transparent;
 }
 
 .page .container {
@@ -836,18 +836,18 @@
 
 .page .bandBase,
 .page .bandSurface {
-  background: #08080b;
+  background: transparent;
 }
 
 .page .bandSurface {
-  background: #0c0c10;
+  background: color-mix(in srgb, var(--bg-surface) 58%, transparent);
 }
 
 .page .hero {
   min-height: min(820px, calc(100vh - 72px));
   padding: clamp(58px, 8vw, 100px) 0 clamp(64px, 8vw, 96px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  background: #08080b;
+  background: transparent;
 }
 
 .page .heroBg {
@@ -2400,11 +2400,11 @@
 /* ========== Homepage rhythm redesign ========== */
 
 .bandBase {
-  background: var(--bg-base);
+  background: transparent;
 }
 
 .bandSurface {
-  background: var(--bg-surface);
+  background: color-mix(in srgb, var(--bg-surface) 58%, transparent);
 }
 
 .hero.bandBase {
@@ -3957,11 +3957,11 @@
 /* ========== Homepage rhythm redesign ========== */
 
 .bandBase {
-  background: var(--bg-base);
+  background: transparent;
 }
 
 .bandSurface {
-  background: var(--bg-surface);
+  background: color-mix(in srgb, var(--bg-surface) 58%, transparent);
 }
 
 .hero.bandBase {

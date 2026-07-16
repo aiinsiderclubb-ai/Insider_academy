@@ -35,6 +35,7 @@ import { getPersonalUpsells } from '../data/marketplace/recommendations'
 import { hasClubMembership } from '../data/club'
 import { MARKETPLACE_CREATORS } from '../data/marketplace/creators'
 import { MENTOR_IMAGES } from '../utils/designAssets'
+import { HeroShowcase } from '../components/HeroShowcase'
 import styles from './Home.module.css'
 
 export function Home() {
@@ -171,23 +172,7 @@ export function Home() {
             </a>
           </div>
           <div className={`${styles.heroPreview} ${styles.heroEnter} ${styles.heroEnterDelay2}`}>
-            <div className={styles.mentorFrame}>
-              <div className={styles.mentorHalo} aria-hidden />
-              <img
-                className={styles.mentorImage}
-                src="/design/ai-insider-mentor.webp"
-                alt=""
-                aria-hidden="true"
-              />
-              <div className={styles.mentorCaption}>
-                <span className={styles.mentorCaptionDot} aria-hidden />
-                <span>{lang === 'ru' ? 'Практика с AI-ментором' : 'Practice with an AI mentor'}</span>
-              </div>
-              <div className={styles.mentorSignal} aria-hidden>
-                <strong>24/7</strong>
-                <span>{lang === 'ru' ? 'доступ к платформе' : 'platform access'}</span>
-              </div>
-            </div>
+            <HeroShowcase lang={lang} />
           </div>
         </div>
       </section>
