@@ -141,7 +141,7 @@ export function CabinetDashboard({
           </div>
           <div className={styles.heroVisual} aria-hidden="true">
             <div className={styles.heroOrb} />
-            <img src="/design/mentor-bridge.webp" alt="" className={styles.heroImage} />
+            <img src="/design/course-ai-automation.webp" alt="" className={styles.heroImage} />
           </div>
         </article>
 
@@ -152,7 +152,7 @@ export function CabinetDashboard({
               <span className={styles.onlineDot} aria-hidden />
             </div>
             <div className={styles.mentorBody}>
-              <img src="/design/mentor-avatar.webp" alt="" className={styles.mentorAvatar} />
+              <img src="/design/course-ai-agents.webp" alt="" className={styles.mentorAvatar} />
               <p>{ru ? 'Готов помочь разобрать сложный момент или выбрать следующий шаг.' : 'Ready to explain a difficult topic or choose your next step.'}</p>
             </div>
             <button

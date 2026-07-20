@@ -24,7 +24,7 @@
   background:
     linear-gradient(90deg, rgba(8, 8, 12, 0.98) 0%, rgba(8, 8, 12, 0.82) 46%, rgba(8, 8, 12, 0.08) 100%),
     linear-gradient(180deg, transparent 45%, rgba(8, 8, 12, 0.72) 100%),
-    url('/design/mentor-study.webp') 88% 34% / 560px auto no-repeat,
+    url('/design/course-ai-content-business.webp') 88% 34% / 560px auto no-repeat,
     #111016;
 }
 
@@ -251,7 +251,7 @@
     border-radius: 22px;
     background:
       linear-gradient(180deg, rgba(8, 8, 12, 0.04) 28%, rgba(8, 8, 12, 0.97) 72%),
-      url('/design/mentor-study.webp') 50% 4% / 430px auto no-repeat,
+      url('/design/course-ai-content-business.webp') 50% 4% / 430px auto no-repeat,
       #111016;
   }
 

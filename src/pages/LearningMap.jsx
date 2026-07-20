@@ -256,7 +256,7 @@ export function LearningMap() {
 
           <div className={styles.pathCanvas}>
             <div className={styles.pathCore} aria-label={lang === 'ru' ? 'AI — центр архитектуры курса' : 'AI course architecture core'}>
-              <img src="/design/ai-insider-mentor.webp" alt="" className={styles.pathCoreImage} />
+              <img src="/design/course-ai-data.webp" alt="" className={styles.pathCoreImage} />
               <span className={styles.pathCoreShade} aria-hidden />
               <span className={styles.pathCoreBadge}><Sparkles size={12} aria-hidden />AI Core</span>
               <span className={styles.pathCoreCopy}>

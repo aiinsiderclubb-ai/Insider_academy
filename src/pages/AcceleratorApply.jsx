@@ -193,7 +193,7 @@ export function AcceleratorApply() {
             </div>
           </div>
           <div className={styles.heroVisual}>
-            <img src="/design/mentor-accelerator.webp" alt="" aria-hidden />
+            <img src="/courses/ai-insider-accelerator.png" alt="" aria-hidden />
             <span className={styles.visualCaption}>{lang === 'ru' ? 'Отбор с ментором Academy' : 'Mentor-led selection'}</span>
           </div>
         </header>

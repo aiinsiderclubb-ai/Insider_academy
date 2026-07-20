@@ -206,7 +206,7 @@ export function Onboarding() {
           </main>
 
           <aside className={styles.mentorPanel} aria-label={ru ? 'AI Инсайдер' : 'AI Insider'}>
-            <img src="/design/mentor-welcome.webp" alt="AI Insider" />
+            <img src="/design/course-ai-data.webp" alt="AI Insider" />
             <div className={styles.mentorCopy}>
               <span>AI INSIDER</span>
               <strong>{ru ? 'Я соберу ваш персональный маршрут.' : 'I will build your personal route.'}</strong>

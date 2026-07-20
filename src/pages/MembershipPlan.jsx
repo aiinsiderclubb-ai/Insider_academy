@@ -73,7 +73,7 @@ export function MembershipPlan() {
               <p className={styles.lead}>{ru ? details.leadRu : details.leadEn}</p>
             </div>
             <div className={styles.heroVisual} aria-hidden="true">
-              <img src="/design/mentor-membership.webp" alt="" />
+              <img src="/design/course-ai-content-business.webp" alt="" />
               <span>{isPro ? 'PRO / FULL ACCESS' : 'CLUB / LEARN'}</span>
             </div>
           </header>

@@ -22,20 +22,3 @@ export function getMarketplaceDesignCover(product) {
   const png = `/marketplace/${slug}.png`
   return png
 }
-
-/** Главный арт персонажа — hero главной и запасной вариант */
-export const AI_INSIDER_MENTOR_IMAGE = '/design/ai-insider-mentor.webp'
-
-/** Сцены персонажа AI Insider по контексту (см. docs/IMAGE_PROMPTS.md) */
-export const MENTOR_IMAGES = {
-  founder: '/design/mentor-founder.webp',
-  bridge: '/design/mentor-bridge.webp',
-  avatar: '/design/mentor-avatar.webp',
-  welcome: '/design/mentor-welcome.webp',
-  lessonPoster: '/design/mentor-lesson-poster.webp',
-  study: '/design/mentor-study.webp',
-  giveaway: '/design/mentor-giveaway.webp',
-  notFound: '/design/mentor-404.webp',
-  membership: '/design/mentor-membership.webp',
-  accelerator: '/design/mentor-accelerator.webp',
-}

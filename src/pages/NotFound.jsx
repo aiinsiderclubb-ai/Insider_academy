@@ -25,7 +25,7 @@ export function NotFound() {
         <Link to="/" className={styles.btn}>{ru ? 'Вернуться на главную' : 'Return home'}</Link>
       </div>
       <div className={styles.visual} aria-hidden="true">
-        <img src="/design/mentor-404.webp" alt="" />
+        <img src="/design/course-ai-data.webp" alt="" />
       </div>
     </div>
   )

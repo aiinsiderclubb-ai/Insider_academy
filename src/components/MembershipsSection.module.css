@@ -7,11 +7,8 @@
 
 .sectionCompact {
   padding: clamp(76px, 9vw, 112px) 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   background:
-    radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.1), transparent 30rem),
-    #0b0b0f;
+    radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.1), transparent 30rem);
 }
 
 .container {

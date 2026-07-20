@@ -571,7 +571,6 @@
 
 .whatIncluded {
   padding: 80px 0;
-  border-top: 1px solid var(--border);
   position: relative;
   overflow: hidden;
 }
@@ -840,13 +839,12 @@
 }
 
 .page .bandSurface {
-  background: color-mix(in srgb, var(--bg-surface) 58%, transparent);
+  background: transparent;
 }
 
 .page .hero {
   min-height: min(820px, calc(100vh - 72px));
   padding: clamp(58px, 8vw, 100px) 0 clamp(64px, 8vw, 96px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   background: transparent;
 }
 
@@ -1076,7 +1074,6 @@
 
 .page .statsStrip {
   padding: 30px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   background: #0c0c10;
 }
 
@@ -1128,7 +1125,6 @@
 .page .ctaBlock,
 .page .recsSection {
   padding: clamp(76px, 9vw, 122px) 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .page .sectionHead {
@@ -1279,9 +1275,7 @@
 
 .page .ctaBlock {
   text-align: left;
-  background:
-    radial-gradient(circle at 78% 50%, rgba(124, 58, 237, 0.18), transparent 25rem),
-    #0d0d12;
+  background: radial-gradient(circle at 78% 50%, rgba(124, 58, 237, 0.16), transparent 25rem);
 }
 
 .page .ctaTitle {
@@ -1407,8 +1401,7 @@
 
 .teamSection {
   padding: 80px 0;
-  border-top: 1px solid var(--border);
-  background: var(--bg-card);
+  background: transparent;
 }
 
 .teamSection .sectionHead {
@@ -1697,7 +1690,6 @@
 
 .promotions {
   padding: 80px 0;
-  border-top: 1px solid var(--border);
 }
 
 .promoCards {
@@ -1756,7 +1748,6 @@
 
 .callSection {
   padding: 64px 0;
-  border-top: 1px solid var(--border);
 }
 
 .callSectionText {
@@ -1806,7 +1797,6 @@
 /* Results */
 .results {
   padding: 80px 0;
-  border-top: 1px solid var(--border);
 }
 
 .sectionTitle {
@@ -1897,7 +1887,6 @@
 /* Courses */
 .courses {
   padding: 80px 0;
-  border-top: 1px solid var(--border);
 }
 
 .coursesHeader {
@@ -2073,7 +2062,6 @@
 
 .recommended {
   padding: 80px 0;
-  border-top: 1px solid var(--border);
 }
 
 .recGrid {
@@ -2154,7 +2142,6 @@
 
 .calendarBlock {
   padding: 48px 0;
-  border-top: 1px solid var(--border);
 }
 
 .calendarHeader {
@@ -2218,7 +2205,6 @@
 /* Blog */
 .blog {
   padding: 80px 0;
-  border-top: 1px solid var(--border);
   position: relative;
 }
 
@@ -2280,7 +2266,6 @@
 /* CTA block */
 .ctaBlock {
   padding: 80px 0;
-  border-top: 1px solid var(--border);
   text-align: center;
   background: var(--bg-card);
 }
@@ -2404,7 +2389,7 @@
 }
 
 .bandSurface {
-  background: color-mix(in srgb, var(--bg-surface) 58%, transparent);
+  background: transparent;
 }
 
 .hero.bandBase {
@@ -2836,9 +2821,7 @@
 
 .page .ctaBlock {
   text-align: left;
-  background:
-    radial-gradient(circle at 78% 50%, rgba(124, 58, 237, 0.18), transparent 25rem),
-    #0d0d12;
+  background: radial-gradient(circle at 78% 50%, rgba(124, 58, 237, 0.16), transparent 25rem);
 }
 
 .page .ctaTitle {
@@ -3961,7 +3944,7 @@
 }
 
 .bandSurface {
-  background: color-mix(in srgb, var(--bg-surface) 58%, transparent);
+  background: transparent;
 }
 
 .hero.bandBase {
@@ -4417,5 +4400,243 @@
 
   .page .statValue {
     font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+  }
+}
+
+/* ========== Aurora learning field — 2026-07-20 ========== */
+
+.page {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background:
+    radial-gradient(ellipse 58% 24% at 88% 6%, rgba(112, 74, 198, 0.22), transparent 72%),
+    radial-gradient(ellipse 48% 20% at 4% 18%, rgba(111, 153, 130, 0.16), transparent 76%),
+    radial-gradient(ellipse 52% 23% at 74% 42%, rgba(91, 55, 154, 0.16), transparent 74%),
+    radial-gradient(ellipse 44% 19% at 12% 66%, rgba(102, 143, 122, 0.11), transparent 76%),
+    linear-gradient(145deg, #0d1219 0%, #0d1018 38%, #12101b 68%, #0a1115 100%);
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.9;
+  background:
+    radial-gradient(ellipse 46% 8% at 18% 13%, rgba(143, 178, 157, 0.22), transparent 72%),
+    radial-gradient(ellipse 68% 7% at 82% 29%, rgba(139, 92, 246, 0.24), transparent 72%),
+    radial-gradient(ellipse 54% 6% at 18% 51%, rgba(116, 154, 134, 0.16), transparent 74%),
+    radial-gradient(ellipse 72% 8% at 78% 76%, rgba(123, 79, 211, 0.2), transparent 72%);
+  filter: blur(18px);
+  transform: scale(1.05);
+}
+
+.page::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 88px 88px;
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+}
+
+.page .bandBase,
+.page .bandSurface,
+.page .statsStrip,
+.page .teamSection,
+.page .ctaBlock {
+  background: transparent;
+}
+
+.page .hero {
+  border-bottom-color: rgba(183, 205, 191, 0.11);
+}
+
+.page .heroBg {
+  background:
+    radial-gradient(ellipse 52% 48% at 73% 31%, rgba(139, 92, 246, 0.25), transparent 68%),
+    radial-gradient(ellipse 34% 36% at 12% 70%, rgba(118, 159, 137, 0.14), transparent 72%);
+}
+
+.page .statsRow {
+  gap: 0;
+  border-top: 1px solid rgba(190, 211, 198, 0.12);
+  border-bottom: 1px solid rgba(158, 116, 238, 0.14);
+}
+
+.page .statItem {
+  min-height: 132px;
+  padding: 26px clamp(18px, 3vw, 38px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.page .statItem + .statItem {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.page .whatIncluded {
+  overflow: visible;
+}
+
+.page .whatIncluded::before {
+  display: block;
+  content: '';
+  position: absolute;
+  width: min(760px, 70vw);
+  height: 420px;
+  top: 8%;
+  right: -12%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(121, 162, 140, 0.15), transparent 70%);
+  filter: blur(36px);
+  pointer-events: none;
+}
+
+.page .flowGrid {
+  gap: 0;
+  margin-bottom: 36px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.page .flowStep {
+  min-height: 280px;
+  gap: 15px;
+  padding: 34px clamp(20px, 2.6vw, 38px) 38px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.page .flowStep + .flowStep {
+  border-left: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.page .flowStep:hover {
+  transform: none;
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.07), rgba(126, 165, 141, 0.025));
+}
+
+.page .flowStep:not(:last-child)::after {
+  display: none;
+}
+
+.page .flowNum {
+  top: 28px;
+  right: 28px;
+  font-size: clamp(2.5rem, 4vw, 4rem);
+  color: rgba(205, 193, 226, 0.055);
+}
+
+.page .flowIcon {
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+}
+
+.page .flowViolet .flowIcon {
+  color: #bba0f4;
+  background: rgba(139, 92, 246, 0.11);
+  border: 0;
+  box-shadow: 0 0 48px rgba(139, 92, 246, 0.14);
+}
+
+.page .flowMagenta .flowIcon {
+  color: #c98ab7;
+  background: rgba(185, 90, 151, 0.1);
+  border: 0;
+  box-shadow: 0 0 48px rgba(185, 90, 151, 0.12);
+}
+
+.page .flowSage .flowIcon {
+  color: #a9c4b0;
+  background: rgba(126, 165, 141, 0.12);
+  border: 0;
+  box-shadow: 0 0 48px rgba(126, 165, 141, 0.13);
+}
+
+.page .flowEmber .flowIcon {
+  color: #c99267;
+  background: rgba(190, 119, 67, 0.1);
+  border: 0;
+  box-shadow: 0 0 48px rgba(190, 119, 67, 0.11);
+}
+
+.page .supportStrip {
+  padding: 24px 4px;
+  border: 0;
+  border-top: 1px solid rgba(147, 177, 158, 0.14);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.12);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+  .page .statItem:nth-child(3) {
+    border-left: 0;
+  }
+
+  .page .statItem:nth-child(n + 3) {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .page .flowGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .page .flowStep:nth-child(3) {
+    border-left: 0;
+  }
+
+  .page .flowStep:nth-child(n + 3) {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (max-width: 580px) {
+  .page::after {
+    background-size: 56px 56px;
+  }
+
+  .page .statsRow,
+  .page .flowGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .page .statItem + .statItem,
+  .page .flowStep + .flowStep {
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .page .flowStep {
+    min-height: 0;
+    padding: 28px 4px;
+  }
+
+  .page .supportStrip {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page::before {
+    filter: blur(18px);
+    transform: none;
   }
 }

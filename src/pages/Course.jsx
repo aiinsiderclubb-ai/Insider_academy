@@ -10,7 +10,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { recordCertificate, trackCourseClick, recordHomeworkSubmission, getHomeworkByUserAndLesson } from '../api/adminStore'
 import { api, canUseAuthenticatedApi } from '../api/client'
 import { VideoPlayer } from '../components/VideoPlayer'
-import { MENTOR_IMAGES } from '../utils/designAssets'
+import { getCourseDesignCover } from '../utils/designAssets'
 import { LessonReminderButton } from '../components/LessonReminderButton'
 import { PeerReviewPanel } from '../components/PeerReviewPanel'
 import { CourseProgramPanel } from '../components/CourseProgramPanel'
@@ -523,7 +523,7 @@ export function Course() {
                     <VideoPlayer
                       lesson={currentLesson}
                       title={lessonTitle}
-                      poster={MENTOR_IMAGES.lessonPoster}
+                      poster={getCourseDesignCover(course)}
                       locked={!lessonAvailable(safeSelectedLesson)}
                       lockedMessage={safeSelectedLesson > 0 && !purchased ? t('course.lockedMessage') : undefined}
                       onEnded={(purchased || isFreeTrial) ? handleWatch : undefined}
@@ -581,7 +581,7 @@ export function Course() {
                 <aside className={styles.lessonSupport}>
                   <section className={styles.mentorCard}>
                     <div className={styles.mentorMedia}>
-                      <img src="/design/mentor-study.webp" alt="" aria-hidden="true" />
+                      <img src={getCourseDesignCover(course)} alt="" aria-hidden="true" />
                     </div>
                     <div className={styles.mentorCopy}>
                       <span><i /> AI Insider mentor</span>

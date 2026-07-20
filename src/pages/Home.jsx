@@ -22,7 +22,6 @@ import { MembershipsSection } from '../components/MembershipsSection'
 import { HomeProductsSection } from '../components/HomeProductsSection'
 import { HomeCertificatesSection } from '../components/HomeCertificatesSection'
 import { HomeReviewsSection } from '../components/HomeReviewsSection'
-import { HomeDirectionsSection } from '../components/HomeDirectionsSection'
 import { PlatformBridge } from '../components/PlatformBridge'
 import { TELEGRAM_COMMUNITY, TELEGRAM_MANAGER } from '../data/siteLinks'
 import { PageMeta } from '../components/PageMeta'
@@ -34,7 +33,6 @@ import { buildCommunityFeed } from '../data/activityFeed'
 import { getPersonalUpsells } from '../data/marketplace/recommendations'
 import { hasClubMembership } from '../data/club'
 import { MARKETPLACE_CREATORS } from '../data/marketplace/creators'
-import { MENTOR_IMAGES } from '../utils/designAssets'
 import { HeroShowcase } from '../components/HeroShowcase'
 import styles from './Home.module.css'
 
@@ -205,8 +203,6 @@ export function Home() {
       </ScrollReveal>
 
       <HomeSuperOffer course={acceleratorCourse} lang={lang} />
-
-      <HomeDirectionsSection lang={lang} theme={theme} />
 
       {user && (
         <section className={`${styles.continueSection} ${styles.bandBase}`}>
@@ -544,7 +540,7 @@ export function Home() {
             <article className={styles.mentorCard}>
               <img
                 className={styles.mentorImg}
-                src={MENTOR_IMAGES.founder}
+                src="/design/course-ai-agents.webp"
                 alt={lang === 'ru' ? 'AI Insider — ментор академии' : 'AI Insider — academy mentor'}
                 loading="lazy"
               />

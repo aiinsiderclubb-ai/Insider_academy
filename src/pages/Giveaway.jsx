@@ -111,7 +111,6 @@ function PrizeTiltCard({ giveaway, lang }) {
       }}
     >
       <div className={styles.prizeTiltInner}>
-        <img className={styles.prizeMentor} src="/design/mentor-giveaway.webp" alt="" aria-hidden />
         <span className={styles.prizeLogo}>{giveaway.logoText || giveaway.brand}</span>
         <strong className={styles.prizeName}>
           {ru ? giveaway.prizeRu : giveaway.prizeEn}

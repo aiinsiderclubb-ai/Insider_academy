@@ -1,7 +1,6 @@
 import { Check } from 'lucide-react'
 import { getCourseField } from '../data/courses'
 import { ACCELERATOR_OFFER, PROMO_VIDEOS } from '../data/promo'
-import { MENTOR_IMAGES } from '../utils/designAssets'
 import { BundleCourseActions } from './BundleCourseActions'
 import { PromoVideo } from './PromoVideo'
 import { UiIcon } from './UiIcon'
@@ -123,7 +122,7 @@ export function HomeSuperOffer({ course, lang }) {
             <aside className={styles.mediaCol}>
               <figure className={styles.mentorFigure}>
                 <img
-                  src={MENTOR_IMAGES.accelerator}
+                  src="/courses/ai-insider-accelerator.png"
                   alt={lang === 'ru' ? 'AI Insider приглашает в Accelerator' : 'AI Insider invites you to the Accelerator'}
                   loading="lazy"
                 />
