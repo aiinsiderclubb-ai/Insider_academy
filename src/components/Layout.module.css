@@ -404,6 +404,8 @@
 
 .mainImmersive { padding: 0; }
 
+.mainFullBleed { padding: 0; }
+
 .footer {
   position: relative;
   z-index: 1;
@@ -500,6 +502,8 @@
   .headerLogin { width: 38px; padding: 0; font-size: 0; }
   .main { padding: 22px 14px 78px; }
   .mainImmersive { padding: 0; }
+
+.mainFullBleed { padding: 0; }
   .footer { grid-template-columns: 1fr; padding: 34px 18px 22px; }
   .footerMeta { grid-column: auto; }
   .callFab { right: 14px; bottom: 14px; width: 48px; height: 48px; }

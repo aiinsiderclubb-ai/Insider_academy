@@ -155,6 +155,8 @@ export function Layout({ children }) {
   const isAuthPage = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/onboarding'].includes(location.pathname)
   const isLessonPage = /^\/courses\/[^/]+$/.test(location.pathname) && searchParams.has('lesson')
   const isImmersive = isAdminPage || isAuthPage || isLessonPage
+  // Главная рисует собственный полноширинный канвас — убираем рамку паддингов main
+  const isFullBleed = location.pathname === '/'
 
   const isMarketplaceSection =
     location.pathname.startsWith('/marketplace') || location.pathname.startsWith('/vault')
@@ -451,7 +453,7 @@ export function Layout({ children }) {
         )}
 
         {!isAdminPage && <ScrollProgressBar />}
-        <main className={`${styles.main} ${isImmersive ? styles.mainImmersive : ''}`}>{children}</main>
+        <main className={`${styles.main} ${isImmersive ? styles.mainImmersive : ''} ${isFullBleed ? styles.mainFullBleed : ''}`}>{children}</main>
 
         {!isImmersive && (
           <footer className={styles.footer}>
