@@ -7,6 +7,7 @@ import { mapAuthApiError } from '../utils/authErrors'
 import { formatApiError } from '../utils/formatApiError'
 import { getPendingVerifyEmail } from '../utils/pendingVerification'
 import { NeuronGlow } from '../components/NeuronGlow'
+import { AuthVisual } from '../components/AuthVisual'
 import { SocialAuthButtons } from '../components/SocialAuthButtons'
 import styles from './Login.module.css'
 
@@ -120,11 +121,7 @@ export function Register() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.bg}>
-        <NeuronGlow className={styles.neuron} />
-        <div className={styles.gradientOrb} aria-hidden />
-        <div className={styles.gradientOrb2} aria-hidden />
-      </div>
+      <AuthVisual />
 
       <div className={styles.content}>
         <div className={styles.topBar}>

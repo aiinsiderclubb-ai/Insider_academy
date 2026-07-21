@@ -7,6 +7,7 @@ import { isTestAccountEmail } from '../data/testAccount'
 import { formatApiError } from '../utils/formatApiError'
 import { setPendingVerifyEmail } from '../utils/pendingVerification'
 import { NeuronGlow } from '../components/NeuronGlow'
+import { AuthVisual } from '../components/AuthVisual'
 import { SocialAuthButtons } from '../components/SocialAuthButtons'
 import styles from './Login.module.css'
 
@@ -89,11 +90,7 @@ export function Login() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.bg}>
-        <NeuronGlow className={styles.neuron} />
-        <div className={styles.gradientOrb} aria-hidden />
-        <div className={styles.gradientOrb2} aria-hidden />
-      </div>
+      <AuthVisual />
 
       <div className={styles.content}>
         <div className={styles.topBar}>

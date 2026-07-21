@@ -1,0 +1,57 @@
+.visual {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: stretch;
+  min-height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 42%, rgba(28, 20, 54, 0.9), transparent 70%),
+    #07070b;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% 50%, transparent 55%, rgba(7, 7, 11, 0.85) 100%),
+    linear-gradient(180deg, rgba(7, 7, 11, 0.4), transparent 30%, transparent 78%, rgba(7, 7, 11, 0.9) 100%);
+}
+
+.caption {
+  position: absolute;
+  left: clamp(30px, 4vw, 64px);
+  bottom: clamp(34px, 6vw, 70px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.captionTop {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.captionSub {
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: rgba(185, 175, 205, 0.7);
+}
+
+@media (max-width: 880px) {
+  .visual {
+    display: none;
+  }
+}

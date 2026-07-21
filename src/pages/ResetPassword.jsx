@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AuthVisual } from '../components/AuthVisual'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api, checkApiOnline } from '../api/client'
 import { useLanguage } from '../context/LanguageContext'
@@ -51,6 +52,7 @@ export function ResetPassword() {
   if (!token) {
     return (
       <div className={styles.page}>
+      <AuthVisual />
         <div className={styles.content}>
           <div className={styles.card}>
             <div className={styles.cardInner}>
@@ -67,6 +69,7 @@ export function ResetPassword() {
 
   return (
     <div className={styles.page}>
+      <AuthVisual />
       <div className={styles.content}>
         <div className={styles.card}>
           <div className={styles.cardInner}>

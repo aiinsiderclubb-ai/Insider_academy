@@ -12,6 +12,7 @@ import {
 } from '../utils/pendingVerification'
 import { EmailCodeInput } from '../components/EmailCodeInput'
 import { NeuronGlow } from '../components/NeuronGlow'
+import { AuthVisual } from '../components/AuthVisual'
 import styles from './Login.module.css'
 
 export function VerifyEmail() {
@@ -103,9 +104,7 @@ export function VerifyEmail() {
   if (status === 'ok') {
     return (
       <div className={styles.page}>
-        <div className={styles.bg}>
-          <NeuronGlow className={styles.neuron} />
-        </div>
+        <AuthVisual />
         <div className={styles.content}>
           <div className={styles.card}>
             <div className={styles.cardInner}>

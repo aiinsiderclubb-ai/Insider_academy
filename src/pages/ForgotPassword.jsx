@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AuthVisual } from '../components/AuthVisual'
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import { api, checkApiOnline } from '../api/client'
@@ -50,6 +51,7 @@ export function ForgotPassword() {
 
   return (
     <div className={styles.page}>
+      <AuthVisual />
       <div className={styles.content}>
         <div className={styles.card}>
           <div className={styles.cardInner}>

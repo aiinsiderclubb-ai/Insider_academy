@@ -16,28 +16,7 @@
   font-family: 'Onest', var(--font-body, sans-serif);
 }
 
-.page::before {
-  content: '';
-  min-height: 100svh;
-  background:
-    linear-gradient(180deg, rgba(5, 5, 8, 0.06) 42%, rgba(5, 5, 8, 0.86) 100%),
-    linear-gradient(120deg, rgba(102, 51, 214, 0.2), transparent 50%),
-    url('/design/course-ai-data.webp') center 35% / cover no-repeat;
-}
-
-.page::after {
-  content: 'AI INSIDER · LEARN THE FUTURE';
-  position: absolute;
-  left: clamp(38px, 4vw, 72px);
-  bottom: clamp(40px, 6vw, 78px);
-  z-index: 1;
-  max-width: 28ch;
-  color: rgba(255, 255, 255, 0.72);
-  font-family: 'Onest', var(--font-body, sans-serif);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-}
+/* Левый визуал теперь — canvas-компонент <AuthVisual /> (grid-column 1). */
 
 .bg {
   display: none;
