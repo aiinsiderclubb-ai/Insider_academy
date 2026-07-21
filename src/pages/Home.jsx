@@ -36,6 +36,13 @@ import { MARKETPLACE_CREATORS } from '../data/marketplace/creators'
 import { HeroShowcase } from '../components/HeroShowcase'
 import styles from './Home.module.css'
 
+/** Свежие посты под язык интерфейса; если на этом языке пусто — показываем любые. */
+function pickBlogPreview(posts, lang) {
+  const sorted = [...posts].sort((a, b) => new Date(b.date) - new Date(a.date))
+  const matched = sorted.filter((p) => getBlogPostLang(p) === lang)
+  return (matched.length > 0 ? matched : sorted).slice(0, 3)
+}
+
 export function Home() {
   const { user, hasPurchased, purchases } = useAuth()
   const { getPercent } = useProgress()
@@ -44,23 +51,13 @@ export function Home() {
   const { courses, freeCourses, paidCourses, acceleratorCourse, loading } = useCourses()
   const [userStats, setUserStats] = useState(null)
   const [feedItems, setFeedItems] = useState(() => buildCommunityFeed({ lang }))
-  const [blogPreview, setBlogPreview] = useState(() =>
-    [...getBlogPosts()]
-      .filter((p) => getBlogPostLang(p) === 'ru')
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 3)
-  )
+  const [blogPreview, setBlogPreview] = useState(() => pickBlogPreview(getBlogPosts(), lang))
 
   useEffect(() => {
     fetchBlogPosts().then((posts) => {
-      setBlogPreview(
-        [...posts]
-          .filter((p) => getBlogPostLang(p) === 'ru')
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .slice(0, 3)
-      )
+      setBlogPreview(pickBlogPreview(posts, lang))
     })
-  }, [])
+  }, [lang])
 
   useEffect(() => {
     checkApiOnline().then(async (ok) => {
