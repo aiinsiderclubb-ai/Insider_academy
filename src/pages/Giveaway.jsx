@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Check, Send, Share2, Ticket, Trophy, UserPlus, Users } from 'lucide-react'
+import { ArrowRight, Check, Gift, Send, Share2, Sparkles, Ticket, Trophy, UserPlus, Users } from 'lucide-react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -111,19 +111,36 @@ function PrizeTiltCard({ giveaway, lang }) {
       }}
     >
       <div className={styles.prizeTiltInner}>
-        <span className={styles.prizeLogo}>{giveaway.logoText || giveaway.brand}</span>
-        <strong className={styles.prizeName}>
-          {ru ? giveaway.prizeRu : giveaway.prizeEn}
-          {' '}
-          {ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}
-        </strong>
-        <span className={styles.prizeWinners}>
-          {giveaway.winnersCount}
-          {' '}
-          {ru
-            ? (giveaway.winnersCount === 1 ? 'победитель' : 'победителей')
-            : (giveaway.winnersCount === 1 ? 'winner' : 'winners')}
-        </span>
+        <img
+          className={styles.prizeMentor}
+          src="/design/mentor-giveaway.webp"
+          alt=""
+          aria-hidden="true"
+        />
+        <div className={styles.prizeOrbit} aria-hidden>
+          <span className={styles.prizeOrbitDot} />
+        </div>
+        <div className={styles.prizeAccessCard} aria-hidden>
+          <span>CLAUDE</span>
+          <strong>PRO</strong>
+          <small>{ru ? '30 ДНЕЙ ДОСТУПА' : '30 DAYS ACCESS'}</small>
+        </div>
+        <div className={styles.prizeCaption}>
+          <span className={styles.prizeDrop}>AI INSIDER · PRIVATE DROP 01</span>
+          <span className={styles.prizeLogo}>{giveaway.logoText || giveaway.brand}</span>
+          <strong className={styles.prizeName}>
+            {ru ? giveaway.prizeRu : giveaway.prizeEn}
+            {' '}
+            {ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}
+          </strong>
+          <span className={styles.prizeWinners}>
+            {giveaway.winnersCount}
+            {' '}
+            {ru
+              ? (giveaway.winnersCount === 1 ? 'победитель' : 'победителей')
+              : (giveaway.winnersCount === 1 ? 'winner' : 'winners')}
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -364,17 +381,24 @@ function GiveawayDetail({ giveaway, lang }) {
               {ru ? '← Розыгрыши и события' : '← Giveaways & events'}
             </Link>
 
-            {!isEnded && (
-              <span className={styles.liveBadge}>
-                <span className={styles.liveDot} aria-hidden />
-                {ru ? giveaway.tagRu : giveaway.tagEn}
-              </span>
-            )}
+            <div className={styles.heroBadges}>
+              <span className={styles.dropBadge}><Sparkles size={13} aria-hidden /> AI INSIDER DROP</span>
+              {!isEnded && (
+                <span className={styles.liveBadge}>
+                  <span className={styles.liveDot} aria-hidden />
+                  {ru ? giveaway.tagRu : giveaway.tagEn}
+                </span>
+              )}
+            </div>
             {isEnded && (
               <span className={styles.endedBadge}>{ru ? 'Завершён' : 'Ended'}</span>
             )}
 
             <h1 className={styles.heroTitle}>{ru ? giveaway.headlineRu : giveaway.headlineEn}</h1>
+            <p className={styles.heroPrizeDetail}>
+              {ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}
+              <span>{ru ? ' · без оплаты · 1 победитель' : ' · free entry · 1 winner'}</span>
+            </p>
             <p className={styles.heroLead}>{ru ? giveaway.leadRu : giveaway.leadEn}</p>
 
             <div className={styles.participantsRow}>
@@ -395,6 +419,7 @@ function GiveawayDetail({ giveaway, lang }) {
             {!isEnded && !entered && (
               <button type="button" className={styles.btnPrimary} onClick={scrollToCta}>
                 {ru ? 'Участвовать бесплатно' : 'Enter for free'}
+                <ArrowRight size={18} aria-hidden />
               </button>
             )}
           </div>
@@ -406,7 +431,13 @@ function GiveawayDetail({ giveaway, lang }) {
       <div className={styles.container}>
         {countdown && !countdown.done && (
           <section className={styles.timerSection} aria-label={ru ? 'До итогов' : 'Until results'}>
-            <p className={styles.timerLabel}>{ru ? 'до итогов' : 'until results'}</p>
+            <div className={styles.timerIntro}>
+              <span className={styles.timerPulse}><Gift size={18} aria-hidden /></span>
+              <div>
+                <p className={styles.timerLabel}>{ru ? 'LIVE DRAW · ДО ИТОГОВ' : 'LIVE DRAW · UNTIL RESULTS'}</p>
+                <strong>{ru ? 'Победителя объявим в Telegram' : 'Winner announced on Telegram'}</strong>
+              </div>
+            </div>
             <div className={styles.flipRow} role="timer">
               <FlipUnit value={countdown.days} label={ru ? 'дн' : 'd'} />
               <span className={styles.flipSep}>:</span>
@@ -438,7 +469,9 @@ function GiveawayDetail({ giveaway, lang }) {
         {!isEnded && (
           <ScrollReveal>
             <section className={styles.section}>
+              <p className={styles.sectionEyebrow}>{ru ? 'ТРИ ШАГА · ОДИН ПРИЗ' : 'THREE STEPS · ONE PRIZE'}</p>
               <h2 className={styles.sectionTitle}>{ru ? 'Как участвовать' : 'How to enter'}</h2>
+              <p className={styles.sectionLead}>{ru ? 'Весь путь занимает меньше двух минут.' : 'The whole flow takes less than two minutes.'}</p>
               <ol className={styles.stepper}>
                 <li className={`${styles.step} ${styles.stepViolet}`}>
                   <span className={styles.stepGhost} aria-hidden>01</span>
@@ -467,7 +500,10 @@ function GiveawayDetail({ giveaway, lang }) {
           <ScrollReveal>
             <section className={styles.section} id="giveaway-chances">
               <div className={styles.chancesHead}>
-                <h2 className={styles.sectionTitle}>{ru ? 'Дополнительные шансы' : 'Bonus chances'}</h2>
+                <div>
+                  <p className={styles.sectionEyebrow}>{ru ? 'УВЕЛИЧЬ ВЕРОЯТНОСТЬ' : 'BOOST YOUR ODDS'}</p>
+                  <h2 className={styles.sectionTitle}>{ru ? 'Дополнительные шансы' : 'Bonus chances'}</h2>
+                </div>
                 {entered && (
                   <div className={styles.chanceMeter}>
                     <span className={styles.chanceYou}>

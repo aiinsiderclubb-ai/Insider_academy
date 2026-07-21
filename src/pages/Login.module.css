@@ -12,7 +12,12 @@
   padding: 0;
   overflow: hidden;
   color: #f7f5fb;
-  background: #07070b;
+  /* непрерывный фон на всю ширину — нет резкого шва между визуалом и формой */
+  background:
+    radial-gradient(120% 90% at 20% 45%, rgba(46, 30, 84, 0.55), transparent 62%),
+    radial-gradient(90% 70% at 8% 30%, rgba(112, 74, 198, 0.28), transparent 58%),
+    radial-gradient(70% 60% at 4% 78%, rgba(116, 154, 134, 0.12), transparent 60%),
+    #08070d;
   font-family: 'Onest', var(--font-body, sans-serif);
 }
 

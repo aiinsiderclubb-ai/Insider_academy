@@ -37,7 +37,7 @@ export function AuthVisual() {
     const strandB = strand(Math.PI)
 
     // восходящие частицы-данные
-    const DUST = 90
+    const DUST = 110
     const dust = Array.from({ length: DUST }, () => ({
       x: Math.random(),
       y: Math.random(),
@@ -46,6 +46,17 @@ export function AuthVisual() {
       sz: 0.6 + Math.random() * 1.6,
       hue: hueAt(Math.random()),
       tw: Math.random() * 6.28,
+    }))
+
+    // орбитальное кольцо частиц вокруг центра — вращается в своей плоскости
+    const ORB = 90
+    const orbit = Array.from({ length: ORB }, (_, i) => ({
+      a: (i / ORB) * Math.PI * 2,
+      r: 0.82 + Math.random() * 0.5,
+      tilt: 0.32 + Math.random() * 0.12,
+      hue: hueAt(Math.random()),
+      sz: 0.6 + Math.random() * 1.5,
+      sp: 0.003 + Math.random() * 0.004,
     }))
 
     let rot = 0
@@ -88,16 +99,51 @@ export function AuthVisual() {
       rot += vel
 
       ctx.clearRect(0, 0, W, H)
+      const cyMid = H * 0.5
 
-      // центральное свечение-ядро
+      // широкое мягкое свечение-ядро (плавно тает — без резкого кольца)
       const pulse = 1 + Math.sin(t * 0.02) * 0.08
-      const glow = ctx.createRadialGradient(cx, H * 0.5, 0, cx, H * 0.5, helixR * 2.4 * pulse)
-      glow.addColorStop(0, 'rgba(150, 110, 255, 0.22)')
-      glow.addColorStop(0.4, 'rgba(139, 92, 246, 0.1)')
-      glow.addColorStop(0.75, 'rgba(217, 76, 165, 0.04)')
+      const glow = ctx.createRadialGradient(cx, cyMid, 0, cx, cyMid, helixR * 3.4 * pulse)
+      glow.addColorStop(0, 'rgba(150, 110, 255, 0.26)')
+      glow.addColorStop(0.28, 'rgba(139, 92, 246, 0.13)')
+      glow.addColorStop(0.55, 'rgba(217, 76, 165, 0.06)')
+      glow.addColorStop(0.8, 'rgba(120, 74, 200, 0.02)')
       glow.addColorStop(1, 'rgba(0,0,0,0)')
       ctx.fillStyle = glow
       ctx.fillRect(0, 0, W, H)
+
+      // орбитальное кольцо частиц (за спиралью)
+      ctx.save()
+      for (const o of orbit) {
+        if (!reduce) o.a += o.sp
+        const a = o.a
+        const x3 = Math.cos(a) * o.r
+        const z3 = Math.sin(a) * o.r
+        const depth = z3
+        const scale = 0.7 + (depth + 1) / 2 * 0.5
+        const sx = cx + x3 * helixR * 1.9 * scale
+        const sy = cyMid + Math.sin(a) * helixR * o.tilt
+        const front = (depth + 1) / 2
+        ctx.fillStyle = `hsla(${o.hue}, 88%, ${66 + front * 16}%, ${(0.14 + front * 0.6)})`
+        if (front > 0.7) { ctx.shadowColor = `hsla(${o.hue},90%,66%,0.9)`; ctx.shadowBlur = 10 * front } else ctx.shadowBlur = 0
+        ctx.beginPath()
+        ctx.arc(sx, sy, o.sz * (0.6 + front), 0, 6.2832)
+        ctx.fill()
+      }
+      ctx.shadowBlur = 0
+      ctx.restore()
+
+      // яркое ядро-орб в центре
+      const coreR = helixR * 0.34 * pulse
+      const orb = ctx.createRadialGradient(cx, cyMid, 0, cx, cyMid, coreR)
+      orb.addColorStop(0, 'rgba(255, 252, 255, 0.95)')
+      orb.addColorStop(0.25, 'rgba(196, 168, 255, 0.7)')
+      orb.addColorStop(0.6, 'rgba(139, 92, 246, 0.28)')
+      orb.addColorStop(1, 'rgba(139, 92, 246, 0)')
+      ctx.fillStyle = orb
+      ctx.beginPath()
+      ctx.arc(cx, cyMid, coreR, 0, 6.2832)
+      ctx.fill()
 
       // проекция узла нити
       const project = (node) => {
