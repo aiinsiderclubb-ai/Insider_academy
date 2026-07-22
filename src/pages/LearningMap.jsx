@@ -238,6 +238,18 @@ export function LearningMap() {
               <ArrowUpRight size={15} strokeWidth={1.7} aria-hidden />
             </Link>
 
+            <p className={styles.courseIntro}>
+              {lang === 'ru'
+                ? 'Последовательный маршрут: от первого agent loop до собственного production-агента.'
+                : 'A focused route from your first agent loop to a production-ready agent.'}
+            </p>
+
+            <div className={styles.courseFacts} aria-label={lang === 'ru' ? 'Структура курса' : 'Course structure'}>
+              <span><strong>{modules.length}</strong>{lang === 'ru' ? 'модулей' : 'modules'}</span>
+              <span><strong>{totalLessons}</strong>{lang === 'ru' ? 'уроков' : 'lessons'}</span>
+              <span><strong>{completedLessons.size}</strong>{lang === 'ru' ? 'пройдено' : 'completed'}</span>
+            </div>
+
             <div className={styles.toolbarProgress}>
               <span className={styles.toolbarProgressLabel}>
                 <span><Gauge size={13} aria-hidden />{lang === 'ru' ? 'Общий прогресс' : 'Overall progress'}</span>
