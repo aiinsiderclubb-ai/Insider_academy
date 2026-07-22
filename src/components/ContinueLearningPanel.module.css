@@ -325,3 +325,53 @@
 @media (prefers-reduced-motion: reduce) {
   .panel, .barFill, .streakBarFill, .cta { transition: none; }
 }
+
+/* Violet heat: learning signal, not another dashboard box. */
+.panel {
+  --learn-bg: #0d0916;
+  --learn-bg-soft: #130d1e;
+  --learn-line: rgba(201, 177, 255, 0.14);
+  --learn-violet: #a77cff;
+  --learn-sage: #ffab73;
+  --learn-orange: #ff8a3d;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid rgba(188, 153, 255, 0.26);
+  border-bottom: 1px solid rgba(255, 138, 61, 0.18);
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 82% 20%, rgba(124, 77, 255, 0.2), transparent 36%),
+    linear-gradient(110deg, rgba(16, 10, 28, 0.96), rgba(10, 7, 18, 0.84));
+  box-shadow: none;
+}
+
+.panel:hover { border-color: rgba(255, 138, 61, 0.34); transform: none; }
+.main { padding: clamp(28px, 4vw, 52px); }
+.courseCover { border-color: rgba(255, 138, 61, 0.2); border-radius: 16px 3px 16px 3px; }
+.barFill,
+.streakBarFill {
+  background: linear-gradient(90deg, #7c4dff 0%, #b85ce8 54%, #ff8a3d 100%);
+  box-shadow: 0 0 18px rgba(255, 138, 61, 0.22);
+}
+.cta {
+  color: #130914;
+  background: linear-gradient(110deg, #ff8a3d, #ffad6f);
+  box-shadow: 0 14px 34px rgba(255, 111, 43, 0.2);
+}
+.streakSide {
+  border: 0;
+  border-left: 1px solid var(--learn-line);
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 138, 61, 0.13), transparent 44%),
+    rgba(17, 11, 27, 0.68);
+}
+
+@media (max-width: 860px) {
+  .streakSide { border-top: 1px solid var(--learn-line); border-left: 0; }
+}
+
+@media (max-width: 620px) {
+  .panel { border-radius: 0; }
+}

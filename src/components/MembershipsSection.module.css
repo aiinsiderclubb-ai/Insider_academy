@@ -680,3 +680,73 @@
     padding: 28px;
   }
 }
+
+/* Violet heat: comparison reads like product spec, not nested modal. */
+.sectionCompact {
+  background:
+    radial-gradient(circle at 86% 8%, rgba(124, 77, 255, 0.22), transparent 34rem),
+    radial-gradient(circle at 8% 64%, rgba(255, 138, 61, 0.1), transparent 30rem);
+}
+
+.bonusGrid {
+  gap: 1px;
+  background: rgba(211, 190, 255, 0.1);
+}
+
+.bonusCard {
+  border: 0;
+  border-radius: 0;
+  background: rgba(12, 8, 20, 0.86);
+}
+
+.bonusCard:nth-child(3) .bonusMark { color: #ff8a3d; }
+
+.compare {
+  margin-top: 54px;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.compareHead {
+  padding: 0 0 28px;
+  border-bottom: 1px solid rgba(196, 168, 255, 0.18);
+}
+
+.compareHead h3 {
+  font-size: clamp(1.8rem, 3.5vw, 3.25rem);
+}
+
+.compareTable {
+  border: 0;
+  border-radius: 0;
+}
+
+.compareRowHead,
+.compareRow {
+  grid-template-columns: minmax(0, 1fr) 140px 140px;
+  min-height: 58px;
+  padding: 12px 6px;
+}
+
+.compareRowHead {
+  border-bottom: 1px solid rgba(255, 138, 61, 0.24);
+  background: transparent;
+}
+
+.compareRow {
+  border-top: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: transparent;
+}
+
+.compareRow:nth-child(odd) { background: transparent; }
+.compareRow:hover { background: linear-gradient(90deg, rgba(124, 77, 255, 0.08), rgba(255, 138, 61, 0.035)); }
+.compareYes { color: #ffab73; }
+
+@media (max-width: 560px) {
+  .compareRowHead,
+  .compareRow { grid-template-columns: minmax(0, 1fr) 50px 50px; }
+}

@@ -4636,3 +4636,44 @@
     transform: none;
   }
 }
+
+/* Violet heat: progress becomes open telemetry strip. */
+.page .progressPanel {
+  padding: 34px 0;
+  border: 0;
+  border-top: 1px solid rgba(185, 148, 255, 0.28);
+  border-bottom: 1px solid rgba(255, 138, 61, 0.2);
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 86% 0%, rgba(124, 77, 255, 0.17), transparent 36%),
+    linear-gradient(90deg, rgba(13, 8, 23, 0.94), rgba(13, 8, 23, 0.64));
+  backdrop-filter: none;
+}
+
+.page .progressPanelHead,
+.page .progressPanelGrid { padding-right: 28px; padding-left: 28px; }
+
+.page .streakCard,
+.page .metricCard {
+  border-color: rgba(198, 171, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(8, 5, 14, 0.58);
+}
+
+.page .streakRing {
+  background:
+    radial-gradient(circle at center, #100a1b 58%, transparent 59%),
+    conic-gradient(#ff8a3d var(--streak-pct), rgba(255, 255, 255, 0.08) 0);
+}
+
+.page .streakBarFill {
+  background: linear-gradient(90deg, #7c4dff, #b55ce8 55%, #ff8a3d);
+  box-shadow: 0 0 18px rgba(255, 138, 61, 0.2);
+}
+
+.page .metricValue { color: #ff9f5d; }
+
+@media (max-width: 580px) {
+  .page .progressPanelHead,
+  .page .progressPanelGrid { padding-right: 18px; padding-left: 18px; }
+}

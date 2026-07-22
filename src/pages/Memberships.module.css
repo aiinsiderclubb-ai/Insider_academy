@@ -1,8 +1,8 @@
 .wrap {
-  --bg-base: #0b0f1a;
-  --bg-surface: #141a2a;
-  --bg-elevated: #1a2032;
-  --bg-card: #141a2a;
+  --bg-base: #0a0714;
+  --bg-surface: #120d1d;
+  --bg-elevated: #1a1229;
+  --bg-card: #120d1d;
   --bg-glass: rgba(17, 17, 22, 0.9);
   --border: rgba(255, 255, 255, 0.09);
   --border-subtle: rgba(255, 255, 255, 0.09);
@@ -16,9 +16,9 @@
   min-height: 100vh;
   color: #f7f5fb;
   background:
-    radial-gradient(circle at 80% 7%, rgba(124, 58, 237, 0.18), transparent 25rem),
-    radial-gradient(circle at 10% 24%, rgba(145, 170, 150, 0.055), transparent 18rem),
-    #0b0f1a;
+    radial-gradient(circle at 80% 7%, rgba(124, 77, 255, 0.28), transparent 28rem),
+    radial-gradient(circle at 8% 30%, rgba(255, 138, 61, 0.11), transparent 22rem),
+    #0a0714;
 }
 
 .hero {

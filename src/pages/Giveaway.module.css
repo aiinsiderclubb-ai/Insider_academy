@@ -2108,3 +2108,70 @@
 @media (prefers-reduced-motion: reduce) {
   .prizeTiltInner::before { animation: none; }
 }
+
+/* Violet heat event flow: open stage, orange replaces blue. */
+.wrap {
+  background:
+    radial-gradient(54% 38% at 84% 10%, rgba(124, 77, 255, 0.22), transparent 72%),
+    radial-gradient(44% 34% at 8% 42%, rgba(255, 138, 61, 0.1), transparent 72%);
+}
+
+.timerSection {
+  border-color: rgba(255, 138, 61, 0.22);
+  background:
+    linear-gradient(90deg, rgba(124, 77, 255, 0.12), transparent 48%, rgba(255, 138, 61, 0.08)),
+    rgba(10, 7, 17, 0.84);
+}
+
+.stepper {
+  position: relative;
+  border-top-color: rgba(192, 161, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 138, 61, 0.14);
+}
+
+.step {
+  min-height: 260px;
+  padding-top: 38px;
+  border-right-color: rgba(197, 172, 255, 0.14);
+}
+
+.step:first-child { border-left-color: rgba(197, 172, 255, 0.14); }
+.step::before { background: linear-gradient(90deg, #7c4dff, #b55ce8 55%, #ff8a3d); }
+.step:hover { background: linear-gradient(180deg, rgba(124, 77, 255, 0.09), rgba(255, 138, 61, 0.025)); }
+.stepMagenta .stepIcon { color: #cf72e9; border-color: rgba(207, 114, 233, 0.34); background: rgba(207, 114, 233, 0.08); }
+.stepEmber .stepIcon { color: #ff984f; border-color: rgba(255, 138, 61, 0.4); background: rgba(255, 138, 61, 0.1); }
+
+.chanceBlue:hover { border-color: rgba(255, 138, 61, 0.42); }
+.chanceBlue .chanceIcon { color: #ff9d5b; border-color: rgba(255, 138, 61, 0.32); background: rgba(255, 138, 61, 0.09); }
+.chanceBlue .chancePlus { color: #ff9d5b; }
+
+.chanceCard:hover {
+  background: linear-gradient(90deg, rgba(124, 77, 255, 0.07), rgba(255, 138, 61, 0.035), transparent 82%);
+}
+
+.finalCta {
+  min-height: 430px;
+  border: 0;
+  border-top: 1px solid rgba(191, 157, 255, 0.28);
+  border-bottom: 1px solid rgba(255, 138, 61, 0.2);
+  border-radius: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(124, 77, 255, 0.24), transparent 48%),
+    radial-gradient(circle at 82% 80%, rgba(255, 138, 61, 0.11), transparent 34%),
+    rgba(10, 7, 17, 0.66);
+}
+
+.finalCta::before {
+  border-color: rgba(255, 138, 61, 0.28);
+  box-shadow: 0 0 90px rgba(124, 77, 255, 0.22), inset 0 0 48px rgba(255, 138, 61, 0.08);
+}
+
+.finalCta .btnPrimaryLg {
+  color: #160b14;
+  background: linear-gradient(110deg, #ff8a3d, #ffad70);
+  box-shadow: 0 18px 44px rgba(255, 111, 43, 0.2);
+}
+
+@media (max-width: 520px) {
+  .finalCta { border-radius: 0; }
+}

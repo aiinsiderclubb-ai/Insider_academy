@@ -775,3 +775,76 @@
     transition: none;
   }
 }
+
+/* Violet heat dashboard: open composition, orange learning energy. */
+.dash {
+  --dash-bg: #0a0714;
+  --dash-panel: #100b1a;
+  --dash-panel-2: #171021;
+  --dash-line: rgba(202, 177, 255, 0.12);
+  --dash-line-strong: rgba(255, 138, 61, 0.38);
+  --dash-violet: #a77cff;
+  --dash-violet-2: #7c4dff;
+  --dash-sage: #ffad72;
+  --dash-orange: #ff8a3d;
+}
+
+.courseCard {
+  min-height: 330px;
+  border: 0;
+  border-top: 1px solid rgba(174, 129, 255, 0.34);
+  border-bottom: 1px solid rgba(255, 138, 61, 0.22);
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 72% 44%, rgba(124, 77, 255, 0.24), transparent 40%),
+    linear-gradient(112deg, #110b1d 0%, #0b0814 55%, #1c0d20 100%);
+  box-shadow: none;
+}
+
+.courseCard::before {
+  background-image: linear-gradient(90deg, transparent, rgba(255, 138, 61, 0.12), transparent);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  mask-image: none;
+}
+
+.progressFill,
+.weekGoal i {
+  background: linear-gradient(90deg, #7c4dff, #b35de8 55%, #ff8a3d);
+  box-shadow: 0 0 18px rgba(255, 138, 61, 0.2);
+}
+
+.primaryCta {
+  border-color: rgba(255, 169, 108, 0.45);
+  color: #140b13;
+  background: linear-gradient(110deg, #ff8a3d, #ffac70);
+  box-shadow: 0 14px 34px rgba(255, 111, 43, 0.2);
+}
+
+.mentorCard,
+.streakCard,
+.weekCard,
+.downloadCard,
+.activityCard {
+  border-color: rgba(199, 172, 255, 0.12);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(124, 77, 255, 0.12), transparent 44%),
+    rgba(12, 8, 20, 0.82);
+  box-shadow: none;
+}
+
+.streakCard {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 138, 61, 0.12), transparent 48%),
+    rgba(14, 9, 20, 0.86);
+}
+
+.weekDays .dayActive i {
+  border-color: rgba(255, 138, 61, 0.5);
+  color: #170d12;
+  background: #ff9b59;
+}
+
+.fileIcon { color: #ffd2b2; background: rgba(255, 138, 61, 0.12); }

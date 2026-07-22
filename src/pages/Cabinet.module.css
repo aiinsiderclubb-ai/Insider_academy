@@ -14,8 +14,9 @@
   padding: 0 0 88px;
   color: var(--cab-text);
   background:
-    radial-gradient(circle at 78% 0%, rgba(126, 85, 232, 0.1), transparent 28%),
-    linear-gradient(180deg, #0c0b10 0%, var(--cab-bg) 34%, #08080a 100%);
+    radial-gradient(circle at 78% 0%, rgba(124, 77, 255, 0.28), transparent 32%),
+    radial-gradient(circle at 8% 34%, rgba(255, 138, 61, 0.1), transparent 28%),
+    linear-gradient(180deg, #0d0818 0%, #0a0714 42%, #08060e 100%);
   font-family: 'Onest', system-ui, sans-serif;
   animation: cabinetFadeIn 0.45s ease-out;
 }

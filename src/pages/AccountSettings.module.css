@@ -558,3 +558,121 @@
     transition: none;
   }
 }
+
+/* Violet heat redesign: open settings workspace, fewer nested boxes. */
+.wrap {
+  background:
+    radial-gradient(54% 42% at 88% 4%, rgba(126, 61, 242, 0.28), transparent 70%),
+    radial-gradient(38% 34% at 6% 30%, rgba(255, 124, 56, 0.12), transparent 72%),
+    transparent;
+}
+
+.headerRow {
+  position: relative;
+  align-items: center;
+  margin-bottom: 34px;
+  padding: 26px 0 30px;
+  overflow: visible;
+  border: 0;
+  border-bottom: 1px solid rgba(190, 163, 255, 0.18);
+  border-radius: 0;
+  background: transparent;
+}
+
+.headerRow::after {
+  width: 160px;
+  height: 1px;
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  background: linear-gradient(90deg, transparent, #ff8a3d);
+  content: '';
+}
+
+.headerIdentity {
+  border-color: rgba(255, 138, 61, 0.22);
+  background: linear-gradient(110deg, rgba(124, 77, 255, 0.1), rgba(255, 138, 61, 0.06));
+}
+
+.headerAvatar,
+.avatarBtn,
+.btnPrimary {
+  color: #fff;
+  background: linear-gradient(135deg, #7c4dff, #a45cf3 62%, #ff8a3d);
+}
+
+.sectionNav {
+  top: 76px;
+  gap: 26px;
+  margin-bottom: 34px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+  background: rgba(10, 7, 20, 0.78);
+}
+
+.sectionNav a {
+  position: relative;
+  padding: 0 2px;
+  border-radius: 0;
+}
+
+.sectionNav a:first-child,
+.sectionNav a:hover {
+  color: #fff;
+  background: transparent;
+}
+
+.sectionNav a:first-child::after,
+.sectionNav a:hover::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #7c4dff, #ff8a3d);
+  content: '';
+}
+
+.grid {
+  gap: 1px 42px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.card {
+  padding: 34px 0 42px;
+  border: 0;
+  border-radius: 0;
+  background: #0d0a16;
+  box-shadow: none;
+}
+
+.profileCard {
+  padding-right: 30px;
+  padding-left: 30px;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(124, 77, 255, 0.13), transparent 28rem),
+    #0d0a16;
+}
+
+.input {
+  border-color: rgba(196, 171, 255, 0.14);
+  background: rgba(6, 4, 11, 0.72);
+}
+
+.input:focus {
+  border-color: rgba(255, 138, 61, 0.72);
+  box-shadow: 0 0 0 4px rgba(255, 138, 61, 0.1);
+}
+
+@media (max-width: 820px) {
+  .grid { gap: 1px; }
+  .card { padding-right: 22px; padding-left: 22px; }
+}
+
+@media (max-width: 560px) {
+  .headerRow { padding-right: 0; padding-left: 0; }
+  .sectionNav { gap: 20px; }
+  .profileCard { padding-right: 20px; padding-left: 20px; }
+}
