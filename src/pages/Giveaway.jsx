@@ -669,11 +669,59 @@ function GiveawayDetail({ giveaway, lang }) {
             {loading && <p className={styles.hint}>{ru ? 'Загрузка…' : 'Loading…'}</p>}
 
             {!loading && !user && (
-              <>
-                <h2 className={styles.finalTitle}>{ru ? 'Участвуй бесплатно' : 'Enter for free'}</h2>
-                <p className={styles.finalLead}>
-                  {ru ? 'Создай аккаунт — вернёмся сюда сразу после регистрации.' : 'Create an account — we’ll bring you right back.'}
-                </p>
+              <div className={styles.guestEntry}>
+                <div className={styles.guestEntryCopy}>
+                  <p className={styles.guestEntryEyebrow}>
+                    <Sparkles size={15} aria-hidden />
+                    {ru ? 'AI INSIDER · PRIVATE DROP 01' : 'AI INSIDER · PRIVATE DROP 01'}
+                  </p>
+                  <h2 className={styles.guestEntryTitle}>
+                    {ru ? 'Твой шанс' : 'Your chance'}
+                    <span>{ru ? 'начинается здесь' : 'starts here'}</span>
+                  </h2>
+                  <p className={styles.guestEntryLead}>
+                    {ru
+                      ? `Создай аккаунт и получи шанс выиграть ${giveaway.prizeRu}. Без оплаты.`
+                      : `Create an account and get a chance to win ${giveaway.prizeEn}. No payment.`}
+                  </p>
+                  <div className={styles.guestEntryFacts} aria-label={ru ? 'Условия участия' : 'Entry terms'}>
+                    <span><Check size={14} aria-hidden /> {ru ? 'Бесплатно' : 'Free'}</span>
+                    <span><Check size={14} aria-hidden /> {ru ? 'Меньше 2 минут' : 'Under 2 minutes'}</span>
+                  </div>
+                </div>
+
+                <div className={styles.guestEntryPortal} aria-hidden="true">
+                  <span className={styles.portalRingOuter} />
+                  <span className={styles.portalRingInner} />
+                  <img src="/design/mentor-giveaway.webp" alt="" />
+                  <div className={styles.guestPrizePass}>
+                    <small>CLAUDE</small>
+                    <strong>PRO</strong>
+                    <span>{ru ? '30 ДНЕЙ' : '30 DAYS'}</span>
+                  </div>
+                  <span className={styles.portalTag}>DROP / 01</span>
+                </div>
+
+                <div className={styles.guestEntryPanel}>
+                  <p className={styles.guestPanelLabel}>{ru ? 'ТВОЙ МАРШРУТ' : 'YOUR ENTRY FLOW'}</p>
+                  <ol className={styles.guestEntrySteps}>
+                    <li>
+                      <span>01</span>
+                      <div>
+                        <strong>{ru ? 'Создай аккаунт' : 'Create account'}</strong>
+                        <small>{ru ? 'Одна короткая регистрация' : 'One short registration'}</small>
+                      </div>
+                      <UserPlus size={18} aria-hidden />
+                    </li>
+                    <li>
+                      <span>02</span>
+                      <div>
+                        <strong>{ru ? 'Подключи Telegram' : 'Connect Telegram'}</strong>
+                        <small>{ru ? 'Подтверди участие в кабинете' : 'Confirm entry in cabinet'}</small>
+                      </div>
+                      <Send size={18} aria-hidden />
+                    </li>
+                  </ol>
                 {apiOffline && (
                   <p className={styles.hint}>
                     {ru
@@ -686,9 +734,14 @@ function GiveawayDetail({ giveaway, lang }) {
                   state={{ from: { pathname: redirectPath } }}
                   className={styles.btnPrimaryLg}
                 >
-                  {ru ? 'Участвовать бесплатно' : 'Enter for free'}
+                    <span>{ru ? 'Получить шанс' : 'Get my chance'}</span>
+                    <ArrowRight size={19} aria-hidden />
                 </Link>
-              </>
+                  <small className={styles.guestEntryNote}>
+                    {ru ? 'Вернём тебя сюда после регистрации' : 'We’ll bring you back after registration'}
+                  </small>
+                </div>
+              </div>
             )}
 
             {!loading && user && apiOffline && (
