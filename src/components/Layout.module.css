@@ -15,10 +15,10 @@
   display: flex;
   flex-direction: column;
   padding: 24px 16px 18px;
-  background: rgba(14, 18, 30, 0.72);
-  backdrop-filter: blur(9px);
-  -webkit-backdrop-filter: blur(9px);
-  border-right: 1px solid rgba(255, 255, 255, 0.055);
+  background: rgba(7, 11, 26, 0.78);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  border-right: 1px solid rgba(123, 112, 255, 0.12);
   overflow-y: auto;
 }
 
@@ -243,9 +243,9 @@
   justify-content: space-between;
   gap: 20px;
   padding: 0 clamp(20px, 3vw, 44px);
-  background: linear-gradient(180deg, rgba(13, 18, 30, 0.82), rgba(11, 15, 26, 0.6));
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  background: rgba(8, 12, 27, 0.72);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
   transition: background var(--motion-base) var(--ease-motion), box-shadow var(--motion-base) var(--ease-motion);
 }
 
@@ -415,7 +415,13 @@
   z-index: 1;
   flex: 1;
   min-width: 0;
-  padding: clamp(24px, 3.4vw, 52px) clamp(20px, 3.7vw, 56px) clamp(72px, 8vw, 120px);
+  padding: 0 0 clamp(72px, 8vw, 120px);
+}
+
+/* Page modules used to paint another full-page rectangle inside app shell.
+   Keep global spectral canvas visible; component cards retain own surfaces. */
+.main > :first-child {
+  background: transparent !important;
 }
 
 .mainImmersive { padding: 0; }
@@ -656,7 +662,7 @@
   .langToggle { display: none; }
   .headerRight { margin-left: auto; }
   .headerLogin { width: 38px; padding: 0; font-size: 0; }
-  .main { padding: 22px 14px 78px; }
+  .main { padding: 0 0 78px; }
   .mainImmersive { padding: 0; }
 
 .mainFullBleed { padding: 0; }

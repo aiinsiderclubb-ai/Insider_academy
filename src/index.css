@@ -1,12 +1,12 @@
 :root {
   color-scheme: dark;
-  --bg-base: #0d1014;
-  --bg-surface: #15171c;
-  --bg-elevated: #1c1f25;
-  --bg-soft: #202329;
-  --sidebar-bg: #0c0f13;
-  --header-bg: rgba(13, 16, 20, 0.88);
-  --footer-bg: #0c0f13;
+  --bg-base: #090b16;
+  --bg-surface: #111528;
+  --bg-elevated: #181d35;
+  --bg-soft: #202643;
+  --sidebar-bg: #090d1c;
+  --header-bg: rgba(9, 13, 28, 0.86);
+  --footer-bg: #080b18;
   --border-subtle: rgba(199, 190, 255, 0.11);
   --border-strong: rgba(151, 113, 255, 0.35);
   --text-primary: #f7f6fb;
@@ -212,16 +212,16 @@ nav,
   line-height: 1.2;
 }
 
-/* Global atmosphere: quiet velvet light and subtle film grain. */
+/* Global atmosphere: saturated spectral light, no grid or boxed backdrop. */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(75% 62% at 4% 5%, rgba(113, 139, 123, 0.16), transparent 64%),
-    radial-gradient(68% 54% at 92% 2%, rgba(114, 76, 175, 0.2), transparent 67%),
-    radial-gradient(52% 46% at 54% 100%, rgba(90, 66, 124, 0.1), transparent 72%),
-    linear-gradient(145deg, #111419 0%, #0d1014 47%, #0b0d11 100%);
+    radial-gradient(78% 68% at 92% -8%, rgba(109, 59, 255, 0.42), transparent 66%),
+    radial-gradient(70% 64% at -8% 24%, rgba(36, 71, 200, 0.34), transparent 68%),
+    radial-gradient(58% 48% at 52% 104%, rgba(91, 33, 182, 0.24), transparent 72%),
+    linear-gradient(142deg, #090b16 0%, #0c1230 48%, #0a071b 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -232,7 +232,7 @@ body::after {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.045;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
   mix-blend-mode: soft-light;
 }
