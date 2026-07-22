@@ -394,7 +394,15 @@ function GiveawayDetail({ giveaway, lang }) {
               <span className={styles.endedBadge}>{ru ? 'Завершён' : 'Ended'}</span>
             )}
 
-            <h1 className={styles.heroTitle}>{ru ? giveaway.headlineRu : giveaway.headlineEn}</h1>
+            <h1 className={styles.heroTitle}>
+              {giveaway.slug === 'claude-pro' ? (
+                <>
+                  {ru ? 'Выиграйте' : 'Win'}
+                  {' '}
+                  <span className={styles.heroTitleAccent}>Claude Pro</span>
+                </>
+              ) : (ru ? giveaway.headlineRu : giveaway.headlineEn)}
+            </h1>
             <p className={styles.heroPrizeDetail}>
               {ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}
               <span>{ru ? ' · без оплаты · 1 победитель' : ' · free entry · 1 winner'}</span>

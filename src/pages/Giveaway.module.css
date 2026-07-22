@@ -2175,3 +2175,262 @@
 @media (max-width: 520px) {
   .finalCta { border-radius: 0; }
 }
+
+/* Private Drop hero: editorial stage instead of nested cards. */
+.hero {
+  min-height: auto;
+  padding: clamp(34px, 4vw, 58px) 0 34px;
+  isolation: isolate;
+}
+
+.hero::before {
+  content: 'PRIVATE DROP  /  01';
+  position: absolute;
+  z-index: -1;
+  top: 4%;
+  left: 50%;
+  translate: -50% 0;
+  width: min(1480px, 94vw);
+  color: rgba(189, 158, 255, 0.035);
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 12vw, 12rem);
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  line-height: 0.8;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.hero::after {
+  right: 7vw;
+  bottom: 18px;
+  left: 7vw;
+  width: auto;
+  translate: 0;
+  background: linear-gradient(90deg, #7c4dff, rgba(193, 90, 219, 0.8) 58%, #ff8a3d);
+  box-shadow: 0 0 26px rgba(124, 77, 255, 0.42), 0 0 40px rgba(255, 138, 61, 0.15);
+}
+
+.heroBg {
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(116deg, transparent 0 53%, rgba(124, 77, 255, 0.09) 53.1% 53.25%, transparent 53.35%),
+    radial-gradient(ellipse 44% 68% at 83% 44%, rgba(124, 77, 255, 0.28), transparent 66%),
+    radial-gradient(ellipse 30% 48% at 94% 76%, rgba(255, 138, 61, 0.16), transparent 66%),
+    radial-gradient(ellipse 34% 52% at 6% 58%, rgba(109, 57, 228, 0.12), transparent 72%),
+    linear-gradient(120deg, rgba(9, 7, 18, 0.42), rgba(14, 8, 24, 0.2));
+  box-shadow: none;
+}
+
+.heroBg::before,
+.heroBg::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.heroBg::before {
+  inset: 8% 5% 9%;
+  border-top: 1px solid rgba(194, 164, 255, 0.14);
+  border-bottom: 1px solid rgba(255, 138, 61, 0.12);
+}
+
+.heroBg::after {
+  top: 12%;
+  right: 9%;
+  width: 210px;
+  height: 210px;
+  border: 1px solid rgba(255, 138, 61, 0.18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 42px rgba(124, 77, 255, 0.025), 0 0 0 84px rgba(255, 138, 61, 0.018);
+}
+
+.heroGrid {
+  width: min(1450px, calc(100% - 56px));
+  grid-template-columns: minmax(390px, 0.82fr) minmax(560px, 1.18fr);
+  gap: clamp(38px, 5vw, 84px);
+  padding: 0 clamp(12px, 2vw, 28px);
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 3;
+  padding: 24px 0 24px clamp(0px, 1.3vw, 18px);
+}
+
+.heroCopy::before {
+  content: '';
+  position: absolute;
+  top: 28%;
+  bottom: 18%;
+  left: -18px;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, #7c4dff 22%, #c25ddb 64%, #ff8a3d 86%, transparent);
+  box-shadow: 0 0 24px rgba(124, 77, 255, 0.48);
+}
+
+.backLink {
+  margin-bottom: clamp(34px, 5vw, 64px);
+  color: #aaa3b5;
+}
+
+.heroBadges {
+  margin-bottom: 20px;
+}
+
+.heroTitle {
+  max-width: 8.3ch;
+  margin-bottom: 22px;
+  color: #f7f3ff;
+  background: none;
+  font-size: clamp(3.6rem, 5vw, 5.8rem);
+  line-height: 0.88;
+  letter-spacing: -0.075em;
+}
+
+.heroTitleAccent {
+  display: block;
+  color: transparent;
+  background: linear-gradient(104deg, #b99cff 4%, #9b6cff 44%, #ef7e73 76%, #ff9a4d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.heroPrizeDetail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.heroPrizeDetail span {
+  color: #ff9b5a;
+}
+
+.heroLead {
+  max-width: 29rem;
+  color: #b6afbf;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.participantsRow {
+  margin: 26px 0;
+}
+
+.heroCopy .btnPrimary {
+  min-width: 250px;
+  min-height: 58px;
+  border-color: rgba(255, 177, 121, 0.24);
+  color: #fff;
+  background: linear-gradient(110deg, #7040ee 2%, #a153e1 58%, #ff8247 122%);
+  box-shadow: 0 18px 48px rgba(94, 45, 214, 0.3), 0 0 0 1px rgba(255, 138, 61, 0.08);
+}
+
+.prizeTilt {
+  min-height: 0;
+  aspect-ratio: 1.32 / 1;
+  border-radius: 20px;
+  transform-style: preserve-3d;
+}
+
+.prizeTiltInner {
+  min-height: 0;
+  height: 100%;
+  border-radius: 20px;
+  border-color: rgba(202, 174, 255, 0.22);
+  box-shadow: 0 38px 100px rgba(0, 0, 0, 0.5), -24px 24px 80px rgba(100, 54, 217, 0.16), 24px -18px 70px rgba(255, 116, 49, 0.1);
+}
+
+.prizeTiltInner::after {
+  background:
+    linear-gradient(180deg, rgba(5, 5, 10, 0.02) 30%, rgba(6, 5, 11, 0.92) 100%),
+    linear-gradient(90deg, rgba(6, 5, 11, 0.18), transparent 60%);
+}
+
+.prizeAccessCard {
+  top: 10%;
+  right: 6%;
+  width: 136px;
+  min-height: 184px;
+  border-radius: 18px;
+  transform: rotate(6deg) translateZ(48px);
+}
+
+.prizeCaption {
+  right: 32px;
+  bottom: 24px;
+  left: 32px;
+}
+
+.timerSection {
+  width: min(1380px, calc(100% - 56px));
+  margin: 0 auto;
+  padding: 20px 26px;
+  border: 0;
+  border-top: 1px solid rgba(185, 152, 255, 0.22);
+  border-bottom: 1px solid rgba(255, 138, 61, 0.2);
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, rgba(124, 77, 255, 0.11), transparent 50%, rgba(255, 138, 61, 0.08)),
+    rgba(10, 7, 17, 0.34);
+  box-shadow: none;
+  backdrop-filter: blur(12px);
+}
+
+.timerSection::after {
+  right: 42%;
+  left: 42%;
+  background: #ff8a3d;
+  box-shadow: 0 0 22px rgba(255, 138, 61, 0.58);
+}
+
+.timerPulse {
+  border-color: rgba(255, 138, 61, 0.34);
+  color: #ffad76;
+  background: rgba(255, 138, 61, 0.08);
+}
+
+.timerLabel { color: #ff9d61; }
+
+@media (max-width: 1180px) {
+  .heroGrid {
+    grid-template-columns: minmax(330px, 0.82fr) minmax(460px, 1.18fr);
+    gap: 34px;
+  }
+
+  .heroTitle { font-size: clamp(3.35rem, 6vw, 4.8rem); }
+}
+
+@media (max-width: 900px) {
+  .heroGrid {
+    width: min(100% - 24px, 720px);
+    grid-template-columns: 1fr;
+    padding: 0 8px;
+  }
+
+  .heroCopy { order: 1; }
+  .prizeTilt { order: 0; aspect-ratio: 1.25 / 1; }
+  .heroCopy::before { left: -4px; }
+  .backLink { margin-bottom: 30px; }
+  .timerSection { width: calc(100% - 24px); }
+}
+
+@media (max-width: 520px) {
+  .hero { padding-top: 18px; }
+  .hero::before { display: none; }
+  .heroBg::before { inset: 4% 14px 4%; }
+  .heroBg::after { width: 130px; height: 130px; }
+  .heroGrid { width: 100%; padding: 0 14px; }
+  .heroCopy { padding: 18px 10px 26px; }
+  .heroCopy::before { top: 18%; bottom: 12%; left: 0; }
+  .heroTitle { max-width: 8ch; font-size: clamp(3rem, 15.5vw, 4.15rem); }
+  .heroTitleAccent { display: block; }
+  .heroLead { font-size: 0.95rem; }
+  .prizeTilt { aspect-ratio: 0.86 / 1; border-radius: 18px; }
+  .prizeTiltInner { border-radius: 18px; }
+  .prizeAccessCard { width: 118px; min-height: 164px; }
+  .timerSection { width: calc(100% - 28px); padding: 18px 10px; }
+}
