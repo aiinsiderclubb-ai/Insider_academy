@@ -2366,9 +2366,10 @@
 }
 
 .timerSection {
-  width: min(1380px, calc(100% - 56px));
-  margin: 0 auto;
-  padding: 20px 26px;
+  left: 50%;
+  width: calc(100vw - 236px);
+  margin: 0 0 0 calc((100vw - 236px) / -2);
+  padding: 20px clamp(28px, 4vw, 72px);
   border: 0;
   border-top: 1px solid rgba(185, 152, 255, 0.22);
   border-bottom: 1px solid rgba(255, 138, 61, 0.2);
@@ -2404,6 +2405,13 @@
   .heroTitle { font-size: clamp(3.35rem, 6vw, 4.8rem); }
 }
 
+@media (max-width: 1080px) {
+  .timerSection {
+    width: calc(100vw - 82px);
+    margin-left: calc((100vw - 82px) / -2);
+  }
+}
+
 @media (max-width: 900px) {
   .heroGrid {
     width: min(100% - 24px, 720px);
@@ -2415,7 +2423,14 @@
   .prizeTilt { order: 0; aspect-ratio: 1.25 / 1; }
   .heroCopy::before { left: -4px; }
   .backLink { margin-bottom: 30px; }
-  .timerSection { width: calc(100% - 24px); }
+  .timerSection { width: calc(100vw - 82px); }
+}
+
+@media (max-width: 760px) {
+  .timerSection {
+    width: 100vw;
+    margin-left: -50vw;
+  }
 }
 
 @media (max-width: 520px) {
@@ -2432,5 +2447,5 @@
   .prizeTilt { aspect-ratio: 0.86 / 1; border-radius: 18px; }
   .prizeTiltInner { border-radius: 18px; }
   .prizeAccessCard { width: 118px; min-height: 164px; }
-  .timerSection { width: calc(100% - 28px); padding: 18px 10px; }
+  .timerSection { width: 100vw; padding: 18px 14px; }
 }
