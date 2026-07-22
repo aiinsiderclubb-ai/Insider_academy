@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  ArrowUpRight,
+  CalendarDays,
+  Clock3,
+  Gift,
+  Radio,
+  Send,
+  Users,
+} from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 import { PageMeta } from '../components/PageMeta'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { TELEGRAM_COMMUNITY } from '../data/siteLinks'
 import { api, checkApiOnline } from '../api/client'
-import {
-  getActiveGiveaways,
-  getEndedGiveaways,
-} from '../data/giveaways'
+import { getActiveGiveaways, getEndedGiveaways } from '../data/giveaways'
 import { getUpcomingEvents } from '../data/events'
-import { UiIcon } from '../components/UiIcon'
 import styles from './Events.module.css'
 
 function formatCount(n) {
@@ -32,7 +37,7 @@ function formatEnds(endsAt, ru) {
   try {
     return new Intl.DateTimeFormat(ru ? 'ru-RU' : 'en-GB', {
       day: 'numeric',
-      month: 'short',
+      month: 'long',
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(endsAt))
@@ -41,96 +46,88 @@ function formatEnds(endsAt, ru) {
   }
 }
 
-function GiveawayHubCard({ giveaway, lang, participantCount }) {
+function GiveawayFeature({ giveaway, lang, participantCount, index }) {
   const ru = lang === 'ru'
   const isActive = giveaway.status === 'active'
-  const isEnded = giveaway.status === 'ended'
   const progress = timeProgress(giveaway.startsAt, giveaway.endsAt)
-  const winner = giveaway.winner
+  const title = ru ? giveaway.prizeRu : giveaway.prizeEn
 
   return (
-    <article className={styles.cardWrap}>
-      <Link
-        to={`/giveaway/${giveaway.slug}`}
-        className={styles.card}
-        style={{ '--card-accent': giveaway.accent, '--card-gradient': giveaway.gradient }}
-      >
-        <div className={styles.cardTop}>
-          <span className={styles.cardIcon} aria-hidden>
-            <UiIcon name={giveaway.icon} variant="box" tone="accent" />
+    <article className={`${styles.drop} ${!isActive ? styles.dropPast : ''}`}>
+      <Link to={`/giveaway/${giveaway.slug}`} className={styles.dropLink}>
+        <div className={styles.dropVisual}>
+          <img src="/design/mentor-giveaway.webp" alt="" loading="lazy" />
+          <div className={styles.dropVisualShade} aria-hidden />
+          <span className={styles.dropIndex}>DROP / {String(index + 1).padStart(2, '0')}</span>
+          <span className={isActive ? styles.liveBadge : styles.endedBadge}>
+            {isActive && <span className={styles.liveDot} aria-hidden />}
+            {isActive ? (ru ? 'Сейчас идёт' : 'Live now') : (ru ? 'Завершён' : 'Ended')}
           </span>
-          {isActive && (
-            <span className={styles.statusLive}>
-              <span className={styles.statusDot} aria-hidden />
-              {ru ? 'Активен' : 'Active'}
-            </span>
-          )}
-          {isEnded && (
-            <span className={styles.statusEnded}>{ru ? 'Завершён' : 'Ended'}</span>
-          )}
         </div>
 
-        <h3 className={styles.cardTitle}>{ru ? giveaway.prizeRu : giveaway.prizeEn}</h3>
-        <p className={styles.cardMeta}>
-          {ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}
-          {isActive && participantCount != null && (
-            <> · {formatCount(participantCount)} {ru ? 'участников' : 'participants'}</>
-          )}
-        </p>
+        <div className={styles.dropContent}>
+          <div className={styles.dropKicker}>
+            <Gift size={17} aria-hidden />
+            <span>{ru ? 'Приз сообщества' : 'Community reward'}</span>
+          </div>
+          <h3>{title}</h3>
+          <p className={styles.dropDescription}>
+            {ru ? giveaway.leadRu : giveaway.leadEn}
+          </p>
 
-        {isActive && progress != null && (
-          <div className={styles.progressBlock}>
-            <div className={styles.progressTrack} aria-hidden>
-              <div className={styles.progressFill} style={{ width: `${progress}%` }} />
+          <div className={styles.dropFacts}>
+            <span><Clock3 size={16} />{ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}</span>
+            {isActive && participantCount != null && (
+              <span><Users size={16} />{formatCount(participantCount)} {ru ? 'участников' : 'participants'}</span>
+            )}
+          </div>
+
+          {isActive && progress != null && (
+            <div className={styles.progressBlock}>
+              <div className={styles.progressCopy}>
+                <span>{ru ? 'Окно участия' : 'Entry window'}</span>
+                <strong>{ru ? `до ${formatEnds(giveaway.endsAt, true)}` : `until ${formatEnds(giveaway.endsAt, false)}`}</strong>
+              </div>
+              <div className={styles.progressTrack} aria-hidden>
+                <span style={{ width: `${progress}%` }} />
+              </div>
             </div>
-            <span className={styles.progressLabel}>
-              {ru ? `До ${formatEnds(giveaway.endsAt, true)}` : `Until ${formatEnds(giveaway.endsAt, false)}`}
-            </span>
-          </div>
-        )}
+          )}
 
-        {isEnded && winner && (
-          <div className={styles.winnerRow}>
-            <span className={styles.winnerAvatar}>{winner.initials || '★'}</span>
-            <span>
-              {ru ? 'Победитель:' : 'Winner:'}
-              {' '}
-              <strong>{winner.name}</strong>
-            </span>
-          </div>
-        )}
+          {!isActive && giveaway.winner && (
+            <p className={styles.winner}>{ru ? 'Победитель' : 'Winner'} — <strong>{giveaway.winner.name}</strong></p>
+          )}
 
-        {isActive && (
-          <span className={styles.cardCta}>{ru ? 'Участвовать →' : 'Enter →'}</span>
-        )}
+          <span className={styles.dropCta}>
+            {isActive ? (ru ? 'Открыть розыгрыш' : 'Open giveaway') : (ru ? 'Посмотреть итоги' : 'View results')}
+            <ArrowUpRight size={20} aria-hidden />
+          </span>
+        </div>
       </Link>
     </article>
   )
 }
 
-function EventCard({ event, lang }) {
+function EventRow({ event, lang, index }) {
   const ru = lang === 'ru'
-  const inner = (
+  const content = (
     <>
-      <span className={styles.eventIcon} aria-hidden>
-        <UiIcon name={event.icon} variant="box" tone="accent" />
-      </span>
-      <div>
-        <span className={styles.eventDate}>{ru ? event.dateRu : event.dateEn}</span>
-        <h3 className={styles.eventTitle}>{ru ? event.titleRu : event.titleEn}</h3>
-        <p className={styles.eventDesc}>{ru ? event.descRu : event.descEn}</p>
+      <span className={styles.eventNumber}>{String(index + 1).padStart(2, '0')}</span>
+      <span className={styles.eventDate}>{ru ? event.dateRu : event.dateEn}</span>
+      <div className={styles.eventCopy}>
+        <h3>{ru ? event.titleRu : event.titleEn}</h3>
+        <p>{ru ? event.descRu : event.descEn}</p>
       </div>
+      <span className={styles.eventAction} aria-hidden>
+        <ArrowUpRight size={21} />
+      </span>
     </>
   )
 
   if (event.link) {
-    return (
-      <a href={event.link} target="_blank" rel="noreferrer noopener" className={styles.eventCard}>
-        {inner}
-      </a>
-    )
+    return <a href={event.link} target="_blank" rel="noreferrer noopener" className={styles.eventRow}>{content}</a>
   }
-  return <article className={styles.eventCard}>{inner}</article>
+  return <article className={styles.eventRow}>{content}</article>
 }
 
 export function Events() {
@@ -153,11 +150,11 @@ export function Events() {
   const active = getActiveGiveaways()
   const ended = getEndedGiveaways()
   const events = useMemo(
-    () => getUpcomingEvents().filter((e) => {
-      const date = (lang === 'ru' ? e.dateRu : e.dateEn) || ''
+    () => getUpcomingEvents().filter((event) => {
+      const date = (lang === 'ru' ? event.dateRu : event.dateEn) || ''
       const isVagueSoon = /^(скоро|coming soon)$/i.test(date.trim())
-      if (isVagueSoon && !e.link) return false
-      return Boolean(e.titleRu || e.titleEn)
+      if (isVagueSoon && !event.link) return false
+      return Boolean(event.titleRu || event.titleEn)
     }),
     [lang],
   )
@@ -166,59 +163,53 @@ export function Events() {
     <div className={styles.wrap}>
       <PageMeta
         title={ru ? 'Розыгрыши и события' : 'Giveaways & events'}
-        description={
-          ru
-            ? 'Розыгрыши Claude Pro и других AI-инструментов. События AI Insider.'
-            : 'Claude Pro and AI tool giveaways. AI Insider community events.'
-        }
+        description={ru ? 'Розыгрыши Claude Pro и других AI-инструментов. События AI Insider.' : 'Claude Pro and AI tool giveaways. AI Insider community events.'}
         path="/events"
       />
 
       <header className={styles.hero}>
-        <div className={styles.heroBg} aria-hidden />
-        <div className={styles.container}>
-          <span className={styles.pill}>AI Insider</span>
-          <h1 className={styles.title}>{ru ? 'Розыгрыши и события' : 'Giveaways & events'}</h1>
-          <p className={styles.lead}>
-            {ru
-              ? 'Подписки на AI-сервисы и активности комьюнити — без пустых «скоро»-карточек.'
-              : 'AI subscriptions and community activities — no empty “coming soon” cards.'}
-          </p>
+        <div className={styles.heroGlow} aria-hidden />
+        <div className={styles.heroInner}>
+          <div className={styles.heroCopy}>
+            <span className={styles.eyebrow}><Radio size={14} />AI Insider / Community signal</span>
+            <h1>
+              {ru ? 'Больше, чем' : 'More than'}
+              <span>{ru ? ' обучение.' : ' learning.'}</span>
+            </h1>
+            <p>
+              {ru
+                ? 'Живые форматы, полезные AI-инструменты и встречи с людьми, которые уже строят новое.'
+                : 'Live formats, useful AI tools and people already building what comes next.'}
+            </p>
+            <div className={styles.heroTags} aria-label={ru ? 'Форматы' : 'Formats'}>
+              <span>Giveaways</span><span>Live sessions</span><span>AMA</span>
+            </div>
+          </div>
+
+          <div className={styles.signalStage} aria-hidden>
+            <span className={styles.signalHalo} />
+            <span className={styles.signalOrbitOne} />
+            <span className={styles.signalOrbitTwo} />
+            <span className={styles.signalCore}>AI</span>
+            <span className={styles.signalCaption}>LIVE<br />SIGNAL</span>
+          </div>
         </div>
       </header>
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         {active.length > 0 && (
           <ScrollReveal>
             <section className={styles.section}>
               <div className={styles.sectionHead}>
-                <h2 className={styles.sectionTitle}>{ru ? 'Розыгрыши' : 'Giveaways'}</h2>
-                <span className={styles.sectionBadge}>
-                  <span className={styles.statusDot} aria-hidden />
-                  {ru ? 'Сейчас идёт' : 'Live now'}
-                </span>
+                <div>
+                  <span className={styles.sectionLabel}>{ru ? 'Сейчас в эфире' : 'On air now'}</span>
+                  <h2>{ru ? 'Текущий drop' : 'Current drop'}</h2>
+                </div>
+                <span className={styles.sectionNote}>{ru ? 'Участие бесплатно' : 'Free to enter'}</span>
               </div>
-              <div className={styles.cardGrid}>
-                {active.map((g) => (
-                  <GiveawayHubCard
-                    key={g.id}
-                    giveaway={g}
-                    lang={lang}
-                    participantCount={counts[g.slug]}
-                  />
-                ))}
-              </div>
-            </section>
-          </ScrollReveal>
-        )}
-
-        {ended.length > 0 && (
-          <ScrollReveal>
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>{ru ? 'Завершённые' : 'Past giveaways'}</h2>
-              <div className={styles.cardGrid}>
-                {ended.map((g) => (
-                  <GiveawayHubCard key={g.id} giveaway={g} lang={lang} />
+              <div className={styles.dropList}>
+                {active.map((giveaway, index) => (
+                  <GiveawayFeature key={giveaway.id} giveaway={giveaway} lang={lang} participantCount={counts[giveaway.slug]} index={index} />
                 ))}
               </div>
             </section>
@@ -228,15 +219,31 @@ export function Events() {
         {events.length > 0 && (
           <ScrollReveal>
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <UiIcon name="calendarDays" variant="inline" size={20} tone="accent" />
-                {' '}
-                {ru ? 'События' : 'Events'}
-              </h2>
-              <div className={styles.eventGrid}>
-                {events.map((event) => (
-                  <EventCard key={event.id} event={event} lang={lang} />
-                ))}
+              <div className={styles.sectionHead}>
+                <div>
+                  <span className={styles.sectionLabel}>{ru ? 'Ближайшие форматы' : 'Upcoming formats'}</span>
+                  <h2>{ru ? 'В календаре' : 'On the calendar'}</h2>
+                </div>
+                <CalendarDays size={26} className={styles.sectionIcon} aria-hidden />
+              </div>
+              <div className={styles.eventList}>
+                {events.map((event, index) => <EventRow key={event.id} event={event} lang={lang} index={index} />)}
+              </div>
+            </section>
+          </ScrollReveal>
+        )}
+
+        {ended.length > 0 && (
+          <ScrollReveal>
+            <section className={styles.section}>
+              <div className={styles.sectionHead}>
+                <div>
+                  <span className={styles.sectionLabel}>{ru ? 'Архив' : 'Archive'}</span>
+                  <h2>{ru ? 'Прошедшие drops' : 'Past drops'}</h2>
+                </div>
+              </div>
+              <div className={styles.dropList}>
+                {ended.map((giveaway, index) => <GiveawayFeature key={giveaway.id} giveaway={giveaway} lang={lang} index={index} />)}
               </div>
             </section>
           </ScrollReveal>
@@ -244,23 +251,21 @@ export function Events() {
 
         <ScrollReveal>
           <aside className={styles.telegramCta}>
-            <h3>{ru ? 'Анонсы в Telegram' : 'Announcements on Telegram'}</h3>
-            <p>
-              {ru
-                ? 'Старт розыгрышей и итоги — в канале AI Insider.'
-                : 'Giveaway launches and results — on the AI Insider channel.'}
-            </p>
-            <div className={styles.ctaRow}>
-              <a href={TELEGRAM_COMMUNITY} target="_blank" rel="noreferrer noopener" className={styles.btnPrimary}>
-                {ru ? 'Подписаться' : 'Subscribe'}
+            <div className={styles.telegramMark} aria-hidden><Send size={26} /></div>
+            <div>
+              <span className={styles.sectionLabel}>AI Insider / Telegram</span>
+              <h2>{ru ? 'Не пропустите сигнал.' : 'Never miss the signal.'}</h2>
+              <p>{ru ? 'Старт розыгрышей, прямые эфиры и итоги появляются в канале первыми.' : 'Giveaway launches, live sessions and results land in the channel first.'}</p>
+            </div>
+            <div className={styles.ctaActions}>
+              <a href={TELEGRAM_COMMUNITY} target="_blank" rel="noreferrer noopener" className={styles.primaryAction}>
+                {ru ? 'Открыть канал' : 'Open channel'}<ArrowUpRight size={18} />
               </a>
-              <Link to="/giveaway-rules" className={styles.btnGhost}>
-                {ru ? 'Правила розыгрышей' : 'Giveaway rules'}
-              </Link>
+              <Link to="/giveaway-rules" className={styles.textAction}>{ru ? 'Правила' : 'Rules'}</Link>
             </div>
           </aside>
         </ScrollReveal>
-      </div>
+      </main>
     </div>
   )
 }
