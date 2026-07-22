@@ -701,25 +701,63 @@ function GiveawayDetail({ giveaway, lang }) {
 
             {!loading && !apiOffline && user && !entered && (
               <>
-                <h2 className={styles.finalTitle}>{ru ? 'Готов участвовать?' : 'Ready to enter?'}</h2>
-                <p className={styles.finalLead}>
-                  {!state?.telegramConnected
-                    ? (ru ? 'Подключи Telegram-бота в кабинете, затем подтверди участие.' : 'Connect the Telegram bot in your cabinet, then confirm.')
-                    : (ru ? 'Проверь подписку на канал и нажми кнопку.' : 'Verify channel subscription and tap the button.')}
-                </p>
-                {!state?.telegramConnected && (
-                  <Link to="/cabinet#telegram" className={styles.btnGhost}>
-                    {ru ? 'Подключить Telegram →' : 'Connect Telegram →'}
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  className={styles.btnPrimaryLg}
-                  disabled={busy || !state?.telegramConnected}
-                  onClick={handleEnter}
-                >
-                  {ru ? 'Участвовать бесплатно' : 'Enter for free'}
-                </button>
+                <div className={styles.finalIntro}>
+                  <p className={styles.finalEyebrow}>
+                    {ru ? 'ФИНАЛЬНЫЙ ШАГ · АКТИВАЦИЯ' : 'FINAL STEP · ACTIVATION'}
+                  </p>
+                  <h2 className={styles.finalTitle}>{ru ? 'Готов участвовать?' : 'Ready to enter?'}</h2>
+                  <p className={styles.finalLead}>
+                    {!state?.telegramConnected
+                      ? (ru ? 'Подключи Telegram — там объявим победителя и подтвердим участие.' : 'Connect Telegram — winner announcement and entry confirmation happen there.')
+                      : (ru ? 'Telegram подключён. Осталось подтвердить участие.' : 'Telegram connected. Confirm your entry.')}
+                  </p>
+                </div>
+
+                <div className={styles.finalActivation}>
+                  <div className={styles.activationFlow}>
+                    <div className={`${styles.activationStep} ${styles.activationStepActive}`}>
+                      <span className={styles.activationIcon}><Send size={19} aria-hidden /></span>
+                      <div>
+                        <small>01</small>
+                        <strong>{ru ? 'Подключить Telegram' : 'Connect Telegram'}</strong>
+                      </div>
+                      <span className={styles.activationState}>
+                        {state?.telegramConnected
+                          ? <Check size={17} aria-label={ru ? 'Готово' : 'Done'} />
+                          : (ru ? 'Сейчас' : 'Now')}
+                      </span>
+                    </div>
+                    <div className={`${styles.activationStep} ${state?.telegramConnected ? styles.activationStepReady : styles.activationStepLocked}`}>
+                      <span className={styles.activationIcon}><Ticket size={19} aria-hidden /></span>
+                      <div>
+                        <small>02</small>
+                        <strong>{ru ? 'Подтвердить участие' : 'Confirm entry'}</strong>
+                      </div>
+                      <span className={styles.activationState}>
+                        {state?.telegramConnected ? (ru ? 'Готово' : 'Ready') : (ru ? 'После Telegram' : 'After Telegram')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={styles.finalActions}>
+                    {!state?.telegramConnected && (
+                      <Link to="/cabinet#telegram" className={styles.btnGhost}>
+                        <Send size={17} aria-hidden />
+                        {ru ? 'Подключить Telegram' : 'Connect Telegram'}
+                        <ArrowRight size={17} aria-hidden />
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      className={styles.btnPrimaryLg}
+                      disabled={busy || !state?.telegramConnected}
+                      onClick={handleEnter}
+                    >
+                      {state?.telegramConnected && <Check size={18} aria-hidden />}
+                      {ru ? 'Подтвердить участие' : 'Confirm entry'}
+                    </button>
+                  </div>
+                </div>
               </>
             )}
 
