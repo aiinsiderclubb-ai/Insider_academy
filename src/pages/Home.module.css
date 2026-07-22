@@ -803,10 +803,10 @@
 /* ========== Approved graphite commerce art direction ========== */
 
 .page {
-  --bg-base: #08080b;
-  --bg-surface: #0c0c10;
-  --bg-elevated: #18171f;
-  --bg-card: #111116;
+  --bg-base: #17110b;
+  --bg-surface: #1a130c;
+  --bg-elevated: #2b2118;
+  --bg-card: #221a12;
   --bg-glass: rgba(17, 17, 22, 0.9);
   --border: rgba(255, 255, 255, 0.09);
   --border-subtle: rgba(255, 255, 255, 0.09);
@@ -1074,7 +1074,7 @@
 
 .page .statsStrip {
   padding: 30px 0;
-  background: #0c0c10;
+  background: #1a130c;
 }
 
 .page .statsRow {
@@ -1219,7 +1219,7 @@
 .page .lessonPreview {
   border-color: rgba(255, 255, 255, 0.08);
   border-radius: 14px;
-  background: #18171f;
+  background: #2b2118;
 }
 
 .page .lessonPreviewLabel {
@@ -1237,7 +1237,7 @@
   padding: 26px;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 22px;
-  background: #111116;
+  background: #221a12;
 }
 
 .page .blogCard:hover {
@@ -2765,7 +2765,7 @@
 .page .lessonPreview {
   border-color: rgba(255, 255, 255, 0.08);
   border-radius: 14px;
-  background: #18171f;
+  background: #2b2118;
 }
 
 .page .lessonPreviewLabel {
@@ -2783,7 +2783,7 @@
   padding: 26px;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 22px;
-  background: #111116;
+  background: #221a12;
 }
 
 .page .blogCard:hover {

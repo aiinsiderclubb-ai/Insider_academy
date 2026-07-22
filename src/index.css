@@ -1,12 +1,12 @@
 :root {
   color-scheme: dark;
-  --bg-base: #0a0e17;
-  --bg-surface: #121727;
-  --bg-elevated: #1a2032;
-  --bg-soft: #1b2030;
-  --sidebar-bg: #080a10;
-  --header-bg: rgba(8, 10, 16, 0.86);
-  --footer-bg: #080a10;
+  --bg-base: #17110b;
+  --bg-surface: #221a12;
+  --bg-elevated: #2b2118;
+  --bg-soft: #2c2219;
+  --sidebar-bg: #140f0a;
+  --header-bg: rgba(24, 17, 11, 0.86);
+  --footer-bg: #140f0a;
   --border-subtle: rgba(199, 190, 255, 0.11);
   --border-strong: rgba(151, 113, 255, 0.35);
   --text-primary: #f7f6fb;
@@ -218,11 +218,13 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 58% 24% at 88% 6%, rgba(112, 74, 198, 0.22), transparent 72%),
-    radial-gradient(ellipse 48% 20% at 4% 18%, rgba(111, 153, 130, 0.16), transparent 76%),
-    radial-gradient(ellipse 52% 23% at 74% 42%, rgba(91, 55, 154, 0.16), transparent 74%),
-    radial-gradient(ellipse 44% 19% at 12% 66%, rgba(102, 143, 122, 0.11), transparent 76%),
-    linear-gradient(145deg, #0d1219 0%, #0d1018 38%, #12101b 68%, #0a1115 100%);
+    radial-gradient(ellipse 62% 30% at 84% 2%, rgba(242, 139, 67, 0.26), transparent 70%),
+    radial-gradient(ellipse 55% 26% at 12% 8%, rgba(240, 120, 70, 0.16), transparent 72%),
+    radial-gradient(ellipse 50% 24% at 78% 44%, rgba(180, 92, 210, 0.14), transparent 74%),
+    radial-gradient(ellipse 48% 22% at 16% 64%, rgba(233, 150, 90, 0.12), transparent 76%),
+    radial-gradient(ellipse 44% 20% at 60% 92%, rgba(139, 92, 246, 0.1), transparent 74%),
+    radial-gradient(ellipse 120% 80% at 70% 0%, rgba(214, 128, 74, 0.14), transparent 62%),
+    linear-gradient(150deg, #2c2016 0%, #261b12 42%, #2a1d13 72%, #20140c 100%);
   pointer-events: none;
   z-index: 0;
 }

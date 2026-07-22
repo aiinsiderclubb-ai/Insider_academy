@@ -31,6 +31,7 @@ import {
   Map,
   Menu,
   MessageCircle,
+  Send,
   Newspaper,
   Settings,
   ShoppingBag,
@@ -457,38 +458,64 @@ export function Layout({ children }) {
 
         {!isImmersive && (
           <footer className={styles.footer}>
-            <div className={styles.footerBrand}>
-              <span className={styles.brandMark}>AI</span>
-              <span className={styles.brandName}>INSIDER<br />ACADEMY</span>
-            </div>
-            <div className={styles.footerLinks}>
-              <Link to="/courses">{lang === 'ru' ? 'Курсы' : 'Courses'}</Link>
-              <Link to="/marketplace">Marketplace</Link>
-              <Link to="/memberships">{lang === 'ru' ? 'Подписки' : 'Memberships'}</Link>
-              <Link to="/blog">{lang === 'ru' ? 'Блог' : 'Blog'}</Link>
-              <a href={MAIN_SITE_URL} target="_blank" rel="noreferrer noopener">
-                insiderai.it.com
-                <ExternalLink size={12} strokeWidth={1.8} aria-hidden style={{ marginLeft: 4, verticalAlign: '-0.12em' }} />
-              </a>
-            </div>
-            <div className={styles.footerLinks}>
-              <Link to="/oferta">{t('footer.offer')}</Link>
-              <Link to="/privacy">{t('footer.privacy')}</Link>
-              <Link to="/refund">{t('footer.refund')}</Link>
-              <a href={TELEGRAM_COMMUNITY} target="_blank" rel="noreferrer noopener">
-                Telegram
-                <ExternalLink size={12} strokeWidth={1.8} aria-hidden style={{ marginLeft: 4, verticalAlign: '-0.12em' }} />
-              </a>
-              {TELEGRAM_NOTIFY_BOT && (
-                <a href={TELEGRAM_NOTIFY_BOT} target="_blank" rel="noreferrer noopener">
-                  Notify bot
-                  <ExternalLink size={12} strokeWidth={1.8} aria-hidden style={{ marginLeft: 4, verticalAlign: '-0.12em' }} />
+            <div className={styles.footerGlow} aria-hidden />
+            <div className={styles.footerTop}>
+              <div className={styles.footerBrandCol}>
+                <div className={styles.footerBrand}>
+                  <span className={styles.brandMark}>AI</span>
+                  <span className={styles.brandName}>INSIDER<br />ACADEMY</span>
+                </div>
+                <p className={styles.footerTagline}>
+                  {lang === 'ru'
+                    ? 'Школа AI-систем: автоматизация, чат-боты, голосовые агенты и разработка с AI — без воды.'
+                    : 'School of AI systems: automation, chatbots, voice agents and building with AI — no fluff.'}
+                </p>
+                <a
+                  className={styles.footerTgCta}
+                  href={TELEGRAM_COMMUNITY}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  <Send size={15} strokeWidth={2} aria-hidden />
+                  {lang === 'ru' ? 'Сообщество в Telegram' : 'Telegram community'}
                 </a>
-              )}
+              </div>
+
+              <nav className={styles.footerCol} aria-label={lang === 'ru' ? 'Обучение' : 'Learning'}>
+                <h4 className={styles.footerColTitle}>{lang === 'ru' ? 'Обучение' : 'Learning'}</h4>
+                <Link to="/courses">{lang === 'ru' ? 'Курсы' : 'Courses'}</Link>
+                <Link to="/marketplace">Marketplace</Link>
+                <Link to="/memberships">{lang === 'ru' ? 'Подписки' : 'Memberships'}</Link>
+                <Link to="/blog">{lang === 'ru' ? 'Блог' : 'Blog'}</Link>
+              </nav>
+
+              <nav className={styles.footerCol} aria-label={lang === 'ru' ? 'Экосистема' : 'Ecosystem'}>
+                <h4 className={styles.footerColTitle}>{lang === 'ru' ? 'Экосистема' : 'Ecosystem'}</h4>
+                <a href={MAIN_SITE_URL} target="_blank" rel="noreferrer noopener">
+                  insiderai.it.com
+                  <ExternalLink size={11} strokeWidth={1.9} aria-hidden />
+                </a>
+                <a href={TELEGRAM_COMMUNITY} target="_blank" rel="noreferrer noopener">
+                  Telegram<ExternalLink size={11} strokeWidth={1.9} aria-hidden />
+                </a>
+                {TELEGRAM_NOTIFY_BOT && (
+                  <a href={TELEGRAM_NOTIFY_BOT} target="_blank" rel="noreferrer noopener">
+                    Notify bot<ExternalLink size={11} strokeWidth={1.9} aria-hidden />
+                  </a>
+                )}
+              </nav>
+
+              <nav className={styles.footerCol} aria-label={lang === 'ru' ? 'Правовое' : 'Legal'}>
+                <h4 className={styles.footerColTitle}>{lang === 'ru' ? 'Правовое' : 'Legal'}</h4>
+                <Link to="/oferta">{t('footer.offer')}</Link>
+                <Link to="/privacy">{t('footer.privacy')}</Link>
+                <Link to="/refund">{t('footer.refund')}</Link>
+              </nav>
             </div>
+
             <div className={styles.footerMeta}>
               <span>{t('footer.copyright')}</span>
-              <span>v{SITE_VERSION}</span>
+              <span className={styles.footerVer}>v{SITE_VERSION}</span>
             </div>
           </footer>
         )}

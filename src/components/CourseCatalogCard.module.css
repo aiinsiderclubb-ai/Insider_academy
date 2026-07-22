@@ -1,5 +1,5 @@
 .card {
-  --bg-elevated: #18171f;
+  --bg-elevated: #2b2118;
   --border-strong: rgba(168, 128, 255, 0.4);
   --text-primary: #f7f5fb;
   position: relative;
@@ -10,7 +10,7 @@
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 24px;
-  background: #111116;
+  background: #221a12;
   color: #f7f5fb;
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.2);
   transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), border-color 240ms ease, box-shadow 240ms ease;

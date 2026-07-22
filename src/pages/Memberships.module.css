@@ -1,8 +1,8 @@
 .wrap {
-  --bg-base: #08080b;
-  --bg-surface: #111116;
-  --bg-elevated: #18171f;
-  --bg-card: #111116;
+  --bg-base: #17110b;
+  --bg-surface: #221a12;
+  --bg-elevated: #2b2118;
+  --bg-card: #221a12;
   --bg-glass: rgba(17, 17, 22, 0.9);
   --border: rgba(255, 255, 255, 0.09);
   --border-subtle: rgba(255, 255, 255, 0.09);
@@ -18,7 +18,7 @@
   background:
     radial-gradient(circle at 80% 7%, rgba(124, 58, 237, 0.18), transparent 25rem),
     radial-gradient(circle at 10% 24%, rgba(145, 170, 150, 0.055), transparent 18rem),
-    #08080b;
+    #17110b;
 }
 
 .hero {
