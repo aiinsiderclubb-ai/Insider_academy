@@ -1,8 +1,8 @@
 .section {
-  --bg-base: #17110b;
-  --bg-surface: #221a12;
-  --bg-elevated: #2b2118;
-  --bg-card: #221a12;
+  --bg-base: #0b0f1a;
+  --bg-surface: #141a2a;
+  --bg-elevated: #1a2032;
+  --bg-card: #141a2a;
   --bg-glass: rgba(17, 17, 22, 0.9);
   --border: rgba(255, 255, 255, 0.09);
   --border-subtle: rgba(255, 255, 255, 0.09);
@@ -19,7 +19,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   background:
     radial-gradient(circle at 82% 18%, rgba(124, 58, 237, 0.12), transparent 24rem),
-    #17110b;
+    #0b0f1a;
   color: #f7f5fb;
 }
 
@@ -89,7 +89,7 @@
   padding: clamp(26px, 3vw, 36px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 26px;
-  background: #221a12;
+  background: #141a2a;
   transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms ease;
 }
 
@@ -109,7 +109,7 @@
 .introMarket {
   background:
     radial-gradient(circle at 100% 0%, rgba(242, 138, 59, 0.15), transparent 18rem),
-    #221a12;
+    #141a2a;
 }
 
 .introMarket::before {
@@ -123,7 +123,7 @@
 .introVault {
   background:
     radial-gradient(circle at 100% 0%, rgba(124, 58, 237, 0.22), transparent 20rem),
-    #221a12;
+    #141a2a;
 }
 
 .introVault::before {

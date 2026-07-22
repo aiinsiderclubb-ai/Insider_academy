@@ -15,9 +15,9 @@
   display: flex;
   flex-direction: column;
   padding: 24px 16px 18px;
-  background: rgba(28, 20, 13, 0.55);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  background: rgba(14, 18, 30, 0.72);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
   border-right: 1px solid rgba(255, 255, 255, 0.055);
   overflow-y: auto;
 }
@@ -243,13 +243,13 @@
   justify-content: space-between;
   gap: 20px;
   padding: 0 clamp(20px, 3vw, 44px);
-  background: linear-gradient(180deg, rgba(30, 21, 13, 0.72), rgba(24, 17, 11, 0.5));
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  background: linear-gradient(180deg, rgba(13, 18, 30, 0.82), rgba(11, 15, 26, 0.6));
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
   transition: background var(--motion-base) var(--ease-motion), box-shadow var(--motion-base) var(--ease-motion);
 }
 
-/* тёплая градиент-линия под хедером (в тон бренду) */
+/* градиент-линия под хедером (в тон бренду) */
 .header::after {
   content: '';
   position: absolute;
@@ -257,13 +257,13 @@
   right: 0;
   bottom: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(242, 139, 67, 0.4) 22%, rgba(217, 76, 165, 0.32) 55%, rgba(139, 92, 246, 0.4) 82%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.45) 20%, rgba(217, 76, 165, 0.3) 55%, rgba(66, 120, 210, 0.4) 82%, transparent);
   opacity: 0.7;
 }
 
 .headerScrolled {
-  background: linear-gradient(180deg, rgba(30, 21, 13, 0.9), rgba(22, 15, 10, 0.78));
-  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.28);
+  background: linear-gradient(180deg, rgba(13, 18, 30, 0.94), rgba(10, 14, 24, 0.82));
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.32);
 }
 .headerScrolled::after { opacity: 1; }
 
@@ -428,7 +428,7 @@
   padding: clamp(44px, 5vw, 68px) clamp(20px, 3.7vw, 64px) 26px;
   overflow: hidden;
   background:
-    linear-gradient(180deg, transparent, rgba(20, 15, 10, 0.55) 40%, rgba(16, 11, 7, 0.9) 100%);
+    linear-gradient(180deg, transparent, rgba(11, 15, 26, 0.5) 40%, rgba(9, 12, 20, 0.9) 100%);
 }
 
 /* тёплая градиентная линия-акцент сверху */
@@ -439,7 +439,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(242, 139, 67, 0.55) 20%, rgba(217, 76, 165, 0.45) 55%, rgba(139, 92, 246, 0.5) 80%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.55) 20%, rgba(217, 76, 165, 0.4) 55%, rgba(66, 120, 210, 0.5) 80%, transparent);
 }
 
 .footerGlow {
@@ -447,8 +447,8 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(60% 120% at 8% 0%, rgba(242, 139, 67, 0.1), transparent 60%),
-    radial-gradient(50% 120% at 88% 0%, rgba(139, 92, 246, 0.08), transparent 62%);
+    radial-gradient(60% 120% at 8% 0%, rgba(139, 92, 246, 0.12), transparent 60%),
+    radial-gradient(50% 120% at 88% 0%, rgba(66, 120, 210, 0.08), transparent 62%);
 }
 
 .footerTop {

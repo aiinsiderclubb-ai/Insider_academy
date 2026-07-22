@@ -1,8 +1,8 @@
 .wrap {
-  --bg-base: #17110b;
-  --bg-surface: #221a12;
-  --bg-elevated: #2b2118;
-  --bg-card: #221a12;
+  --bg-base: #0b0f1a;
+  --bg-surface: #141a2a;
+  --bg-elevated: #1a2032;
+  --bg-card: #141a2a;
   --bg-glass: rgba(17, 17, 22, 0.9);
   --border: rgba(255, 255, 255, 0.09);
   --border-subtle: rgba(255, 255, 255, 0.09);
@@ -19,7 +19,7 @@
   background:
     radial-gradient(circle at 79% 8%, rgba(124, 58, 237, 0.16), transparent 24rem),
     radial-gradient(circle at 18% 24%, rgba(145, 173, 151, 0.055), transparent 18rem),
-    #17110b;
+    #0b0f1a;
 }
 
 .container {
@@ -253,7 +253,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   outline: none;
-  background: #221a12;
+  background: #141a2a;
   color: #f7f5fb;
   font: inherit;
   font-size: 0.9rem;

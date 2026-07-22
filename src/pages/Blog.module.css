@@ -2,7 +2,7 @@
   min-height: calc(100svh - 72px);
   padding: clamp(30px, 5vw, 70px) 0 90px;
   color: #f6f4fa;
-  background: #08080c;
+  background: transparent;
   font-family: 'Onest', var(--font-body, sans-serif);
 }
 
@@ -18,14 +18,28 @@
   justify-content: flex-end;
   margin-bottom: 22px;
   padding: clamp(32px, 5vw, 64px);
+  position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 28px;
-  background:
-    linear-gradient(90deg, rgba(8, 8, 12, 0.98) 0%, rgba(8, 8, 12, 0.82) 46%, rgba(8, 8, 12, 0.08) 100%),
-    linear-gradient(180deg, transparent 45%, rgba(8, 8, 12, 0.72) 100%),
-    url('/design/course-ai-content-business.webp') 88% 34% / 560px auto no-repeat,
-    #111016;
+}
+
+/* мягкое изображение справа без рамки — растворяется в фон */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: min(560px, 50%);
+  opacity: 0.45;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 60%), linear-gradient(0deg, transparent 4%, #000 30%, #000 76%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 60%), linear-gradient(0deg, transparent 4%, #000 30%, #000 76%, transparent);
+  mask-composite: intersect;
+  background: url('/design/course-ai-content-business.webp') right center / cover no-repeat;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 .eyebrow {
