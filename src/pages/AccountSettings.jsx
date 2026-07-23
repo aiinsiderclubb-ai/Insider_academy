@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, LogOut, Monitor, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { api, setToken } from '../api/client'
@@ -357,13 +357,17 @@ export function AccountSettings() {
           <section className={styles.card} id="telegram">
             <h2 className={styles.cardTitle}>{t('account.telegramSection')}</h2>
             <p className={styles.hint}>{t('account.telegramHint')}</p>
-            <TelegramConnect lang={lang} personalId={user?.personalId} />
+            <TelegramConnect lang={lang} personalId={user?.personalId} variant="settings" />
           </section>
 
-          <section className={styles.card}>
+          <section className={`${styles.card} ${styles.sessionCard}`}>
+            <div className={styles.sessionIcon}><Monitor size={22} aria-hidden="true" /></div>
+            <p className={styles.sessionEyebrow}><ShieldCheck size={14} aria-hidden="true" />{lang === 'ru' ? 'Текущая сессия защищена' : 'Current session is secure'}</p>
             <h2 className={styles.cardTitle}>{t('account.dangerSection')}</h2>
             <p className={styles.hint}>{t('account.logoutHint')}</p>
-            <button type="button" className={styles.btnDanger} onClick={logout}>{t('nav.logout')}</button>
+            <button type="button" className={styles.btnDanger} onClick={logout}>
+              {t('nav.logout')}<LogOut size={16} aria-hidden="true" />
+            </button>
           </section>
         </div>
       </div>

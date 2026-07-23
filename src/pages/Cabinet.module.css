@@ -32,7 +32,7 @@
 
 .container {
   width: 100%;
-  max-width: 1240px;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -210,12 +210,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
-  padding: 12px 18px;
-  border: 1px solid var(--cab-line);
-  border-radius: 16px;
+  margin: 0 0 22px;
+  padding: 14px 2px 18px;
+  border: 0;
+  border-bottom: 1px solid var(--cab-line);
+  border-radius: 0;
   color: var(--cab-muted);
-  background: rgba(18, 17, 22, 0.7);
+  background: transparent;
   font-size: 0.82rem;
 }
 
