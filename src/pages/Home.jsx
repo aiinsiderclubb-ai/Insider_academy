@@ -91,8 +91,6 @@ export function Home() {
   const getPostCategory = (post) => (lang === 'en' && post.categoryEn ? post.categoryEn : post.category)
 
   const streakCurrent = userStats?.streak?.current || 0
-  const streakGoal = streakCurrent >= 14 ? 14 : streakCurrent >= 7 ? 14 : streakCurrent >= 3 ? 7 : 3
-  const streakProgress = Math.min(100, Math.round((streakCurrent / streakGoal) * 100))
   const activeCourses = purchases?.filter((p) => {
     const course = courses.find((c) => c.id === p.id)
     const pct = getPercent(p.id, course?.lessons?.length ?? 0)
@@ -202,17 +200,11 @@ export function Home() {
       <HomeSuperOffer course={acceleratorCourse} lang={lang} />
 
       {user && (
-        <section className={`${styles.continueSection} ${styles.bandBase}`}>
+        <section className={`${styles.learningHub} ${styles.bandBase}`}>
           <div className={styles.container}>
-            <ContinueLearningPanel streakCurrent={streakCurrent} />
-          </div>
-        </section>
-      )}
-
-      {user && userStats && (
-        <ScrollReveal>
-          <section className={`${styles.userStatsSection} ${styles.bandSurface}`}>
-            <div className={styles.container}>
+            <div className={styles.learningHubShell}>
+              <ContinueLearningPanel streakCurrent={streakCurrent} />
+              {userStats && (
               <div className={styles.progressPanel}>
                 <div className={styles.progressPanelHead}>
                   <div>
@@ -232,38 +224,6 @@ export function Home() {
                 </div>
 
                 <div className={styles.progressPanelGrid}>
-                  <article className={styles.streakCard}>
-                    <div className={styles.streakCardVisual}>
-                      <div
-                        className={styles.streakRing}
-                        style={{ '--streak-pct': `${streakProgress}%` }}
-                        aria-hidden
-                      >
-                        <span className={styles.streakRingEmoji} aria-hidden>
-                          <UiIcon name="flame" size={20} tone="accent" />
-                        </span>
-                      </div>
-                      <div className={styles.streakCardMain}>
-                        <span className={styles.streakCardValue}>{streakCurrent}</span>
-                        <span className={styles.streakCardLabel}>
-                          {lang === 'ru' ? 'дней подряд' : 'day streak'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.streakCardGoal}>
-                      <div className={styles.streakBarTrack}>
-                        <div className={styles.streakBarFill} style={{ width: `${streakProgress}%` }} />
-                      </div>
-                      <span className={styles.streakGoalText}>
-                        {streakCurrent >= 14
-                          ? (lang === 'ru' ? 'Награды 3 / 7 / 14 дней открыты!' : '3 / 7 / 14 day rewards unlocked!')
-                          : (lang === 'ru'
-                            ? `До награды ${streakGoal} дней: ${Math.max(0, streakGoal - streakCurrent)}`
-                            : `${Math.max(0, streakGoal - streakCurrent)} days to ${streakGoal}-day reward`)}
-                      </span>
-                    </div>
-                  </article>
-
                   <div className={styles.progressMetrics}>
                     <article className={styles.metricCard}>
                       <span className={styles.metricIcon} aria-hidden>
@@ -295,9 +255,10 @@ export function Home() {
                   </div>
                 </div>
               </div>
+              )}
             </div>
-          </section>
-        </ScrollReveal>
+          </div>
+        </section>
       )}
 
       <ScrollReveal as="section" className={`${styles.whatIncluded} ${user && userStats ? styles.bandBase : styles.bandSurface}`}>
