@@ -3,11 +3,6 @@ import assert from 'node:assert/strict'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
-import { fileURLToPath } from 'url'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const serverRoot = path.join(__dirname, '..')
-const sourceDb = path.join(serverRoot, 'data', 'lms.sqlite')
 
 function setupTestEnv(dbPath) {
   process.env.DATABASE_URL = ''
@@ -50,9 +45,7 @@ test('SQLite schema creates all required tables', async () => {
 })
 
 test('API: health, courses, blog, auth, admin', async (t) => {
-  assert.ok(fs.existsSync(sourceDb), 'local lms.sqlite required for API test')
   const tmpDb = path.join(os.tmpdir(), `lms-api-${Date.now()}.sqlite`)
-  fs.copyFileSync(sourceDb, tmpDb)
   setupTestEnv(tmpDb)
 
   const { resetDatabase } = await import('../db/index.js')
