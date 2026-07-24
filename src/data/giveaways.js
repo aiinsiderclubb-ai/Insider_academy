@@ -23,7 +23,7 @@ export const GIVEAWAYS = [
     prizeDetailEn: '× 1 month',
     winnersCount: 1,
     startsAt: '2026-07-10T00:00:00+03:00',
-    endsAt: import.meta.env.VITE_GIVEAWAY_CLAUDE_ENDS_AT || '2026-07-25T23:59:59+03:00',
+    endsAt: import.meta.env.VITE_GIVEAWAY_CLAUDE_ENDS_AT || '2026-08-31T23:59:59+03:00',
     telegramChannel: 'aiinsiderclub',
     telegramInviteUrl: TELEGRAM_GIVEAWAY_CLAUDE,
     telegramPostUrl: import.meta.env.VITE_GIVEAWAY_TELEGRAM_URL || '',

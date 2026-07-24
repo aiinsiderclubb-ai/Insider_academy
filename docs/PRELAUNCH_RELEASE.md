@@ -3,7 +3,7 @@
 ## Required production configuration
 
 - `PRELAUNCH_MODE=1` — fail-closed switch for checkout, course grants, progress, homework and protected lesson content.
-- `GIVEAWAY_CLAUDE_ENDS_AT=2026-07-25T23:59:59+03:00` — canonical server deadline (25 July 2026, 23:59:59 GMT+3).
+- `GIVEAWAY_CLAUDE_ENDS_AT=2026-08-31T23:59:59+03:00` — canonical server deadline (31 August 2026, 23:59:59 GMT+3).
 - Deploy the same public deadline as `VITE_GIVEAWAY_CLAUDE_ENDS_AT` when building the frontend.
 
 Do not set `PRELAUNCH_MODE=0` until courses, server-side SKU pricing and payment reconciliation are approved for release.

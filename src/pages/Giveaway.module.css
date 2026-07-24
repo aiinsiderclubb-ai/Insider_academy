@@ -702,6 +702,12 @@
   font-size: 0.875rem;
 }
 
+.winnerMeta {
+  margin-top: 6px !important;
+  color: var(--text-tertiary) !important;
+  font-size: 0.78rem !important;
+}
+
 /* ── Accordion ── */
 .rulesHead {
   display: flex;

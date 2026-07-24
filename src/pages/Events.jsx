@@ -46,11 +46,12 @@ function formatEnds(endsAt, ru) {
   }
 }
 
-function GiveawayFeature({ giveaway, lang, participantCount, index }) {
+function GiveawayFeature({ giveaway, lang, participantCount, result, index }) {
   const ru = lang === 'ru'
   const isActive = giveaway.status === 'active'
   const progress = timeProgress(giveaway.startsAt, giveaway.endsAt)
   const title = ru ? giveaway.prizeRu : giveaway.prizeEn
+  const winnerName = result?.winnerTelegramUsername || giveaway.winner?.name || null
 
   return (
     <article className={`${styles.drop} ${!isActive ? styles.dropPast : ''}`}>
@@ -94,8 +95,8 @@ function GiveawayFeature({ giveaway, lang, participantCount, index }) {
             </div>
           )}
 
-          {!isActive && giveaway.winner && (
-            <p className={styles.winner}>{ru ? 'Победитель' : 'Winner'} — <strong>{giveaway.winner.name}</strong></p>
+          {!isActive && winnerName && (
+            <p className={styles.winner}>{ru ? 'Победитель' : 'Winner'} — <strong>{winnerName}</strong></p>
           )}
 
           <span className={styles.dropCta}>
@@ -134,6 +135,7 @@ export function Events() {
   const { lang } = useLanguage()
   const ru = lang === 'ru'
   const [counts, setCounts] = useState({})
+  const [results, setResults] = useState({})
 
   useEffect(() => {
     checkApiOnline().then(async (ok) => {
@@ -141,8 +143,13 @@ export function Events() {
       try {
         const list = await api.getGiveaways()
         const map = {}
-        list.forEach((g) => { map[g.slug] = g.participantCount })
+        const resultMap = {}
+        list.forEach((g) => {
+          map[g.slug] = g.participantCount
+          if (g.result) resultMap[g.slug] = g.result
+        })
         setCounts(map)
+        setResults(resultMap)
       } catch (_) {}
     })
   }, [])
@@ -209,7 +216,14 @@ export function Events() {
               </div>
               <div className={styles.dropList}>
                 {active.map((giveaway, index) => (
-                  <GiveawayFeature key={giveaway.id} giveaway={giveaway} lang={lang} participantCount={counts[giveaway.slug]} index={index} />
+                  <GiveawayFeature
+                    key={giveaway.id}
+                    giveaway={giveaway}
+                    lang={lang}
+                    participantCount={counts[giveaway.slug]}
+                    result={results[giveaway.slug]}
+                    index={index}
+                  />
                 ))}
               </div>
             </section>
@@ -243,7 +257,16 @@ export function Events() {
                 </div>
               </div>
               <div className={styles.dropList}>
-                {ended.map((giveaway, index) => <GiveawayFeature key={giveaway.id} giveaway={giveaway} lang={lang} index={index} />)}
+                {ended.map((giveaway, index) => (
+                  <GiveawayFeature
+                    key={giveaway.id}
+                    giveaway={giveaway}
+                    lang={lang}
+                    participantCount={counts[giveaway.slug]}
+                    result={results[giveaway.slug]}
+                    index={index}
+                  />
+                ))}
               </div>
             </section>
           </ScrollReveal>

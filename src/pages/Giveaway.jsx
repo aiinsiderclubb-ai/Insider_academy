@@ -247,8 +247,22 @@ function GiveawayDetail({ giveaway, lang }) {
   const chances = entered ? Math.max(0, Number(state?.chances) || 0) : 0
   const chanceCap = Math.max(maxPossibleChances(bonus.referralCount), chances || 1)
   const avatars = buildParticipantAvatars(count, entered ? userInitials(user) : '')
-  const isEnded = giveaway.status === 'ended' || countdown?.done
-  const winner = giveaway.winner
+  const serverEnded = state?.status === 'ended'
+    || (state?.endsAt && new Date(state.endsAt).getTime() < Date.now())
+  const isEnded = giveaway.status === 'ended' || countdown?.done || serverEnded || Boolean(state?.result)
+  const winner = (() => {
+    if (state?.result?.winnerTelegramUsername) {
+      const name = state.result.winnerTelegramUsername
+      const handle = String(name).replace(/^@/, '')
+      return {
+        name,
+        initials: handle.slice(0, 2).toUpperCase() || '★',
+        publishedAt: state.result.publishedAt || null,
+        participantCount: state.result.participantCount,
+      }
+    }
+    return giveaway.winner || null
+  })()
 
   const triggerConfetti = () => {
     if (confettiShown.current) return
@@ -466,6 +480,13 @@ function GiveawayDetail({ giveaway, lang }) {
               <div>
                 <strong>{winner.name}</strong>
                 <p>{ru ? giveaway.prizeRu : giveaway.prizeEn}</p>
+                {winner.participantCount != null && (
+                  <p className={styles.winnerMeta}>
+                    {ru
+                      ? `Среди ${formatCount(winner.participantCount)} участников`
+                      : `Among ${formatCount(winner.participantCount)} participants`}
+                  </p>
+                )}
               </div>
             </div>
             <Link to="/events" className={styles.btnPrimary}>

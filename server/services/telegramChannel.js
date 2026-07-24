@@ -15,6 +15,15 @@ export function normalizeChannelId(channel) {
 }
 
 export async function checkChannelMembership(chatId, channel) {
+  // E2E / local QA: skip live Telegram API when explicitly enabled (never in production).
+  if (
+    process.env.GIVEAWAY_TELEGRAM_BYPASS === '1'
+    && process.env.NODE_ENV !== 'production'
+    && chatId
+  ) {
+    return { ok: true, subscribed: true, status: 'member', bypass: true }
+  }
+
   const token = getBotToken()
   const channelId = normalizeChannelId(channel)
   if (!token) {
