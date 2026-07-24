@@ -325,7 +325,7 @@ export function AuthProvider({ children }) {
     }
   }, [applyReferral])
 
-  const register = useCallback(async (email, password, name) => {
+  const register = useCallback(async (email, password, name, returnTo) => {
     const emailTrim = email.trim()
     const passwordTrim = String(password || '').trim()
     const nameTrim = String(name || emailTrim).trim()
@@ -345,7 +345,7 @@ export function AuthProvider({ children }) {
       return u
     }
 
-    const res = await api.register(emailTrim, passwordTrim, nameTrim)
+    const res = await api.register(emailTrim, passwordTrim, nameTrim, returnTo)
     if (res.requiresVerification) {
       setPendingVerifyEmail(res.email || emailTrim)
       return {

@@ -1,64 +1,9 @@
-/** Client-side giveaway chance bonuses (share / referral). Base + Telegram come from API. */
-
-const STORAGE_PREFIX = 'lms_giveaway_chances_v1'
+/** Shared display constants. Bonus state itself is authoritative on the server. */
 
 export const CHANCE_BASE = 1
 export const CHANCE_TELEGRAM = 1
 export const CHANCE_SHARE = 2
 export const CHANCE_REFERRAL = 3
-
-function storageKey(slug, userKey) {
-  return `${STORAGE_PREFIX}:${slug}:${userKey || 'anon'}`
-}
-
-function readStore(slug, userKey) {
-  try {
-    const raw = localStorage.getItem(storageKey(slug, userKey))
-    if (!raw) return { shared: false, referralCount: 0 }
-    const parsed = JSON.parse(raw)
-    return {
-      shared: Boolean(parsed.shared),
-      referralCount: Math.max(0, Number(parsed.referralCount) || 0),
-    }
-  } catch {
-    return { shared: false, referralCount: 0 }
-  }
-}
-
-function writeStore(slug, userKey, data) {
-  try {
-    localStorage.setItem(storageKey(slug, userKey), JSON.stringify(data))
-  } catch (_) {}
-}
-
-export function getChanceState(slug, userKey) {
-  return readStore(slug, userKey)
-}
-
-export function markShared(slug, userKey) {
-  const cur = readStore(slug, userKey)
-  if (cur.shared) return cur
-  const next = { ...cur, shared: true }
-  writeStore(slug, userKey, next)
-  return next
-}
-
-export function bumpReferral(slug, referrerKey) {
-  if (!referrerKey) return null
-  const cur = readStore(slug, referrerKey)
-  const next = { ...cur, referralCount: cur.referralCount + 1 }
-  writeStore(slug, referrerKey, next)
-  return next
-}
-
-export function computeChances({ entered, channelSubscribed, shared, referralCount }) {
-  let total = 0
-  if (entered) total += CHANCE_BASE
-  if (entered && channelSubscribed) total += CHANCE_TELEGRAM
-  if (entered && shared) total += CHANCE_SHARE
-  if (entered) total += Math.max(0, referralCount) * CHANCE_REFERRAL
-  return total
-}
 
 export function maxPossibleChances(referralCount = 0) {
   return CHANCE_BASE + CHANCE_TELEGRAM + CHANCE_SHARE + Math.max(0, referralCount) * CHANCE_REFERRAL
@@ -105,27 +50,37 @@ export function buildReferralLink(slug, code) {
   return url.toString()
 }
 
-export function captureReferralFromUrl() {
+const PENDING_REFERRAL_KEY = 'lms_giveaway_pending_ref'
+
+export function captureReferralFromUrl(slug) {
   if (typeof window === 'undefined') return null
   try {
     const params = new URLSearchParams(window.location.search)
     const ref = params.get('ref')
     if (ref) {
-      sessionStorage.setItem('lms_giveaway_pending_ref', ref)
+      sessionStorage.setItem(PENDING_REFERRAL_KEY, JSON.stringify({ slug, ref }))
       return ref
     }
-    return sessionStorage.getItem('lms_giveaway_pending_ref')
+    return getPendingReferral(slug)
   } catch {
     return null
   }
 }
 
-export function consumePendingReferral() {
+export function getPendingReferral(slug) {
   try {
-    const ref = sessionStorage.getItem('lms_giveaway_pending_ref')
-    sessionStorage.removeItem('lms_giveaway_pending_ref')
-    return ref
+    const raw = sessionStorage.getItem(PENDING_REFERRAL_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return parsed?.slug === slug ? parsed.ref : null
   } catch {
     return null
   }
+}
+
+export function consumePendingReferral(slug) {
+  const ref = getPendingReferral(slug)
+  if (!ref) return null
+  try { sessionStorage.removeItem(PENDING_REFERRAL_KEY) } catch (_) {}
+  return ref
 }

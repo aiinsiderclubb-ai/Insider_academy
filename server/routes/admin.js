@@ -24,9 +24,11 @@ import {
   formatGoogleDriveError,
 } from '../services/googleSheets.js'
 import adminOpsRoutes from './adminOps.js'
+import adminGiveawaysRoutes from './adminGiveaways.js'
 import { queueEmail } from '../services/emailQueue.js'
 import { logAudit } from '../services/auditLog.js'
 import { deleteUserAccount } from '../services/deleteUser.js'
+import { prelaunchBlocked } from '../middleware/prelaunch.js'
 
 const router = Router()
 
@@ -103,6 +105,7 @@ router.post('/test-email', requireAdmin('admin'), async (req, res) => {
 
 router.use(requireAdmin('admin', 'editor', 'moderator'))
 router.use(adminOpsRoutes)
+router.use(adminGiveawaysRoutes)
 
 router.get('/dashboard', async (req, res) => {
   const db = getDb()
@@ -272,7 +275,7 @@ router.put('/calendar', requireAdmin('admin', 'editor'), async (req, res) => {
   res.json({ ok: true })
 })
 
-router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.patch('/homework/:id', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const { status, adminComment, score } = req.body
   const row = await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])
@@ -423,7 +426,7 @@ router.delete('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, re
   res.json({ ok: true, id: req.params.id })
 })
 
-router.post('/applications/bulk-approve', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/applications/bulk-approve', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const ids = Array.isArray(req.body.ids) ? req.body.ids.slice(0, 50) : []
   if (!ids.length) return res.status(400).json({ error: 'ids array required' })
@@ -556,7 +559,7 @@ router.get('/applications/:id/history', requireAdmin('admin', 'moderator'), asyn
   res.json({ history })
 })
 
-router.post('/applications/:id/approve', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/applications/:id/approve', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
   if (!row) return res.status(404).json({ error: 'Not found' })
@@ -658,7 +661,7 @@ router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req
   res.json({ ok: true, application: (await enrichApplications(db, [updated]))[0] })
 })
 
-router.post('/certificates', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/certificates', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const { email, courseId, courseTitle, fileName, fileType, fileDataUrl, score } = req.body
   const id = `cert-${Date.now()}`

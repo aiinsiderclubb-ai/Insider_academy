@@ -53,9 +53,9 @@ export async function sendVerificationEmail(email, token) {
   })
 }
 
-export async function sendVerificationCodeEmail(email, code, name = '') {
+export async function sendVerificationCodeEmail(email, code, name = '', returnTo = '/onboarding') {
   const greeting = name ? `Здравствуйте, ${name}!` : 'Здравствуйте!'
-  const verifyUrl = `${config.appUrl.replace(/\/$/, '')}/verify-email?email=${encodeURIComponent(email)}`
+  const verifyUrl = `${config.appUrl.replace(/\/$/, '')}/verify-email?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(returnTo)}`
   return sendEmail({
     to: email,
     subject: `${code} — код подтверждения AI Insider Academy`,

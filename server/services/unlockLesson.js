@@ -3,6 +3,7 @@ import { nowIso } from '../db/time.js'
 import { grantCourseAccess } from './grantCourse.js'
 import { getCourseSlug, createUserNotification } from './notifications.js'
 import * as sheetsTrack from './sheetsTrack.js'
+import { prelaunchServiceGuard } from '../middleware/prelaunch.js'
 
 async function getCourseData(db, courseId) {
   const row = await db.get('SELECT data FROM courses WHERE id = ?', [courseId])
@@ -18,6 +19,8 @@ async function ensureHomeworkAccepted(db, {
   lessonTitle,
   personalId,
 }) {
+  const blocked = prelaunchServiceGuard()
+  if (blocked) return blocked
   const existing = await db.get(
     'SELECT id, status FROM homework WHERE email = ? AND course_id = ? AND lesson_index = ?',
     [email, courseId, lessonIndex]

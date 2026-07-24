@@ -5,7 +5,11 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { isTestAccountEmail } from '../data/testAccount'
 import { formatApiError } from '../utils/formatApiError'
-import { setPendingVerifyEmail } from '../utils/pendingVerification'
+import {
+  normalizeReturnPath,
+  setPendingVerifyEmail,
+  setPendingVerifyReturnPath,
+} from '../utils/pendingVerification'
 import { NeuronGlow } from '../components/NeuronGlow'
 import { AuthVisual } from '../components/AuthVisual'
 import { SocialAuthButtons } from '../components/SocialAuthButtons'
@@ -16,7 +20,8 @@ export function Login() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname || '/cabinet'
+  const returnFromQuery = new URLSearchParams(location.search).get('returnTo')
+  const from = normalizeReturnPath(returnFromQuery || location.state?.from?.pathname, '/cabinet')
 
   useEffect(() => {
     if (user) navigate(from, { replace: true })
@@ -57,7 +62,8 @@ export function Login() {
       if (err?.requiresVerification || err?.data?.requiresVerification) {
         const verifyEmail = err.email || err.data?.email || emailTrim
         setPendingVerifyEmail(verifyEmail)
-        const q = new URLSearchParams({ email: verifyEmail })
+        setPendingVerifyReturnPath(from)
+        const q = new URLSearchParams({ email: verifyEmail, returnTo: from })
         if (err.devCode || err.data?.devCode) q.set('devCode', err.devCode || err.data.devCode)
         navigate(`/verify-email?${q.toString()}`, { replace: true })
         return
@@ -99,7 +105,7 @@ export function Login() {
             {t('login.back')}
           </Link>
           <Link
-            to="/register"
+            to={`/register?returnTo=${encodeURIComponent(from)}`}
             state={{ from: location.state?.from }}
             className={styles.registerTopBtn}
           >
@@ -173,7 +179,7 @@ export function Login() {
             <p className={styles.footerAuth}>
               {t('login.noAccount')}{' '}
               <Link
-                to="/register"
+                to={`/register?returnTo=${encodeURIComponent(from)}`}
                 state={{ from: location.state?.from }}
                 className={styles.footerAuthLink}
               >

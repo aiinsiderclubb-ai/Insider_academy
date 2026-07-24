@@ -6,7 +6,7 @@ import { requireUser } from '../middleware/auth.js'
 import { signUserToken } from '../middleware/auth.js'
 import { upload } from '../middleware/upload.js'
 import { saveUploadedFile, getFileUrl } from '../services/storage.js'
-import { isS3Enabled } from '../config.js'
+import { isPrelaunchMode, isS3Enabled } from '../config.js'
 import { computeAchievements, updateStreak, ACHIEVEMENTS } from '../services/achievements.js'
 import { sendTelegramMessage } from '../services/telegram.js'
 import { mapUserResponse, syncUserRecords, userSelectFields } from '../services/userProfile.js'
@@ -14,6 +14,7 @@ import { ensurePersonalId } from '../services/personalId.js'
 import { createUserNotification } from '../services/notifications.js'
 import * as sheetsTrack from '../services/sheetsTrack.js'
 import { issueEmailVerificationCode } from '../services/emailVerification.js'
+import { prelaunchBlocked } from '../middleware/prelaunch.js'
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -24,6 +25,7 @@ router.use(requireUser)
 
 router.get('/', async (req, res) => {
   const db = getDb()
+  const prelaunch = isPrelaunchMode()
   let user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
   if (!user) return res.status(404).json({ error: 'User not found' })
   if (!user.personal_id) {
@@ -31,18 +33,20 @@ router.get('/', async (req, res) => {
     user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
   }
 
-  const purchases = await db.all(
+  const purchases = prelaunch ? [] : await db.all(
     'SELECT course_id AS id, purchased_at AS purchasedAt FROM purchases WHERE user_id = ? ORDER BY purchased_at DESC',
     [req.userId]
   )
-  const progressRows = await db.all('SELECT course_id, data FROM progress WHERE user_id = ?', [req.userId])
+  const progressRows = prelaunch ? [] : await db.all('SELECT course_id, data FROM progress WHERE user_id = ?', [req.userId])
   const progress = {}
   for (const row of progressRows) progress[row.course_id] = parseJson(row.data, {})
 
   const discountRow = await db.get('SELECT percent FROM referral_discounts WHERE email = ?', [user.email])
-  const reviews = await db.all('SELECT course_id FROM reviews WHERE user_id = ?', [req.userId])
-  const streak = await updateStreak(db, req.userId)
-  const achievements = computeAchievements({ progress, purchases, reviews, streak })
+  const reviews = prelaunch ? [] : await db.all('SELECT course_id FROM reviews WHERE user_id = ?', [req.userId])
+  const streak = prelaunch
+    ? { current: user.streak_count || 0, best: user.streak_count || 0 }
+    : await updateStreak(db, req.userId)
+  const achievements = prelaunch ? [] : computeAchievements({ progress, purchases, reviews, streak })
 
   for (const a of achievements) {
     await db.run(
@@ -58,11 +62,20 @@ router.get('/', async (req, res) => {
     discountPercent: discountRow?.percent || 0,
     streak,
     achievements,
+    prelaunch,
   })
 })
 
 router.get('/stats', async (req, res) => {
   const db = getDb()
+  if (isPrelaunchMode()) {
+    return res.json({
+      chart: [],
+      streak: { current: 0, lastActivity: null },
+      achievements: [],
+      prelaunch: true,
+    })
+  }
   const progressRows = await db.all('SELECT course_id, data FROM progress WHERE user_id = ?', [req.userId])
   const chart = progressRows.map((row) => {
     const p = parseJson(row.data, {})
@@ -81,7 +94,7 @@ router.get('/stats', async (req, res) => {
   })
 })
 
-router.post('/purchases', async (req, res) => {
+router.post('/purchases', prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const courseId = String(req.body.courseId || '')
   const courseTitle = String(req.body.courseTitle || '')
@@ -139,7 +152,7 @@ router.get('/reminders', async (req, res) => {
   res.json(rows)
 })
 
-router.post('/peer-reviews', async (req, res) => {
+router.post('/peer-reviews', prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const { courseId, lessonIndex, rating, comment, homeworkId } = req.body
   const ratingNum = Number(rating)
@@ -158,7 +171,7 @@ router.post('/peer-reviews', async (req, res) => {
   res.status(201).json({ id })
 })
 
-router.put('/progress/:courseId', async (req, res) => {
+router.put('/progress/:courseId', prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const data = req.body.data || {}
   await db.run(
@@ -223,7 +236,7 @@ router.get('/certificates', async (req, res) => {
   res.json(mapped)
 })
 
-router.get('/homework/:courseId/:lessonIndex', async (req, res) => {
+router.get('/homework/:courseId/:lessonIndex', prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const row = await db.get(
     'SELECT * FROM homework WHERE email = ? AND course_id = ? AND lesson_index = ?',
@@ -235,7 +248,7 @@ router.get('/homework/:courseId/:lessonIndex', async (req, res) => {
   res.json(hw)
 })
 
-router.post('/homework', upload.single('file'), async (req, res) => {
+router.post('/homework', prelaunchBlocked, upload.single('file'), async (req, res) => {
   const db = getDb()
   const user = await db.get('SELECT email, name FROM users WHERE id = ?', [req.userId])
   if (!user?.email) return res.status(404).json({ error: 'User not found' })

@@ -7,7 +7,10 @@ import { useLanguage } from '../context/LanguageContext'
 import { formatApiError } from '../utils/formatApiError'
 import {
   clearPendingVerifyEmail,
+  clearPendingVerifyReturnPath,
   getPendingVerifyEmail,
+  getPendingVerifyReturnPath,
+  normalizeReturnPath,
   setPendingVerifyEmail,
 } from '../utils/pendingVerification'
 import { EmailCodeInput } from '../components/EmailCodeInput'
@@ -23,6 +26,10 @@ export function VerifyEmail() {
   const tokenFromUrl = params.get('token')
   const emailFromUrl = params.get('email') || getPendingVerifyEmail() || ''
   const devCodeFromUrl = params.get('devCode') || ''
+  const returnTo = normalizeReturnPath(
+    params.get('returnTo') || getPendingVerifyReturnPath(),
+    '/onboarding',
+  )
 
   const [email, setEmail] = useState(emailFromUrl)
   const [code, setCode] = useState('')
@@ -41,11 +48,13 @@ export function VerifyEmail() {
     api.verifyEmail(tokenFromUrl)
       .then(async (res) => {
         if (res.token) await completeAuthSession(res.token, res.user)
+        clearPendingVerifyEmail()
+        clearPendingVerifyReturnPath()
         setStatus('ok')
-        setTimeout(() => navigate('/onboarding', { replace: true }), 2200)
+        setTimeout(() => navigate(returnTo, { replace: true }), 2200)
       })
       .catch(() => setStatus('link-error'))
-  }, [tokenFromUrl, completeAuthSession, navigate])
+  }, [tokenFromUrl, completeAuthSession, navigate, returnTo])
 
   useEffect(() => {
     if (resendCooldown <= 0) return undefined
@@ -65,8 +74,9 @@ export function VerifyEmail() {
       const res = await api.verifyEmailCode(email.trim(), code.trim())
       await completeAuthSession(res.token, res.user)
       clearPendingVerifyEmail()
+      clearPendingVerifyReturnPath()
       setStatus('ok')
-      setTimeout(() => navigate('/onboarding', { replace: true }), 2200)
+      setTimeout(() => navigate(returnTo, { replace: true }), 2200)
     } catch (err) {
       setError(formatApiError(err, lang) || t('verifyEmail.error'))
     } finally {
@@ -79,7 +89,7 @@ export function VerifyEmail() {
     setError('')
     setLoading(true)
     try {
-      const res = await api.resendVerificationCode(email.trim())
+      const res = await api.resendVerificationCode(email.trim(), returnTo)
       if (res.devCode) setDevCode(res.devCode)
       setResendCooldown(60)
     } catch (err) {
@@ -196,7 +206,11 @@ export function VerifyEmail() {
                 : t('verifyEmail.resend')}
             </button>
 
-            <Link to="/login" className={styles.backLink} style={{ display: 'block', marginTop: 12 }}>
+            <Link
+              to={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+              className={styles.backLink}
+              style={{ display: 'block', marginTop: 12 }}
+            >
               {t('verifyEmail.backLogin')}
             </Link>
           </div>

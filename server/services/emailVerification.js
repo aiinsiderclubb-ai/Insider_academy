@@ -9,7 +9,13 @@ export function generateVerificationCode() {
   return String(crypto.randomInt(100000, 999999))
 }
 
-export async function issueEmailVerificationCode(email, name = '') {
+export function normalizeVerificationReturnPath(value) {
+  const path = String(value || '').trim()
+  if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\')) return '/onboarding'
+  return path
+}
+
+export async function issueEmailVerificationCode(email, name = '', returnTo = '/onboarding') {
   const db = getDb()
   const code = generateVerificationCode()
   const expires = new Date(Date.now() + CODE_TTL_MS).toISOString()
@@ -23,7 +29,7 @@ export async function issueEmailVerificationCode(email, name = '') {
     [`et-${Date.now()}`, email, code, 'verify_code', expires]
   )
 
-  await sendVerificationCodeEmail(email, code, name)
+  await sendVerificationCodeEmail(email, code, name, normalizeVerificationReturnPath(returnTo))
 
   const result = { expiresAt: expires }
   if (!isEmailEnabled()) result.devCode = code

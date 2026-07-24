@@ -280,10 +280,17 @@ export function Layout({ children }) {
     window.dispatchEvent(new Event('lms-homework-refresh'))
   }
 
+  const isOnboardingExemptPath = [
+    '/onboarding',
+    '/login',
+    '/register',
+    '/verify-email',
+  ].includes(location.pathname) || location.pathname.startsWith('/giveaway/')
+
   const needsOnboarding = Boolean(
     user
     && !isRegistrationOnboardingDone()
-    && !['/onboarding', '/login', '/register', '/verify-email'].includes(location.pathname)
+    && !isOnboardingExemptPath
   )
 
   if (needsOnboarding) {

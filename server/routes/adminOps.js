@@ -94,8 +94,9 @@ router.patch('/promo-codes/:code', requireAdmin('admin'), async (req, res) => {
 
 import { grantCourseAccess } from '../services/grantCourse.js'
 import { unlockLessonForUser } from '../services/unlockLesson.js'
+import { prelaunchBlocked } from '../middleware/prelaunch.js'
 
-router.post('/grant-course', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/grant-course', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase()
   const courseId = String(req.body.courseId || '').trim()
   const courseTitle = String(req.body.courseTitle || courseId)
@@ -114,7 +115,7 @@ router.post('/grant-course', requireAdmin('admin', 'moderator'), async (req, res
   res.json({ ok: true, granted: access.granted, userCreated: access.userCreated })
 })
 
-router.post('/unlock-lesson', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/unlock-lesson', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase()
   const courseId = String(req.body.courseId || '').trim()
   const courseTitle = String(req.body.courseTitle || courseId)

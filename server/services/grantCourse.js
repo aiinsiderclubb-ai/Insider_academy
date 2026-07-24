@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { getDb } from '../db.js'
 import { nowIso } from '../db/time.js'
 import * as sheetsTrack from './sheetsTrack.js'
+import { prelaunchServiceGuard } from '../middleware/prelaunch.js'
 
 export async function grantCourseAccess({
   email,
@@ -9,6 +10,8 @@ export async function grantCourseAccess({
   courseTitle,
   provider = 'admin_grant',
 }) {
+  const blocked = prelaunchServiceGuard()
+  if (blocked) return blocked
   const db = getDb()
   const mail = String(email || '').trim().toLowerCase()
   const cid = String(courseId || '').trim()

@@ -1,5 +1,6 @@
 import { getDb } from '../db.js'
 import * as sheetsTrack from './sheetsTrack.js'
+import { prelaunchServiceGuard } from '../middleware/prelaunch.js'
 
 export async function logWebhookEvent({ provider, eventName, status, payload }) {
   try {
@@ -13,6 +14,8 @@ export async function logWebhookEvent({ provider, eventName, status, payload }) 
 }
 
 export async function grantAccess({ userId, email, courseId, courseTitle, amount, provider, externalId }) {
+  const blocked = prelaunchServiceGuard()
+  if (blocked) return blocked
   const db = getDb()
   if (!courseId) return { ok: false, reason: 'no courseId' }
 

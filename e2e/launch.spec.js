@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { tributeSignature, apiRegisterAndVerify } from './helpers.js'
+import { apiRegisterAndVerify } from './helpers.js'
 
 const apiBase = () => process.env.PLAYWRIGHT_API_URL || 'http://localhost:3001/api'
 
@@ -17,7 +17,7 @@ test.describe('Launch checklist (API)', () => {
     expect(readyBody.ok).toBe(true)
   })
 
-  test('register → verify → login → course access', async ({ request }) => {
+  test('register → verify → login → courses stay locked in prelaunch', async ({ request }) => {
     const email = `launch-${Date.now()}@example.com`
     const password = 'LaunchTest2026!'
 
@@ -33,6 +33,10 @@ test.describe('Launch checklist (API)', () => {
     expect(courses.ok()).toBeTruthy()
     const list = await courses.json()
     expect(Array.isArray(list)).toBeTruthy()
+    for (const course of list) {
+      expect(course.contentLocked).toBe(true)
+      for (const lesson of course.lessons || []) expect(lesson.videoUrl).toBeNull()
+    }
   })
 
   test('forgot-password → reset-password flow', async ({ request }) => {
@@ -66,45 +70,23 @@ test.describe('Launch checklist (API)', () => {
     expect(login.ok()).toBeTruthy()
   })
 
-  test('tribute webhook grants course access', async ({ request }) => {
-    const tributeKey = process.env.TRIBUTE_API_KEY || 'ci-tribute-test-key-for-hmac-signing'
+  test('purchases and tribute webhook are blocked in prelaunch', async ({ request }) => {
     const email = `tribute-${Date.now()}@example.com`
     const password = 'TributeTest2026!'
-    const courseId = 'ai-start'
-    const productId = 65858
-
     const { token, base } = await apiRegisterAndVerify(request, { email, password })
 
-    const payload = {
-      name: 'new_digital_product',
-      payload: {
-        product_id: productId,
-        email,
-        product_name: 'AI Start',
-        amount: 2900,
-      },
-    }
-    const raw = JSON.stringify(payload)
-    const sig = tributeSignature(raw, tributeKey)
-
     const wh = await request.post(`${base}/webhooks/tribute`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'trbt-signature': sig,
-      },
-      data: raw,
+      data: { name: 'new_digital_product', payload: { email } },
     })
-    expect(wh.ok()).toBeTruthy()
+    expect(wh.status()).toBe(423)
     const whBody = await wh.json()
-    expect(whBody.ok).toBe(true)
+    expect(whBody.code).toBe('PRELAUNCH_MODE')
 
-    const me = await request.get(`${base}/me`, {
+    const purchase = await request.post(`${base}/me/purchases`, {
       headers: { Authorization: `Bearer ${token}` },
+      data: { courseId: 'ai-start' },
     })
-    expect(me.ok()).toBeTruthy()
-    const profile = await me.json()
-    const purchased = (profile.purchases || []).some((p) => p.id === courseId || p.courseId === courseId)
-    expect(purchased || whBody.granted).toBeTruthy()
+    expect(purchase.status()).toBe(423)
   })
 
   test('admin login rejects weak password', async ({ request }) => {
@@ -136,5 +118,34 @@ test.describe('Launch checklist (UI)', () => {
     await page.goto('/login')
     await expect(page.locator('input[name="email"]')).toBeVisible()
     await expect(page.locator('input[name="password"]')).toBeVisible()
+  })
+
+  test('giveaway registration returns after email verification', async ({ page }) => {
+    const email = `giveaway-return-${Date.now()}@example.com`
+    const password = 'GiveawayReturn2026!'
+
+    await page.goto('/giveaway/claude-pro')
+    const registerLink = page.locator('a[href^="/register?returnTo="]').last()
+    await expect(registerLink).toBeVisible({ timeout: 15000 })
+    await registerLink.click()
+    await expect(page).toHaveURL(/\/register\?returnTo=/)
+
+    await page.locator('input[name="name"]').fill('Giveaway Return')
+    await page.locator('input[name="email"]').fill(email)
+    await page.locator('input[name="password"]').fill(password)
+    await page.locator('input[name="confirmPassword"]').fill(password)
+    await page.locator('form button[type="submit"]').click()
+
+    await expect(page).toHaveURL(/\/verify-email\?/, { timeout: 15000 })
+    const verificationUrl = new URL(page.url())
+    expect(verificationUrl.searchParams.get('returnTo')).toBe('/giveaway/claude-pro')
+    const code = verificationUrl.searchParams.get('devCode')
+    expect(code).toMatch(/^\d{6}$/)
+
+    for (const [index, digit] of [...code].entries()) {
+      await page.getByLabel(`Digit ${index + 1}`).fill(digit)
+    }
+    await page.locator('form button[type="submit"]').click()
+    await expect(page).toHaveURL(/\/giveaway\/claude-pro$/, { timeout: 10000 })
   })
 })

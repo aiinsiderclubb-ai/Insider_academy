@@ -12,16 +12,13 @@ import { getGiveaway } from '../data/giveaways'
 import {
   buildParticipantAvatars,
   buildReferralLink,
-  bumpReferral,
   captureReferralFromUrl,
   CHANCE_REFERRAL,
   CHANCE_SHARE,
   CHANCE_TELEGRAM,
-  computeChances,
   consumePendingReferral,
-  getChanceState,
+  getPendingReferral,
   getReferralCode,
-  markShared,
   maxPossibleChances,
   userInitials,
 } from '../data/giveawayChances'
@@ -210,21 +207,15 @@ function GiveawayDetail({ giveaway, lang }) {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [apiOffline, setApiOffline] = useState(false)
-  const [bonus, setBonus] = useState({ shared: false, referralCount: 0 })
   const [showConfetti, setShowConfetti] = useState(false)
   const confettiShown = useRef(false)
 
-  const userKey = user?.email || user?.id || ''
   const refCode = getReferralCode(user)
   const referralLink = buildReferralLink(giveaway.slug, refCode)
 
   useEffect(() => {
-    captureReferralFromUrl()
-  }, [searchParams])
-
-  useEffect(() => {
-    setBonus(getChanceState(giveaway.slug, userKey))
-  }, [giveaway.slug, userKey])
+    captureReferralFromUrl(giveaway.slug)
+  }, [giveaway.slug, searchParams])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -249,12 +240,11 @@ function GiveawayDetail({ giveaway, lang }) {
 
   const entered = Boolean(state?.entered)
   const count = state?.participantCount ?? 0
-  const chances = computeChances({
-    entered,
-    channelSubscribed: Boolean(state?.channelSubscribed),
-    shared: bonus.shared,
-    referralCount: bonus.referralCount,
-  })
+  const bonus = {
+    shared: Boolean(state?.shared),
+    referralCount: Math.max(0, Number(state?.referralCount) || 0),
+  }
+  const chances = entered ? Math.max(0, Number(state?.chances) || 0) : 0
   const chanceCap = Math.max(maxPossibleChances(bonus.referralCount), chances || 1)
   const avatars = buildParticipantAvatars(count, entered ? userInitials(user) : '')
   const isEnded = giveaway.status === 'ended' || countdown?.done
@@ -303,13 +293,14 @@ function GiveawayDetail({ giveaway, lang }) {
           return
         }
       }
-      const res = await api.enterGiveaway(giveaway.slug)
-      const pendingRef = consumePendingReferral()
-      if (pendingRef && pendingRef !== refCode) {
-        bumpReferral(giveaway.slug, pendingRef)
-      }
+      const pendingRef = getPendingReferral(giveaway.slug)
+      const res = await api.enterGiveaway(giveaway.slug, {
+        referralCode: pendingRef && pendingRef !== refCode ? pendingRef : undefined,
+      })
+      consumePendingReferral(giveaway.slug)
       setState((prev) => ({
         ...prev,
+        ...res,
         entered: true,
         participantCount: res.participantCount ?? ((prev?.participantCount || 0) + 1),
         channelSubscribed: true,
@@ -341,9 +332,18 @@ function GiveawayDetail({ giveaway, lang }) {
       } catch (__) {}
     }
     if (entered) {
-      const next = markShared(giveaway.slug, userKey)
-      setBonus(next)
-      showToast(ru ? '+2 шанса за шаринг' : '+2 chances for sharing', 'success')
+      try {
+        const res = await api.recordGiveawayShare(giveaway.slug)
+        setState((prev) => ({ ...prev, ...res }))
+        showToast(
+          res.alreadyRecorded
+            ? (ru ? 'Шансы за публикацию уже начислены' : 'Share chances already recorded')
+            : (ru ? '+2 шанса за публикацию' : '+2 chances for sharing'),
+          'success',
+        )
+      } catch (err) {
+        showToast(err.data?.errorRu || err.message, 'error')
+      }
     }
   }
 
@@ -730,7 +730,7 @@ function GiveawayDetail({ giveaway, lang }) {
                   </p>
                 )}
                 <Link
-                  to="/register"
+                  to={`/register?returnTo=${encodeURIComponent(redirectPath)}`}
                   state={{ from: { pathname: redirectPath } }}
                   className={styles.btnPrimaryLg}
                 >

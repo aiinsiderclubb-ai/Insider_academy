@@ -109,7 +109,7 @@ export async function apiRequest(path, { method = 'GET', body, admin = false, au
 
 export const api = {
   health: () => apiRequest('/health', { auth: false }),
-  register: (email, password, name) => apiRequest('/auth/register', { method: 'POST', body: { email, password, name }, auth: false, retries: 2 }),
+  register: (email, password, name, returnTo) => apiRequest('/auth/register', { method: 'POST', body: { email, password, name, returnTo }, auth: false, retries: 2 }),
   login: (email, password) => apiRequest('/auth/login', { method: 'POST', body: { email, password }, auth: false, retries: 2 }),
   oauth: (provider, idToken, fullName) => apiRequest('/auth/oauth', {
     method: 'POST',
@@ -120,7 +120,7 @@ export const api = {
   oauthConfig: () => apiRequest('/auth/oauth/config', { auth: false }),
   verifyEmail: (token) => apiRequest('/auth/verify-email', { method: 'POST', body: { token }, auth: false }),
   verifyEmailCode: (email, code) => apiRequest('/auth/verify-email-code', { method: 'POST', body: { email, code }, auth: false }),
-  resendVerificationCode: (email) => apiRequest('/auth/resend-verification-code', { method: 'POST', body: { email }, auth: false }),
+  resendVerificationCode: (email, returnTo) => apiRequest('/auth/resend-verification-code', { method: 'POST', body: { email, returnTo }, auth: false }),
   forgotPassword: (email) => apiRequest('/auth/forgot-password', { method: 'POST', body: { email }, auth: false }),
   resetPassword: (token, password) => apiRequest('/auth/reset-password', { method: 'POST', body: { token, password }, auth: false }),
   // auth: true — сервер отдаёт videoUrl только по купленным курсам
@@ -147,7 +147,8 @@ export const api = {
   getGiveaways: () => apiRequest('/giveaways'),
   getGiveaway: (slug) => apiRequest(`/giveaways/${slug}`),
   verifyGiveawayTelegram: (slug) => apiRequest(`/giveaways/${slug}/verify-telegram`, { method: 'POST' }),
-  enterGiveaway: (slug) => apiRequest(`/giveaways/${slug}/enter`, { method: 'POST' }),
+  enterGiveaway: (slug, payload = {}) => apiRequest(`/giveaways/${slug}/enter`, { method: 'POST', body: payload }),
+  recordGiveawayShare: (slug) => apiRequest(`/giveaways/${slug}/share`, { method: 'POST' }),
   trackVisit: () => apiRequest('/analytics/visit', { method: 'POST', auth: false }),
   trackCourseClick: (courseId) => apiRequest('/analytics/course-click', { method: 'POST', body: { courseId }, auth: false }),
   stripeCheckout: (payload) => apiRequest('/payments/stripe/checkout', { method: 'POST', body: payload }),

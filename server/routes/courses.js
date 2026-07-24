@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { getDb, parseJson } from '../db.js'
 import { optionalUser } from '../middleware/auth.js'
+import { isPrelaunchMode } from '../config.js'
 
 const router = Router()
 
@@ -17,6 +18,14 @@ function isFreeCourse(course) {
  */
 function sanitizeCourse(course, purchasedIds) {
   if (!course?.lessons?.length) return course
+  if (isPrelaunchMode()) {
+    return {
+      ...course,
+      contentLocked: true,
+      availability: 'coming_soon',
+      lessons: course.lessons.map((lesson) => ({ ...lesson, videoUrl: null })),
+    }
+  }
   if (isFreeCourse(course)) return course
   if (purchasedIds.has(course.id)) return course
   return {

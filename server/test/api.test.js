@@ -19,6 +19,7 @@ function setupTestEnv(dbPath) {
   process.env.EDITOR_PASSWORD = 'EditorTest-2026-Only!'
   process.env.MODERATOR_PASSWORD = 'ModeratorTest-2026!'
   process.env.CORS_ORIGIN = 'http://localhost:5173'
+  process.env.PRELAUNCH_MODE = '1'
 }
 
 test('SQLite schema creates all required tables', async () => {
@@ -41,6 +42,7 @@ test('SQLite schema creates all required tables', async () => {
     'referrals', 'referral_discounts', 'analytics', 'webhook_events', 'admin_seen',
     'email_tokens', 'payments', 'reviews', 'teams', 'team_members',
     'user_achievements', 'lesson_reminders', 'accelerator_applications',
+    'giveaway_entries', 'giveaway_bonus_actions', 'giveaway_results',
   ]
 
   for (const t of required) assert.ok(tables.includes(t), `missing table ${t}`)
@@ -70,6 +72,9 @@ test('API: health, courses, blog, auth, admin', async (t) => {
 
   const courses = await fetch(`${base}/api/courses`).then((r) => r.json())
   assert.ok(Array.isArray(courses) && courses.length >= 1, 'courses should be non-empty')
+  for (const course of courses) {
+    for (const lesson of course.lessons || []) assert.equal(lesson.videoUrl, null, 'prelaunch must hide video URLs')
+  }
 
   const blogRes = await fetch(`${base}/api/blog`)
   assert.equal(blogRes.status, 200)
@@ -101,6 +106,8 @@ test('API: health, courses, blog, auth, admin', async (t) => {
     body: JSON.stringify({ email, password: 'secret12' }),
   })
   assert.equal(login.status, 200)
+  const loginData = await login.json()
+  assert.ok(loginData.token)
 
   const adminLogin = await fetch(`${base}/api/admin/login`, {
     method: 'POST',
@@ -108,12 +115,133 @@ test('API: health, courses, blog, auth, admin', async (t) => {
     body: JSON.stringify({ password: 'AdminTest-2026-Only!' }),
   })
   assert.equal(adminLogin.status, 200)
-  assert.equal((await adminLogin.json()).role, 'admin')
+  const adminData = await adminLogin.json()
+  assert.equal(adminData.role, 'admin')
+
+  const userHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${loginData.token}` }
+  const adminHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${adminData.token}` }
+  const blockedRequests = [
+    fetch(`${base}/api/me/purchases`, { method: 'POST', headers: userHeaders, body: JSON.stringify({ courseId: 'ai-start' }) }),
+    fetch(`${base}/api/payments/tribute/checkout`, { method: 'POST', headers: userHeaders, body: JSON.stringify({ courseId: 'ai-start', amount: 1 }) }),
+    fetch(`${base}/api/payments/demo`, { method: 'POST', headers: userHeaders, body: JSON.stringify({ courseId: 'ai-start' }) }),
+    fetch(`${base}/api/webhooks/stripe`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+    fetch(`${base}/api/webhooks/tribute`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+    fetch(`${base}/api/webhooks/liqpay`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }),
+    fetch(`${base}/api/me/progress/ai-start`, { method: 'PUT', headers: userHeaders, body: JSON.stringify({ data: { watched: [0] } }) }),
+    fetch(`${base}/api/me/homework`, { method: 'POST', headers: userHeaders, body: JSON.stringify({ courseId: 'ai-start' }) }),
+    fetch(`${base}/api/teams/grant-course`, { method: 'POST', headers: userHeaders, body: JSON.stringify({ memberEmail: email, courseId: 'ai-start' }) }),
+    fetch(`${base}/api/admin/grant-course`, { method: 'POST', headers: adminHeaders, body: JSON.stringify({ email, courseId: 'ai-start' }) }),
+  ]
+  for (const request of blockedRequests) {
+    const response = await request
+    assert.equal(response.status, 423)
+    assert.equal((await response.json()).code, 'PRELAUNCH_MODE')
+  }
+
+  const tributeStatus = await fetch(`${base}/api/payments/tribute/status`).then((r) => r.json())
+  assert.equal(tributeStatus.enabled, false)
+  assert.equal(tributeStatus.prelaunch, true)
+
+  const me = await fetch(`${base}/api/me`, { headers: userHeaders }).then((r) => r.json())
+  assert.equal(me.prelaunch, true)
+  assert.deepEqual(me.purchases, [])
+  assert.deepEqual(me.progress, {})
+  assert.deepEqual(me.achievements, [])
+  const stats = await fetch(`${base}/api/me/stats`, { headers: userHeaders }).then((r) => r.json())
+  assert.equal(stats.prelaunch, true)
+  assert.deepEqual(stats.chart, [])
+
+  const reminder = await fetch(`${base}/api/telegram/reminder`, {
+    method: 'POST', headers: userHeaders,
+    body: JSON.stringify({ courseId: 'ai-start', lessonIndex: 0, remindAt: new Date().toISOString() }),
+  })
+  assert.equal(reminder.status, 423)
+  assert.equal((await reminder.json()).code, 'PRELAUNCH_MODE')
+
+  for (let i = 0; i < 11; i += 1) {
+    const response = await fetch(`${base}/api/giveaways/claude-pro/verify-telegram`, {
+      method: 'POST', headers: userHeaders,
+    })
+    assert.equal(response.status, i === 10 ? 429 : 400)
+  }
+  for (let i = 0; i < 6; i += 1) {
+    const response = await fetch(`${base}/api/giveaways/claude-pro/enter`, {
+      method: 'POST', headers: userHeaders,
+    })
+    assert.equal(response.status, i === 5 ? 429 : 400)
+  }
+
+  const { getDb } = await import('../db/index.js')
+  const user = await getDb().get('SELECT id FROM users WHERE email = ?', [email])
+  await getDb().run(
+    `INSERT INTO giveaway_entries (id, giveaway_id, user_id, email, telegram_username, telegram_verified, created_at)
+     VALUES (?, ?, ?, ?, ?, 1, ?)`,
+    ['test-entry', 'claude-pro', user.id, email, 'test_user', new Date().toISOString()]
+  )
+  const share = await fetch(`${base}/api/giveaways/claude-pro/share`, {
+    method: 'POST', headers: userHeaders,
+  })
+  assert.equal(share.status, 201)
+  const shareData = await share.json()
+  assert.equal(shareData.shared, true)
+  assert.equal(shareData.chances, 4)
+  const duplicateShare = await fetch(`${base}/api/giveaways/claude-pro/share`, {
+    method: 'POST', headers: userHeaders,
+  })
+  assert.equal(duplicateShare.status, 200)
+  assert.equal((await duplicateShare.json()).alreadyRecorded, true)
+  const { SERVER_GIVEAWAYS } = await import('../data/giveaways.js')
+  const originalEndsAt = SERVER_GIVEAWAYS['claude-pro'].endsAt
+  SERVER_GIVEAWAYS['claude-pro'].endsAt = '2020-01-01T00:00:00Z'
+  t.after(() => { SERVER_GIVEAWAYS['claude-pro'].endsAt = originalEndsAt })
+
+  const draw = await fetch(`${base}/api/admin/giveaways/claude-pro/draw`, { method: 'POST', headers: adminHeaders })
+  assert.equal(draw.status, 201)
+  const drawData = await draw.json()
+  assert.equal(drawData.result.winnerEmail, email)
+  assert.equal(drawData.result.totalChances, 4)
+  assert.equal(drawData.result.winnerChances, 4)
+  const redraw = await fetch(`${base}/api/admin/giveaways/claude-pro/draw`, { method: 'POST', headers: adminHeaders })
+  assert.equal(redraw.status, 200)
+  assert.equal((await redraw.json()).alreadyDrawn, true)
+
+  const exportCsv = await fetch(`${base}/api/admin/giveaways/claude-pro/export.csv`, { headers: adminHeaders })
+  assert.equal(exportCsv.status, 200)
+  assert.match(await exportCsv.text(), /test_user/)
+  const publish = await fetch(`${base}/api/admin/giveaways/claude-pro/publish`, { method: 'POST', headers: adminHeaders })
+  assert.equal(publish.status, 200)
+  const publicResult = await fetch(`${base}/api/giveaways/claude-pro`).then((r) => r.json())
+  assert.equal(publicResult.result.winnerTelegramUsername, '@test_user')
 })
 
 test('nowIso returns valid ISO string', async () => {
   const { nowIso } = await import('../db/time.js')
   assert.ok(!Number.isNaN(Date.parse(nowIso())))
+})
+
+test('email verification only preserves safe internal return paths', async () => {
+  const { normalizeVerificationReturnPath } = await import('../services/emailVerification.js')
+  assert.equal(
+    normalizeVerificationReturnPath('/giveaway/claude-pro?ref=AIA-LCR9XC'),
+    '/giveaway/claude-pro?ref=AIA-LCR9XC',
+  )
+  assert.equal(normalizeVerificationReturnPath('https://evil.example/phish'), '/onboarding')
+  assert.equal(normalizeVerificationReturnPath('//evil.example/phish'), '/onboarding')
+  assert.equal(normalizeVerificationReturnPath('/safe\\evil'), '/onboarding')
+})
+
+test('giveaway chance totals include Telegram and server-recorded bonuses', async () => {
+  const {
+    GIVEAWAY_REFERRAL_CHANCES,
+    GIVEAWAY_SHARE_CHANCES,
+    totalGiveawayChances,
+  } = await import('../data/giveawayChances.js')
+  assert.equal(totalGiveawayChances(), 2)
+  assert.equal(totalGiveawayChances(GIVEAWAY_SHARE_CHANCES), 4)
+  assert.equal(
+    totalGiveawayChances(GIVEAWAY_SHARE_CHANCES + GIVEAWAY_REFERRAL_CHANCES * 2),
+    10,
+  )
 })
 
 test('Postgres connection and table count', async (t) => {

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { getDb } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
+import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { config } from '../config.js'
 import { sendTelegramMessage } from '../services/telegram.js'
 import { handleTelegramUpdate } from '../services/telegramBotHandlers.js'
@@ -153,7 +154,7 @@ router.post('/disconnect', requireUser, async (req, res) => {
   res.json({ ok: true })
 })
 
-router.post('/reminder', requireUser, async (req, res) => {
+router.post('/reminder', requireUser, prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const { courseId, lessonIndex, remindAt } = req.body
   const id = `rem-${Date.now()}`

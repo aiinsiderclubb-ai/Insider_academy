@@ -4,7 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { assertProductionConfig } from './utils/productionChecks.js'
 import { createApp } from './app.js'
-import { config } from './config.js'
+import { config, isPrelaunchMode } from './config.js'
 import { getDb } from './db.js'
 import { parseJson } from './db/sqlite.js'
 import { nowIso } from './db/time.js'
@@ -20,6 +20,7 @@ for (const dir of ['data', 'uploads']) {
 }
 
 async function processReminders() {
+  if (isPrelaunchMode()) return
   try {
     const db = getDb()
     const due = await db.all(

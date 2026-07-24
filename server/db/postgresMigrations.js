@@ -31,6 +31,9 @@ export async function runPostgresMigrations(pool) {
     'ALTER TABLE certificates ADD COLUMN IF NOT EXISTS updated_at TEXT',
     'ALTER TABLE accelerator_applications ADD COLUMN IF NOT EXISTS admin_note TEXT',
     'ALTER TABLE accelerator_applications ADD COLUMN IF NOT EXISTS updated_at TEXT',
+    'ALTER TABLE giveaway_results ADD COLUMN IF NOT EXISTS selection_ticket INTEGER',
+    'ALTER TABLE giveaway_results ADD COLUMN IF NOT EXISTS total_chances INTEGER',
+    'ALTER TABLE giveaway_results ADD COLUMN IF NOT EXISTS winner_chances INTEGER',
   ]
 
   const tables = [
@@ -92,6 +95,32 @@ export async function runPostgresMigrations(pool) {
       telegram_verified INTEGER DEFAULT 0,
       created_at TEXT NOT NULL,
       UNIQUE(giveaway_id, user_id)
+    )`,
+    `CREATE TABLE IF NOT EXISTS giveaway_bonus_actions (
+      id TEXT PRIMARY KEY,
+      giveaway_id TEXT NOT NULL,
+      beneficiary_user_id INTEGER NOT NULL,
+      action_user_id INTEGER NOT NULL,
+      action_type TEXT NOT NULL CHECK(action_type IN ('share', 'referral')),
+      chances INTEGER NOT NULL,
+      created_at TEXT NOT NULL,
+      UNIQUE(giveaway_id, action_user_id, action_type)
+    )`,
+    `CREATE TABLE IF NOT EXISTS giveaway_results (
+      giveaway_id TEXT PRIMARY KEY,
+      winner_entry_id TEXT NOT NULL,
+      winner_user_id INTEGER NOT NULL,
+      winner_email TEXT NOT NULL,
+      winner_telegram_username TEXT,
+      participant_count INTEGER NOT NULL,
+      selection_index INTEGER NOT NULL,
+      selection_ticket INTEGER,
+      total_chances INTEGER,
+      winner_chances INTEGER,
+      drawn_at TEXT NOT NULL,
+      drawn_by TEXT NOT NULL,
+      published_at TEXT,
+      status TEXT NOT NULL DEFAULT 'drawn'
     )`,
   ]
 

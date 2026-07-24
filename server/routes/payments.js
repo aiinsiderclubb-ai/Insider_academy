@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import { getDb } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
-import { config, isStripeEnabled, isLiqPayEnabled, isTributeEnabled } from '../config.js'
+import { config, isStripeEnabled, isLiqPayEnabled, isTributeEnabled, isPrelaunchMode } from '../config.js'
+import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { createCheckoutSession } from '../services/stripe.js'
 import { createPaymentPayload } from '../services/liqpay.js'
 import {
@@ -13,6 +14,9 @@ import {
 const router = Router()
 
 router.get('/tribute/status', (_req, res) => {
+  if (isPrelaunchMode()) {
+    return res.json({ enabled: false, prelaunch: true, productMap: {} })
+  }
   res.json({
     enabled: isTributeEnabled(),
     shopId: config.tribute.shopId,
@@ -21,7 +25,7 @@ router.get('/tribute/status', (_req, res) => {
   })
 })
 
-router.post('/tribute/checkout', requireUser, async (req, res) => {
+router.post('/tribute/checkout', requireUser, prelaunchBlocked, async (req, res) => {
   if (!isTributeEnabled()) {
     return res.status(503).json({ error: 'Tribute not configured. Set TRIBUTE_API_KEY in server/.env' })
   }
@@ -87,7 +91,7 @@ router.post('/tribute/checkout', requireUser, async (req, res) => {
   }
 })
 
-router.post('/stripe/checkout', requireUser, async (req, res) => {
+router.post('/stripe/checkout', requireUser, prelaunchBlocked, async (req, res) => {
   if (!isStripeEnabled()) return res.status(503).json({ error: 'Stripe not configured' })
   const db = getDb()
   const { courseId, amount, courseTitle } = req.body
@@ -110,7 +114,7 @@ router.post('/stripe/checkout', requireUser, async (req, res) => {
   res.json({ url: session.url, sessionId: session.id })
 })
 
-router.post('/liqpay/create', requireUser, async (req, res) => {
+router.post('/liqpay/create', requireUser, prelaunchBlocked, async (req, res) => {
   if (!isLiqPayEnabled()) return res.status(503).json({ error: 'LiqPay not configured' })
   const db = getDb()
   const { courseId, amount, courseTitle, slug } = req.body
@@ -130,7 +134,7 @@ router.post('/liqpay/create', requireUser, async (req, res) => {
   res.json(payload)
 })
 
-router.post('/demo', requireUser, async (req, res) => {
+router.post('/demo', requireUser, prelaunchBlocked, async (req, res) => {
   // Демо-оплата бесплатно выдаёт курс — в проде только по явному флагу.
   if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_PURCHASE !== '1') {
     return res.status(403).json({

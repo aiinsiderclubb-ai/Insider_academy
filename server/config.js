@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export const config = {
+  // Secure default: a missing flag must never expose paid or unfinished LMS flows.
+  prelaunchMode: process.env.PRELAUNCH_MODE !== '0',
   port: Number(process.env.PORT) || 3001,
   corsOrigin: process.env.CORS_ORIGIN
     || 'http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174',
@@ -114,7 +116,11 @@ export function isTelegramEnabled() {
 }
 
 export function isTributeEnabled() {
-  return Boolean(config.tribute.apiKey)
+  return !config.prelaunchMode && Boolean(config.tribute.apiKey)
+}
+
+export function isPrelaunchMode() {
+  return config.prelaunchMode
 }
 
 export function isGoogleSheetsEnabled() {

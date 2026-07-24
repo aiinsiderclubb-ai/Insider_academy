@@ -420,6 +420,34 @@ CREATE TABLE IF NOT EXISTS giveaway_entries (
   UNIQUE(giveaway_id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS giveaway_bonus_actions (
+  id TEXT PRIMARY KEY,
+  giveaway_id TEXT NOT NULL,
+  beneficiary_user_id INTEGER NOT NULL,
+  action_user_id INTEGER NOT NULL,
+  action_type TEXT NOT NULL CHECK(action_type IN ('share', 'referral')),
+  chances INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE(giveaway_id, action_user_id, action_type)
+);
+
+CREATE TABLE IF NOT EXISTS giveaway_results (
+  giveaway_id TEXT PRIMARY KEY,
+  winner_entry_id TEXT NOT NULL,
+  winner_user_id INTEGER NOT NULL,
+  winner_email TEXT NOT NULL,
+  winner_telegram_username TEXT,
+  participant_count INTEGER NOT NULL,
+  selection_index INTEGER NOT NULL,
+  selection_ticket INTEGER,
+  total_chances INTEGER,
+  winner_chances INTEGER,
+  drawn_at TEXT NOT NULL,
+  drawn_by TEXT NOT NULL,
+  published_at TEXT,
+  status TEXT NOT NULL DEFAULT 'drawn'
+);
+
 CREATE TABLE IF NOT EXISTS peer_reviews (
   id TEXT PRIMARY KEY,
   course_id TEXT NOT NULL,
@@ -432,6 +460,11 @@ CREATE TABLE IF NOT EXISTS peer_reviews (
   created_at TEXT NOT NULL
 );`)
   } catch (_) {}
+
+  const giveawayResultCols = db.prepare('PRAGMA table_info(giveaway_results)').all().map((c) => c.name)
+  if (giveawayResultCols.length && !giveawayResultCols.includes('selection_ticket')) add('ALTER TABLE giveaway_results ADD COLUMN selection_ticket INTEGER')
+  if (giveawayResultCols.length && !giveawayResultCols.includes('total_chances')) add('ALTER TABLE giveaway_results ADD COLUMN total_chances INTEGER')
+  if (giveawayResultCols.length && !giveawayResultCols.includes('winner_chances')) add('ALTER TABLE giveaway_results ADD COLUMN winner_chances INTEGER')
 }
 
 export function parseJson(raw, fallback) {

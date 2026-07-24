@@ -262,7 +262,7 @@ router.post('/register', asyncHandler(async (req, res) => {
 
   let verification = {}
   try {
-    verification = await issueEmailVerificationCode(email, name)
+    verification = await issueEmailVerificationCode(email, name, req.body.returnTo)
   } catch (err) {
     console.warn('[auth/register] verification email:', err.message)
     if (!isEmailEnabled()) {
@@ -398,7 +398,7 @@ router.post('/resend-verification-code', asyncHandler(async (req, res) => {
     return res.json({ ok: true, alreadyVerified: true, messageRu: 'Email уже подтверждён' })
   }
   try {
-    const verification = await issueEmailVerificationCode(email, user.name)
+    const verification = await issueEmailVerificationCode(email, user.name, req.body.returnTo)
     res.json({
       ok: true,
       messageRu: 'Новый код отправлен на почту',

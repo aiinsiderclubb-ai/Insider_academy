@@ -2,12 +2,15 @@ import { nowIso } from '../db/time.js'
 import { grantCourseAccess } from './grantCourse.js'
 import { createUserNotification } from './notifications.js'
 import * as sheetsTrack from './sheetsTrack.js'
+import { prelaunchServiceGuard } from '../middleware/prelaunch.js'
 
 export const ACCELERATOR_COURSE_ID = 'ai-insider-accelerator'
 export const ACCELERATOR_COURSE_TITLE = 'AI Insider Accelerator'
 export const ACCELERATOR_COURSE_PATH = '/courses/ai-insider-accelerator'
 
 export async function approveAcceleratorApplication(db, applicationRow, { adminNote, actorRole }) {
+  const blocked = prelaunchServiceGuard()
+  if (blocked) return blocked
   if (!applicationRow) return { ok: false, error: 'Application not found' }
 
   const email = String(applicationRow.email || '').trim().toLowerCase()

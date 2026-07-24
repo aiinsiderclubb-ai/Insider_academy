@@ -2,6 +2,7 @@ import { Router } from 'express'
 import crypto from 'crypto'
 import { getDb } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
+import { prelaunchBlocked } from '../middleware/prelaunch.js'
 
 const router = Router()
 
@@ -43,7 +44,7 @@ router.post('/join', requireUser, async (req, res) => {
   res.json({ ok: true, teamId: team.id })
 })
 
-router.post('/grant-course', requireUser, async (req, res) => {
+router.post('/grant-course', requireUser, prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const { memberEmail, courseId } = req.body
   const team = await db.get(

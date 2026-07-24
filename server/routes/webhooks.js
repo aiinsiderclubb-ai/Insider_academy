@@ -8,6 +8,7 @@ import {
 } from '../services/tribute.js'
 import { grantAccess, logWebhookEvent } from '../services/access.js'
 import { config } from '../config.js'
+import { prelaunchBlocked } from '../middleware/prelaunch.js'
 
 const router = Router()
 
@@ -38,7 +39,7 @@ export async function handleStripeWebhook(req, res) {
   }
 }
 
-router.post('/liqpay', async (req, res) => {
+router.post('/liqpay', prelaunchBlocked, async (req, res) => {
   const decoded = verifyCallback(req.body.data, req.body.signature)
   if (!decoded) return res.status(400).send('Invalid signature')
   if (decoded.status === 'success' || decoded.status === 'sandbox') {

@@ -5,7 +5,11 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { mapAuthApiError } from '../utils/authErrors'
 import { formatApiError } from '../utils/formatApiError'
-import { getPendingVerifyEmail } from '../utils/pendingVerification'
+import {
+  getPendingVerifyEmail,
+  normalizeReturnPath,
+  setPendingVerifyReturnPath,
+} from '../utils/pendingVerification'
 import { NeuronGlow } from '../components/NeuronGlow'
 import { AuthVisual } from '../components/AuthVisual'
 import { SocialAuthButtons } from '../components/SocialAuthButtons'
@@ -16,7 +20,8 @@ export function Register() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname || '/onboarding'
+  const returnFromQuery = new URLSearchParams(location.search).get('returnTo')
+  const from = normalizeReturnPath(returnFromQuery || location.state?.from?.pathname, '/onboarding')
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -34,7 +39,9 @@ export function Register() {
     }
     const pending = getPendingVerifyEmail()
     if (pending) {
-      navigate(`/verify-email?email=${encodeURIComponent(pending)}`, { replace: true })
+      setPendingVerifyReturnPath(from)
+      const q = new URLSearchParams({ email: pending, returnTo: from })
+      navigate(`/verify-email?${q.toString()}`, { replace: true })
     }
   }, [user, from, navigate, authLoading])
 
@@ -47,7 +54,8 @@ export function Register() {
   }
 
   const goToVerifyEmail = (emailAddr, devCode) => {
-    const q = new URLSearchParams({ email: emailAddr })
+    setPendingVerifyReturnPath(from)
+    const q = new URLSearchParams({ email: emailAddr, returnTo: from })
     if (devCode) q.set('devCode', devCode)
     navigate(`/verify-email?${q.toString()}`, { replace: true })
   }
@@ -90,7 +98,7 @@ export function Register() {
 
     setLoading(true)
     try {
-      const result = await register(emailTrim, passwordValue.trim(), nameTrim)
+      const result = await register(emailTrim, passwordValue.trim(), nameTrim, from)
       if (result?.requiresVerification) {
         goToVerifyEmail(result.email || emailTrim, result.devCode)
         return
@@ -130,7 +138,7 @@ export function Register() {
             {t('login.back')}
           </Link>
           <Link
-            to="/login"
+            to={`/login?returnTo=${encodeURIComponent(from)}`}
             state={{ from: location.state?.from }}
             className={styles.loginTopBtn}
           >
@@ -233,7 +241,7 @@ export function Register() {
             <p className={styles.footerAuth}>
               {t('register.hasAccount')}{' '}
               <Link
-                to="/login"
+                to={`/login?returnTo=${encodeURIComponent(from)}`}
                 state={{ from: location.state?.from }}
                 className={styles.footerAuthLink}
               >
