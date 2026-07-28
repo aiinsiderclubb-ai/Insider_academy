@@ -2203,6 +2203,12 @@
 }
 
 /* Blog */
+.blogEditorial {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(88px, 11vw, 170px) 0;
+}
+
 .blog {
   padding: 80px 0;
   position: relative;

@@ -35,6 +35,7 @@ import { getPersonalUpsells } from '../data/marketplace/recommendations'
 import { hasClubMembership } from '../data/club'
 import { MARKETPLACE_CREATORS } from '../data/marketplace/creators'
 import { HeroShowcase } from '../components/HeroShowcase'
+import { EditorialPosts } from '../components/EditorialPosts'
 import styles from './Home.module.css'
 
 /** Свежие посты с доступной локализованной метаинформацией. */
@@ -89,10 +90,6 @@ export function Home() {
       } catch (_) {}
     })
   }, [user])
-
-  const getPostTitle = (post) => getBlogPostLocalized(post, lang).title
-  const getPostExcerpt = (post) => getBlogPostLocalized(post, lang).excerpt
-  const getPostCategory = (post) => getBlogPostLocalized(post, lang).category
 
   const streakCurrent = userStats?.streak?.current || 0
   const activeCourses = purchases?.filter((p) => {
@@ -463,25 +460,16 @@ export function Home() {
         </div>
       </ScrollReveal>
 
-      <ScrollReveal as="section" className={`${styles.blog} ${styles.bandSurface}`}>
+      <ScrollReveal as="div" className={`${styles.blogEditorial} ${styles.bandSurface}`}>
         <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>{t('home.blogTitle')}</h2>
-          <p className={styles.sectionDesc}>{t('home.blogDesc')}</p>
-          {blogPreview.length > 0 && (
-            <StaggerReveal className={styles.blogGrid} stagger={60}>
-              {blogPreview.map((post) => (
-                <Link to={localizePath(`/blog/${post.slug}`, lang)} key={post.id} className={styles.blogCard}>
-                  <span className={styles.blogCategory}>{getPostCategory(post)}</span>
-                  <h3 className={styles.blogCardTitle}>{getPostTitle(post)}</h3>
-                  <p className={styles.blogExcerpt}>{getPostExcerpt(post)}</p>
-                  <span className={styles.blogLink}>{t('home.readMore')}</span>
-                </Link>
-              ))}
-            </StaggerReveal>
-          )}
-          <div className={styles.moreWrap}>
-            <Link to="/blog" className={styles.moreLink}>{t('home.allBlogPosts')}</Link>
-          </div>
+          <EditorialPosts
+            posts={blogPreview}
+            lang={lang}
+            title={t('home.blogTitle')}
+            description={t('home.blogDesc')}
+            eyebrow={lang === 'en' ? 'AI INSIDER · EDITORIAL' : lang === 'ukr' ? 'AI INSIDER · РЕДАКЦІЯ' : 'AI INSIDER · РЕДАКЦИЯ'}
+            allLabel={t('home.allBlogPosts')}
+          />
         </div>
       </ScrollReveal>
 

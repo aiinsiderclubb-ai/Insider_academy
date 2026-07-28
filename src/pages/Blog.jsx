@@ -1,19 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { fetchBlogPosts, getBlogPosts } from '../api/blogStore'
 import { getBlogPostLocalized } from '../data/blog'
 import { EmptyState } from '../components/EmptyState'
-import { localizePath } from '../routing/locale'
+import { EditorialPosts } from '../components/EditorialPosts'
 import styles from './Blog.module.css'
-
-function formatPostDate(post, lang) {
-  return new Date(post.date).toLocaleDateString(lang === 'ukr' ? 'uk-UA' : lang === 'en' ? 'en-US' : 'ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
 
 export function Blog() {
   const { t, lang } = useLanguage()
@@ -34,39 +25,22 @@ export function Blog() {
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
-        <header className={styles.hero}>
-          <span className={styles.eyebrow}>AI INSIDER · EDITORIAL</span>
-          <h1 className={styles.title}>{t('blog.title')}</h1>
-          <p className={styles.desc}>{t('blog.desc')}</p>
-
-        </header>
-
         {filteredPosts.length === 0 && (
           <EmptyState
             message={lang === 'ru' ? 'Статей на русском языке пока нет' : lang === 'ukr' ? 'Статей українською поки немає' : 'No English posts yet'}
           />
         )}
-
-        <div className={styles.grid}>
-          {filteredPosts.map((post) => {
-            const localized = getBlogPostLocalized(post, lang)
-            return (
-              <article key={post.id} className={styles.card}>
-                <div className={styles.cardVisual} aria-hidden />
-                <div className={styles.cardHead}>
-                  <span className={styles.category}>{localized.category}</span>
-                </div>
-                <h2 className={styles.cardTitle}>
-                  <Link to={localizePath(`/blog/${post.slug}`, lang)}>{localized.title}</Link>
-                </h2>
-                <p className={styles.excerpt}>{localized.excerpt}</p>
-                <time className={styles.date} dateTime={post.date}>
-                  {formatPostDate(post, lang)}
-                </time>
-              </article>
-            )
-          })}
-        </div>
+        <EditorialPosts
+          posts={filteredPosts}
+          lang={lang}
+          title={t('blog.title')}
+          description={t('blog.desc')}
+          eyebrow={lang === 'en' ? 'AI INSIDER · EDITORIAL' : lang === 'ukr' ? 'AI INSIDER · РЕДАКЦІЯ' : 'AI INSIDER · РЕДАКЦИЯ'}
+          allLabel={lang === 'en' ? 'All stories' : lang === 'ukr' ? 'Усі матеріали' : 'Все материалы'}
+          allHref="#editorial-archive"
+          headingLevel={1}
+          archive
+        />
       </div>
     </div>
   )
