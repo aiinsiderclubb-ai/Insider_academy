@@ -146,7 +146,13 @@ function PrizeTiltCard({ giveaway, lang }) {
 function Accordion({ items, idPrefix, numbered = false }) {
   const [open, setOpen] = useState(numbered ? 0 : null)
   return (
-    <div className={`${styles.accordion} ${numbered ? styles.accordionRules : ''}`}>
+    <div
+      className={[
+        styles.accordion,
+        numbered ? styles.accordionRules : '',
+        idPrefix === 'faq' ? styles.accordionFaq : '',
+      ].filter(Boolean).join(' ')}
+    >
       {items.map((item, i) => {
         const key = `${idPrefix}-${i}`
         const isOpen = open === i
@@ -678,9 +684,17 @@ function GiveawayDetail({ giveaway, lang }) {
 
         {faq.length > 0 && (
           <ScrollReveal>
-            <section className={styles.section}>
+            <section className={`${styles.section} ${styles.faqSection}`}>
+              <p className={styles.sectionEyebrow}>
+                {ru ? 'ОТВЕТЫ · DROP 01' : 'ANSWERS · DROP 01'}
+              </p>
               <h2 className={styles.sectionTitle}>FAQ</h2>
-              <Accordion idPrefix="faq" items={faq} />
+              <p className={styles.sectionLead}>
+                {ru
+                  ? 'Коротко о правилах, призе и том, как проходит розыгрыш.'
+                  : 'Short answers on rules, the prize, and how the draw works.'}
+              </p>
+              <Accordion idPrefix="faq" items={faq} numbered />
             </section>
           </ScrollReveal>
         )}

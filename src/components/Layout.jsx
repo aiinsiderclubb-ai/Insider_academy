@@ -371,12 +371,16 @@ export function Layout({ children }) {
         {!isImmersive && <InactivityBanner lang={lang} />}
         {!isImmersive && (
           <header className={`${styles.header} ${headerScrolled ? styles.headerScrolled : ''}`}>
+            <span className={styles.headerGlow} aria-hidden />
             <button type="button" className={styles.mobileMenu} onClick={() => setMobileNavOpen((value) => !value)} aria-expanded={mobileNavOpen}>
               {mobileNavOpen ? <X size={21} /> : <Menu size={21} />}
             </button>
             <div className={styles.pageIdentity}>
-              <span>{lang === 'ru' ? 'AI INSIDER / ОБУЧЕНИЕ' : 'AI INSIDER / LEARNING'}</span>
-              <strong>{pageTitle}</strong>
+              <span className={styles.pageIdentityEyebrow}>
+                <span className={styles.pageIdentityDot} aria-hidden />
+                {lang === 'ru' ? 'AI INSIDER / ОБУЧЕНИЕ' : 'AI INSIDER / LEARNING'}
+              </span>
+              <strong className={styles.pageIdentityTitle}>{pageTitle}</strong>
             </div>
             <div className={styles.headerRight}>
               <button type="button" className={styles.langToggle} onClick={toggleLang} aria-label={lang === 'ru' ? 'Switch to English' : 'Переключить на русский'}>
