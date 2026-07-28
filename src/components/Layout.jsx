@@ -371,7 +371,9 @@ export function Layout({ children }) {
         {!isImmersive && <InactivityBanner lang={lang} />}
         {!isImmersive && (
           <header className={`${styles.header} ${headerScrolled ? styles.headerScrolled : ''}`}>
-            <span className={styles.headerGlow} aria-hidden />
+            <span className={styles.headerGlowClip} aria-hidden>
+              <span className={styles.headerGlow} />
+            </span>
             <button type="button" className={styles.mobileMenu} onClick={() => setMobileNavOpen((value) => !value)} aria-expanded={mobileNavOpen}>
               {mobileNavOpen ? <X size={21} /> : <Menu size={21} />}
             </button>
