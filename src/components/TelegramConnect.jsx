@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, Check, Copy, RefreshCw, Send } from 'lucide-react'
 import { api } from '../api/client'
 import { TELEGRAM_NOTIFY_BOT } from '../data/siteLinks'
@@ -30,8 +31,9 @@ async function copyText(text) {
   }
 }
 
-export function TelegramConnect({ lang, personalId: personalIdProp, variant = 'default' }) {
+export function TelegramConnect({ lang, personalId: personalIdProp, variant = 'default', returnTo = '' }) {
   const ru = lang === 'ru'
+  const navigate = useNavigate()
   const [status, setStatus] = useState(null)
   const [linkUrl, setLinkUrl] = useState('')
   const [botUrl, setBotUrl] = useState(TELEGRAM_NOTIFY_BOT || '')
@@ -40,6 +42,7 @@ export function TelegramConnect({ lang, personalId: personalIdProp, variant = 'd
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [copied, setCopied] = useState('')
+  const [redirecting, setRedirecting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -74,6 +77,13 @@ export function TelegramConnect({ lang, personalId: personalIdProp, variant = 'd
     const id = setInterval(() => { load().catch(() => {}) }, 5000)
     return () => clearInterval(id)
   }, [status, loading, load])
+
+  useEffect(() => {
+    if (!returnTo || !status?.connected || redirecting) return undefined
+    setRedirecting(true)
+    const id = setTimeout(() => navigate(returnTo, { replace: true }), 1500)
+    return () => clearTimeout(id)
+  }, [returnTo, status?.connected, redirecting, navigate])
 
   const togglePref = async (key) => {
     if (!status?.prefs) return
@@ -137,6 +147,18 @@ export function TelegramConnect({ lang, personalId: personalIdProp, variant = 'd
               {botUsername ? ` ${botUsername}` : ''}
               <ArrowUpRight size={16} aria-hidden="true" />
             </a>
+          )}
+          {redirecting && (
+            <p className={styles.muted}>
+              {ru ? 'Возвращаем вас обратно…' : 'Taking you back…'}{' '}
+              <button
+                type="button"
+                className={styles.textBtn}
+                onClick={() => navigate(returnTo, { replace: true })}
+              >
+                {ru ? 'Перейти сейчас' : 'Go now'}
+              </button>
+            </p>
           )}
         </>
       ) : (

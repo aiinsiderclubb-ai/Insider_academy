@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -26,10 +26,18 @@ import { pickContinueTarget } from '../utils/continueLearning'
 import { getCourseDesignCover } from '../utils/designAssets'
 import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
 import { getActiveGiveaways } from '../data/giveaways'
+import { normalizeReturnPath } from '../utils/pendingVerification'
 import styles from './Cabinet.module.css'
 
 export function Cabinet() {
   const { user, purchases, apiMode, hasPurchased } = useAuth()
+  const [searchParams] = useSearchParams()
+  const telegramReturnTo = (() => {
+    const raw = searchParams.get('returnTo')
+    if (!raw) return ''
+    const normalized = normalizeReturnPath(raw, '')
+    return normalized || ''
+  })()
   const { getPercent, getProgress, syncHomeworkAccepted } = useProgress()
   const { t, lang } = useLanguage()
   const { getCourseById, courses } = useCourses()
@@ -449,7 +457,7 @@ export function Cabinet() {
               ? 'Подключите бота — он пришлёт в Telegram принятые ДЗ, промокоды, новости курсов и другое.'
               : 'Connect the bot for homework, promos, course news, and more.'}
           </p>
-          <TelegramConnect lang={lang} personalId={user?.personalId} />
+          <TelegramConnect lang={lang} personalId={user?.personalId} returnTo={telegramReturnTo} />
         </section>
 
         <section id="certificates" className={styles.section}>

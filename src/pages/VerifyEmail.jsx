@@ -30,6 +30,11 @@ export function VerifyEmail() {
     params.get('returnTo') || getPendingVerifyReturnPath(),
     '/onboarding',
   )
+  const successRedirectKey = returnTo.startsWith('/giveaway')
+    ? 'register.successRedirectGiveaway'
+    : (returnTo === '/onboarding' || returnTo.startsWith('/cabinet'))
+      ? 'register.successRedirect'
+      : 'register.successRedirectGeneric'
 
   const [email, setEmail] = useState(emailFromUrl)
   const [code, setCode] = useState('')
@@ -124,7 +129,7 @@ export function VerifyEmail() {
                 </div>
                 <h1 className={styles.title}>{t('register.successTitle')}</h1>
                 <p className={styles.subtitle}>{t('register.successSubtitle')}</p>
-                <p className={styles.successRedirect}>{t('register.successRedirect')}</p>
+                <p className={styles.successRedirect}>{t(successRedirectKey)}</p>
               </div>
             </div>
           </div>

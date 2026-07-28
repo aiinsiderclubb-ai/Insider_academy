@@ -261,7 +261,9 @@
     "errorCodeLength": "Enter all 6 digits.",
     "successTitle": "Registration successful!",
     "successSubtitle": "Your account is verified. Welcome to AI Insider Academy.",
-    "successRedirect": "Opening your dashboard…"
+    "successRedirect": "Opening your dashboard…",
+    "successRedirectGiveaway": "Taking you back to the giveaway…",
+    "successRedirectGeneric": "Taking you back to where you started…"
   },
   "verifyEmail": {
     "title": "Verify your email",

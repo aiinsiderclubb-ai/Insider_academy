@@ -829,7 +829,10 @@ function GiveawayDetail({ giveaway, lang }) {
 
                   <div className={styles.finalActions}>
                     {!state?.telegramConnected && (
-                      <Link to="/cabinet#telegram" className={styles.btnGhost}>
+                      <Link
+                        to={`/cabinet?returnTo=${encodeURIComponent(redirectPath)}#telegram`}
+                        className={styles.btnGhost}
+                      >
                         <Send size={17} aria-hidden />
                         {ru ? 'Подключить Telegram' : 'Connect Telegram'}
                         <ArrowRight size={17} aria-hidden />

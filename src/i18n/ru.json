@@ -261,7 +261,9 @@
     "errorCodeLength": "Введите все 6 цифр кода.",
     "successTitle": "Регистрация успешна!",
     "successSubtitle": "Аккаунт подтверждён. Добро пожаловать в AI Insider Academy.",
-    "successRedirect": "Сейчас откроем личный кабинет…"
+    "successRedirect": "Сейчас откроем личный кабинет…",
+    "successRedirectGiveaway": "Возвращаем вас на страницу розыгрыша…",
+    "successRedirectGeneric": "Сейчас вернём вас туда, откуда вы пришли…"
   },
   "verifyEmail": {
     "title": "Подтверждение email",
