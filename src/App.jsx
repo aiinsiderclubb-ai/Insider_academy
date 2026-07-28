@@ -10,40 +10,41 @@ import { ThemeProvider } from './context/ThemeContext'
 import { CoursesProvider } from './context/CoursesContext'
 import { Layout } from './components/Layout'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
-import { Home } from './pages/Home'
-import { Courses } from './pages/Courses'
-import { Course } from './pages/Course'
-import { CourseBuy } from './pages/CourseBuy'
-import { Cabinet } from './pages/Cabinet'
-import { Blog } from './pages/Blog'
-import { BlogPost } from './pages/BlogPost'
-import { Calendar } from './pages/Calendar'
-import { Login } from './pages/Login'
-import { Register } from './pages/Register'
-import { AccountSettings } from './pages/AccountSettings'
-import { VerifyEmail } from './pages/VerifyEmail'
-import { ForgotPassword } from './pages/ForgotPassword'
-import { ResetPassword } from './pages/ResetPassword'
-import { Memberships } from './pages/Memberships'
-import { MembershipPlan } from './pages/MembershipPlan'
-import { CoursePack } from './pages/CoursePack'
-import { VaultProduct } from './pages/VaultProduct'
-import { VaultBuy } from './pages/VaultBuy'
-import { Marketplace } from './pages/Marketplace'
-import { MarketplaceProduct } from './pages/MarketplaceProduct'
-import { MarketplaceBuy } from './pages/MarketplaceBuy'
-import { MarketplaceCreators } from './pages/MarketplaceCreators'
-const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })))
-import { AcceleratorApply } from './pages/AcceleratorApply'
-import { LearningMap } from './pages/LearningMap'
-import { Giveaway } from './pages/Giveaway'
-import { Events } from './pages/Events'
-import { PublicOffer } from './pages/PublicOffer'
-import { PrivacyPolicy } from './pages/PrivacyPolicy'
-import { RefundPolicy } from './pages/RefundPolicy'
-import { GiveawayRules } from './pages/GiveawayRules'
-import { Onboarding } from './pages/Onboarding'
-import { NotFound } from './pages/NotFound'
+const lazyPage = (loader, name) => lazy(() => loader().then((module) => ({ default: module[name] })))
+const Home = lazyPage(() => import('./pages/Home'), 'Home')
+const Courses = lazyPage(() => import('./pages/Courses'), 'Courses')
+const Course = lazyPage(() => import('./pages/Course'), 'Course')
+const CourseBuy = lazyPage(() => import('./pages/CourseBuy'), 'CourseBuy')
+const Cabinet = lazyPage(() => import('./pages/Cabinet'), 'Cabinet')
+const Blog = lazyPage(() => import('./pages/Blog'), 'Blog')
+const BlogPost = lazyPage(() => import('./pages/BlogPost'), 'BlogPost')
+const Calendar = lazyPage(() => import('./pages/Calendar'), 'Calendar')
+const Login = lazyPage(() => import('./pages/Login'), 'Login')
+const Register = lazyPage(() => import('./pages/Register'), 'Register')
+const AccountSettings = lazyPage(() => import('./pages/AccountSettings'), 'AccountSettings')
+const VerifyEmail = lazyPage(() => import('./pages/VerifyEmail'), 'VerifyEmail')
+const ForgotPassword = lazyPage(() => import('./pages/ForgotPassword'), 'ForgotPassword')
+const ResetPassword = lazyPage(() => import('./pages/ResetPassword'), 'ResetPassword')
+const Memberships = lazyPage(() => import('./pages/Memberships'), 'Memberships')
+const MembershipPlan = lazyPage(() => import('./pages/MembershipPlan'), 'MembershipPlan')
+const CoursePack = lazyPage(() => import('./pages/CoursePack'), 'CoursePack')
+const VaultProduct = lazyPage(() => import('./pages/VaultProduct'), 'VaultProduct')
+const VaultBuy = lazyPage(() => import('./pages/VaultBuy'), 'VaultBuy')
+const Marketplace = lazyPage(() => import('./pages/Marketplace'), 'Marketplace')
+const MarketplaceProduct = lazyPage(() => import('./pages/MarketplaceProduct'), 'MarketplaceProduct')
+const MarketplaceBuy = lazyPage(() => import('./pages/MarketplaceBuy'), 'MarketplaceBuy')
+const MarketplaceCreators = lazyPage(() => import('./pages/MarketplaceCreators'), 'MarketplaceCreators')
+const Admin = lazyPage(() => import('./pages/Admin'), 'Admin')
+const AcceleratorApply = lazyPage(() => import('./pages/AcceleratorApply'), 'AcceleratorApply')
+const LearningMap = lazyPage(() => import('./pages/LearningMap'), 'LearningMap')
+const Giveaway = lazyPage(() => import('./pages/Giveaway'), 'Giveaway')
+const Events = lazyPage(() => import('./pages/Events'), 'Events')
+const PublicOffer = lazyPage(() => import('./pages/PublicOffer'), 'PublicOffer')
+const PrivacyPolicy = lazyPage(() => import('./pages/PrivacyPolicy'), 'PrivacyPolicy')
+const RefundPolicy = lazyPage(() => import('./pages/RefundPolicy'), 'RefundPolicy')
+const GiveawayRules = lazyPage(() => import('./pages/GiveawayRules'), 'GiveawayRules')
+const Onboarding = lazyPage(() => import('./pages/Onboarding'), 'Onboarding')
+const NotFound = lazyPage(() => import('./pages/NotFound'), 'NotFound')
 import { ToastProvider } from './context/ToastContext'
 import { LEGACY_SLUG_REDIRECTS, LEGACY_PACK_REDIRECTS } from './data/courseAliases'
 import { DEFAULT_LOCALE, isPublicLocale, localizePath } from './routing/locale'
@@ -83,6 +84,7 @@ function AppContent() {
       <ProgressProvider>
       <ToastProvider>
       <Layout>
+        <Suspense fallback={<LoadingSpinner fullPage />}>
         <Routes>
           <Route path="/" element={<Navigate to={`/${DEFAULT_LOCALE}/`} replace />} />
           <Route path="/courses/*" element={<LegacyPublicRedirect />} />
@@ -151,6 +153,7 @@ function AppContent() {
           <Route path="/admin" element={<Suspense fallback={<LoadingSpinner fullPage />}><Admin /></Suspense>} />
           <Route path="*" element={<LegacyPublicRedirect />} />
         </Routes>
+        </Suspense>
       </Layout>
       </ToastProvider>
       </ProgressProvider>

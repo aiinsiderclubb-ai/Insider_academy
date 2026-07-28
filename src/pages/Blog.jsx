@@ -2,13 +2,13 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { fetchBlogPosts, getBlogPosts } from '../api/blogStore'
-import { getBlogPostLang, getBlogPostLocale } from '../data/blog'
+import { getBlogPostLocalized } from '../data/blog'
 import { EmptyState } from '../components/EmptyState'
 import { localizePath } from '../routing/locale'
 import styles from './Blog.module.css'
 
-function formatPostDate(post) {
-  return new Date(post.date).toLocaleDateString(getBlogPostLocale(post), {
+function formatPostDate(post, lang) {
+  return new Date(post.date).toLocaleDateString(lang === 'ukr' ? 'uk-UA' : lang === 'en' ? 'en-US' : 'ru-RU', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -26,16 +26,10 @@ export function Blog() {
     return () => window.removeEventListener('lms-blog-updated', handler)
   }, [])
 
-  const filteredPosts = useMemo(() => {
-    const contentLang = lang === 'ukr' ? 'uk' : lang
-    return posts.filter((post) => contentLang === 'en'
-      ? Boolean(post.titleEn || post.title)
-      : getBlogPostLang(post) === contentLang)
-  }, [posts, lang])
-
-  const getTitle = (post) => (lang === 'en' && post.titleEn ? post.titleEn : post.title)
-  const getExcerpt = (post) => (lang === 'en' && post.excerptEn ? post.excerptEn : post.excerpt)
-  const getCategory = (post) => (lang === 'en' && post.categoryEn ? post.categoryEn : post.category)
+  const filteredPosts = useMemo(() => posts.filter((post) => {
+    const localized = getBlogPostLocalized(post, lang)
+    return Boolean(localized.title && localized.excerpt)
+  }), [posts, lang])
 
   return (
     <div className={styles.wrap}>
@@ -55,27 +49,19 @@ export function Blog() {
 
         <div className={styles.grid}>
           {filteredPosts.map((post) => {
-            const postLang = getBlogPostLang(post)
+            const localized = getBlogPostLocalized(post, lang)
             return (
               <article key={post.id} className={styles.card}>
                 <div className={styles.cardVisual} aria-hidden />
                 <div className={styles.cardHead}>
-                  <span className={styles.category}>{getCategory(post)}</span>
-                  {postLang === 'uk' && (
-                    <span className={styles.langTag} title={lang === 'ru' ? 'Українська' : 'Ukrainian'}>
-                      UA
-                    </span>
-                  )}
-                  {postLang === 'ru' && (
-                    <span className={`${styles.langTag} ${styles.langTagRu}`}>RU</span>
-                  )}
+                  <span className={styles.category}>{localized.category}</span>
                 </div>
                 <h2 className={styles.cardTitle}>
-                  <Link to={localizePath(`/blog/${post.slug}`, lang)}>{getTitle(post)}</Link>
+                  <Link to={localizePath(`/blog/${post.slug}`, lang)}>{localized.title}</Link>
                 </h2>
-                <p className={styles.excerpt}>{getExcerpt(post)}</p>
+                <p className={styles.excerpt}>{localized.excerpt}</p>
                 <time className={styles.date} dateTime={post.date}>
-                  {formatPostDate(post)}
+                  {formatPostDate(post, lang)}
                 </time>
               </article>
             )

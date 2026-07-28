@@ -21,4 +21,12 @@ test.describe('public locale routing', () => {
     await page.getByRole('button', { name: 'English' }).click()
     await expect(page).toHaveURL(/\/en\/blog$/)
   })
+
+  test('renders a complete localized article without language badges', async ({ page }) => {
+    await page.goto('/ukr/blog/ai-resepshionist')
+    await expect(page.getByRole('heading', { name: /AI ресепшіоніст/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Практичний фреймворк/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'FAQ' })).toBeVisible()
+    await expect(page.getByText('UA', { exact: true })).toHaveCount(0)
+  })
 })

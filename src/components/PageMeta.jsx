@@ -12,7 +12,7 @@ function absoluteUrl(path) {
   return `${window.location.origin}${path.startsWith('/') ? path : `/${path}`}`
 }
 
-export function PageMeta({ title, description = DEFAULT_DESC, path = '', image = '/og-image.png' }) {
+export function PageMeta({ title, description = DEFAULT_DESC, path = '', image = '/design/ai-insider-mentor.webp', noIndex = false }) {
   useEffect(() => {
     document.title = title ? `${title} | ${SITE_NAME}` : SITE_NAME
     let meta = document.querySelector('meta[name="description"]')
@@ -63,6 +63,14 @@ export function PageMeta({ title, description = DEFAULT_DESC, path = '', image =
     setName('twitter:title', title ? `${title} | ${SITE_NAME}` : SITE_NAME)
     setName('twitter:description', description)
 
+    let robots = document.querySelector('meta[name="robots"]')
+    if (!robots) {
+      robots = document.createElement('meta')
+      robots.setAttribute('name', 'robots')
+      document.head.appendChild(robots)
+    }
+    robots.setAttribute('content', noIndex ? 'noindex, nofollow' : 'index, follow')
+
     const canonical = document.querySelector('link[rel="canonical"]') || document.createElement('link')
     canonical.setAttribute('rel', 'canonical')
     canonical.setAttribute('href', url)
@@ -85,7 +93,7 @@ export function PageMeta({ title, description = DEFAULT_DESC, path = '', image =
         if (!link.parentNode) document.head.appendChild(link)
       })
     }
-  }, [title, description, path, image])
+  }, [title, description, path, image, noIndex])
 
   return null
 }

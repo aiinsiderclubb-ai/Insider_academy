@@ -20,6 +20,8 @@ export function HeroShowcase({ lang = 'ru' }) {
     if (!canvas || !wrap) return undefined
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const compact = window.matchMedia('(max-width: 720px)').matches
+    const particleCount = compact ? 120 : PARTICLES
     const ctx = canvas.getContext('2d')
     let raf = 0
     let W = 0
@@ -29,8 +31,8 @@ export function HeroShowcase({ lang = 'ru' }) {
     // частицы на сфере — распределение Фибоначчи
     const pts = []
     const golden = Math.PI * (3 - Math.sqrt(5))
-    for (let i = 0; i < PARTICLES; i++) {
-      const y = 1 - (i / (PARTICLES - 1)) * 2
+    for (let i = 0; i < particleCount; i++) {
+      const y = 1 - (i / (particleCount - 1)) * 2
       const r = Math.sqrt(1 - y * y)
       const th = golden * i
       const roll = Math.random()
@@ -77,9 +79,16 @@ export function HeroShowcase({ lang = 'ru' }) {
     wrap.addEventListener('mouseleave', onLeave)
 
     let t = 0
-    const proj = new Array(PARTICLES)
+    const proj = new Array(particleCount)
+    let visible = !document.hidden
+    const onVisibility = () => { visible = !document.hidden }
+    document.addEventListener('visibilitychange', onVisibility)
 
     const frame = () => {
+      if (!visible) {
+        raf = requestAnimationFrame(frame)
+        return
+      }
       t += 1
       const cx = W / 2
       const cy = H / 2
@@ -114,7 +123,7 @@ export function HeroShowcase({ lang = 'ru' }) {
       const cosX = Math.cos(rotX)
 
       // проекция
-      for (let i = 0; i < PARTICLES; i++) {
+      for (let i = 0; i < particleCount; i++) {
         const p = pts[i]
         const x1 = p.x * cosY - p.z * sinY
         const z1 = p.x * sinY + p.z * cosY
@@ -131,10 +140,10 @@ export function HeroShowcase({ lang = 'ru' }) {
 
       // нити между ближними (только передняя полусфера)
       ctx.lineWidth = 0.6
-      for (let i = 0; i < PARTICLES; i += 2) {
+      for (let i = 0; i < particleCount; i += 2) {
         const a = proj[i]
         if (a.depth > 0.15) continue
-        for (let j = i + 2; j < Math.min(i + 40, PARTICLES); j += 2) {
+        for (let j = i + 2; j < Math.min(i + 40, particleCount); j += 2) {
           const b = proj[j]
           if (b.depth > 0.15) continue
           const dx = a.sx - b.sx
@@ -152,7 +161,7 @@ export function HeroShowcase({ lang = 'ru' }) {
       }
 
       // частицы
-      for (let i = 0; i < PARTICLES; i++) {
+      for (let i = 0; i < particleCount; i++) {
         const q = proj[i]
         const front = 1 - (q.depth + 1) / 2 // 1 спереди, 0 сзади
         const twinkle = 0.72 + Math.sin(t * 0.04 + q.p.tw) * 0.28
@@ -171,6 +180,7 @@ export function HeroShowcase({ lang = 'ru' }) {
     return () => {
       cancelAnimationFrame(raf)
       ro.disconnect()
+      document.removeEventListener('visibilitychange', onVisibility)
       wrap.removeEventListener('mousemove', onMove)
       wrap.removeEventListener('mouseleave', onLeave)
     }

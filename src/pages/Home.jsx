@@ -6,7 +6,8 @@ import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { getBlogPosts, fetchBlogPosts } from '../api/blogStore'
-import { getBlogPostLang } from '../data/blog'
+import { getBlogPostLocalized } from '../data/blog'
+import { localizePath } from '../routing/locale'
 import { SOCIAL_PROOF } from '../data/courseLanding'
 import { getCourseField, getCourseDescription, formatCourseDuration } from '../data/courses'
 import { api, checkApiOnline } from '../api/client'
@@ -36,10 +37,13 @@ import { MARKETPLACE_CREATORS } from '../data/marketplace/creators'
 import { HeroShowcase } from '../components/HeroShowcase'
 import styles from './Home.module.css'
 
-/** Свежие посты под язык интерфейса; если на этом языке пусто — показываем любые. */
+/** Свежие посты с доступной локализованной метаинформацией. */
 function pickBlogPreview(posts, lang) {
   const sorted = [...posts].sort((a, b) => new Date(b.date) - new Date(a.date))
-  const matched = sorted.filter((p) => getBlogPostLang(p) === lang)
+  const matched = sorted.filter((post) => {
+    const localized = getBlogPostLocalized(post, lang)
+    return localized.title && localized.excerpt
+  })
   return (matched.length > 0 ? matched : sorted).slice(0, 3)
 }
 
@@ -86,9 +90,9 @@ export function Home() {
     })
   }, [user])
 
-  const getPostTitle = (post) => (lang === 'en' && post.titleEn ? post.titleEn : post.title)
-  const getPostExcerpt = (post) => (lang === 'en' && post.excerptEn ? post.excerptEn : post.excerpt)
-  const getPostCategory = (post) => (lang === 'en' && post.categoryEn ? post.categoryEn : post.category)
+  const getPostTitle = (post) => getBlogPostLocalized(post, lang).title
+  const getPostExcerpt = (post) => getBlogPostLocalized(post, lang).excerpt
+  const getPostCategory = (post) => getBlogPostLocalized(post, lang).category
 
   const streakCurrent = userStats?.streak?.current || 0
   const activeCourses = purchases?.filter((p) => {
@@ -466,7 +470,7 @@ export function Home() {
           {blogPreview.length > 0 && (
             <StaggerReveal className={styles.blogGrid} stagger={60}>
               {blogPreview.map((post) => (
-                <Link to={`/blog/${post.slug}`} key={post.id} className={styles.blogCard}>
+                <Link to={localizePath(`/blog/${post.slug}`, lang)} key={post.id} className={styles.blogCard}>
                   <span className={styles.blogCategory}>{getPostCategory(post)}</span>
                   <h3 className={styles.blogCardTitle}>{getPostTitle(post)}</h3>
                   <p className={styles.blogExcerpt}>{getPostExcerpt(post)}</p>

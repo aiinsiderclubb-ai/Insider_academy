@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { lazy, Suspense, useState, useRef, useEffect } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { trackVisit } from '../api/adminStore'
 import { useUserNotifications } from '../hooks/useUserNotifications'
@@ -8,7 +8,6 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { useProgress } from '../context/ProgressContext'
-import { ChatBot } from './ChatBot'
 import { ScrollProgressBar } from './ScrollProgressBar'
 import { InactivityBanner } from './InactivityBanner'
 import { isRegistrationOnboardingDone } from '../utils/onboardingStorage'
@@ -40,6 +39,8 @@ import {
   X,
 } from 'lucide-react'
 import styles from './Layout.module.css'
+
+const ChatBot = lazy(() => import('./ChatBot').then((module) => ({ default: module.ChatBot })))
 
 const navItemsKeys = [
   { to: '/', labelKey: 'nav.home', Icon: HomeIcon },
@@ -543,7 +544,11 @@ export function Layout({ children }) {
             <button type="button" className={`${styles.callFab} ${chatOpen ? styles.callFabOpen : ''}`} onClick={() => (chatOpen ? setChatOpen(false) : openChat('ai'))} aria-label={t('chatbot.title')} aria-expanded={chatOpen}>
               {chatOpen ? <X size={21} /> : <MessageCircle size={22} />}
             </button>
-            <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} initialTab={chatTab} />
+            {chatOpen && (
+              <Suspense fallback={null}>
+                <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} initialTab={chatTab} />
+              </Suspense>
+            )}
           </>
         )}
       </div>
