@@ -378,6 +378,15 @@
 }
 
 .langToggle { gap: 5px; padding: 0 13px; font-family: var(--font-mono); font-size: 0.68rem; }
+.langOption {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
 .langDivider { opacity: 0.35; }
 .langActive {
   color: #f4f1ff;

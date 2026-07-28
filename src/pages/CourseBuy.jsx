@@ -142,7 +142,7 @@ export function CourseBuy() {
     setLoading(true)
     try {
       await ensureAuth()
-      const payload = { courseId: course.id, courseTitle, amount: priceAfterReferral, slug: course.slug }
+      const payload = { courseId: course.id, courseTitle, amount: priceAfterReferral, slug: course.slug, locale: lang }
 
       if (method === 'tribute') {
         if (tributePaymentUrl) {

@@ -8,9 +8,17 @@ router.get('/feature-flags', async (_req, res) => {
   res.json(await getFeatureFlags())
 })
 
-router.get('/blog', async (_req, res) => {
+router.get('/blog', async (req, res) => {
   const rows = await getDb().all('SELECT data FROM blog_posts ORDER BY id')
-  res.json(rows.map((r) => parseJson(r.data, null)).filter(Boolean))
+  const posts = rows.map((r) => parseJson(r.data, null)).filter(Boolean)
+  const lang = String(req.query.lang || '').toLowerCase()
+  if (!['ru', 'uk', 'en'].includes(lang)) return res.json(posts)
+  res.json(posts.filter((post) => {
+    if (lang === 'en') return Boolean(post.titleEn || post.title)
+    return post.lang === lang
+      || (!post.lang && lang === 'uk' && /[іїєґІЇЄҐ]/.test(`${post.title || ''} ${post.excerpt || ''}`))
+      || (!post.lang && lang === 'ru' && !/[іїєґІЇЄҐ]/.test(`${post.title || ''} ${post.excerpt || ''}`))
+  }))
 })
 
 router.get('/calendar', async (_req, res) => {

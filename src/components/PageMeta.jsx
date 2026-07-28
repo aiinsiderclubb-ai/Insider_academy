@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { SITE_NAME } from '../data/siteMeta'
+import { getLocaleFromPath, localizePath, stripLocale } from '../routing/locale'
 
 const DEFAULT_DESC =
   'Курсы, Vault, Marketplace и подписки Club/Pro — обучение AI и готовые автоматизации.'
@@ -23,7 +24,12 @@ export function PageMeta({ title, description = DEFAULT_DESC, path = '', image =
     meta.setAttribute('content', description)
 
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    const url = `${origin}${path || window.location.pathname}`
+    const currentPath = window.location.pathname
+    const currentLocale = getLocaleFromPath(currentPath)
+    const effectivePath = path && currentLocale && !getLocaleFromPath(path)
+      ? localizePath(path, currentLocale)
+      : (path || currentPath)
+    const url = `${origin}${effectivePath}`
     const ogImage = absoluteUrl(image)
 
     const setOg = (prop, content) => {
@@ -56,6 +62,29 @@ export function PageMeta({ title, description = DEFAULT_DESC, path = '', image =
     setName('twitter:image', ogImage)
     setName('twitter:title', title ? `${title} | ${SITE_NAME}` : SITE_NAME)
     setName('twitter:description', description)
+
+    const canonical = document.querySelector('link[rel="canonical"]') || document.createElement('link')
+    canonical.setAttribute('rel', 'canonical')
+    canonical.setAttribute('href', url)
+    if (!canonical.parentNode) document.head.appendChild(canonical)
+
+    const locale = getLocaleFromPath(effectivePath)
+    if (locale) {
+      const barePath = stripLocale(effectivePath)
+      const alternates = [
+        ['ru', 'ru-RU'],
+        ['ukr', 'uk-UA'],
+        ['en', 'en-US'],
+      ]
+      alternates.forEach(([targetLocale, hrefLang]) => {
+        const selector = `link[rel="alternate"][hreflang="${hrefLang}"]`
+        const link = document.querySelector(selector) || document.createElement('link')
+        link.setAttribute('rel', 'alternate')
+        link.setAttribute('hreflang', hrefLang)
+        link.setAttribute('href', `${origin}${localizePath(barePath, targetLocale)}`)
+        if (!link.parentNode) document.head.appendChild(link)
+      })
+    }
   }, [title, description, path, image])
 
   return null

@@ -1,4 +1,20 @@
 {
+  "redirects": [
+    { "source": "/", "destination": "/ru/", "permanent": true },
+    { "source": "/courses/:path*", "destination": "/ru/courses/:path*", "permanent": true },
+    { "source": "/packs/:path*", "destination": "/ru/packs/:path*", "permanent": true },
+    { "source": "/marketplace/:path*", "destination": "/ru/marketplace/:path*", "permanent": true },
+    { "source": "/vault/:path*", "destination": "/ru/vault/:path*", "permanent": true },
+    { "source": "/memberships/:path*", "destination": "/ru/memberships/:path*", "permanent": true },
+    { "source": "/blog/:path*", "destination": "/ru/blog/:path*", "permanent": true },
+    { "source": "/events/:path*", "destination": "/ru/events/:path*", "permanent": true },
+    { "source": "/giveaway/:path*", "destination": "/ru/giveaway/:path*", "permanent": true },
+    { "source": "/learning-map", "destination": "/ru/learning-map", "permanent": true },
+    { "source": "/calendar", "destination": "/ru/calendar", "permanent": true },
+    { "source": "/oferta", "destination": "/ru/oferta", "permanent": true },
+    { "source": "/privacy", "destination": "/ru/privacy", "permanent": true },
+    { "source": "/refund", "destination": "/ru/refund", "permanent": true }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",

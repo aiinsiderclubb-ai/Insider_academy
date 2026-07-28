@@ -24,6 +24,7 @@ import {
 } from '../data/giveawayChances'
 import { UiIcon } from '../components/UiIcon'
 import { getTelegramPostEmbedId } from '../utils/telegramPost'
+import { localizePath } from '../routing/locale'
 import styles from './Giveaway.module.css'
 
 function pad2(n) {
@@ -207,7 +208,7 @@ function GiveawayDetail({ giveaway, lang }) {
   const countdown = useCountdown(giveaway.endsAt)
   const embedId = useMemo(() => getTelegramPostEmbedId(giveaway.telegramPostUrl), [giveaway.telegramPostUrl])
   const faq = (ru ? giveaway.faqRu : giveaway.faqEn) || []
-  const redirectPath = `/giveaway/${giveaway.slug}`
+  const redirectPath = localizePath(`/giveaway/${giveaway.slug}`, lang)
 
   const [state, setState] = useState(null)
   const [loading, setLoading] = useState(true)

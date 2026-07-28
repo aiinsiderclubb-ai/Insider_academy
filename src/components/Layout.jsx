@@ -16,6 +16,7 @@ import { ProgressRing } from './ProgressRing'
 import { UiIcon } from './UiIcon'
 import { MAIN_SITE_URL, TELEGRAM_COMMUNITY, TELEGRAM_MANAGER, TELEGRAM_NOTIFY_BOT } from '../data/siteLinks'
 import { SITE_VERSION } from '../data/siteMeta'
+import { localizePath, stripLocale } from '../routing/locale'
 import {
   Award,
   Bell,
@@ -64,12 +65,13 @@ const cabinetMenuKeys = [
 
 export function Layout({ children }) {
   const { user, logout, purchases } = useAuth()
-  const { t, lang, toggleLang } = useLanguage()
+  const { t, lang, setLang } = useLanguage()
   const { courses } = useCourses()
   const { getPercent } = useProgress()
   const location = useLocation()
   const navigate = useNavigate()
-  const isHome = location.pathname === '/'
+  const publicPath = stripLocale(location.pathname)
+  const isHome = publicPath === '/'
   const [chatOpen, setChatOpen] = useState(false)
   const [chatTab, setChatTab] = useState('ai')
   const [cabinetOpen, setCabinetOpen] = useState(false)
@@ -152,18 +154,18 @@ export function Layout({ children }) {
       )
     : 0
 
-  const isAdminPage = location.pathname === '/admin'
-  const isAuthPage = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/onboarding'].includes(location.pathname)
-  const isLessonPage = /^\/courses\/[^/]+$/.test(location.pathname) && searchParams.has('lesson')
+  const isAdminPage = publicPath === '/admin'
+  const isAuthPage = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/onboarding'].includes(publicPath)
+  const isLessonPage = /^\/courses\/[^/]+$/.test(publicPath) && searchParams.has('lesson')
   const isImmersive = isAdminPage || isAuthPage || isLessonPage
   // Главная рисует собственный полноширинный канвас — убираем рамку паддингов main
-  const isFullBleed = location.pathname === '/'
+  const isFullBleed = publicPath === '/'
 
   const isMarketplaceSection =
-    location.pathname.startsWith('/marketplace') || location.pathname.startsWith('/vault')
+    publicPath.startsWith('/marketplace') || publicPath.startsWith('/vault')
   const isMarketplaceVaultActive =
-    (location.pathname === '/marketplace' && searchParams.get('tab') === 'vault')
-    || location.pathname.startsWith('/vault/')
+    (publicPath === '/marketplace' && searchParams.get('tab') === 'vault')
+    || publicPath.startsWith('/vault/')
   const isMarketplaceCatalogActive = isMarketplaceSection && !isMarketplaceVaultActive
 
   const openChat = (tab = 'ai') => {
@@ -173,16 +175,16 @@ export function Layout({ children }) {
 
   const userInitial = user?.name?.[0] || user?.email?.[0] || '?'
   const pageTitle = (() => {
-    if (location.pathname === '/') return lang === 'ru' ? 'Школа AI-систем' : 'AI systems school'
-    if (location.pathname.startsWith('/courses')) return lang === 'ru' ? 'Каталог курсов' : 'Course catalog'
-    if (location.pathname.startsWith('/marketplace') || location.pathname.startsWith('/vault')) return 'Marketplace'
-    if (location.pathname.startsWith('/memberships')) return lang === 'ru' ? 'Подписки' : 'Memberships'
-    if (location.pathname.startsWith('/cabinet')) return lang === 'ru' ? 'Панель обучения' : 'Learning dashboard'
-    if (location.pathname.startsWith('/learning-map')) return lang === 'ru' ? 'Карта обучения' : 'Learning map'
-    if (location.pathname.startsWith('/calendar')) return lang === 'ru' ? 'Календарь' : 'Calendar'
-    if (location.pathname.startsWith('/events')) return lang === 'ru' ? 'События' : 'Events'
-    if (location.pathname.startsWith('/blog')) return lang === 'ru' ? 'Блог' : 'Blog'
-    if (location.pathname.startsWith('/account')) return lang === 'ru' ? 'Настройки профиля' : 'Profile settings'
+    if (publicPath === '/') return lang === 'ru' ? 'Школа AI-систем' : lang === 'ukr' ? 'Школа AI-систем' : 'AI systems school'
+    if (publicPath.startsWith('/courses')) return lang === 'ru' ? 'Каталог курсов' : lang === 'ukr' ? 'Каталог курсів' : 'Course catalog'
+    if (publicPath.startsWith('/marketplace') || publicPath.startsWith('/vault')) return 'Marketplace'
+    if (publicPath.startsWith('/memberships')) return lang === 'ru' ? 'Подписки' : lang === 'ukr' ? 'Підписки' : 'Memberships'
+    if (publicPath.startsWith('/cabinet')) return lang === 'ru' ? 'Панель обучения' : lang === 'ukr' ? 'Панель навчання' : 'Learning dashboard'
+    if (publicPath.startsWith('/learning-map')) return lang === 'ru' ? 'Карта обучения' : lang === 'ukr' ? 'Карта навчання' : 'Learning map'
+    if (publicPath.startsWith('/calendar')) return lang === 'ru' ? 'Календарь' : lang === 'ukr' ? 'Календар' : 'Calendar'
+    if (publicPath.startsWith('/events')) return lang === 'ru' ? 'События' : lang === 'ukr' ? 'Події' : 'Events'
+    if (publicPath.startsWith('/blog')) return t('blog.title')
+    if (publicPath.startsWith('/account')) return lang === 'ru' ? 'Настройки профиля' : lang === 'ukr' ? 'Налаштування профілю' : 'Profile settings'
     return 'AI Insider Academy'
   })()
 
@@ -259,7 +261,7 @@ export function Layout({ children }) {
   }
 
   const resolveNotificationTarget = (notification) => {
-    if (notification.targetPath) return notification.targetPath
+    if (notification.targetPath) return notification.targetPath.startsWith('/courses') ? localizePath(notification.targetPath, lang) : notification.targetPath
     const course = courses.find((item) =>
       item.id === notification.courseId
       || item.slug === notification.courseSlug
@@ -268,7 +270,7 @@ export function Layout({ children }) {
     )
     if (course) {
       const lessonPart = Number.isInteger(notification.lessonIndex) ? `?lesson=${notification.lessonIndex}` : ''
-      return `/courses/${course.slug}${lessonPart}`
+      return localizePath(`/courses/${course.slug}${lessonPart}`, lang)
     }
     return '/cabinet'
   }
@@ -285,7 +287,7 @@ export function Layout({ children }) {
     '/login',
     '/register',
     '/verify-email',
-  ].includes(location.pathname) || location.pathname.startsWith('/giveaway/')
+  ].includes(publicPath) || publicPath.startsWith('/giveaway/')
 
   const needsOnboarding = Boolean(
     user
@@ -308,7 +310,7 @@ export function Layout({ children }) {
             onClick={() => setMobileNavOpen(false)}
           />
           <aside className={`${styles.sidebar} ${mobileNavOpen ? styles.sidebarOpen : ''}`}>
-            <Link to="/" className={styles.sidebarLogo} aria-label="AI Insider Academy">
+            <Link to={localizePath('/', lang)} className={styles.sidebarLogo} aria-label="AI Insider Academy">
               <span className={styles.brandMark}>AI</span>
               <span className={styles.brandName}>INSIDER<br />ACADEMY</span>
             </Link>
@@ -316,11 +318,12 @@ export function Layout({ children }) {
             <nav className={styles.sidebarNav} aria-label={lang === 'ru' ? 'Основная навигация' : 'Main navigation'}>
               {navItems.map(({ to, label, Icon, auth }) => {
                 if (auth && !user) return null
+                const target = auth ? to : localizePath(to, lang)
                 const isActive = to === '/'
-                  ? location.pathname === '/'
-                  : location.pathname.startsWith(to)
+                  ? publicPath === '/'
+                  : publicPath.startsWith(to)
                 return (
-                  <Link key={to} to={to} className={`${styles.sidebarLink} ${isActive ? styles.sidebarLinkActive : ''}`}>
+                  <Link key={to} to={target} className={`${styles.sidebarLink} ${isActive ? styles.sidebarLinkActive : ''}`}>
                     <span className={styles.sidebarIcon}><Icon size={19} strokeWidth={1.8} /></span>
                     <span className={styles.sidebarLabel}>{label}</span>
                     {isActive && <ChevronRight className={styles.activeArrow} size={15} />}
@@ -385,11 +388,13 @@ export function Layout({ children }) {
               <strong className={styles.pageIdentityTitle}>{pageTitle}</strong>
             </div>
             <div className={styles.headerRight}>
-              <button type="button" className={styles.langToggle} onClick={toggleLang} aria-label={lang === 'ru' ? 'Switch to English' : 'Переключить на русский'}>
-                <span className={lang === 'ru' ? styles.langActive : ''}>RU</span>
+              <div className={styles.langToggle} aria-label="Language">
+                <button type="button" onClick={() => setLang('ru')} className={`${styles.langOption} ${lang === 'ru' ? styles.langActive : ''}`} aria-label="Русский">RU</button>
                 <span className={styles.langDivider}>/</span>
-                <span className={lang === 'en' ? styles.langActive : ''}>EN</span>
-              </button>
+                <button type="button" onClick={() => setLang('ukr')} className={`${styles.langOption} ${lang === 'ukr' ? styles.langActive : ''}`} aria-label="Українська">UKR</button>
+                <span className={styles.langDivider}>/</span>
+                <button type="button" onClick={() => setLang('en')} className={`${styles.langOption} ${lang === 'en' ? styles.langActive : ''}`} aria-label="English">EN</button>
+              </div>
               <button type="button" className={styles.iconBtn} onClick={() => openChat('ai')} aria-label={t('nav.messages')}>
                 <MessageCircle size={19} />
               </button>

@@ -2,6 +2,8 @@ import { useParams, Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { getBlogPostBySlug } from '../api/blogStore'
 import { getBlogPostLang, getBlogPostLocale } from '../data/blog'
+import { localizePath } from '../routing/locale'
+import { PageMeta } from '../components/PageMeta'
 import styles from './BlogPost.module.css'
 
 export function BlogPost() {
@@ -13,8 +15,8 @@ export function BlogPost() {
     return (
       <div className={styles.wrap}>
         <div className={styles.container}>
-          <p>{lang === 'ru' ? 'Запись не найдена.' : 'Post not found.'}</p>
-          <Link to="/blog">{t('blogPost.backToBlog')}</Link>
+          <p>{lang === 'ru' ? 'Запись не найдена.' : lang === 'ukr' ? 'Запис не знайдено.' : 'Post not found.'}</p>
+          <Link to={localizePath('/blog', lang)}>{t('blogPost.backToBlog')}</Link>
         </div>
       </div>
     )
@@ -24,11 +26,13 @@ export function BlogPost() {
   const title = lang === 'en' && post.titleEn ? post.titleEn : post.title
   const excerpt = lang === 'en' && post.excerptEn ? post.excerptEn : post.excerpt
   const category = lang === 'en' && post.categoryEn ? post.categoryEn : post.category
+  const content = lang === 'en' ? post.contentEn : post.content
 
   return (
     <div className={styles.wrap}>
       <article className={styles.container}>
-        <Link to="/blog" className={styles.back}>{t('blogPost.backToBlog')}</Link>
+        <PageMeta title={title} description={excerpt} path={localizePath(`/blog/${post.slug}`, lang)} />
+        <Link to={localizePath('/blog', lang)} className={styles.back}>{t('blogPost.backToBlog')}</Link>
         <div className={styles.cover} aria-hidden />
         <div className={styles.metaRow}>
           <span className={styles.category}>{category}</span>
@@ -45,15 +49,10 @@ export function BlogPost() {
             year: 'numeric',
           })}
         </time>
-        {postLang === 'uk' && lang === 'ru' && (
-          <p className={styles.langNote}>Статья на украинском языке.</p>
-        )}
         <div className={styles.body}>
-          <p>{excerpt || title || (lang === 'ru' ? 'Содержание статьи.' : 'Article content.')}</p>
-          <p>{lang === 'ru' ? 'Полная версия статьи доступна на сайте AI Insider.' : 'Full article available on AI Insider website.'}</p>
-          <a href="https://www.aiinsider.it.com/uk/blog" target="_blank" rel="noreferrer noopener" className={styles.externalLink}>
-            {lang === 'ru' ? 'Читать на aiinsider.it.com →' : 'Read on aiinsider.it.com →'}
-          </a>
+          {(content || excerpt || title || '').split(/\n{2,}/).filter(Boolean).map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
         </div>
       </article>
     </div>

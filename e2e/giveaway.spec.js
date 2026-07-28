@@ -101,7 +101,7 @@ test.describe('Giveaway UI guest → return', () => {
     const email = `giveaway-ui-${Date.now()}@example.com`
     const password = 'GiveawayUi2026!'
 
-    await page.goto(`/giveaway/${SLUG}`)
+    await page.goto(`/ru/giveaway/${SLUG}`)
     const registerLink = page.locator('a[href^="/register?returnTo="]').last()
     await expect(registerLink).toBeVisible({ timeout: 15000 })
     await registerLink.click()
@@ -115,7 +115,7 @@ test.describe('Giveaway UI guest → return', () => {
 
     await expect(page).toHaveURL(/\/verify-email\?/, { timeout: 15000 })
     const verificationUrl = new URL(page.url())
-    expect(verificationUrl.searchParams.get('returnTo')).toBe(`/giveaway/${SLUG}`)
+    expect(verificationUrl.searchParams.get('returnTo')).toBe(`/ru/giveaway/${SLUG}`)
     const code = verificationUrl.searchParams.get('devCode')
     expect(code).toMatch(/^\d{6}$/)
 
@@ -123,7 +123,7 @@ test.describe('Giveaway UI guest → return', () => {
       await page.getByLabel(`Digit ${index + 1}`).fill(digit)
     }
     await page.locator('form button[type="submit"]').click()
-    await expect(page).toHaveURL(new RegExp(`/giveaway/${SLUG}$`), { timeout: 10000 })
+    await expect(page).toHaveURL(new RegExp(`/ru/giveaway/${SLUG}$`), { timeout: 10000 })
 
     await expect(page.getByRole('link', { name: /подключ|connect telegram/i }).or(
       page.getByText(/подключ.*telegram|connect telegram/i),

@@ -126,6 +126,7 @@ export function MarketplaceBuy() {
         courseTitle: title,
         amount: priceAfterReferral,
         slug: product.slug,
+        locale: lang,
       }
 
       if (method === 'tribute') {
