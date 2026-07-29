@@ -26,5 +26,8 @@
     "nodemailer": "^9.0.3",
     "pg": "^8.13.3",
     "stripe": "^17.7.0"
+  },
+  "overrides": {
+    "gaxios": "^7.3.0"
   }
 }
