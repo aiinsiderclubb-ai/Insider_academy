@@ -8,7 +8,7 @@ import styles from './MarketplaceHero.module.css'
 export function MarketplaceHero({ lang, products = [] }) {
   const ru = lang === 'ru'
   const comingSoon = isComingSoon('marketplace')
-  const featuredProducts = products.filter((product) => product.coverImage).slice(0, 3)
+  const featuredProducts = products.slice(0, 3)
   const lead = featuredProducts[0] || null
 
   return (
