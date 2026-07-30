@@ -4,9 +4,10 @@
   "version": "2.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
+    "dev:web": "vite",
     "dev:server": "npm run dev --prefix server",
-    "dev:all": "concurrently \"npm run dev:server\" \"npm run dev\"",
+    "dev:all": "npm run dev",
     "build": "node scripts/generate-sitemap.js && vite build",
     "generate:sitemap": "node scripts/generate-sitemap.js",
     "preview": "vite preview",
