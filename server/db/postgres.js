@@ -36,11 +36,15 @@ export async function createPostgresDb(connectionString) {
   const useSsl =
     process.env.PGSSL === 'true' ||
     /render\.com|sslmode=require/i.test(connectionString)
+  const sslCa = process.env.PGSSL_CA?.replace(/\\n/g, '\n')
+  const rejectUnauthorized = process.env.PGSSL_REJECT_UNAUTHORIZED
+    ? process.env.PGSSL_REJECT_UNAUTHORIZED !== 'false'
+    : Boolean(sslCa)
   const pool = new Pool({
     connectionString,
     ssl: useSsl ? {
-      rejectUnauthorized: process.env.PGSSL_REJECT_UNAUTHORIZED !== 'false',
-      ...(process.env.PGSSL_CA ? { ca: process.env.PGSSL_CA.replace(/\\n/g, '\n') } : {}),
+      rejectUnauthorized,
+      ...(sslCa ? { ca: sslCa } : {}),
     } : undefined,
   })
   await pool.query(pgSchema())

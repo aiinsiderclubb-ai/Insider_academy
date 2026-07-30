@@ -130,13 +130,19 @@ export async function getProductAssets(db, productId, { includeInactive = false 
 
 export async function seedMarketplaceCatalog(db) {
   const createdAt = nowIso()
+  const launchProductIds = new Set(LAUNCH_PRODUCTS.map((product) => product.id))
   for (const product of MARKETPLACE_PRODUCTS) {
+    // Keep every legacy demo SKU in draft even when a curated launch product
+    // intentionally reuses its source content/ID.
+    const isLaunchSource = launchProductIds.has(product.id)
+    const productId = isLaunchSource ? `${product.id}-demo` : product.id
+    const productSlug = isLaunchSource ? `${product.slug}-demo` : product.slug
     await db.run(`INSERT INTO marketplace_products (
       id, slug, sku, status, product_type, category_id, title_ru, title_en, short_ru, short_en,
       price_eur, currency, is_free, creator_email, cover_image, metadata, created_at, updated_at
     ) VALUES (?, ?, ?, 'draft', 'marketplace', ?, ?, ?, ?, ?, ?, 'EUR', ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO NOTHING`, [
-      product.id, product.slug, `LEGACY-${product.id.toUpperCase()}`, product.categoryId || null,
+      productId, productSlug, `LEGACY-${productId.toUpperCase()}`, product.categoryId || null,
       product.titleRu, product.titleEn || product.titleRu, product.shortRu || '', product.shortEn || product.shortRu || '',
       Number(product.priceEur || 0), Number(product.priceEur || 0) === 0 ? 1 : 0,
       product.creatorEmail || 'marketplace@insiderai.it.com', product.coverImage || null,
