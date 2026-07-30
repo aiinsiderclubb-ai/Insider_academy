@@ -60,7 +60,7 @@ export async function verifyAppleIdToken(idToken, fullName) {
     email,
     name: nameFromApple || email.split('@')[0],
     sub: String(payload.sub),
-    emailVerified: payload.email_verified === true || payload.email_verified === 'true' || Boolean(payload.email),
+    emailVerified: payload.email_verified === true || payload.email_verified === 'true',
   }
 }
 

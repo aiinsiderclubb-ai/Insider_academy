@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
   avatar_url TEXT,
   profile_updated_at TEXT,
   password_changed_at TEXT,
+  token_version INTEGER DEFAULT 0,
   personal_id TEXT UNIQUE,
   team_id INTEGER,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -270,6 +271,98 @@ CREATE TABLE IF NOT EXISTS promo_codes (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS marketplace_products (
+  id TEXT PRIMARY KEY,
+  slug TEXT NOT NULL UNIQUE,
+  sku TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft', 'review', 'published', 'archived')),
+  product_type TEXT NOT NULL DEFAULT 'marketplace' CHECK(product_type IN ('marketplace', 'vault')),
+  category_id TEXT,
+  title_ru TEXT NOT NULL,
+  title_en TEXT,
+  short_ru TEXT,
+  short_en TEXT,
+  description_ru TEXT,
+  description_en TEXT,
+  price_eur REAL NOT NULL DEFAULT 0 CHECK(price_eur >= 0),
+  currency TEXT NOT NULL DEFAULT 'EUR',
+  is_free INTEGER NOT NULL DEFAULT 0,
+  creator_email TEXT,
+  cover_image TEXT,
+  metadata TEXT NOT NULL DEFAULT '{}',
+  published_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS product_assets (
+  id TEXT PRIMARY KEY,
+  product_id TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  label TEXT,
+  file_name TEXT NOT NULL,
+  file_type TEXT NOT NULL,
+  file_size INTEGER NOT NULL DEFAULT 0,
+  storage_key TEXT NOT NULL,
+  file_storage TEXT NOT NULL DEFAULT 'local',
+  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'superseded', 'archived')),
+  changelog TEXT,
+  created_by TEXT,
+  created_at TEXT NOT NULL,
+  UNIQUE(product_id, version),
+  FOREIGN KEY (product_id) REFERENCES marketplace_products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS marketplace_orders (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  product_id TEXT NOT NULL,
+  sku TEXT NOT NULL,
+  payment_id TEXT UNIQUE,
+  provider TEXT NOT NULL,
+  external_id TEXT,
+  amount REAL NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'EUR',
+  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'failed', 'refunded')),
+  created_at TEXT NOT NULL,
+  completed_at TEXT,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES marketplace_products(id)
+);
+
+CREATE TABLE IF NOT EXISTS asset_entitlements (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  product_id TEXT NOT NULL,
+  order_id TEXT,
+  source TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'revoked', 'expired')),
+  granted_at TEXT NOT NULL,
+  expires_at TEXT,
+  UNIQUE(user_id, product_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES marketplace_products(id),
+  FOREIGN KEY (order_id) REFERENCES marketplace_orders(id)
+);
+
+CREATE TABLE IF NOT EXISTS asset_downloads (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  product_id TEXT NOT NULL,
+  asset_id TEXT NOT NULL,
+  order_id TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES marketplace_products(id),
+  FOREIGN KEY (asset_id) REFERENCES product_assets(id)
+);
+
+CREATE INDEX IF NOT EXISTS marketplace_products_status_idx ON marketplace_products(status, product_type);
+CREATE INDEX IF NOT EXISTS product_assets_product_idx ON product_assets(product_id, status);
+CREATE INDEX IF NOT EXISTS marketplace_orders_user_idx ON marketplace_orders(user_id, status);
+CREATE INDEX IF NOT EXISTS asset_entitlements_user_idx ON asset_entitlements(user_id, status);
+CREATE INDEX IF NOT EXISTS asset_downloads_product_idx ON asset_downloads(product_id);
+
 CREATE TABLE IF NOT EXISTS audit_log (
   id TEXT PRIMARY KEY,
   actor_email TEXT NOT NULL,
@@ -288,7 +381,7 @@ export function createSqliteDb() {
   db.pragma('foreign_keys = ON')
   db.exec(SCHEMA)
   migrateColumns(db)
-  return {
+  const adapter = {
     driver: 'sqlite',
     raw: db,
     async query(sql, params = []) {
@@ -305,7 +398,19 @@ export function createSqliteDb() {
     async all(sql, params = []) { return db.prepare(sql).all(...params) },
     async run(sql, params = []) { return db.prepare(sql).run(...params) },
     async exec(sql) { db.exec(sql) },
+    async transaction(fn) {
+      db.exec('BEGIN IMMEDIATE')
+      try {
+        const result = await fn(adapter)
+        db.exec('COMMIT')
+        return result
+      } catch (error) {
+        db.exec('ROLLBACK')
+        throw error
+      }
+    },
   }
+  return adapter
 }
 
 function migrateColumns(db) {
@@ -320,6 +425,7 @@ function migrateColumns(db) {
   if (!cols.includes('avatar_url')) add('ALTER TABLE users ADD COLUMN avatar_url TEXT')
   if (!cols.includes('profile_updated_at')) add('ALTER TABLE users ADD COLUMN profile_updated_at TEXT')
   if (!cols.includes('password_changed_at')) add('ALTER TABLE users ADD COLUMN password_changed_at TEXT')
+  if (!cols.includes('token_version')) add('ALTER TABLE users ADD COLUMN token_version INTEGER DEFAULT 0')
   if (!cols.includes('last_login_at')) add('ALTER TABLE users ADD COLUMN last_login_at TEXT')
   if (!cols.includes('personal_id')) add('ALTER TABLE users ADD COLUMN personal_id TEXT')
   if (!cols.includes('telegram_username')) add('ALTER TABLE users ADD COLUMN telegram_username TEXT')

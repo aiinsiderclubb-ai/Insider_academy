@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -13,14 +13,9 @@ import {
 import { ProductBadge, productHasPublicStats } from '../components/ProductBadge'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
-import { getMarketplaceProduct, getRelatedProducts } from '../data/marketplace/products'
+import { api } from '../api/client'
 import { getMarketplaceCategory } from '../data/marketplace/categories'
 import { getMarketplaceCreator } from '../data/marketplace/creators'
-import {
-  getMarketplaceDiscountPercent,
-  getMarketplacePrice,
-  isMarketplaceProductIncludedForUser,
-} from '../data/marketplace/discounts'
 import { MarketplaceProductCard } from '../components/marketplace/MarketplaceProductCard'
 import { MarketplaceFreePreview } from '../components/MarketplaceFreePreview'
 import { ScrollReveal } from '../components/ScrollReveal'
@@ -28,17 +23,6 @@ import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
 import { ComingSoonAction } from '../components/ComingSoonLock'
 import { isComingSoon } from '../config/availability'
 import styles from './MarketplaceProduct.module.css'
-
-const MOCK_REVIEWS_RU = [
-  { name: 'Алексей М.', rating: 5, text: 'Сэкономил неделю настройки — всё по инструкции.' },
-  { name: 'Maria K.', rating: 5, text: 'Качество шаблонов на уровне, рекомендую агентствам.' },
-  { name: 'Dev Studio', rating: 4, text: 'Отличная база, доработал под клиента за день.' },
-]
-const MOCK_REVIEWS_EN = [
-  { name: 'Alexey M.', rating: 5, text: 'Saved a week of setup — clear instructions.' },
-  { name: 'Maria K.', rating: 5, text: 'Template quality is top tier for agencies.' },
-  { name: 'Dev Studio', rating: 4, text: 'Great base, customized for a client in one day.' },
-]
 
 function LucideStarRating({ rating, className = '' }) {
   const filled = Math.floor(Math.min(5, Math.max(0, Number(rating) || 0)))
@@ -62,10 +46,38 @@ export function MarketplaceProduct() {
   const { productSlug } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeMedia, setActiveMedia] = useState(0)
+  const [product, setProduct] = useState(null)
+  const [related, setRelated] = useState([])
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [claiming, setClaiming] = useState(false)
+  const [claimError, setClaimError] = useState('')
+  const [accessGranted, setAccessGranted] = useState(false)
+  const navigate = useNavigate()
   const { lang } = useLanguage()
-  const { hasPurchased, purchases } = useAuth()
+  const { user, hasPurchased } = useAuth()
   const ru = lang === 'ru'
-  const product = getMarketplaceProduct(productSlug)
+
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    Promise.all([
+      api.marketplaceProduct(productSlug),
+      api.marketplaceProducts('marketplace'),
+    ]).then(async ([detail, catalog]) => {
+      if (!active) return
+      const nextProduct = detail.product
+      setProduct(nextProduct)
+      setRelated((catalog.products || []).filter((item) => item.id !== nextProduct.id && item.categoryId === nextProduct.categoryId).slice(0, 3))
+      const reviewData = await api.getReviews(nextProduct.id).catch(() => ({ reviews: [] }))
+      if (active) setReviews(reviewData.reviews || [])
+    }).catch(() => {
+      if (active) setProduct(null)
+    }).finally(() => {
+      if (active) setLoading(false)
+    })
+    return () => { active = false }
+  }, [productSlug])
 
   useEffect(() => {
     setActiveMedia(0)
@@ -88,12 +100,11 @@ export function MarketplaceProduct() {
     return [...new Set([getMarketplaceCoverImage(product), ...(product.screenshots || [])])]
   }, [product])
 
+  if (loading) return <div className={styles.wrap}><div className={styles.container}>{ru ? 'Загрузка…' : 'Loading…'}</div></div>
   if (!product) return <Navigate to="/marketplace" replace />
 
-  const purchased =
-    hasPurchased(product.id) || isMarketplaceProductIncludedForUser(product.id, purchases)
-  const discountPercent = getMarketplaceDiscountPercent(purchases)
-  const finalPrice = getMarketplacePrice(product.priceEur, purchases)
+  const purchased = hasPurchased(product.id) || accessGranted
+  const finalPrice = Number(product.priceEur || 0)
   const title = ru ? product.titleRu : product.titleEn
   const short = ru ? product.shortRu : product.shortEn
   const productIncluded = (ru ? product.includedRu : product.includedEn) || []
@@ -113,11 +124,27 @@ export function MarketplaceProduct() {
   const faq = (ru ? product.faqRu : product.faqEn) || []
   const category = getMarketplaceCategory(product.categoryId)
   const creator = getMarketplaceCreator(product.creatorId)
-  const related = getRelatedProducts(product)
-  const reviews = ru ? MOCK_REVIEWS_RU : MOCK_REVIEWS_EN
   const showPaid = searchParams.get('paid') === '1'
   const activeImage = gallery[Math.min(activeMedia, gallery.length - 1)]
   const comingSoon = isComingSoon('marketplace')
+
+  const claimFree = async () => {
+    if (!user) {
+      navigate(`/login?returnTo=${encodeURIComponent(`/marketplace/${product.slug}`)}`)
+      return
+    }
+    setClaiming(true)
+    setClaimError('')
+    try {
+      await api.claimMarketplaceProduct(product.id)
+      setAccessGranted(true)
+      navigate('/cabinet#marketplace')
+    } catch (error) {
+      setClaimError(error.message || (ru ? 'Не удалось открыть доступ' : 'Could not grant access'))
+    } finally {
+      setClaiming(false)
+    }
+  }
 
   const requirements = [
     ru ? 'Аккаунт AI Insider Academy' : 'AI Insider Academy account',
@@ -251,7 +278,7 @@ export function MarketplaceProduct() {
               </ScrollReveal>
             </div>
 
-            <ScrollReveal>
+            {reviews.length > 0 && <ScrollReveal>
               <section className={styles.blockStack}>
                 <div className={styles.sectionHeading}>
                   <span>{ru ? 'Проверено сообществом' : 'Community tested'}</span>
@@ -261,7 +288,7 @@ export function MarketplaceProduct() {
                   {reviews.map((review) => (
                     <article key={review.name} className={styles.review}>
                       <div className={styles.reviewHead}>
-                        <strong>{review.name}</strong>
+                        <strong>{review.userName}</strong>
                         <LucideStarRating rating={review.rating} className={styles.reviewStars} />
                       </div>
                       <p>{review.text}</p>
@@ -269,7 +296,7 @@ export function MarketplaceProduct() {
                   ))}
                 </div>
               </section>
-            </ScrollReveal>
+            </ScrollReveal>}
 
             <ScrollReveal>
               <section className={styles.blockStack}>
@@ -316,15 +343,7 @@ export function MarketplaceProduct() {
 
             <div className={styles.priceRow}>
               <span className={styles.price}>{finalPrice}€</span>
-              {discountPercent > 0 && finalPrice < product.priceEur && (
-                <span className={styles.oldPrice}>{product.priceEur}€</span>
-              )}
             </div>
-            {discountPercent > 0 && finalPrice < product.priceEur && (
-              <p className={styles.discount}>
-                {ru ? `Ваша скидка по подписке −${discountPercent}%` : `Your membership discount −${discountPercent}%`}
-              </p>
-            )}
 
             <ul className={styles.railPerks}>
               <li><Check size={14} aria-hidden />{ru ? 'Мгновенный доступ' : 'Instant access'}</li>
@@ -332,6 +351,7 @@ export function MarketplaceProduct() {
               <li><Check size={14} aria-hidden />{ru ? 'Обновления включены' : 'Updates included'}</li>
             </ul>
 
+            {claimError && <p className={styles.discount} role="alert">{claimError}</p>}
             {comingSoon ? (
               <ComingSoonAction kind="marketplace" lang={lang} className={styles.btnPrimary} />
             ) : purchased ? (
@@ -341,6 +361,11 @@ export function MarketplaceProduct() {
                 </Link>
                 <span className={styles.ownedRail}>{ru ? 'Уже в вашей библиотеке' : 'Already in your library'}</span>
               </>
+            ) : product.isFree ? (
+              <button type="button" className={styles.btnPrimary} onClick={claimFree} disabled={claiming}>
+                {claiming ? (ru ? 'Открываем…' : 'Granting…') : (ru ? 'Получить бесплатно' : 'Get for free')}
+                <Download size={16} aria-hidden />
+              </button>
             ) : (
               <Link to={`/marketplace/${product.slug}/buy`} className={styles.btnPrimary}>
                 {ru ? 'Купить сейчас' : 'Buy now'} <ArrowUpRight size={16} aria-hidden />
@@ -376,8 +401,8 @@ export function MarketplaceProduct() {
                     product={relatedProduct}
                     lang={lang}
                     purchased={hasPurchased(relatedProduct.id)}
-                    discountPercent={discountPercent}
-                    purchases={purchases}
+                    discountPercent={0}
+                    purchases={[]}
                   />
                 ))}
               </div>

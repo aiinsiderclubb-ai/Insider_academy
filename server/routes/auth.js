@@ -15,13 +15,19 @@ import { ensurePersonalId } from '../services/personalId.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { rateLimitMiddleware } from '../middleware/rateLimit.js'
 import { verifyOAuthIdToken } from '../services/oauthVerify.js'
+import { hashSecurityToken, validateUserPassword } from '../utils/security.js'
 
 const router = Router()
 
 const authRateLimit = rateLimitMiddleware({
   windowMs: 15 * 60_000,
   max: 30,
-  keyFn: (req) => req.ip || req.headers['x-forwarded-for'] || 'unknown',
+  keyFn: (req) => `auth:${req.ip || req.headers['x-forwarded-for'] || 'unknown'}`,
+})
+const forgotPasswordRateLimit = rateLimitMiddleware({
+  windowMs: 60 * 60_000,
+  max: 5,
+  keyFn: (req) => `forgot:${req.ip || 'unknown'}:${normalizeEmail(req.body.email)}`,
 })
 
 router.use(authRateLimit)
@@ -101,15 +107,15 @@ router.post('/oauth', asyncHandler(async (req, res) => {
     const status = err.status || 401
     console.warn(`[auth/oauth] ${provider} verify failed:`, err.message)
     return res.status(status).json({
-      error: err.message || 'OAuth verification failed',
+      error: 'OAuth verification failed',
       errorRu: err.errorRu || 'Не удалось подтвердить вход через соцсеть. Попробуйте снова.',
     })
   }
 
-  if (!identity.emailVerified && provider === 'google') {
+  if (!identity.emailVerified) {
     return res.status(403).json({
-      error: 'Google email not verified',
-      errorRu: 'Email Google-аккаунта не подтверждён.',
+      error: 'OAuth email not verified',
+      errorRu: 'Email аккаунта не подтверждён провайдером входа.',
     })
   }
 
@@ -118,14 +124,15 @@ router.post('/oauth', asyncHandler(async (req, res) => {
   const subCol = provider === 'google' ? 'google_sub' : 'apple_sub'
 
   let row = await db.get(
-    `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider
+    `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider, token_version
      FROM users WHERE ${subCol} = ?`,
     [identity.sub]
   )
+  let foundBySubject = Boolean(row)
 
   if (!row) {
     row = await db.get(
-      `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider
+      `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider, token_version
        FROM users WHERE email = ?`,
       [email]
     )
@@ -145,7 +152,7 @@ router.post('/oauth', asyncHandler(async (req, res) => {
     } catch (err) {
       if (isUniqueViolation(err)) {
         row = await db.get(
-          `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider
+          `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider, token_version
            FROM users WHERE email = ?`,
           [email]
         )
@@ -155,7 +162,7 @@ router.post('/oauth', asyncHandler(async (req, res) => {
     }
     if (!row && userId) {
       row = await db.get(
-        `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider
+        `SELECT id, email, name, email_verified, personal_id, google_sub, apple_sub, auth_provider, token_version
          FROM users WHERE id = ?`,
         [userId]
       )
@@ -164,6 +171,14 @@ router.post('/oauth', asyncHandler(async (req, res) => {
 
   if (!row) {
     return res.status(500).json({ error: 'OAuth registration failed', errorRu: 'Не удалось создать аккаунт' })
+  }
+
+  if (!foundBySubject && !row.email_verified) {
+    return res.status(409).json({
+      error: 'Verify the existing email account before linking OAuth',
+      errorRu: 'Сначала подтвердите существующий аккаунт кодом из письма, затем подключите вход через соцсеть.',
+      requiresVerification: true,
+    })
   }
 
   const updates = []
@@ -175,9 +190,6 @@ router.post('/oauth', asyncHandler(async (req, res) => {
   if (provider === 'apple' && row.apple_sub !== identity.sub) {
     updates.push('apple_sub = ?')
     params.push(identity.sub)
-  }
-  if (!row.email_verified) {
-    updates.push('email_verified = 1')
   }
   if (!row.name && identity.name) {
     updates.push('name = ?')
@@ -212,6 +224,7 @@ router.post('/oauth', asyncHandler(async (req, res) => {
     emailVerified: true,
     personalId,
     authProvider: provider,
+    tokenVersion: row.token_version,
   }
   res.json({ token: signUserToken(user), user, isNew, lastLoginAt: loginAt })
 }))
@@ -225,8 +238,9 @@ router.post('/register', asyncHandler(async (req, res) => {
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid email' })
   }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' })
+  const passwordCheck = validateUserPassword(password)
+  if (!passwordCheck.ok) {
+    return res.status(400).json(passwordCheck)
   }
 
   const exists = await db.get('SELECT id FROM users WHERE email = ?', [email])
@@ -291,7 +305,7 @@ router.post('/login', asyncHandler(async (req, res) => {
   const db = getDb()
   const email = normalizeEmail(req.body.email)
   const password = String(req.body.password || '').trim()
-  let row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id, auth_provider, google_sub, apple_sub FROM users WHERE email = ?', [email])
+  let row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id, auth_provider, google_sub, apple_sub, token_version FROM users WHERE email = ?', [email])
 
   const allowTestAccount = process.env.NODE_ENV !== 'production' || process.env.ALLOW_TEST_ACCOUNT === '1'
   const isTestLogin = allowTestAccount
@@ -299,7 +313,7 @@ router.post('/login', asyncHandler(async (req, res) => {
     && password === TEST_ACCOUNT_PASSWORD
   if (isTestLogin && (!row || !bcrypt.compareSync(password, row.password_hash))) {
     await seedTestAccount(db)
-    row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id, auth_provider, google_sub, apple_sub FROM users WHERE email = ?', [email])
+    row = await db.get('SELECT id, email, password_hash, name, email_verified, personal_id, auth_provider, google_sub, apple_sub, token_version FROM users WHERE email = ?', [email])
   }
 
   if (!row || !bcrypt.compareSync(password, row.password_hash)) {
@@ -326,7 +340,7 @@ router.post('/login', asyncHandler(async (req, res) => {
   const personalId = row.personal_id || await ensurePersonalId(db, row.id)
   const loginAt = new Date().toISOString()
   await db.run('UPDATE users SET last_login_at = ? WHERE id = ?', [loginAt, row.id]).catch(() => {})
-  const user = { id: row.id, email: row.email, name: row.name, emailVerified: Boolean(row.email_verified), personalId }
+  const user = { id: row.id, email: row.email, name: row.name, emailVerified: Boolean(row.email_verified), personalId, tokenVersion: row.token_version }
   sheetsTrack.trackLogin({ email, personalId, userId: row.id }).catch(() => {})
   res.json({ token: signUserToken(user), user, lastLoginAt: loginAt })
 }))
@@ -344,7 +358,7 @@ router.post('/verify-email', asyncHandler(async (req, res) => {
   await db.run('UPDATE users SET email_verified = 1 WHERE email = ?', [row.email])
   await db.run('UPDATE email_tokens SET used = 1 WHERE id = ?', [row.id])
   const userRow = await db.get(
-    'SELECT id, email, name, email_verified, personal_id FROM users WHERE email = ?',
+    'SELECT id, email, name, email_verified, personal_id, token_version FROM users WHERE email = ?',
     [row.email]
   )
   const personalId = userRow?.personal_id || await ensurePersonalId(db, userRow.id)
@@ -354,6 +368,7 @@ router.post('/verify-email', asyncHandler(async (req, res) => {
     name: userRow.name,
     emailVerified: true,
     personalId,
+    tokenVersion: userRow.token_version,
   }
   res.json({ ok: true, token: signUserToken(user), user })
 }))
@@ -367,7 +382,7 @@ router.post('/verify-email-code', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: result.error, errorRu: result.errorRu })
   }
   const userRow = await db.get(
-    'SELECT id, email, name, email_verified, personal_id FROM users WHERE email = ?',
+    'SELECT id, email, name, email_verified, personal_id, token_version FROM users WHERE email = ?',
     [email]
   )
   if (!userRow) return res.status(404).json({ error: 'User not found', errorRu: 'Пользователь не найден' })
@@ -378,6 +393,7 @@ router.post('/verify-email-code', asyncHandler(async (req, res) => {
     name: userRow.name,
     emailVerified: true,
     personalId,
+    tokenVersion: userRow.token_version,
   }
   const { scheduleWelcomeSeries } = await import('../services/emailQueue.js')
   scheduleWelcomeSeries(email, userRow.name).catch(() => {})
@@ -414,7 +430,7 @@ router.post('/resend-verification-code', asyncHandler(async (req, res) => {
   }
 }))
 
-router.post('/forgot-password', asyncHandler(async (req, res) => {
+router.post('/forgot-password', forgotPasswordRateLimit, asyncHandler(async (req, res) => {
   const db = getDb()
   const email = normalizeEmail(req.body.email)
   if (!email || !email.includes('@')) {
@@ -429,13 +445,13 @@ router.post('/forgot-password', asyncHandler(async (req, res) => {
     [email, 'reset']
   )
   await db.run('INSERT INTO email_tokens (id, email, token, type, expires_at) VALUES (?, ?, ?, ?, ?)', [
-    `et-${Date.now()}`, email, token, 'reset', expiresAt,
+    `et-${Date.now()}`, email, hashSecurityToken(token), 'reset', expiresAt,
   ])
   const resetLink = `${config.appUrl.replace(/\/$/, '')}/reset-password?token=${token}`
   const payload = { ok: true, message: 'If the account exists, reset instructions were sent.' }
 
   if (!isEmailEnabled()) {
-    payload.resetLink = resetLink
+    if (process.env.NODE_ENV !== 'production') payload.resetLink = resetLink
     payload.emailDelivery = 'disabled'
     return res.json(payload)
   }
@@ -446,8 +462,7 @@ router.post('/forgot-password', asyncHandler(async (req, res) => {
   } catch (err) {
     console.warn('[auth/forgot-password] email failed:', err.message)
     payload.emailDelivery = 'failed'
-    payload.resetLink = resetLink
-    payload.errorRu = 'Письмо не удалось отправить (SMTP). Скопируйте ссылку ниже или включите SMTP AUTH в Microsoft 365.'
+    payload.errorRu = 'Не удалось отправить письмо. Попробуйте позже.'
   }
 
   res.json(payload)
@@ -460,15 +475,13 @@ router.post('/reset-password', asyncHandler(async (req, res) => {
   if (!token) {
     return res.status(400).json({ error: 'Token required', errorRu: 'Ссылка для сброса недействительна' })
   }
-  if (!password || password.length < 6) {
-    return res.status(400).json({
-      error: 'Password must be at least 6 characters',
-      errorRu: 'Пароль должен быть не менее 6 символов',
-    })
+  const passwordCheck = validateUserPassword(password)
+  if (!passwordCheck.ok) {
+    return res.status(400).json(passwordCheck)
   }
   const row = await db.get(
     'SELECT * FROM email_tokens WHERE token = ? AND type = ? AND used = 0',
-    [token, 'reset']
+    [hashSecurityToken(token), 'reset']
   )
   if (!row || new Date(row.expires_at) < new Date()) {
     return res.status(400).json({
@@ -478,7 +491,10 @@ router.post('/reset-password', asyncHandler(async (req, res) => {
   }
   const now = nowIso()
   const hash = bcrypt.hashSync(password, 10)
-  await db.run('UPDATE users SET password_hash = ?, password_changed_at = ? WHERE email = ?', [hash, now, row.email])
+  await db.run(
+    'UPDATE users SET password_hash = ?, password_changed_at = ?, token_version = COALESCE(token_version, 0) + 1 WHERE email = ?',
+    [hash, now, row.email]
+  )
   // Password reset token proves email ownership; mark as verified.
   await db.run('UPDATE users SET email_verified = 1 WHERE email = ?', [row.email]).catch(() => {})
   await db.run('UPDATE email_tokens SET used = 1 WHERE id = ?', [row.id])

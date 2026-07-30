@@ -399,16 +399,8 @@ export function AuthProvider({ children }) {
   const purchaseCourse = useCallback(async (courseId, meta = {}) => {
     const buyerEmail = user?.email || meta.email || ''
     if (apiMode && user) {
-      const result = await api.purchaseCourse({
-        courseId,
-        courseTitle: meta.courseTitle,
-        amount: meta.amount,
-      })
-      setPurchases(result.purchases || [])
-      savePurchasesLocal(result.purchases || [])
-      return
+      throw new Error('Course access is granted only after verified payment.')
     }
-
     setPurchases((prev) => {
       if (prev.some((p) => p.id === courseId)) return prev
       const next = [...prev, { id: courseId, purchasedAt: new Date().toISOString() }]

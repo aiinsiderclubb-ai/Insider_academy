@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AuthVisual } from '../components/AuthVisual'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api, checkApiOnline } from '../api/client'
@@ -10,7 +10,7 @@ export function ResetPassword() {
   const { t, lang } = useLanguage()
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const token = params.get('token') || ''
+  const [token] = useState(() => params.get('token') || '')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -24,7 +24,7 @@ export function ResetPassword() {
       setError(t('resetPassword.mismatch'))
       return
     }
-    if (password.length < 6) {
+    if (password.length < 10 || !/[A-Za-zА-Яа-яІіЇїЄє]/.test(password) || !/\d/.test(password)) {
       setError(t('resetPassword.short'))
       return
     }
@@ -48,6 +48,11 @@ export function ResetPassword() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!token) return
+    window.history.replaceState({}, '', window.location.pathname)
+  }, [token])
 
   if (!token) {
     return (
@@ -89,7 +94,7 @@ export function ResetPassword() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t('resetPassword.newPassword')}
-                  minLength={6}
+                  minLength={10}
                   className={styles.input}
                   required
                   autoComplete="new-password"
@@ -99,7 +104,7 @@ export function ResetPassword() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder={t('resetPassword.confirmPassword')}
-                  minLength={6}
+                  minLength={10}
                   className={styles.input}
                   required
                   autoComplete="new-password"

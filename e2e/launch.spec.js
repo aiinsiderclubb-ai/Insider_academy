@@ -86,7 +86,7 @@ test.describe('Launch checklist (API)', () => {
       headers: { Authorization: `Bearer ${token}` },
       data: { courseId: 'ai-start' },
     })
-    expect(purchase.status()).toBe(423)
+    expect(purchase.status()).toBe(404)
   })
 
   test('admin login rejects weak password', async ({ request }) => {
@@ -138,7 +138,7 @@ test.describe('Launch checklist (UI)', () => {
 
     await expect(page).toHaveURL(/\/verify-email\?/, { timeout: 15000 })
     const verificationUrl = new URL(page.url())
-    expect(verificationUrl.searchParams.get('returnTo')).toBe('/giveaway/claude-pro')
+    expect(verificationUrl.searchParams.get('returnTo')).toBe('/ru/giveaway/claude-pro')
     const code = verificationUrl.searchParams.get('devCode')
     expect(code).toMatch(/^\d{6}$/)
 

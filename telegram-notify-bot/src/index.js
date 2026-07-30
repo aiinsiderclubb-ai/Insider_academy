@@ -1,9 +1,9 @@
 import http from 'http'
+import { timingSafeEqual } from 'node:crypto'
 import { config, isConfigured } from './config.js'
 import { formatNotification, getInlineKeyboard } from './messages.js'
 import { getStickerFileId } from './stickers.js'
 import { sendMessage, sendSticker, parseUpdate } from './telegramApi.js'
-import { handleTelegramUpdate } from './handlers.js'
 
 function readJson(req) {
   return new Promise((resolve, reject) => {
@@ -22,7 +22,9 @@ function readJson(req) {
 
 function checkSecret(req) {
   const header = req.headers['x-bot-secret'] || ''
-  return header && header === config.botSecret
+  const actual = Buffer.from(String(header))
+  const expected = Buffer.from(String(config.botSecret || ''))
+  return actual.length > 0 && actual.length === expected.length && timingSafeEqual(actual, expected)
 }
 
 const server = http.createServer(async (req, res) => {
@@ -31,20 +33,6 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && url.pathname === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ ok: true, configured: isConfigured(), bot: config.botUsername || null }))
-    return
-  }
-
-  if (req.method === 'POST' && url.pathname === '/telegram/webhook') {
-    try {
-      const update = await readJson(req)
-      await handleTelegramUpdate(update)
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end('{"ok":true}')
-    } catch (err) {
-      console.error('[webhook]', err)
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end('{"ok":true}')
-    }
     return
   }
 

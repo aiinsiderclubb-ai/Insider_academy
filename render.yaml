@@ -32,6 +32,8 @@ services:
           property: connectionString
       - key: PGSSL
         value: "true"
+      - key: PGSSL_REJECT_UNAUTHORIZED
+        value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_JWT_SECRET
@@ -57,13 +59,21 @@ services:
       - key: EMAIL_FROM
         value: AI Insider Academy <info@myinsideracademy.com>
       - key: CORS_ORIGIN
-        value: https://myinsideracademy.com,https://www.myinsideracademy.com,https://insiderai.it.com,https://www.insiderai.it.com,https://insider-academy-vsxg.vercel.app,https://insider-academy.onrender.com,http://localhost:5173,http://127.0.0.1:5173
+        value: https://myinsideracademy.com,https://www.myinsideracademy.com,https://insiderai.it.com,https://www.insiderai.it.com,https://insider-academy-vsxg.vercel.app
       - key: APP_URL
         value: https://myinsideracademy.com
       - key: STORAGE_DRIVER
-        value: local
-      - key: UPLOADS_DIR
-        value: /opt/render/project/src/server/uploads
+        value: s3
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_REGION
+        value: eu-central-1
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
       - key: TRIBUTE_CURRENCY
         value: eur
       - key: TRIBUTE_DEFAULT_PRODUCT_ID

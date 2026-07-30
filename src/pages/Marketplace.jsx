@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
@@ -7,13 +7,8 @@ import { MarketplaceHero } from '../components/marketplace/MarketplaceHero'
 import { MarketplacePerksBar } from '../components/marketplace/MarketplacePerksBar'
 import { MarketplaceProductCard } from '../components/marketplace/MarketplaceProductCard'
 import { MARKETPLACE_CATEGORIES } from '../data/marketplace/categories'
-import { MARKETPLACE_PRODUCTS } from '../data/marketplace/products'
+import { api } from '../api/client'
 import { UiIcon } from '../components/UiIcon'
-import {
-  getRecommendedMarketplaceProducts,
-  searchMarketplaceProducts,
-} from '../data/marketplace/recommendations'
-import { getMarketplaceDiscountPercent } from '../data/marketplace/discounts'
 import {
   getMarketplaceFavorites,
   toggleMarketplaceFavorite,
@@ -77,17 +72,33 @@ export function Marketplace() {
   const [category, setCategory] = useState('all')
   const [sort, setSort] = useState('popular')
   const [favorites, setFavorites] = useState(() => getMarketplaceFavorites())
+  const [products, setProducts] = useState([])
+  const [catalogLoading, setCatalogLoading] = useState(true)
+  const [catalogError, setCatalogError] = useState('')
 
-  const discountPercent = getMarketplaceDiscountPercent(purchases)
+  useEffect(() => {
+    let active = true
+    setCatalogLoading(true)
+    api.marketplaceProducts('marketplace')
+      .then((response) => {
+        if (active) setProducts(response.products || [])
+      })
+      .catch((error) => {
+        if (active) setCatalogError(error.message || 'Marketplace unavailable')
+      })
+      .finally(() => {
+        if (active) setCatalogLoading(false)
+      })
+    return () => { active = false }
+  }, [])
 
-  const recommended = useMemo(
-    () => getRecommendedMarketplaceProducts({ purchases, limit: 4 }),
-    [purchases]
-  )
+  const discountPercent = 0
+
+  const recommended = useMemo(() => purchases.length > 0 ? products.slice(0, 3) : [], [products, purchases])
 
   const featuredHits = useMemo(
-    () => MARKETPLACE_PRODUCTS.filter((p) => p.badge === 'hit').slice(0, 2),
-    []
+    () => products.filter((p) => p.badge === 'hit' || p.badges?.includes('hit')).slice(0, 2),
+    [products]
   )
 
   const showFeatured = !query && category === 'all'
@@ -98,15 +109,28 @@ export function Marketplace() {
   )
 
   const catalogProducts = useMemo(() => {
-    const list = searchMarketplaceProducts(query, { categoryId: category, sort })
+    const normalizedQuery = query.trim().toLowerCase()
+    const list = products.filter((product) => {
+      const categoryMatch = category === 'all' || product.categoryId === category
+      const queryMatch = !normalizedQuery || [product.titleRu, product.titleEn, product.shortRu, product.shortEn, product.sku]
+        .some((value) => String(value || '').toLowerCase().includes(normalizedQuery))
+      return categoryMatch && queryMatch
+    }).sort((a, b) => {
+      if (sort === 'price-asc') return Number(a.priceEur) - Number(b.priceEur)
+      if (sort === 'price-desc') return Number(b.priceEur) - Number(a.priceEur)
+      if (sort === 'rating') return Number(b.rating || 0) - Number(a.rating || 0)
+      if (sort === 'downloads') return Number(b.downloads || 0) - Number(a.downloads || 0)
+      if (sort === 'trending') return String(b.publishedAt || '').localeCompare(String(a.publishedAt || ''))
+      return Number(b.downloads || 0) - Number(a.downloads || 0)
+    })
     if (!featuredIds.length) return list
     const exclude = new Set(featuredIds)
     return list.filter((p) => !exclude.has(p.id))
-  }, [query, category, sort, featuredIds])
+  }, [products, query, category, sort, featuredIds])
 
   const resultCount = useMemo(
-    () => searchMarketplaceProducts(query, { categoryId: category, sort }).length,
-    [query, category, sort]
+    () => catalogProducts.length + featuredIds.length,
+    [catalogProducts, featuredIds]
   )
 
   const handleFavorite = useCallback((productId) => {
@@ -131,7 +155,7 @@ export function Marketplace() {
     <div className={styles.wrap}>
       <div className={styles.container}>
         {activeTab === 'catalog' && (
-          <MarketplaceHero lang={lang} />
+          <MarketplaceHero lang={lang} products={products} />
         )}
 
         <nav
@@ -249,13 +273,17 @@ export function Marketplace() {
                 </div>
               </div>
 
-              {showFeatured && featuredHits.length > 0 && (
+              {catalogLoading ? (
+                <p className={styles.resultCount}>{ru ? 'Загружаем каталог…' : 'Loading catalog…'}</p>
+              ) : catalogError ? (
+                <EmptyState message={catalogError} />
+              ) : showFeatured && featuredHits.length > 0 && (
                 <StaggerReveal className={styles.featuredRow} stagger={60}>
                   {featuredHits.map((p) => renderCard(p, true))}
                 </StaggerReveal>
               )}
 
-              {catalogProducts.length === 0 && !(showFeatured && featuredHits.length) ? (
+              {!catalogLoading && !catalogError && catalogProducts.length === 0 && !(showFeatured && featuredHits.length) ? (
                 <EmptyState
                   message={ru ? 'Ничего не найдено по текущим фильтрам' : 'No results for current filters'}
                   actionLabel={ru ? 'Сбросить фильтры' : 'Reset filters'}
@@ -265,7 +293,7 @@ export function Marketplace() {
                     setSort('popular')
                   }}
                 />
-              ) : catalogProducts.length > 0 ? (
+              ) : !catalogLoading && !catalogError && catalogProducts.length > 0 ? (
                 <StaggerReveal className={styles.grid} stagger={60}>
                   {catalogProducts.map((p) => renderCard(p))}
                 </StaggerReveal>

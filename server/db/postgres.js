@@ -38,7 +38,10 @@ export async function createPostgresDb(connectionString) {
     /render\.com|sslmode=require/i.test(connectionString)
   const pool = new Pool({
     connectionString,
-    ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+    ssl: useSsl ? {
+      rejectUnauthorized: process.env.PGSSL_REJECT_UNAUTHORIZED !== 'false',
+      ...(process.env.PGSSL_CA ? { ca: process.env.PGSSL_CA.replace(/\\n/g, '\n') } : {}),
+    } : undefined,
   })
   await pool.query(pgSchema())
   await runPostgresMigrations(pool)
@@ -66,7 +69,7 @@ CREATE TABLE IF NOT EXISTS support_messages (
   status TEXT NOT NULL DEFAULT 'new',
   date TEXT NOT NULL
 )`).catch(() => {})
-  return {
+  const adapter = {
     driver: 'postgres',
     raw: pool,
     async query(sql, params = []) {
@@ -92,5 +95,27 @@ CREATE TABLE IF NOT EXISTS support_messages (
     async exec(sql) {
       await pool.query(pgSchema())
     },
+    async transaction(fn) {
+      const client = await pool.connect()
+      const tx = {
+        driver: 'postgres',
+        async get(sql, params = []) { return (await client.query(toPgSql(sql), params)).rows[0] },
+        async all(sql, params = []) { return (await client.query(toPgSql(sql), params)).rows },
+        async run(sql, params = []) { return client.query(toPgSql(sql), params) },
+        async query(sql, params = []) { return client.query(toPgSql(sql), params) },
+      }
+      try {
+        await client.query('BEGIN')
+        const result = await fn(tx)
+        await client.query('COMMIT')
+        return result
+      } catch (error) {
+        await client.query('ROLLBACK')
+        throw error
+      } finally {
+        client.release()
+      }
+    },
   }
+  return adapter
 }

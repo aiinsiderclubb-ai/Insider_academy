@@ -153,7 +153,7 @@ export function AccountSettings() {
       showMsg(t('account.passwordMismatch'), true)
       return
     }
-    if (newPassword.length < 6) {
+    if (newPassword.length < 10 || !/[A-Za-zА-Яа-яІіЇїЄє]/.test(newPassword) || !/\d/.test(newPassword)) {
       showMsg(t('account.passwordShort'), true)
       return
     }
@@ -343,11 +343,11 @@ export function AccountSettings() {
               </label>
               <label className={styles.label}>
                 <span>{t('account.newPassword')}</span>
-                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={styles.input} required minLength={6} autoComplete="new-password" />
+                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={styles.input} required minLength={10} autoComplete="new-password" />
               </label>
               <label className={styles.label}>
                 <span>{t('account.confirmPassword')}</span>
-                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={styles.input} required minLength={6} autoComplete="new-password" />
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={styles.input} required minLength={10} autoComplete="new-password" />
               </label>
               <button type="submit" className={styles.btnPrimary} disabled={loading}>{t('account.savePassword')}</button>
               <Link to="/forgot-password" className={styles.linkMuted}>{t('account.forgotPassword')}</Link>

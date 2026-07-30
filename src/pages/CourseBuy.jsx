@@ -123,8 +123,8 @@ export function CourseBuy() {
   const ensureAuth = async () => {
     if (user) return
     const emailTrim = email.trim()
-    if (!emailTrim || !password || password.length < 6) {
-      throw new Error(lang === 'ru' ? 'Введите email и пароль (мин. 6 символов)' : 'Enter email and password (min 6 chars)')
+    if (!emailTrim || !password || password.length < 10 || !/[A-Za-zА-Яа-яІіЇїЄє]/.test(password) || !/\d/.test(password)) {
+      throw new Error(lang === 'ru' ? 'Введите email и пароль (мин. 10 символов, буква и цифра)' : 'Enter email and password (10+ chars, letter and number)')
     }
     await login(emailTrim, password, name.trim() || emailTrim)
   }
@@ -165,7 +165,13 @@ export function CourseBuy() {
         const form = document.createElement('form')
         form.method = 'POST'
         form.action = 'https://www.liqpay.ua/api/3/checkout'
-        form.innerHTML = `<input name="data" value="${lp.data}"/><input name="signature" value="${lp.signature}"/>`
+        for (const [name, value] of [['data', lp.data], ['signature', lp.signature]]) {
+          const input = document.createElement('input')
+          input.type = 'hidden'
+          input.name = name
+          input.value = String(value || '')
+          form.appendChild(input)
+        }
         document.body.appendChild(form)
         form.submit()
         return
@@ -357,7 +363,7 @@ export function CourseBuy() {
                   </label>
                   <label className={styles.label}>
                     {lang === 'ru' ? 'Пароль' : 'Password'}
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} required minLength={6} autoComplete="new-password" />
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={styles.input} required minLength={10} autoComplete="new-password" />
                   </label>
                 </div>
               )}

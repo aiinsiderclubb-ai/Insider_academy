@@ -1,24 +1,15 @@
 import { Link } from 'react-router-dom'
 import { ArrowDownRight, Check, Circle } from 'lucide-react'
-import { MARKETPLACE_PRODUCTS } from '../../data/marketplace/products'
 import { getMarketplaceCoverImage } from '../../utils/marketplaceCover'
 import { ComingSoonLock } from '../ComingSoonLock'
 import { isComingSoon } from '../../config/availability'
 import styles from './MarketplaceHero.module.css'
 
-const FEATURED_SLUGS = [
-  'ai-voice-agent-saas',
-  'content-automation-workflow',
-  'ai-research-agent',
-]
-
-export function MarketplaceHero({ lang }) {
+export function MarketplaceHero({ lang, products = [] }) {
   const ru = lang === 'ru'
   const comingSoon = isComingSoon('marketplace')
-  const products = FEATURED_SLUGS
-    .map((slug) => MARKETPLACE_PRODUCTS.find((product) => product.slug === slug))
-    .filter(Boolean)
-  const lead = products[0] || MARKETPLACE_PRODUCTS[0]
+  const featuredProducts = products.filter((product) => product.coverImage).slice(0, 3)
+  const lead = featuredProducts[0] || null
 
   return (
     <header className={styles.hero}>
@@ -53,7 +44,7 @@ export function MarketplaceHero({ lang }) {
 
       <div className={styles.visual} aria-label={ru ? 'Популярные продукты' : 'Featured products'}>
         <div className={styles.orbit} aria-hidden />
-        {products.map((product, index) => {
+        {featuredProducts.map((product, index) => {
           const title = ru ? product.titleRu : product.titleEn
           return (
             <Link
@@ -74,6 +65,11 @@ export function MarketplaceHero({ lang }) {
           <span className={styles.dropLabel}>
             {ru ? 'Дроп недели' : 'Drop of the week'}
           </span>
+        )}
+        {!lead && (
+          <div className={styles.dropLabel}>
+            {ru ? 'Первые продукты уже в каталоге' : 'First products now available'}
+          </div>
         )}
         {comingSoon && (
           <ComingSoonLock

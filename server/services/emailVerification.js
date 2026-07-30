@@ -32,7 +32,7 @@ export async function issueEmailVerificationCode(email, name = '', returnTo = '/
   await sendVerificationCodeEmail(email, code, name, normalizeVerificationReturnPath(returnTo))
 
   const result = { expiresAt: expires }
-  if (!isEmailEnabled()) result.devCode = code
+  if (process.env.NODE_ENV !== 'production' && !isEmailEnabled()) result.devCode = code
   return result
 }
 

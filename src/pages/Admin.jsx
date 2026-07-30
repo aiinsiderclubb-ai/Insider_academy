@@ -265,7 +265,7 @@ export function Admin() {
         return
       }
     }
-    const localRole = resolveLocalRole(password)
+    const localRole = import.meta.env.DEV && isLocalDev ? resolveLocalRole(password) : null
     if (localRole) {
       setAdminToken(null)
       setAdminRole(localRole)

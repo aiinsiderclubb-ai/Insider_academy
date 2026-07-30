@@ -49,6 +49,8 @@ export function Cabinet() {
   const [inviteCode, setInviteCode] = useState('')
   const [myCertificates, setMyCertificates] = useState([])
   const [giveawayCount, setGiveawayCount] = useState(null)
+  const [marketplaceDownloads, setMarketplaceDownloads] = useState([])
+  const [downloadBusy, setDownloadBusy] = useState(null)
 
   const hasPriority = hasClubMembership(purchases)
   const { products: recProducts, seed: recSeed } = getPersonalUpsells({ purchases, limit: 3 })
@@ -82,6 +84,8 @@ export function Cabinet() {
           setTeam(await api.getTeam())
           const certs = await api.getCertificates()
           setMyCertificates(certs || [])
+          const downloads = await api.getMarketplaceDownloads().catch(() => ({ downloads: [] }))
+          setMarketplaceDownloads(downloads.downloads || [])
           return
         }
       } catch (_) {}
@@ -177,6 +181,16 @@ export function Cabinet() {
     setTeam(await api.getTeam())
   }
 
+  const downloadMarketplaceAsset = async (assetId) => {
+    setDownloadBusy(assetId)
+    try {
+      const result = await api.getMarketplaceDownloadUrl(assetId)
+      if (result.url) window.location.assign(result.url)
+    } finally {
+      setDownloadBusy(null)
+    }
+  }
+
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
@@ -256,29 +270,25 @@ export function Cabinet() {
               ? 'Покупки, загрузки и избранное AI Insider Marketplace.'
               : 'Purchases, downloads and favorites from AI Insider Marketplace.'}
           </p>
-          {myMarketplace.length > 0 ? (
+          {marketplaceDownloads.length > 0 ? (
             <div className={styles.cards}>
-              {myMarketplace.map((item) => {
-                const title = lang === 'ru' ? item.titleRu : item.titleEn
+              {marketplaceDownloads.map((item) => {
+                const title = lang === 'ru' ? item.title_ru : item.title_en
                 return (
-                  <Link to={`/marketplace/${item.slug}`} key={item.id} className={styles.card}>
+                  <article key={item.asset_id} className={styles.card}>
                     <div
                       className={styles.cardImageWrap}
                       style={{ minHeight: 120 }}
                     >
-                      <img
-                        src={getMarketplaceCoverImage(item)}
-                        alt=""
-                        className={styles.cardImage}
-                        loading="lazy"
-                      />
-                      <span className={styles.cardBadge}>{lang === 'ru' ? 'Скачать' : 'Download'}</span>
+                      {item.cover_image && <img src={item.cover_image} alt="" className={styles.cardImage} loading="lazy" />}
+                      <span className={styles.cardBadge}>v{item.version}</span>
                     </div>
                     <h3 className={styles.cardTitle}>{title}</h3>
-                    <p className={styles.cardMeta}>
-                      {item.fileTypes?.join(' · ') || 'ZIP'}
-                    </p>
-                  </Link>
+                    <p className={styles.cardMeta}>{item.file_name} · {Math.ceil(Number(item.file_size || 0) / 1024)} KB</p>
+                    <button type="button" className={styles.copyBtn} disabled={downloadBusy === item.asset_id} onClick={() => downloadMarketplaceAsset(item.asset_id)}>
+                      {downloadBusy === item.asset_id ? (lang === 'ru' ? 'Готовим…' : 'Preparing…') : (lang === 'ru' ? 'Скачать файл' : 'Download file')}
+                    </button>
+                  </article>
                 )
               })}
             </div>

@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, CircleCheck, Heart, Star } from 'lucide-react'
 import { getMarketplaceCategory } from '../../data/marketplace/categories'
-import { getMarketplacePrice } from '../../data/marketplace/discounts'
 import { getMarketplaceCoverImage } from '../../utils/marketplaceCover'
 import { ProductBadge } from '../ProductBadge'
 import { ComingSoonLock } from '../ComingSoonLock'
@@ -13,7 +12,6 @@ export function MarketplaceProductCard({
   lang,
   purchased = false,
   discountPercent = 0,
-  purchases = [],
   favorite = false,
   onToggleFavorite,
   featured = false,
@@ -23,8 +21,8 @@ export function MarketplaceProductCard({
   const desc = ru ? product.shortRu : product.shortEn
   const category = getMarketplaceCategory(product.categoryId)
   const categoryLabel = category ? (ru ? category.titleRu : category.titleEn) : product.categoryId
-  const finalPrice = getMarketplacePrice(product.priceEur, purchases)
-  const hasDiscount = discountPercent > 0 && finalPrice < product.priceEur
+  const finalPrice = Number(product.priceEur || 0)
+  const hasDiscount = false
   const coverImage = getMarketplaceCoverImage(product)
   const comingSoon = isComingSoon('marketplace')
 
@@ -75,7 +73,7 @@ export function MarketplaceProductCard({
 
         <div className={styles.footer}>
           <div className={styles.priceBlock}>
-            <span className={styles.price}>{finalPrice}€</span>
+            <span className={styles.price}>{product.isFree ? (ru ? 'Бесплатно' : 'Free') : `${finalPrice}€`}</span>
             {hasDiscount && (
               <>
                 <span className={styles.oldPrice}>{product.priceEur}€</span>
@@ -89,8 +87,8 @@ export function MarketplaceProductCard({
               {ru ? 'Скачать' : 'Download'}
             </Link>
           ) : (
-            <Link to={`/marketplace/${product.slug}/buy`} className={styles.buyBtn}>
-              {ru ? 'Купить' : 'Buy'}
+            <Link to={product.isFree ? `/marketplace/${product.slug}` : `/marketplace/${product.slug}/buy`} className={styles.buyBtn}>
+              {product.isFree ? (ru ? 'Получить' : 'Get') : (ru ? 'Купить' : 'Buy')}
             </Link>
           )}
         </div>

@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Check, Circle, CircleCheck, CreditCard, FlaskConical, Landmark, WalletCards } from 'lucide-react'
+import { useParams, Link, Navigate, useNavigate } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, Check, Circle, CircleCheck, CreditCard, Landmark, WalletCards } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
-import { getUserDiscountPercent } from '../api/adminStore'
 import { api, checkApiOnline } from '../api/client'
-import { getMarketplaceProduct } from '../data/marketplace/products'
-import { getMarketplacePrice } from '../data/marketplace/discounts'
-import { getCourseTributePaymentUrl } from '../data/tributePayments'
 import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
 import { ComingSoonPage } from '../components/ComingSoonLock'
 import { isComingSoon } from '../config/availability'
@@ -18,14 +14,12 @@ const PAY_METHODS = [
   { id: 'tribute', label: 'Tribute', descRu: 'Карта, СБП, Stars, TON', descEn: 'Card, SBP, Stars, TON', icon: WalletCards },
   { id: 'stripe', label: 'Stripe', descRu: 'Visa, Mastercard', descEn: 'Visa, Mastercard', icon: CreditCard },
   { id: 'liqpay', label: 'LiqPay', descRu: 'Украина', descEn: 'Ukraine', icon: Landmark },
-  { id: 'demo', label: 'Demo', descRu: 'Тестовая оплата', descEn: 'Test payment', icon: FlaskConical },
-].filter((m) => m.id !== 'demo' || !import.meta.env.PROD || import.meta.env.VITE_ENABLE_DEMO_PAYMENT === '1')
+]
 
 export function MarketplaceBuy() {
   const { productSlug } = useParams()
   const navigate = useNavigate()
-  const product = getMarketplaceProduct(productSlug)
-  const { user, hasPurchased, login, purchaseCourse, purchases, apiMode } = useAuth()
+  const { user, hasPurchased, login } = useAuth()
   const { lang } = useLanguage()
   const ru = lang === 'ru'
 
@@ -36,6 +30,23 @@ export function MarketplaceBuy() {
   const [error, setError] = useState('')
   const [method, setMethod] = useState('tribute')
   const [tributeEnabled, setTributeEnabled] = useState(false)
+  const [product, setProduct] = useState(null)
+  const [productLoading, setProductLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    api.marketplaceProduct(productSlug)
+      .then((response) => {
+        if (active) setProduct(response.product || null)
+      })
+      .catch(() => {
+        if (active) setProduct(null)
+      })
+      .finally(() => {
+        if (active) setProductLoading(false)
+      })
+    return () => { active = false }
+  }, [productSlug])
 
   useEffect(() => {
     checkApiOnline().then(async (ok) => {
@@ -48,6 +59,10 @@ export function MarketplaceBuy() {
     })
   }, [])
 
+  if (productLoading) {
+    return <div className={buyStyles.wrap}><div className={buyStyles.container}>{ru ? 'Загрузка…' : 'Loading…'}</div></div>
+  }
+
   if (!product) {
     return (
       <div className={buyStyles.wrap}>
@@ -59,19 +74,17 @@ export function MarketplaceBuy() {
     )
   }
 
+  if (product.isFree) {
+    return <Navigate to={`/marketplace/${product.slug}`} replace />
+  }
+
   if (isComingSoon('marketplace')) {
     return <ComingSoonPage kind="marketplace" lang={lang} backTo="/marketplace" />
   }
 
   const purchased = hasPurchased(product.id)
-  const membershipPrice = getMarketplacePrice(product.priceEur, purchases)
-  const referralDiscountPercent = getUserDiscountPercent(user?.email || email)
-  const priceAfterReferral =
-    referralDiscountPercent > 0
-      ? Math.max(0, membershipPrice - Math.round((membershipPrice * referralDiscountPercent) / 100))
-      : membershipPrice
+  const priceAfterReferral = Number(product.priceEur || 0)
   const title = ru ? product.titleRu : product.titleEn
-  const tributePaymentUrl = getCourseTributePaymentUrl(product.id)
 
   const benefits = ru
     ? [
@@ -90,29 +103,10 @@ export function MarketplaceBuy() {
   const ensureAuth = async () => {
     if (user) return
     const emailTrim = email.trim()
-    if (!emailTrim || !password || password.length < 6) {
-      throw new Error(ru ? 'Введите email и пароль (мин. 6 символов)' : 'Enter email and password (min 6 chars)')
+    if (!emailTrim || !password || password.length < 10 || !/[A-Za-zА-Яа-яІіЇїЄє]/.test(password) || !/\d/.test(password)) {
+      throw new Error(ru ? 'Введите email и пароль (мин. 10 символов, буква и цифра)' : 'Enter email and password (10+ chars, letter and number)')
     }
     await login(emailTrim, password, name.trim() || emailTrim)
-  }
-
-  const completeDemoPurchase = async () => {
-    const payload = {
-      courseId: product.id,
-      courseTitle: title,
-      amount: priceAfterReferral,
-      slug: product.slug,
-    }
-    const online = apiMode || await checkApiOnline()
-    if (online) await api.demoPurchase(payload)
-    else {
-      await purchaseCourse(product.id, {
-        recordAdmin: true,
-        courseTitle: title,
-        amount: priceAfterReferral,
-        email: user?.email || email,
-      })
-    }
   }
 
   const handleSubmit = async (e) => {
@@ -123,17 +117,11 @@ export function MarketplaceBuy() {
       await ensureAuth()
       const payload = {
         courseId: product.id,
-        courseTitle: title,
-        amount: priceAfterReferral,
         slug: product.slug,
         locale: lang,
       }
 
       if (method === 'tribute') {
-        if (tributePaymentUrl) {
-          window.location.href = tributePaymentUrl
-          return
-        }
         const result = await api.tributeCheckout(payload)
         const payUrl = result.url || result.webappUrl
         if (!payUrl) throw new Error(ru ? 'Tribute не вернул ссылку' : 'No payment URL')
@@ -150,13 +138,18 @@ export function MarketplaceBuy() {
         const form = document.createElement('form')
         form.method = 'POST'
         form.action = 'https://www.liqpay.ua/api/3/checkout'
-        form.innerHTML = `<input name="data" value="${lp.data}"/><input name="signature" value="${lp.signature}"/>`
+        for (const [name, value] of [['data', lp.data], ['signature', lp.signature]]) {
+          const input = document.createElement('input')
+          input.type = 'hidden'
+          input.name = name
+          input.value = String(value || '')
+          form.appendChild(input)
+        }
         document.body.appendChild(form)
         form.submit()
         return
       }
-      await completeDemoPurchase()
-      navigate(`/marketplace/${product.slug}?paid=1`)
+      throw new Error(ru ? 'Выберите доступный способ оплаты' : 'Select an available payment method')
     } catch (err) {
       setError(err.message || (ru ? 'Ошибка оплаты' : 'Payment error'))
     } finally {
@@ -244,7 +237,7 @@ export function MarketplaceBuy() {
                   </label>
                   <label className={buyStyles.label}>
                     {ru ? 'Пароль' : 'Password'}
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={buyStyles.input} required minLength={6} autoComplete="new-password" />
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={buyStyles.input} required minLength={10} autoComplete="new-password" />
                   </label>
                 </div>
               )}

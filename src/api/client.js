@@ -62,12 +62,21 @@ export function setToken(token) {
 }
 
 export function getAdminToken() {
-  try { return localStorage.getItem(ADMIN_TOKEN_KEY) } catch { return null }
+  try {
+    const token = sessionStorage.getItem(ADMIN_TOKEN_KEY)
+    localStorage.removeItem(ADMIN_TOKEN_KEY)
+    return token
+  } catch {
+    return null
+  }
 }
 
 export function setAdminToken(token) {
-  if (token) localStorage.setItem(ADMIN_TOKEN_KEY, token)
-  else localStorage.removeItem(ADMIN_TOKEN_KEY)
+  try {
+    localStorage.removeItem(ADMIN_TOKEN_KEY)
+    if (token) sessionStorage.setItem(ADMIN_TOKEN_KEY, token)
+    else sessionStorage.removeItem(ADMIN_TOKEN_KEY)
+  } catch (_) {}
 }
 
 export async function apiRequest(path, { method = 'GET', body, admin = false, auth = true, retries = 0 } = {}) {
@@ -127,7 +136,6 @@ export const api = {
   getCourses: () => apiRequest('/courses'),
   getMe: () => apiRequest('/me'),
   getStats: () => apiRequest('/me/stats'),
-  purchaseCourse: (payload) => apiRequest('/me/purchases', { method: 'POST', body: payload }),
   saveProgress: (courseId, data) => apiRequest(`/me/progress/${courseId}`, { method: 'PUT', body: { data } }),
   recordReferral: (payload) => apiRequest('/me/referral', { method: 'POST', body: payload }),
   getNotifications: () => apiRequest('/me/notifications'),
@@ -160,6 +168,11 @@ export const api = {
   getReviews: (courseId) => apiRequest(`/reviews/${courseId}`, { auth: false }),
   getFeaturedReviews: (limit = 12) => apiRequest(`/reviews?limit=${limit}`, { auth: false }),
   postReview: (courseId, payload) => apiRequest(`/reviews/${courseId}`, { method: 'POST', body: payload }),
+  marketplaceProducts: (type = 'marketplace') => apiRequest(`/marketplace/products?type=${encodeURIComponent(type)}`, { auth: false }),
+  marketplaceProduct: (slug) => apiRequest(`/marketplace/products/${encodeURIComponent(slug)}`, { auth: false }),
+  claimMarketplaceProduct: (id) => apiRequest(`/marketplace/products/${encodeURIComponent(id)}/claim`, { method: 'POST' }),
+  getMarketplaceDownloads: () => apiRequest('/marketplace/downloads'),
+  getMarketplaceDownloadUrl: (assetId) => apiRequest(`/marketplace/downloads/${encodeURIComponent(assetId)}/url`, { method: 'POST' }),
   submitAcceleratorApplication: (payload) => apiRequest('/applications/accelerator', { method: 'POST', body: payload }),
   getTeam: () => apiRequest('/teams/my'),
   createTeam: (name) => apiRequest('/teams/create', { method: 'POST', body: { name } }),
@@ -194,7 +207,10 @@ export const api = {
   adminFeatureFlags: () => apiRequest('/admin/feature-flags', { admin: true }),
   adminSetFeatureFlags: (payload) => apiRequest('/admin/feature-flags', { method: 'PUT', body: payload, admin: true }),
   adminMarketplaceProducts: () => apiRequest('/admin/marketplace/products', { admin: true }),
+  adminCreateMarketplaceProduct: (payload) => apiRequest('/admin/marketplace/products', { method: 'POST', body: payload, admin: true }),
   adminUpdateMarketplaceProduct: (id, payload) => apiRequest(`/admin/marketplace/products/${id}`, { method: 'PATCH', body: payload, admin: true }),
+  adminUploadMarketplaceAsset: (id, formData) => apiRequest(`/admin/marketplace/products/${id}/assets`, { method: 'POST', body: formData, admin: true }),
+  adminUpdateMarketplaceAsset: (productId, assetId, payload) => apiRequest(`/admin/marketplace/products/${productId}/assets/${assetId}`, { method: 'PATCH', body: payload, admin: true }),
   adminCreatorPayouts: () => apiRequest('/admin/creator-payouts', { admin: true }),
   adminCreateCreatorPayout: (payload) => apiRequest('/admin/creator-payouts', { method: 'POST', body: payload, admin: true }),
   adminUpdateCreatorPayout: (id, payload) => apiRequest(`/admin/creator-payouts/${id}`, { method: 'PATCH', body: payload, admin: true }),

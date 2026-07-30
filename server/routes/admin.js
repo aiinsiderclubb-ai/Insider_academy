@@ -25,12 +25,19 @@ import {
 } from '../services/googleSheets.js'
 import adminOpsRoutes from './adminOps.js'
 import adminGiveawaysRoutes from './adminGiveaways.js'
+import adminMarketplaceRoutes from './adminMarketplace.js'
 import { queueEmail } from '../services/emailQueue.js'
 import { logAudit } from '../services/auditLog.js'
 import { deleteUserAccount } from '../services/deleteUser.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
+import { rateLimitMiddleware } from '../middleware/rateLimit.js'
 
 const router = Router()
+const adminLoginRateLimit = rateLimitMiddleware({
+  windowMs: 15 * 60_000,
+  max: 5,
+  keyFn: (req) => `admin:${req.ip || 'unknown'}`,
+})
 
 const WEAK_ADMIN_PASSWORDS = new Set(['admin123', 'editor123', 'moderator123'])
 
@@ -50,7 +57,7 @@ function resolveAdminRole(password) {
   return null
 }
 
-router.post('/login', (req, res) => {
+router.post('/login', adminLoginRateLimit, (req, res) => {
   const role = resolveAdminRole(req.body.password)
   if (!role) return res.status(401).json({ error: 'Invalid password' })
   res.json({ token: signAdminToken(role), role })
@@ -104,6 +111,7 @@ router.post('/test-email', requireAdmin('admin'), async (req, res) => {
 })
 
 router.use(requireAdmin('admin', 'editor', 'moderator'))
+router.use(adminMarketplaceRoutes)
 router.use(adminOpsRoutes)
 router.use(adminGiveawaysRoutes)
 

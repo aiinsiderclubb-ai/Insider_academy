@@ -87,7 +87,7 @@ export function Register() {
       setError(t('register.errorPassword'))
       return
     }
-    if (passwordValue.length < 6) {
+    if (passwordValue.length < 10 || !/[A-Za-zА-Яа-яІіЇїЄє]/.test(passwordValue) || !/\d/.test(passwordValue)) {
       setError(t('register.errorPasswordShort'))
       return
     }

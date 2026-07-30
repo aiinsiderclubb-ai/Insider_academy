@@ -4,8 +4,19 @@ import crypto from 'crypto'
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { config, isS3Enabled } from '../config.js'
+import { safeSecretEqual } from '../utils/security.js'
 
 let s3Client = null
+const EXTENSION_BY_MIME = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'application/pdf': '.pdf',
+  'text/plain': '.txt',
+  'text/markdown': '.md',
+  'application/json': '.json',
+  'application/zip': '.zip',
+}
 
 function getS3() {
   if (!s3Client && isS3Enabled()) {
@@ -28,7 +39,8 @@ function ensureLocalDir(subdir) {
 }
 
 export async function saveUploadedFile(file, subdir = 'homework') {
-  const ext = path.extname(file.originalname || '') || ''
+  const ext = EXTENSION_BY_MIME[file.mimetype]
+  if (!ext) throw Object.assign(new Error('Unsupported file type'), { status: 400 })
   const key = `${subdir}/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${ext}`
 
   if (isS3Enabled()) {
@@ -56,13 +68,32 @@ export async function getFileUrl(storedPath, storage = 'local') {
     return getSignedUrl(client, new GetObjectCommand({
       Bucket: config.storage.s3.bucket,
       Key: storedPath,
-    }), { expiresIn: 3600 })
+    }), { expiresIn: 15 * 60 })
   }
-  return `/api/files/${encodeURIComponent(storedPath)}`
+  const expires = Math.floor(Date.now() / 1000) + 15 * 60
+  const signature = signLocalFile(storedPath, expires)
+  return `/api/files/${encodeURIComponent(storedPath)}?expires=${expires}&signature=${signature}`
 }
 
 export function resolveLocalFile(storedPath) {
-  const full = path.join(config.uploadsDir, storedPath)
-  if (!full.startsWith(config.uploadsDir)) return null
-  return fs.existsSync(full) ? full : null
+  const key = String(storedPath || '')
+  if (!key || key.includes('\0') || path.isAbsolute(key) || key.split(/[\\/]/).includes('..')) return null
+  const root = path.resolve(config.uploadsDir)
+  const full = path.resolve(root, key)
+  if (full !== root && !full.startsWith(`${root}${path.sep}`)) return null
+  return fs.existsSync(full) && fs.statSync(full).isFile() ? full : null
+}
+
+function signLocalFile(storedPath, expires) {
+  return crypto
+    .createHmac('sha256', config.jwtSecret)
+    .update(`${storedPath}:${expires}`)
+    .digest('hex')
+}
+
+export function verifyLocalFileSignature(storedPath, expires, signature) {
+  const expiration = Number(expires)
+  if (!Number.isInteger(expiration) || expiration < Math.floor(Date.now() / 1000)) return false
+  if (expiration > Math.floor(Date.now() / 1000) + 60 * 60) return false
+  return safeSecretEqual(signature, signLocalFile(storedPath, expiration))
 }

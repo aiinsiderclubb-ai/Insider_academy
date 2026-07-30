@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { getDb } from '../db.js'
-import { requireUser } from '../middleware/auth.js'
+import { requireAdmin, requireUser } from '../middleware/auth.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { config } from '../config.js'
 import { sendTelegramMessage } from '../services/telegram.js'
@@ -19,6 +19,7 @@ import {
   normalizePersonalId,
 } from '../services/telegramLink.js'
 import { backfillPersonalIds } from '../services/personalId.js'
+import { safeSecretEqual } from '../utils/security.js'
 
 const router = Router()
 
@@ -38,7 +39,7 @@ async function resolveBotUsername() {
 function requireBotSecret(req, res, next) {
   const secret = req.headers['x-bot-secret'] || ''
   const expected = config.telegram.botServiceSecret
-  if (!expected || secret !== expected) {
+  if (!expected || !safeSecretEqual(secret, expected)) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
   next()
@@ -53,7 +54,7 @@ function verifyTelegramWebhookSecret(req, res, next) {
     return next()
   }
   const header = req.headers['x-telegram-bot-api-secret-token'] || ''
-  if (header !== expected) {
+  if (!safeSecretEqual(header, expected)) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
   next()
@@ -69,7 +70,7 @@ router.post('/webhook', verifyTelegramWebhookSecret, async (req, res) => {
   }
 })
 
-router.get('/webhook-info', async (_req, res) => {
+router.get('/webhook-info', requireAdmin('admin'), async (_req, res) => {
   if (!config.telegram.botToken) return res.json({ configured: false })
   const { getWebhookInfo } = await import('../services/telegram.js')
   const info = await getWebhookInfo()
@@ -93,17 +94,16 @@ router.get('/bot-info', async (_req, res) => {
 })
 
 router.post('/link', requireUser, async (req, res) => {
-  const chatId = String(req.body.chatId || '').trim()
-  if (!chatId) return res.status(400).json({ error: 'chatId required' })
-  if (!/^\d{5,20}$/.test(chatId)) {
-    return res.status(400).json({
-      error: 'Use numeric Chat ID or connect via the bot link in your cabinet.',
-      errorRu: 'Нужен числовой Chat ID. Проще нажать «Открыть бота» в кабинете — username не подходит.',
-    })
+  if (process.env.LMS_TEST_DB) {
+    const chatId = String(req.body.chatId || '').trim()
+    if (!/^\d{5,20}$/.test(chatId)) return res.status(400).json({ error: 'Invalid test chatId' })
+    await getDb().run('UPDATE users SET telegram_chat_id = ? WHERE id = ?', [chatId, req.userId])
+    return res.json({ ok: true, testOnly: true })
   }
-  await getDb().run('UPDATE users SET telegram_chat_id = ? WHERE id = ?', [chatId, req.userId])
-  await sendTelegramMessage(chatId, '✅ Telegram подключён к AI Insider Academy.')
-  res.json({ ok: true })
+  res.status(410).json({
+    error: 'Direct Chat ID linking is disabled',
+    errorRu: 'Подключите Telegram через одноразовую ссылку в кабинете.',
+  })
 })
 
 router.post('/link-token', requireUser, async (req, res) => {

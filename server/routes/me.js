@@ -15,6 +15,7 @@ import { createUserNotification } from '../services/notifications.js'
 import * as sheetsTrack from '../services/sheetsTrack.js'
 import { issueEmailVerificationCode } from '../services/emailVerification.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
+import { validateUserPassword } from '../utils/security.js'
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -92,44 +93,6 @@ router.get('/stats', async (req, res) => {
       unlockedAt: u.unlocked_at,
     })).filter((a) => a.id),
   })
-})
-
-router.post('/purchases', prelaunchBlocked, async (req, res) => {
-  const db = getDb()
-  const courseId = String(req.body.courseId || '')
-  const courseTitle = String(req.body.courseTitle || '')
-  const amount = req.body.amount ?? null
-  if (!courseId) return res.status(400).json({ error: 'courseId required' })
-
-  const user = await db.get('SELECT email, personal_id FROM users WHERE id = ?', [req.userId])
-  const exists = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [req.userId, courseId])
-  if (!exists) {
-    await db.run('INSERT INTO purchases (user_id, course_id) VALUES (?, ?)', [req.userId, courseId])
-    await db.run(
-      'INSERT INTO purchase_log (id, email, course_id, course_title, amount, date) VALUES (?, ?, ?, ?, ?, ?)',
-      [`purchase-${Date.now()}`, user.email, courseId, courseTitle, amount, new Date().toISOString()]
-    )
-    sheetsTrack.trackPurchase({
-      email: user.email,
-      personalId: user.personal_id,
-      courseId,
-      courseTitle,
-      amount,
-      source: 'cabinet',
-    }).catch(() => {})
-    const ref = await db.get('SELECT referrer_email FROM referrals WHERE referred_email = ?', [user.email])
-    if (ref?.referrer_email) {
-      await db.run('UPDATE referrals SET referred_purchased = 1 WHERE referred_email = ?', [user.email])
-      const d = await db.get('SELECT percent FROM referral_discounts WHERE email = ?', [ref.referrer_email])
-      const next = (d?.percent || 0) + 5
-      await db.run(
-        'INSERT INTO referral_discounts (email, percent) VALUES (?, ?) ON CONFLICT(email) DO UPDATE SET percent = excluded.percent',
-        [ref.referrer_email, next]
-      )
-    }
-  }
-  const purchases = await db.all('SELECT course_id AS id, purchased_at AS purchasedAt FROM purchases WHERE user_id = ?', [req.userId])
-  res.json({ purchases })
 })
 
 router.get('/activity', async (req, res) => {
@@ -303,14 +266,18 @@ router.patch('/password', async (req, res) => {
   const db = getDb()
   const currentPassword = String(req.body.currentPassword || '')
   const newPassword = String(req.body.newPassword || '')
-  if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' })
+  const passwordCheck = validateUserPassword(newPassword)
+  if (!passwordCheck.ok) return res.status(400).json(passwordCheck)
   const row = await db.get('SELECT password_hash, email FROM users WHERE id = ?', [req.userId])
   if (!row || !bcrypt.compareSync(currentPassword, row.password_hash)) {
     return res.status(401).json({ error: 'Current password is incorrect' })
   }
   const hash = bcrypt.hashSync(newPassword, 10)
   const now = nowIso()
-  await db.run('UPDATE users SET password_hash = ?, password_changed_at = ?, profile_updated_at = ? WHERE id = ?', [hash, now, now, req.userId])
+  await db.run(
+    'UPDATE users SET password_hash = ?, password_changed_at = ?, profile_updated_at = ?, token_version = COALESCE(token_version, 0) + 1 WHERE id = ?',
+    [hash, now, now, req.userId]
+  )
   await createUserNotification(db, {
     email: row.email,
     type: 'password_changed',
@@ -341,7 +308,10 @@ router.patch('/email', async (req, res) => {
   if (exists) return res.status(409).json({ error: 'Email already in use' })
   const oldEmail = row.email
   const now = nowIso()
-  await db.run('UPDATE users SET email = ?, email_verified = 0, profile_updated_at = ? WHERE id = ?', [email, now, req.userId])
+  await db.run(
+    'UPDATE users SET email = ?, email_verified = 0, profile_updated_at = ?, token_version = COALESCE(token_version, 0) + 1 WHERE id = ?',
+    [email, now, req.userId]
+  )
   await syncUserRecords(db, oldEmail, { email })
   const user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
   const token = signUserToken(user)

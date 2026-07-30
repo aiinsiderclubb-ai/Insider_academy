@@ -73,6 +73,20 @@ export function validateProductionConfig() {
     warnings.push('APP_URL should be https://myinsideracademy.com for password-reset emails')
   }
 
+  const s3Configured = config.storage.driver === 's3'
+    && config.storage.s3.bucket
+    && config.storage.s3.accessKey
+    && config.storage.s3.secretKey
+  if (!s3Configured) {
+    const message = 'S3 storage is required before launch; Render local files are ephemeral'
+    if (config.prelaunchMode) warnings.push(message)
+    else errors.push(message)
+  }
+
+  if (!config.prelaunchMode && !config.tribute.apiKey) {
+    errors.push('TRIBUTE_API_KEY is required when PRELAUNCH_MODE=0')
+  }
+
   return { errors, warnings }
 }
 

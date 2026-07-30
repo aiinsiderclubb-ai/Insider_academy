@@ -44,21 +44,11 @@ router.post('/join', requireUser, async (req, res) => {
   res.json({ ok: true, teamId: team.id })
 })
 
-router.post('/grant-course', requireUser, prelaunchBlocked, async (req, res) => {
-  const db = getDb()
-  const { memberEmail, courseId } = req.body
-  const team = await db.get(
-    'SELECT t.id FROM teams t JOIN team_members tm ON tm.team_id = t.id WHERE tm.user_id = ? AND tm.role = ?',
-    [req.userId, 'owner']
-  )
-  if (!team) return res.status(403).json({ error: 'Owner only' })
-  const member = await db.get('SELECT id FROM users WHERE email = ? AND team_id = ?', [memberEmail, team.id])
-  if (!member) return res.status(404).json({ error: 'Member not in team' })
-  const exists = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [member.id, courseId])
-  if (!exists) {
-    await db.run('INSERT INTO purchases (user_id, course_id, payment_provider) VALUES (?, ?, ?)', [member.id, courseId, 'team'])
-  }
-  res.json({ ok: true })
+router.post('/grant-course', requireUser, prelaunchBlocked, (_req, res) => {
+  res.status(501).json({
+    error: 'Team course licensing is not enabled',
+    errorRu: 'Командные лицензии пока не подключены. Доступ выдаёт администратор после оплаты.',
+  })
 })
 
 export default router

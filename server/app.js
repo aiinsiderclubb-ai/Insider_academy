@@ -1,12 +1,10 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import { initDatabase, getDb } from './db.js'
 import { seedIfEmpty } from './seed.js'
 import { backfillPersonalIds } from './services/personalId.js'
-import {
-  config, isGoogleSheetsEnabled, isStripeEnabled, isLiqPayEnabled, isTributeEnabled,
-} from './config.js'
-import { validateProductionConfig } from './utils/productionChecks.js'
+import { config } from './config.js'
 import authRoutes from './routes/auth.js'
 import coursesRoutes from './routes/courses.js'
 import meRoutes from './routes/me.js'
@@ -23,6 +21,8 @@ import telegramRoutes from './routes/telegram.js'
 import giveawaysRoutes from './routes/giveaways.js'
 import filesRoutes from './routes/files.js'
 import promoRoutes from './routes/promo.js'
+import marketplaceRoutes from './routes/marketplace.js'
+import { seedMarketplaceCatalog } from './services/marketplaceCatalog.js'
 
 export async function createApp() {
   await initDatabase()
@@ -34,6 +34,7 @@ export async function createApp() {
   }
 
   await seedIfEmpty()
+  await seedMarketplaceCatalog(getDb())
   try {
     await backfillPersonalIds(getDb())
   } catch (err) {
@@ -59,6 +60,11 @@ export async function createApp() {
 
   const app = express()
   app.set('trust proxy', 1)
+  app.disable('x-powered-by')
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }))
 
   const corsOrigins = String(config.corsOrigin || '')
     .split(',')
@@ -67,24 +73,15 @@ export async function createApp() {
 
   function isAllowedCorsOrigin(origin) {
     if (!origin) return true
-    if (corsOrigins.includes(origin)) return true
-    if (/^https:\/\/(www\.)?insiderai\.it\.com$/i.test(origin)) return true
-    if (/^https:\/\/(www\.)?myinsideracademy\.com$/i.test(origin)) return true
-    if (process.env.NODE_ENV === 'production') {
-      if (/^https:\/\/insider-academy[\w-]*\.vercel\.app$/i.test(origin)) return true
-    } else if (/^https:\/\/[\w-]+\.vercel\.app$/i.test(origin)) {
-      return true
-    }
-    if (/^https:\/\/insider-academy\.onrender\.com$/i.test(origin)) return true
-    if (/^http:\/\/localhost(:\d+)?$/i.test(origin)) return true
-    if (/^http:\/\/127\.0\.0\.1(:\d+)?$/i.test(origin)) return true
-    return false
+    return corsOrigins.includes(origin)
   }
 
   app.use(cors({
     origin(origin, callback) {
       if (isAllowedCorsOrigin(origin)) return callback(null, true)
-      return callback(new Error('CORS not allowed'))
+      const error = new Error('CORS not allowed')
+      error.status = 403
+      return callback(error)
     },
     credentials: true,
   }))
@@ -96,27 +93,10 @@ export async function createApp() {
   app.use(express.urlencoded({ extended: true }))
 
   app.get('/api/health', (_req, res) => {
-    const { errors, warnings } = validateProductionConfig()
     res.json({
       ok: true,
       version: '2.0.0',
       db: getDb().driver,
-      features: {
-        stripe: !config.prelaunchMode && isStripeEnabled(),
-        liqpay: !config.prelaunchMode && isLiqPayEnabled(),
-        s3: config.storage.driver === 's3',
-        email: Boolean(config.email.smtp.host && config.email.smtp.user),
-        openai: Boolean(config.openai.apiKey),
-        telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken),
-        tribute: isTributeEnabled(),
-        googleSheets: isGoogleSheetsEnabled(),
-        googleOAuth: Boolean(config.oauth.google.clientId),
-        appleOAuth: Boolean(config.oauth.apple.clientId),
-        prelaunch: config.prelaunchMode,
-      },
-      config: process.env.NODE_ENV === 'production'
-        ? { warnings: warnings.length, errors: errors.length }
-        : undefined,
       time: new Date().toISOString(),
     })
   })
@@ -127,7 +107,8 @@ export async function createApp() {
       await db.get('SELECT 1 AS ok')
       res.json({ ok: true, db: db.driver, time: new Date().toISOString() })
     } catch (err) {
-      res.status(503).json({ ok: false, error: err.message })
+      console.error('[health/ready]', err)
+      res.status(503).json({ ok: false, error: 'Database unavailable' })
     }
   })
 
@@ -145,11 +126,15 @@ export async function createApp() {
   app.use('/api/giveaways', giveawaysRoutes)
   app.use('/api/files', filesRoutes)
   app.use('/api/promo', promoRoutes)
+  app.use('/api/marketplace', marketplaceRoutes)
   app.use('/api', publicRoutes)
 
   app.use((err, _req, res, _next) => {
     console.error(err)
-    res.status(500).json({ error: err.message || 'Internal server error' })
+    const status = Number(err.status) >= 400 && Number(err.status) < 500 ? Number(err.status) : 500
+    res.status(status).json({
+      error: process.env.NODE_ENV === 'production' ? (status === 403 ? 'Forbidden' : 'Internal server error') : err.message || 'Internal server error',
+    })
   })
 
   return app
