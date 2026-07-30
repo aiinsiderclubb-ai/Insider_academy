@@ -10,7 +10,7 @@ export const RELEASES = {
     at: import.meta.env.VITE_COURSES_RELEASE_AT || '2026-09-01T12:00:00+02:00',
   },
   marketplace: {
-    enabled: envFlag('VITE_MARKETPLACE_COMING_SOON'),
+    enabled: false,
     at: import.meta.env.VITE_MARKETPLACE_RELEASE_AT || '2026-09-15T12:00:00+02:00',
   },
   vault: {
