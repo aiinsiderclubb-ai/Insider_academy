@@ -1,6 +1,6 @@
 .wrap {
   min-height: 60vh;
-  padding: 18px 0 88px;
+  padding: 18px 0 64px;
 }
 
 .container {
@@ -14,7 +14,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   font-size: 0.875rem;
   color: var(--text-muted);
 }
@@ -28,8 +28,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
   align-items: stretch;
-  min-height: 370px;
-  margin-bottom: 28px;
+  min-height: 320px;
+  margin-bottom: 20px;
   padding: 0;
   border-radius: 28px;
   border: 1px solid var(--border);
@@ -43,12 +43,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(34px, 5vw, 68px);
+  padding: clamp(24px, 4vw, 44px);
 }
 
 .heroVisual {
   position: relative;
-  min-height: 370px;
+  min-height: 320px;
   overflow: hidden;
   background: #090b11;
 }
@@ -105,7 +105,7 @@
 .title {
   margin: 0 0 8px;
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 5vw, 4.8rem);
+  font-size: clamp(2.1rem, 4.4vw, 3.8rem);
   font-weight: 700;
   letter-spacing: -0.03em;
 }
@@ -164,8 +164,8 @@
 
 .priceCard {
   position: relative;
-  margin-bottom: 36px;
-  padding: 24px 26px;
+  margin-bottom: 26px;
+  padding: 20px 22px;
   border-radius: 24px;
   border: 1px solid var(--border);
   background: var(--bg-card);

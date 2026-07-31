@@ -22,14 +22,14 @@
   --success: #8da783;
   --danger: #f06c75;
   --container-max: 1440px;
-  --section-py: clamp(64px, 7vw, 112px);
-  --section-gap: 40px;
+  --section-py: clamp(44px, 5vw, 76px);
+  --section-gap: clamp(24px, 3vw, 36px);
   --font-display: 'Onest', system-ui, sans-serif;
   --font-body: 'Onest', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font: var(--font-body);
-  --text-h1: clamp(2.8rem, 5.7vw, 6.4rem);
-  --text-h2: clamp(2rem, 3.6vw, 4.5rem);
+  --text-h1: clamp(2.65rem, 5.1vw, 5.4rem);
+  --text-h2: clamp(1.9rem, 3.35vw, 3.9rem);
   --text-h3: clamp(1.25rem, 1.7vw, 1.65rem);
   --text-body: 1rem;
   --text-small: 0.875rem;

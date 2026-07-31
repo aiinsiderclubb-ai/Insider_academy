@@ -10,7 +10,7 @@
   --course-sage: #a8b7a2;
   --course-orange-ui: #f39a55;
   min-height: 100vh;
-  padding: 28px 0 100px;
+  padding: 20px 0 64px;
   color: var(--course-text);
   background:
     radial-gradient(circle at 78% 0%, rgba(119, 80, 222, 0.12), transparent 28%),

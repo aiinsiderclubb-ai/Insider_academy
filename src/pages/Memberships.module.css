@@ -22,7 +22,7 @@
 }
 
 .hero {
-  padding: clamp(64px, 9vw, 116px) 0 clamp(48px, 6vw, 80px);
+  padding: clamp(44px, 5vw, 68px) 0 clamp(36px, 4vw, 56px);
 }
 
 .container {
@@ -68,7 +68,7 @@
   margin: 0 0 22px;
   color: #faf8fd;
   font-family: var(--font-display);
-  font-size: clamp(2.75rem, 5.8vw, 5.2rem);
+  font-size: clamp(2.65rem, 4.6vw, 4rem);
   font-weight: 650;
   line-height: 0.99;
   letter-spacing: -0.058em;
@@ -133,7 +133,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 440px;
+  min-height: clamp(340px, 40vw, 400px);
   overflow: hidden;
   padding: clamp(28px, 4vw, 42px);
   border: 1px solid rgba(255, 255, 255, 0.11);

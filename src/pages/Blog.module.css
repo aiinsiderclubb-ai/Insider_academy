@@ -1,6 +1,6 @@
 .wrap {
   min-height: calc(100svh - 72px);
-  padding: clamp(70px, 9vw, 140px) 0 120px;
+  padding: clamp(44px, 5vw, 72px) 0 clamp(64px, 7vw, 84px);
   overflow: hidden;
   color: #f8f6ff;
   background:
@@ -16,7 +16,7 @@
 
 @media (max-width: 620px) {
   .wrap {
-    padding: 58px 0 86px;
+    padding: 38px 0 64px;
   }
 
   .container {

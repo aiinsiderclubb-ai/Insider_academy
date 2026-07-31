@@ -5,14 +5,14 @@
   --events-violet: #9a72ec;
   --events-sage: #9db2a3;
   min-height: calc(100svh - 68px);
-  padding-bottom: clamp(72px, 9vw, 132px);
+  padding-bottom: clamp(52px, 7vw, 88px);
   color: #f4f1f7;
   background: transparent;
 }
 
 .hero {
   position: relative;
-  min-height: min(760px, calc(100svh - 68px));
+  min-height: clamp(520px, calc(100svh - 68px), 650px);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -49,8 +49,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
   align-items: center;
-  gap: clamp(40px, 8vw, 120px);
-  padding: 72px 0;
+  gap: clamp(34px, 6vw, 82px);
+  padding: clamp(44px, 5vw, 58px) 0;
 }
 
 .heroCopy {
@@ -75,7 +75,7 @@
   max-width: 10ch;
   margin: 30px 0 26px;
   color: #f5f2f7;
-  font-size: clamp(4.1rem, 7.8vw, 8rem);
+  font-size: clamp(3.8rem, 7vw, 6.4rem);
   font-weight: 660;
   letter-spacing: -0.078em;
   line-height: 0.86;
@@ -195,7 +195,7 @@
 }
 
 .section {
-  padding-top: clamp(82px, 10vw, 150px);
+  padding-top: clamp(52px, 7vw, 92px);
 }
 
 .sectionHead {
@@ -203,8 +203,8 @@
   align-items: end;
   justify-content: space-between;
   gap: 32px;
-  margin-bottom: clamp(30px, 4vw, 52px);
-  padding-bottom: 22px;
+  margin-bottom: clamp(22px, 3vw, 34px);
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--events-line);
 }
 
@@ -212,7 +212,7 @@
 .telegramCta h2 {
   margin: 10px 0 0;
   color: #f4f1f7;
-  font-size: clamp(2.5rem, 5vw, 5rem);
+  font-size: clamp(2.25rem, 4vw, 3.8rem);
   font-weight: 620;
   letter-spacing: -0.065em;
   line-height: 0.96;
@@ -231,13 +231,13 @@
 
 .dropList {
   display: grid;
-  gap: 28px;
+  gap: 20px;
 }
 
 .drop {
   overflow: hidden;
   border: 1px solid var(--events-line);
-  border-radius: 32px;
+  border-radius: 24px;
   background: rgba(14, 15, 20, 0.72);
   box-shadow: 0 34px 110px rgba(0, 0, 0, 0.26);
 }
@@ -245,13 +245,13 @@
 .dropLink {
   display: grid;
   grid-template-columns: minmax(0, 1.22fr) minmax(360px, 0.78fr);
-  min-height: 590px;
+  min-height: clamp(360px, 40vw, 430px);
   color: inherit;
 }
 
 .dropVisual {
   position: relative;
-  min-height: 520px;
+  min-height: clamp(340px, 38vw, 410px);
   overflow: hidden;
   background: #07070a;
 }
@@ -320,7 +320,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(34px, 5vw, 70px);
+  padding: clamp(28px, 4vw, 48px);
   background:
     radial-gradient(circle at 100% 0%, rgba(154, 114, 236, 0.13), transparent 42%),
     rgba(16, 17, 22, 0.88);
@@ -330,7 +330,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   color: var(--events-sage);
   font-family: var(--font-mono);
   font-size: 0.62rem;
@@ -341,14 +341,14 @@
 .dropContent h3 {
   margin: 0;
   color: #f6f3f8;
-  font-size: clamp(2.6rem, 5vw, 5.2rem);
+  font-size: clamp(2.35rem, 4vw, 4rem);
   font-weight: 650;
   letter-spacing: -0.07em;
   line-height: 0.92;
 }
 
 .dropDescription {
-  margin: 24px 0 0;
+  margin: 16px 0 0;
   color: #aaa5af;
   font-size: 0.91rem;
   line-height: 1.68;
@@ -358,7 +358,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px 20px;
-  margin-top: 28px;
+  margin-top: 20px;
   color: #d1ccd5;
   font-size: 0.72rem;
 }
@@ -372,7 +372,7 @@
 .progressBlock {
   display: grid;
   gap: 11px;
-  margin-top: 38px;
+  margin-top: 26px;
 }
 
 .progressCopy {
@@ -411,8 +411,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin-top: 30px;
-  padding-top: 22px;
+  margin-top: 22px;
+  padding-top: 16px;
   border-top: 1px solid var(--events-line);
   color: #ede8f2;
   font-size: 0.81rem;
@@ -493,8 +493,8 @@ a.eventRow:hover {
   grid-template-columns: 76px minmax(0, 1fr) auto;
   align-items: center;
   gap: clamp(24px, 4vw, 54px);
-  margin-top: clamp(100px, 13vw, 190px);
-  padding: clamp(34px, 5vw, 64px) 0;
+  margin-top: clamp(64px, 9vw, 112px);
+  padding: clamp(28px, 4vw, 46px) 0;
   border-top: 1px solid var(--events-line);
   border-bottom: 1px solid var(--events-line);
 }
@@ -588,7 +588,7 @@ a.eventRow:hover {
   .hero::before { left: 16px; }
   .heroInner,
   .container { width: min(100% - 32px, 1240px); }
-  .heroInner { gap: 48px; padding: 92px 12px 72px; }
+  .heroInner { gap: 38px; padding: 64px 12px 52px; }
   .hero h1 { font-size: clamp(3.35rem, 17vw, 5.3rem); }
   .heroCopy > p { font-size: 0.94rem; }
   .signalStage { width: min(86vw, 390px); }

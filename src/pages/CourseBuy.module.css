@@ -8,7 +8,7 @@
   --buy-sage: #a8b7a2;
   --buy-orange: #f39a55;
   min-height: 100vh;
-  padding: 28px 0 96px;
+  padding: 18px 0 64px;
   color: var(--buy-text);
   background:
     radial-gradient(circle at 80% 0%, rgba(119, 80, 222, 0.12), transparent 27%),

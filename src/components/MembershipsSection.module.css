@@ -1,12 +1,12 @@
 .section {
   position: relative;
-  padding: 28px 0 clamp(82px, 10vw, 132px);
+  padding: 24px 0 clamp(60px, 8vw, 92px);
   color: #f7f5fb;
   background: transparent;
 }
 
 .sectionCompact {
-  padding: clamp(76px, 9vw, 112px) 0;
+  padding: clamp(48px, 6vw, 76px) 0;
   background:
     radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.1), transparent 30rem);
 }
@@ -19,7 +19,7 @@
 
 .header {
   max-width: 720px;
-  margin: 0 0 42px;
+  margin: 0 0 30px;
   text-align: left;
 }
 
@@ -129,9 +129,9 @@
   flex-direction: column;
   gap: 15px;
   height: 100%;
-  min-height: 600px;
+  min-height: clamp(460px, 52vw, 520px);
   overflow: hidden;
-  padding: clamp(24px, 3vw, 34px);
+  padding: clamp(22px, 2.5vw, 30px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 26px;
   background: #111116;

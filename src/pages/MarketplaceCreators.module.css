@@ -1,6 +1,6 @@
 .wrap {
   min-height: 100vh;
-  padding: 48px 0 96px;
+  padding: 24px 0 64px;
   background:
     radial-gradient(circle at 9% 4%, rgba(139, 92, 246, 0.12), transparent 28rem),
     radial-gradient(circle at 91% 22%, rgba(242, 139, 67, 0.06), transparent 24rem),
@@ -16,8 +16,8 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
-  min-height: 520px;
-  margin-bottom: 72px;
+  min-height: clamp(360px, 52vh, 440px);
+  margin-bottom: 44px;
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   border-radius: 32px;
@@ -42,13 +42,13 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(36px, 5vw, 68px);
+  padding: clamp(24px, 4vw, 46px);
 }
 
 .eyebrow {
   display: inline-flex;
   width: fit-content;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
   color: var(--accent-soft);
   font-family: var(--font-mono);
   font-size: 0.7rem;
@@ -63,7 +63,7 @@
   margin: 0 0 18px;
   color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: clamp(2.3rem, 4.8vw, 4.85rem);
+  font-size: clamp(2.1rem, 4vw, 3.8rem);
   font-weight: 650;
   letter-spacing: -0.055em;
   line-height: 0.98;
@@ -71,7 +71,7 @@
 
 .lead {
   max-width: 660px;
-  margin: 0 0 30px;
+  margin: 0 0 20px;
   color: var(--text-secondary);
   font-size: 1rem;
   line-height: 1.7;
@@ -81,14 +81,14 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 18px;
 }
 
 .stat {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 78px;
+  min-height: 64px;
   padding: 14px 16px;
   border: 1px solid var(--border-subtle);
   border-radius: 18px;

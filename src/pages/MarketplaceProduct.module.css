@@ -1,6 +1,6 @@
 .wrap {
   min-height: 100vh;
-  padding: 38px 0 96px;
+  padding: 22px 0 64px;
   color: #f3f1ed;
   background:
     radial-gradient(circle at 85% 8%, rgba(111, 80, 232, 0.13), transparent 28rem),
@@ -17,8 +17,8 @@
   grid-template-columns: auto auto 1fr;
   align-items: center;
   gap: 10px;
-  margin-bottom: 20px;
-  padding: 15px 18px;
+  margin-bottom: 14px;
+  padding: 12px 16px;
   border: 1px solid rgba(145, 178, 149, 0.35);
   border-radius: 16px;
   color: #c7d9c9;
@@ -47,7 +47,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 26px;
+  margin-bottom: 18px;
   color: #6f6d76;
   font-size: 0.69rem;
   font-weight: 650;
@@ -64,7 +64,7 @@
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(330px, 390px);
-  gap: clamp(34px, 5vw, 74px);
+  gap: clamp(24px, 4vw, 44px);
   align-items: start;
 }
 
@@ -73,12 +73,12 @@
 }
 
 .gallery {
-  margin-bottom: 32px;
+  margin-bottom: 22px;
 }
 
 .preview {
   position: relative;
-  aspect-ratio: 1.55 / 1;
+  aspect-ratio: 1.75 / 1;
   overflow: hidden;
   border: 1px solid #302e38;
   border-radius: 28px;

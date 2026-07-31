@@ -1,6 +1,6 @@
 .wrap {
   min-height: 100vh;
-  padding-bottom: 96px;
+  padding-bottom: 64px;
   color: #f3f1ed;
   background:
     radial-gradient(circle at 78% 6%, rgba(100, 69, 220, 0.13), transparent 28rem),

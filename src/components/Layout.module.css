@@ -540,7 +540,7 @@
   z-index: 1;
   flex: 1;
   min-width: 0;
-  padding: 0 0 clamp(72px, 8vw, 120px);
+  padding: 0 0 clamp(48px, 6vw, 84px);
 }
 
 /* Page modules used to paint another full-page rectangle inside app shell.

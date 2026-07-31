@@ -1062,10 +1062,10 @@
 }
 
 .hero {
-  min-height: 650px;
+  min-height: clamp(500px, calc(100svh - 118px), 590px);
   display: flex;
   align-items: center;
-  padding: clamp(44px, 7vw, 88px) 0;
+  padding: clamp(38px, 5vw, 64px) 0;
 }
 
 .heroBg {
@@ -2855,7 +2855,7 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  min-height: 660px;
+  min-height: clamp(500px, calc(100svh - 160px), 580px);
   margin-inline: auto;
   padding: 0;
   display: block;
@@ -2899,13 +2899,13 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  min-height: 660px;
+  min-height: clamp(500px, calc(100svh - 160px), 580px);
   display: grid;
   /* minmax(0, …) so columns shrink inside sidebar layouts instead of clipping */
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 0.85fr);
   align-items: center;
   gap: clamp(16px, 2.2vw, 40px);
-  padding: clamp(36px, 4vw, 64px);
+  padding: clamp(32px, 3.5vw, 52px);
 }
 
 .guestEntry::before {

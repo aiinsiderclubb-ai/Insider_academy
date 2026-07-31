@@ -1,6 +1,6 @@
 .wrap {
   min-height: 100vh;
-  padding: 52px 0 100px;
+  padding: 28px 0 64px;
   background:
     radial-gradient(circle at 78% 2%, rgba(139, 92, 246, 0.1), transparent 28rem),
     var(--bg-base);
@@ -13,8 +13,8 @@
 
 .header {
   position: relative;
-  margin-bottom: 48px;
-  padding: clamp(30px, 6vw, 52px);
+  margin-bottom: 30px;
+  padding: clamp(24px, 5vw, 38px);
   overflow: hidden;
   border: 1px solid var(--border-subtle);
   border-radius: 28px;
@@ -43,7 +43,7 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   border: 1px solid var(--border-strong);
   border-radius: 15px;
   color: var(--accent-soft);
@@ -69,7 +69,7 @@
   margin: 0 0 22px;
   color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+  font-size: clamp(2rem, 4.8vw, 3.6rem);
   font-weight: 620;
   letter-spacing: -0.055em;
   line-height: 1;
@@ -90,7 +90,7 @@
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
   gap: 20px;
-  padding: 30px 0;
+  padding: 22px 0;
   border-top: 1px solid var(--border-subtle);
 }
 

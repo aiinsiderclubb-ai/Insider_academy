@@ -11,7 +11,7 @@
   --cab-sage: #a8b7a2;
   --cab-orange: #f39a55;
   min-height: 100vh;
-  padding: 0 0 88px;
+  padding: 0 0 64px;
   color: var(--cab-text);
   background:
     radial-gradient(circle at 78% 0%, rgba(124, 77, 255, 0.28), transparent 32%),

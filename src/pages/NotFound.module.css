@@ -4,23 +4,23 @@
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
   align-items: center;
-  gap: clamp(32px, 6vw, 86px);
+  gap: clamp(24px, 5vw, 54px);
   max-width: 1180px;
   margin: 0 auto;
-  padding: clamp(46px, 7vw, 92px) 24px;
+  padding: clamp(32px, 5vw, 56px) 24px;
 }
 
 .copy { position: relative; z-index: 2; }
 .code {
   margin: 0 0 18px;
   font-family: var(--font-mono);
-  font-size: clamp(4.5rem, 10vw, 8rem);
+  font-size: clamp(4rem, 8vw, 6rem);
   font-weight: 600;
   letter-spacing: -0.08em;
   line-height: 0.8;
   color: var(--accent-soft);
 }
-.title { margin: 0 0 14px; font-size: clamp(2rem, 4vw, 4rem); }
+.title { margin: 0 0 14px; font-size: clamp(1.8rem, 3.5vw, 3rem); }
 .text { max-width: 44ch; margin: 0; color: var(--text-secondary); line-height: 1.65; }
 .btn {
   min-height: 48px;
@@ -37,7 +37,8 @@
 }
 .visual {
   position: relative;
-  aspect-ratio: 1;
+  aspect-ratio: 1.1;
+  max-height: 420px;
   overflow: hidden;
   border: 1px solid var(--border-strong);
   border-radius: 32px;

@@ -1,6 +1,6 @@
 .wrap {
   min-height: calc(100svh - 72px);
-  padding: clamp(30px, 5vw, 72px) 0 88px;
+  padding: clamp(24px, 3.5vw, 48px) 0 64px;
   color: #f6f4fa;
   background:
     radial-gradient(circle at 80% 0%, rgba(124, 58, 237, 0.12), transparent 28rem),
@@ -19,7 +19,7 @@
   justify-content: space-between;
   gap: 30px;
   margin-bottom: 24px;
-  padding: clamp(28px, 4vw, 48px);
+  padding: clamp(24px, 3vw, 38px);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 28px;
@@ -47,7 +47,7 @@
   margin: 0 0 10px;
   color: #fbfaff;
   font-family: 'Onest', var(--font-display, sans-serif);
-  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  font-size: clamp(2.3rem, 4.3vw, 3.9rem);
   font-weight: 680;
   letter-spacing: -0.065em;
   line-height: 0.98;
@@ -706,10 +706,10 @@
 }
 
 .headerRow {
-  min-height: 300px;
+  min-height: 240px;
   align-items: end;
   margin-bottom: 0;
-  padding: 42px 0 38px;
+  padding: 28px 0 26px;
   border-bottom-color: rgba(195, 166, 255, 0.16);
 }
 
@@ -718,7 +718,7 @@
 }
 
 .backLink {
-  margin-bottom: clamp(38px, 6vw, 72px);
+  margin-bottom: clamp(20px, 3vw, 38px);
   padding: 0;
   color: #aaa2b8;
 }
@@ -726,7 +726,7 @@
 .title {
   max-width: 920px;
   margin-bottom: 16px;
-  font-size: clamp(3.2rem, 6.8vw, 6rem);
+  font-size: clamp(2.75rem, 5vw, 4.2rem);
   letter-spacing: -0.075em;
   line-height: 0.92;
 }
@@ -788,7 +788,7 @@
 }
 
 .sectionNav a {
-  min-height: 70px;
+  min-height: 54px;
   padding: 0;
   color: #8f879d;
   font-size: 0.79rem;
@@ -804,7 +804,7 @@
 
 .card {
   grid-column: span 6;
-  padding: clamp(46px, 6vw, 76px) 0;
+  padding: clamp(30px, 4vw, 50px) 0;
   border: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.095);
   border-radius: 0;
@@ -820,13 +820,13 @@
     'heading heading'
     'identity form';
   column-gap: clamp(54px, 9vw, 128px);
-  padding: clamp(52px, 7vw, 88px) 0;
+  padding: clamp(34px, 5vw, 56px) 0;
   background: transparent;
 }
 
 .profileCard .cardTitle {
   grid-area: heading;
-  margin-bottom: clamp(34px, 5vw, 58px);
+  margin-bottom: clamp(24px, 3vw, 38px);
 }
 
 .profileCard .avatarBlock {

@@ -1,7 +1,7 @@
 .section {
   position: relative;
   overflow: hidden;
-  padding: clamp(78px, 9vw, 124px) 0;
+  padding: clamp(48px, 6vw, 78px) 0;
   background:
     radial-gradient(circle at 0% 35%, rgba(124, 58, 237, 0.13), transparent 25rem);
   color: #f7f5fb;
@@ -15,7 +15,7 @@
 
 .head {
   max-width: 760px;
-  margin: 0 0 46px;
+  margin: 0 0 clamp(28px, 3vw, 38px);
   text-align: left;
 }
 

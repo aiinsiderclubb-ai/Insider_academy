@@ -36,9 +36,9 @@
 .content {
   grid-column: 2;
   min-width: 0;
-  width: min(100%, 620px);
+  width: min(100%, 600px);
   margin: auto;
-  padding: clamp(28px, 5vw, 72px);
+  padding: clamp(18px, 2.8vw, 38px);
 }
 
 .topBar {
@@ -46,7 +46,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .backLink {
@@ -111,13 +111,13 @@
 .cardInner {
   position: relative;
   min-width: 0;
-  padding: clamp(28px, 4.5vw, 48px);
+  padding: clamp(22px, 3vw, 34px);
 }
 
 .logoWrap {
   display: flex;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 18px;
 }
 
 .logoText {
@@ -146,30 +146,30 @@
 }
 
 .title {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   color: #fbfaff;
   font-family: 'Onest', var(--font-display, sans-serif);
-  font-size: clamp(2rem, 4vw, 3.1rem);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
   font-weight: 700;
   letter-spacing: -0.055em;
   line-height: 1.02;
 }
 
 .subtitle {
-  margin: 0 0 28px;
+  margin: 0 0 18px;
   color: #9894a2;
   font-size: 0.96rem;
-  line-height: 1.65;
+  line-height: 1.5;
 }
 
 .form {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .label {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .labelText {
@@ -181,7 +181,7 @@
 .input {
   width: 100%;
   min-width: 0;
-  min-height: 52px;
+  min-height: 48px;
   padding: 0 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 15px;
@@ -213,7 +213,7 @@
 }
 
 .submit {
-  min-height: 52px;
+  min-height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -267,7 +267,7 @@
 }
 
 .footerAuth {
-  margin: 22px 0 0;
+  margin: 14px 0 0;
   color: #8f8a97;
   font-size: 0.84rem;
   text-align: center;
@@ -307,8 +307,8 @@
 
 .socialWrap {
   display: grid;
-  gap: 11px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .socialDivider {
@@ -333,7 +333,7 @@
 .googleBtnHost,
 .appleBtn {
   width: 100%;
-  min-height: 50px;
+  min-height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;

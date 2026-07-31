@@ -45,7 +45,7 @@
 .greeting {
   margin: 10px 0 0;
   color: var(--dash-text);
-  font-size: clamp(2.15rem, 4.2vw, 4.35rem);
+  font-size: clamp(2.15rem, 3.8vw, 3.8rem);
   font-weight: 610;
   letter-spacing: -0.065em;
   line-height: 0.94;
@@ -127,8 +127,8 @@
   position: relative;
   isolation: isolate;
   display: grid;
-  min-height: 430px;
-  grid-template-columns: minmax(0, 0.94fr) minmax(470px, 1.06fr);
+  min-height: clamp(350px, 42vw, 390px);
+  grid-template-columns: minmax(0, 0.94fr) minmax(400px, 1.06fr);
   overflow: hidden;
   border-top: 1px solid rgba(177, 137, 255, 0.42);
   border-bottom: 1px solid rgba(255, 147, 77, 0.28);
@@ -168,14 +168,14 @@
   min-width: 0;
   flex-direction: column;
   align-items: flex-start;
-  padding: 52px 36px 42px 44px;
+  padding: 36px 30px 32px 36px;
 }
 
 .courseTitle {
   max-width: 620px;
   margin: 18px 0 0;
   color: #faf8fd;
-  font-size: clamp(2.55rem, 5vw, 5.4rem);
+  font-size: clamp(2.45rem, 4vw, 3.8rem);
   font-weight: 625;
   letter-spacing: -0.072em;
   line-height: 0.88;
@@ -195,7 +195,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 18px;
-  margin-top: 36px;
+  margin-top: 26px;
   color: var(--dash-muted);
   font-size: 0.7rem;
 }
@@ -264,7 +264,7 @@
 
 .heroVisual {
   position: relative;
-  min-height: 430px;
+  min-height: clamp(350px, 42vw, 390px);
   overflow: hidden;
 }
 
@@ -295,7 +295,7 @@
   z-index: 1;
   width: 100%;
   height: 100%;
-  min-height: 430px;
+  min-height: clamp(350px, 42vw, 390px);
   object-fit: cover;
   object-position: center 32%;
   filter: saturate(1.04) contrast(1.1);
