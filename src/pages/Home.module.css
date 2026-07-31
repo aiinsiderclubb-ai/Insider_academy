@@ -4361,6 +4361,93 @@
   }
 }
 
+/* Compact viewport rhythm: main Home blocks remain readable without oversized scroll jumps. */
+.page .statsStrip,
+.page .continueSection,
+.page .communitySection,
+.page .userStatsSection,
+.page .whatIncluded,
+.page .courses,
+.page .tryNow,
+.page .blog,
+.page .teamSection,
+.page .ctaBlock,
+.page .recsSection {
+  padding-top: clamp(44px, 6vh, 72px);
+  padding-bottom: clamp(44px, 6vh, 72px);
+}
+
+.page .sectionTitle {
+  font-size: clamp(2rem, 4.8vh, 3.75rem);
+}
+
+@media (min-width: 901px) {
+  .page .courses .sectionHead {
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .page .courses .sectionTitle {
+    max-width: 12ch;
+    margin-bottom: 0;
+    line-height: 0.98;
+  }
+
+  .page .courses .sectionDesc {
+    margin: 0 0 clamp(20px, 2.8vh, 32px);
+  }
+
+  .page .bentoFeatured {
+    height: clamp(360px, 48vh, 500px);
+    min-height: 0;
+    grid-template-columns: minmax(0, 0.98fr) minmax(340px, 1.02fr);
+    gap: clamp(20px, 2.6vw, 40px);
+    padding: clamp(16px, 2vw, 24px);
+  }
+
+  .page .bentoFeaturedMedia,
+  .page .bentoFeaturedMedia > article {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .page .bentoFeaturedCopy {
+    gap: clamp(9px, 1.3vh, 14px);
+    padding: 0;
+  }
+
+  .page .bentoTitle {
+    font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+  }
+
+  .page .bentoDesc {
+    display: -webkit-box;
+    overflow: hidden;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .page .lessonPreview {
+    gap: 4px;
+    padding: 11px 14px;
+  }
+
+  .page .bentoFeaturedCopy .ctaPrimary {
+    min-height: 46px;
+  }
+}
+
+@media (max-width: 900px) {
+  .page .bentoFeatured {
+    padding: 16px;
+  }
+
+  .page .bentoFeaturedMedia {
+    min-height: clamp(220px, 54vw, 360px);
+  }
+}
+
 @media (min-width: 961px) {
   .page .hero {
     min-height: 640px;

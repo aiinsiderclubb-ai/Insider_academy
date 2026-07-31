@@ -20,6 +20,7 @@ export function CourseCatalogCard({
   priceLabel,
   actionLabel,
   featured = false,
+  mediaOnly = false,
 }) {
   const title = getCourseField(course, 'title', lang)
   const description = getCourseDescription(course, lang)
@@ -51,7 +52,7 @@ export function CourseCatalogCard({
 
   return (
     <article
-      className={`${styles.card} ${featured ? styles.featured : ''}`}
+      className={`${styles.card} ${featured ? styles.featured : ''} ${mediaOnly ? styles.mediaOnly : ''}`}
       style={getCourseThemeStyle(course.id, theme)}
     >
       <Link to={detailsPath} className={styles.imageWrap} aria-label={title}>
@@ -68,61 +69,63 @@ export function CourseCatalogCard({
         )}
       </Link>
 
-      <div className={styles.body}>
-        <div className={styles.metaTop}>
-          <span className={styles.metaChip}>{duration}</span>
-          <span className={styles.metaChip}>
-            {lang === 'ru' ? '100% асинхронно' : '100% async'}
-          </span>
-        </div>
-
-        <div className={styles.badges}>
-          <span className={styles.category}>{category}</span>
-          {isIntake && (
-            <span className={styles.tagBundle}>{lang === 'ru' ? 'Набор' : 'Intake'}</span>
-          )}
-          {isFree && <span className={styles.tagFree}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>}
-          {!isFree && !isIntake && <span className={styles.tagPro}>Pro</span>}
-        </div>
-
-        <h2 className={styles.title}>
-          <Link to={detailsPath}>{title}</Link>
-        </h2>
-        <p className={styles.desc}>{description}</p>
-
-        <div className={styles.meta}>
-          <span>{duration}</span>
-          <span className={styles.metaDot} aria-hidden>·</span>
-          <span>{level}</span>
-        </div>
-
-        {!isFree && !isIntake && (
-          <div className={styles.priceBlock}>
-            <div className={styles.priceRow}>
-              <span className={styles.priceMain}>{priceLabel || `${price}€`}</span>
-              {oldPrice && !priceLabel && (
-                <span className={styles.priceOld}>{oldPrice}€</span>
-              )}
-            </div>
-            <span className={styles.priceNote}>
-              {lang === 'ru' ? 'Оплата частями без комиссии' : 'Split payments, no fees'}
+      {!mediaOnly && (
+        <div className={styles.body}>
+          <div className={styles.metaTop}>
+            <span className={styles.metaChip}>{duration}</span>
+            <span className={styles.metaChip}>
+              {lang === 'ru' ? '100% асинхронно' : '100% async'}
             </span>
           </div>
-        )}
 
-        <div className={styles.actions}>
-          <CourseBuyAction
-            course={course}
-            className={styles.buyBtn}
-            fallbackPath={primaryPath}
-          >
-            {primaryLabel}
-          </CourseBuyAction>
-          <Link to={detailsPath} className={styles.detailsBtn}>
-            {lang === 'ru' ? 'Подробнее' : 'Details'}
-          </Link>
+          <div className={styles.badges}>
+            <span className={styles.category}>{category}</span>
+            {isIntake && (
+              <span className={styles.tagBundle}>{lang === 'ru' ? 'Набор' : 'Intake'}</span>
+            )}
+            {isFree && <span className={styles.tagFree}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>}
+            {!isFree && !isIntake && <span className={styles.tagPro}>Pro</span>}
+          </div>
+
+          <h2 className={styles.title}>
+            <Link to={detailsPath}>{title}</Link>
+          </h2>
+          <p className={styles.desc}>{description}</p>
+
+          <div className={styles.meta}>
+            <span>{duration}</span>
+            <span className={styles.metaDot} aria-hidden>·</span>
+            <span>{level}</span>
+          </div>
+
+          {!isFree && !isIntake && (
+            <div className={styles.priceBlock}>
+              <div className={styles.priceRow}>
+                <span className={styles.priceMain}>{priceLabel || `${price}€`}</span>
+                {oldPrice && !priceLabel && (
+                  <span className={styles.priceOld}>{oldPrice}€</span>
+                )}
+              </div>
+              <span className={styles.priceNote}>
+                {lang === 'ru' ? 'Оплата частями без комиссии' : 'Split payments, no fees'}
+              </span>
+            </div>
+          )}
+
+          <div className={styles.actions}>
+            <CourseBuyAction
+              course={course}
+              className={styles.buyBtn}
+              fallbackPath={primaryPath}
+            >
+              {primaryLabel}
+            </CourseBuyAction>
+            <Link to={detailsPath} className={styles.detailsBtn}>
+              {lang === 'ru' ? 'Подробнее' : 'Details'}
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
       {comingSoon && <ComingSoonLock kind="courses" lang={lang} />}
     </article>
   )

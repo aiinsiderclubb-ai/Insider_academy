@@ -28,6 +28,17 @@
   border-color: rgba(168, 128, 255, 0.2);
 }
 
+.mediaOnly {
+  min-height: 0;
+}
+
+.mediaOnly .imageWrap {
+  flex: 1;
+  min-height: 0;
+  aspect-ratio: auto;
+  border-bottom: 0;
+}
+
 .imageWrap {
   position: relative;
   display: block;

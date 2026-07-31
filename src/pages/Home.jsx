@@ -351,6 +351,7 @@ export function Home() {
                     percent={getPercent(flagshipCourse.id, flagshipCourse.lessons?.length ?? 0)}
                     completedLabel={t('courses.completed')}
                     featured
+                    mediaOnly
                   />
                 </div>
                 <div className={styles.bentoFeaturedCopy}>
