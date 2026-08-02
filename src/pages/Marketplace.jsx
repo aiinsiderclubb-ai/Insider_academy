@@ -49,6 +49,15 @@ const TABS = [
   { id: 'vault', ru: 'Vault', en: 'Vault' },
 ]
 
+const INDUSTRIES = [
+  { id: 'beauty', ru: 'Beauty & Wellness', en: 'Beauty & Wellness' },
+  { id: 'clinics', ru: 'Клиники', en: 'Clinics' },
+  { id: 'real-estate', ru: 'Недвижимость', en: 'Real Estate' },
+  { id: 'restaurants', ru: 'Рестораны', en: 'Restaurants' },
+  { id: 'legal', ru: 'Юридические услуги', en: 'Legal' },
+  { id: 'ecommerce', ru: 'E-commerce', en: 'E-commerce' },
+]
+
 export function Marketplace() {
   const { lang } = useLanguage()
   const { hasPurchased, purchases } = useAuth()
@@ -70,6 +79,7 @@ export function Marketplace() {
 
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
+  const [industry, setIndustry] = useState(() => searchParams.get('industry') || 'all')
   const [sort, setSort] = useState('popular')
   const [favorites, setFavorites] = useState(() => getMarketplaceFavorites())
   const [products, setProducts] = useState([])
@@ -101,7 +111,7 @@ export function Marketplace() {
     [products]
   )
 
-  const showFeatured = !query && category === 'all'
+  const showFeatured = !query && category === 'all' && industry === 'all'
 
   const featuredIds = useMemo(
     () => (showFeatured ? featuredHits.map((p) => p.id) : []),
@@ -112,9 +122,10 @@ export function Marketplace() {
     const normalizedQuery = query.trim().toLowerCase()
     const list = products.filter((product) => {
       const categoryMatch = category === 'all' || product.categoryId === category
+      const industryMatch = industry === 'all' || product.industry === industry
       const queryMatch = !normalizedQuery || [product.titleRu, product.titleEn, product.shortRu, product.shortEn, product.sku]
         .some((value) => String(value || '').toLowerCase().includes(normalizedQuery))
-      return categoryMatch && queryMatch
+      return categoryMatch && industryMatch && queryMatch
     }).sort((a, b) => {
       if (sort === 'price-asc') return Number(a.priceEur) - Number(b.priceEur)
       if (sort === 'price-desc') return Number(b.priceEur) - Number(a.priceEur)
@@ -126,7 +137,7 @@ export function Marketplace() {
     if (!featuredIds.length) return list
     const exclude = new Set(featuredIds)
     return list.filter((p) => !exclude.has(p.id))
-  }, [products, query, category, sort, featuredIds])
+  }, [products, query, category, industry, sort, featuredIds])
 
   const resultCount = useMemo(
     () => catalogProducts.length + featuredIds.length,
@@ -186,7 +197,7 @@ export function Marketplace() {
           />
         ) : (
           <>
-            {recommended.length > 0 && !query && category === 'all' && (
+            {recommended.length > 0 && !query && category === 'all' && industry === 'all' && (
               <ScrollReveal>
                 <section className={styles.section}>
                   <div className={styles.sectionHead}>
@@ -245,6 +256,29 @@ export function Marketplace() {
                     ))}
                   </div>
 
+                  <div className={styles.industryFilter}>
+                    <span className={styles.industryLabel}>{ru ? 'Решения по нише' : 'Solutions by industry'}</span>
+                    <div className={styles.industryChips} aria-label={ru ? 'Отрасли' : 'Industries'}>
+                      <button
+                        type="button"
+                        className={`${styles.industryBtn} ${industry === 'all' ? styles.industryActive : ''}`}
+                        onClick={() => setIndustry('all')}
+                      >
+                        {ru ? 'Все ниши' : 'All industries'}
+                      </button>
+                      {INDUSTRIES.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`${styles.industryBtn} ${industry === item.id ? styles.industryActive : ''}`}
+                          onClick={() => setIndustry(item.id)}
+                        >
+                          {ru ? item.ru : item.en}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <select
                     className={styles.sort}
                     value={sort}
@@ -290,6 +324,7 @@ export function Marketplace() {
                   onAction={() => {
                     setQuery('')
                     setCategory('all')
+                    setIndustry('all')
                     setSort('popular')
                   }}
                 />

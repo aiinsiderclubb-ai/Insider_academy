@@ -6,7 +6,7 @@ import { verifyTributeSignature } from '../services/tribute.js'
 import { logWebhookEvent } from '../services/access.js'
 import { reconcilePaidPayment } from '../services/paymentFulfillment.js'
 import { config } from '../config.js'
-import { prelaunchBlocked } from '../middleware/prelaunch.js'
+import { marketplaceWebhookAllowed } from '../middleware/prelaunch.js'
 
 const router = Router()
 
@@ -56,7 +56,7 @@ export async function handleStripeWebhook(req, res) {
   }
 }
 
-router.post('/liqpay', prelaunchBlocked, async (req, res) => {
+router.post('/liqpay', marketplaceWebhookAllowed, async (req, res) => {
   const decoded = verifyCallback(req.body.data, req.body.signature)
   if (!decoded) return res.status(400).send('Invalid signature')
   const successful = decoded.status === 'success'

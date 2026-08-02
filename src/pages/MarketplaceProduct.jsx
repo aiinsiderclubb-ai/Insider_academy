@@ -5,10 +5,13 @@ import {
   BadgeCheck,
   Check,
   ChevronRight,
-  Dot,
   Download,
+  Layers,
   Plus,
+  ShieldCheck,
+  Sparkles,
   Star,
+  Zap,
 } from 'lucide-react'
 import { ProductBadge, productHasPublicStats } from '../components/ProductBadge'
 import { useLanguage } from '../context/LanguageContext'
@@ -20,6 +23,7 @@ import { MarketplaceProductCard } from '../components/marketplace/MarketplacePro
 import { MarketplaceFreePreview } from '../components/MarketplaceFreePreview'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
+import { getMarketplaceProductAbout } from '../utils/marketplaceProductAbout'
 import { ComingSoonAction } from '../components/ComingSoonLock'
 import { isComingSoon } from '../config/availability'
 import styles from './MarketplaceProduct.module.css'
@@ -100,6 +104,12 @@ export function MarketplaceProduct() {
     return [...new Set([getMarketplaceCoverImage(product), ...(product.screenshots || [])])]
   }, [product])
 
+  const about = useMemo(() => {
+    if (!product) return { lead: '', body: [], outcomes: [], facts: [] }
+    const category = getMarketplaceCategory(product.categoryId)
+    return getMarketplaceProductAbout(product, { lang, category })
+  }, [product, lang])
+
   if (loading) return <div className={styles.wrap}><div className={styles.container}>{ru ? 'Загрузка…' : 'Loading…'}</div></div>
   if (!product) return <Navigate to="/marketplace" replace />
 
@@ -146,15 +156,17 @@ export function MarketplaceProduct() {
     }
   }
 
+  const metadataRequirements = (ru ? product.requirementsRu : product.requirementsEn) || []
   const requirements = [
     ru ? 'Аккаунт AI Insider Academy' : 'AI Insider Academy account',
+    ...metadataRequirements,
     product.categoryId === 'n8n-workflows'
       ? (ru ? 'Self-hosted или cloud n8n' : 'Self-hosted or cloud n8n')
       : null,
     product.productType === 'agent-pack'
       ? (ru ? 'API ключ LLM (OpenAI / Anthropic)' : 'LLM API key (OpenAI / Anthropic)')
       : null,
-  ].filter(Boolean)
+  ].filter(Boolean).filter((item, index, all) => all.indexOf(item) === index)
 
   const installation = ru
     ? ['Оплатите продукт', 'Откройте раздел Marketplace в Личном кабинете', 'Скачайте ZIP и следуйте PDF-гайду']
@@ -212,71 +224,124 @@ export function MarketplaceProduct() {
             )}
 
             <ScrollReveal>
-              <section className={styles.block}>
-                <span className={styles.blockIndex}>01</span>
-                <div>
-                  <h2>{ru ? 'О продукте' : 'About this product'}</h2>
-                  <p className={styles.lead}>{short}</p>
-                </div>
-              </section>
-            </ScrollReveal>
+              <section className={styles.detailsSection} aria-label={ru ? 'Детали продукта' : 'Product details'}>
+                <article className={`${styles.detailCard} ${styles.detailCardAbout}`}>
+                  <header className={styles.detailHead}>
+                    <span className={styles.detailEyebrow}>01</span>
+                    <h2>{ru ? 'О продукте' : 'About this product'}</h2>
+                  </header>
 
-            <ScrollReveal>
-              <section className={styles.block}>
-                <span className={styles.blockIndex}>02</span>
-                <div>
-                  <h2>{ru ? 'Что входит' : 'What is included'}</h2>
-                  <ul className={styles.list}>
+                  <div className={styles.aboutGrid}>
+                    <div className={styles.aboutMain}>
+                      <p className={styles.aboutLead}>{about.lead}</p>
+                      {about.body.map((paragraph) => (
+                        <p key={paragraph} className={styles.aboutBody}>{paragraph}</p>
+                      ))}
+
+                      <div className={styles.aboutOutcomes}>
+                        <span className={styles.aboutOutcomesLabel}>
+                          <Sparkles size={13} aria-hidden />
+                          {ru ? 'Что вы получите' : 'What you get'}
+                        </span>
+                        <ul className={styles.aboutOutcomeList}>
+                          {about.outcomes.map((item) => (
+                            <li key={item}>
+                              <span className={styles.aboutOutcomeIcon} aria-hidden>
+                                <Zap size={12} strokeWidth={2.4} />
+                              </span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <aside className={styles.aboutFacts} aria-label={ru ? 'Ключевые параметры' : 'Key specs'}>
+                      {about.facts.map((fact) => (
+                        <div
+                          key={fact.id}
+                          className={styles.aboutFact}
+                          style={fact.accent ? { '--fact-accent': fact.accent } : undefined}
+                        >
+                          <span className={styles.aboutFactLabel}>{fact.label}</span>
+                          <strong className={styles.aboutFactValue}>{fact.value}</strong>
+                        </div>
+                      ))}
+                      {(product.fileTypes || []).length > 0 && (
+                        <div className={styles.aboutFact}>
+                          <span className={styles.aboutFactLabel}>
+                            <Layers size={12} aria-hidden />
+                            {ru ? 'Форматы' : 'Formats'}
+                          </span>
+                          <div className={styles.aboutFactFormats}>
+                            {(product.fileTypes || ['ZIP']).map((type) => (
+                              <span key={type} className={styles.formatPill}>{type}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </aside>
+                  </div>
+                </article>
+
+                <article className={styles.detailCard}>
+                  <header className={styles.detailHead}>
+                    <span className={styles.detailEyebrow}>02</span>
+                    <h2>{ru ? 'Что входит' : 'What is included'}</h2>
+                  </header>
+                  <ul className={styles.includedGrid}>
                     {included.map((item) => (
                       <li key={item}>
-                        <Check className={styles.listIcon} size={14} aria-hidden />
+                        <span className={styles.includedIcon} aria-hidden>
+                          <Check size={14} strokeWidth={2.4} />
+                        </span>
                         <span>{item}</span>
                       </li>
                     ))}
                   </ul>
-                  <p className={styles.formats}>
-                    <span>{ru ? 'Форматы' : 'Formats'}</span>
+                  <div className={styles.formatRow}>
+                    <span className={styles.formatLabel}>{ru ? 'Форматы' : 'Formats'}</span>
                     {(product.fileTypes || ['ZIP']).map((type) => (
-                      <span key={type} className={styles.formatType}>
-                        <Dot size={13} aria-hidden />
-                        {type}
-                      </span>
+                      <span key={type} className={styles.formatPill}>{type}</span>
                     ))}
-                  </p>
+                  </div>
+                </article>
+
+                <div className={styles.detailSplit}>
+                  <article className={`${styles.detailCard} ${styles.detailCardCompact}`}>
+                    <header className={styles.detailHead}>
+                      <span className={styles.detailEyebrow}>03</span>
+                      <h2>{ru ? 'Требования' : 'Requirements'}</h2>
+                    </header>
+                    <ul className={styles.requirementList}>
+                      {requirements.map((item) => (
+                        <li key={item}>
+                          <span className={styles.requirementIcon} aria-hidden>
+                            <ShieldCheck size={14} strokeWidth={2.2} />
+                          </span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+
+                  <article className={`${styles.detailCard} ${styles.detailCardCompact}`}>
+                    <header className={styles.detailHead}>
+                      <span className={styles.detailEyebrow}>04</span>
+                      <h2>{ru ? 'Как начать' : 'Get started'}</h2>
+                    </header>
+                    <ol className={styles.stepList}>
+                      {installation.map((item, index) => (
+                        <li key={item}>
+                          <span className={styles.stepNumber} aria-hidden>{index + 1}</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </article>
                 </div>
               </section>
             </ScrollReveal>
-
-            <div className={styles.splitBlocks}>
-              <ScrollReveal>
-                <section className={styles.miniBlock}>
-                  <span>03</span>
-                  <h2>{ru ? 'Требования' : 'Requirements'}</h2>
-                  <ul className={styles.compactList}>
-                    {requirements.map((item) => (
-                      <li key={item}>
-                        <Dot className={styles.listIcon} size={16} aria-hidden />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              </ScrollReveal>
-              <ScrollReveal>
-                <section className={styles.miniBlock}>
-                  <span>04</span>
-                  <h2>{ru ? 'Как начать' : 'Get started'}</h2>
-                  <ol className={styles.compactList}>
-                    {installation.map((item) => (
-                      <li key={item}>
-                        <Dot className={styles.listIcon} size={16} aria-hidden />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </section>
-              </ScrollReveal>
-            </div>
 
             {reviews.length > 0 && <ScrollReveal>
               <section className={styles.blockStack}>

@@ -22,6 +22,8 @@ services:
     envVars:
       - key: PRELAUNCH_MODE
         value: "1"
+      - key: MARKETPLACE_LIVE
+        value: "1"
       - key: GIVEAWAY_CLAUDE_ENDS_AT
         value: "2026-08-31T23:59:59+03:00"
       - key: NODE_ENV
@@ -83,6 +85,8 @@ services:
       - key: TRIBUTE_WEBHOOK_URL
         value: https://insider-academy.onrender.com/api/webhooks/tribute
       - key: TRIBUTE_API_KEY
+        sync: false
+      - key: TRIBUTE_SHOP_ID
         sync: false
       - key: GOOGLE_DRIVE_FOLDER_ID
         value: "1JlbsIBxryW8dSemF4XSySdcVabqwxghh"

@@ -12,7 +12,7 @@ import adminRoutes from './routes/admin.js'
 import publicRoutes from './routes/public.js'
 import paymentsRoutes from './routes/payments.js'
 import webhooksRoutes, { handleStripeWebhook, handleTributeWebhook } from './routes/webhooks.js'
-import { prelaunchBlocked } from './middleware/prelaunch.js'
+import { marketplaceWebhookAllowed } from './middleware/prelaunch.js'
 import chatRoutes from './routes/chat.js'
 import reviewsRoutes from './routes/reviews.js'
 import applicationsRoutes from './routes/applications.js'
@@ -23,6 +23,7 @@ import filesRoutes from './routes/files.js'
 import promoRoutes from './routes/promo.js'
 import marketplaceRoutes from './routes/marketplace.js'
 import { seedMarketplaceCatalog } from './services/marketplaceCatalog.js'
+import { rateLimitMiddleware } from './middleware/rateLimit.js'
 
 export async function createApp() {
   await initDatabase()
@@ -86,8 +87,22 @@ export async function createApp() {
     credentials: true,
   }))
 
-  app.post('/api/webhooks/stripe', prelaunchBlocked, express.raw({ type: 'application/json' }), handleStripeWebhook)
-  app.post('/api/webhooks/tribute', prelaunchBlocked, express.raw({ type: 'application/json' }), handleTributeWebhook)
+  app.use('/api', rateLimitMiddleware({
+    windowMs: 60_000,
+    max: 300,
+    keyFn: (req) => req.ip || 'unknown',
+  }))
+
+  app.use('/api', (req, res, next) => {
+    if (req.headers.authorization || req.path.startsWith('/admin') || req.path.startsWith('/me') || req.path.startsWith('/marketplace/downloads')) {
+      res.setHeader('Cache-Control', 'no-store')
+      res.setHeader('Pragma', 'no-cache')
+    }
+    next()
+  })
+
+  app.post('/api/webhooks/stripe', marketplaceWebhookAllowed, express.raw({ type: 'application/json' }), handleStripeWebhook)
+  app.post('/api/webhooks/tribute', marketplaceWebhookAllowed, express.raw({ type: 'application/json' }), handleTributeWebhook)
 
   app.use(express.json({ limit: '2mb' }))
   app.use(express.urlencoded({ extended: true }))

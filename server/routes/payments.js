@@ -18,6 +18,14 @@ const router = Router()
 const LOCALES = new Set(['ru', 'ukr', 'en'])
 const PAID_CATALOG = [...courseCatalog, ...VAULT_PRODUCTS]
 
+async function checkoutAvailability(req, res, next) {
+  if (!isPrelaunchMode()) return next()
+  if (process.env.MARKETPLACE_LIVE !== '1') return prelaunchBlocked(req, res, next)
+  const product = await getMarketplaceProduct(getDb(), req.body?.courseId)
+  if (!product) return prelaunchBlocked(req, res, next)
+  next()
+}
+
 async function resolveCheckoutItem(db, courseId, email) {
   const marketplaceProduct = await getMarketplaceProduct(db, courseId)
   if (marketplaceProduct) {
@@ -84,7 +92,7 @@ router.get('/tribute/status', (_req, res) => {
   })
 })
 
-router.post('/tribute/checkout', requireUser, prelaunchBlocked, async (req, res) => {
+router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, res) => {
   if (!isTributeEnabled()) {
     return res.status(503).json({ error: 'Tribute not configured. Set TRIBUTE_API_KEY in server/.env' })
   }
@@ -133,6 +141,9 @@ router.post('/tribute/checkout', requireUser, prelaunchBlocked, async (req, res)
       })
     }
 
+    if (item.kind === 'marketplace') {
+      return res.status(503).json({ error: 'Tribute Shop API is required for marketplace pricing' })
+    }
     if (!productId) {
       return res.status(503).json({
         error: 'Set TRIBUTE_DEFAULT_PRODUCT_ID or TRIBUTE_PRODUCT_MAP in server/.env',
@@ -156,7 +167,7 @@ router.post('/tribute/checkout', requireUser, prelaunchBlocked, async (req, res)
   }
 })
 
-router.post('/stripe/checkout', requireUser, prelaunchBlocked, async (req, res) => {
+router.post('/stripe/checkout', requireUser, checkoutAvailability, async (req, res) => {
   if (!isStripeEnabled()) return res.status(503).json({ error: 'Stripe not configured' })
   const db = getDb()
   const { courseId } = req.body
@@ -184,7 +195,7 @@ router.post('/stripe/checkout', requireUser, prelaunchBlocked, async (req, res) 
   res.json({ url: session.url, sessionId: session.id })
 })
 
-router.post('/liqpay/create', requireUser, prelaunchBlocked, async (req, res) => {
+router.post('/liqpay/create', requireUser, checkoutAvailability, async (req, res) => {
   if (!isLiqPayEnabled()) return res.status(503).json({ error: 'LiqPay not configured' })
   const db = getDb()
   const { courseId, slug, locale } = req.body

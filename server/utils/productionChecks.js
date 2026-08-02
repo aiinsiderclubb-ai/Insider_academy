@@ -46,6 +46,9 @@ export function validateProductionConfig() {
   if (!process.env.ADMIN_JWT_SECRET || process.env.ADMIN_JWT_SECRET.length < 32) {
     errors.push('ADMIN_JWT_SECRET must be at least 32 characters')
   }
+  if (process.env.JWT_SECRET && process.env.JWT_SECRET === process.env.ADMIN_JWT_SECRET) {
+    errors.push('JWT_SECRET and ADMIN_JWT_SECRET must be different')
+  }
 
   for (const key of ['ADMIN_PASSWORD', 'EDITOR_PASSWORD', 'MODERATOR_PASSWORD']) {
     const val = process.env[key]
@@ -73,6 +76,14 @@ export function validateProductionConfig() {
     warnings.push('APP_URL should be https://myinsideracademy.com for password-reset emails')
   }
 
+  const corsOrigins = String(process.env.CORS_ORIGIN || '').split(',').map((value) => value.trim()).filter(Boolean)
+  if (!corsOrigins.length) errors.push('CORS_ORIGIN must contain explicit production origins')
+  if (corsOrigins.some((origin) => !origin.startsWith('https://'))) errors.push('CORS_ORIGIN must use HTTPS-only origins in production')
+
+  if (config.tribute.webhookSkipVerify) {
+    errors.push('TRIBUTE_WEBHOOK_SKIP_VERIFY must be disabled in production')
+  }
+
   const s3Configured = config.storage.driver === 's3'
     && config.storage.s3.bucket
     && config.storage.s3.accessKey
@@ -81,6 +92,9 @@ export function validateProductionConfig() {
     const message = 'S3 storage is required before launch; Render local files are ephemeral'
     if (config.prelaunchMode) warnings.push(message)
     else errors.push(message)
+  }
+  if (config.storage.s3.endpoint && !config.storage.s3.endpoint.startsWith('https://')) {
+    errors.push('S3_ENDPOINT must use HTTPS in production')
   }
 
   if (!config.prelaunchMode && !config.tribute.apiKey) {

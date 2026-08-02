@@ -156,14 +156,14 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   assert.deepEqual(stats.chart, [])
 
   const marketplace = await fetch(`${base}/api/marketplace/products?type=marketplace`).then((r) => r.json())
-  assert.equal(marketplace.products.length, 6)
+  assert.equal(marketplace.products.length, 13)
   assert.ok(marketplace.products.every((product) => product.status === 'published'))
   assert.ok(marketplace.products.every((product) => product.downloads === 0))
   assert.ok(marketplace.products.every((product) => product.reviewCount === 0 && product.rating === null))
 
   const adminMarketplace = await fetch(`${base}/api/admin/marketplace/products`, { headers: adminHeaders }).then((r) => r.json())
   assert.equal(adminMarketplace.statusCounts.draft, 35)
-  assert.equal(adminMarketplace.statusCounts.published, 6)
+  assert.equal(adminMarketplace.statusCounts.published, 13)
   assert.ok(adminMarketplace.products.filter((product) => product.status === 'published').every((product) => product.assets.length >= 1))
 
   const freeProduct = marketplace.products.find((product) => product.isFree)
@@ -191,7 +191,7 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   const user = await getDb().get('SELECT id FROM users WHERE email = ?', [email])
   const { createMarketplaceOrder, getMarketplaceProduct } = await import('../services/marketplaceCatalog.js')
   const { reconcilePaidPayment } = await import('../services/paymentFulfillment.js')
-  const paidProduct = await getMarketplaceProduct(getDb(), 'telegram-notify-bot-kit')
+  const paidProduct = await getMarketplaceProduct(getDb(), 'beauty-business-agent-stack')
   assert.ok(paidProduct && !paidProduct.isFree)
   const payment = {
     id: 'test-marketplace-payment', user_id: user.id, email, course_id: paidProduct.id,
@@ -227,6 +227,9 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   assert.equal(idempotent.idempotent, true)
   downloads = await fetch(`${base}/api/marketplace/downloads`, { headers: userHeaders }).then((r) => r.json())
   assert.ok(downloads.downloads.some((item) => item.product_id === paidProduct.id))
+  for (const bundledProductId of paidProduct.bundleItems) {
+    assert.ok(downloads.downloads.some((item) => item.product_id === bundledProductId), `missing bundle entitlement ${bundledProductId}`)
+  }
 
   const reminder = await fetch(`${base}/api/telegram/reminder`, {
     method: 'POST', headers: userHeaders,

@@ -56,10 +56,113 @@ const LAUNCH_PRODUCTS = [
     id: 'mp-biz-agent-audit', slug: 'agent-audit-kit', sku: 'KIT-AGENT-AUDIT-001',
     categoryId: 'business-templates', titleRu: 'AI Agent Audit Kit', titleEn: 'AI Agent Audit Kit',
     shortRu: 'Чеклисты безопасности, governance, ROI и план исправлений для клиентских AI-агентов.',
-    shortEn: 'Security, governance, ROI and remediation checklists for client AI agents.', priceEur: 59,
+    shortEn: 'Security, governance, ROI and remediation checklists for client AI agents.',
+    descriptionRu: 'AI Agent Audit Kit — governance-набор для агентств и инженеров, которые внедряют AI-агентов для клиентов. Внутри чеклисты доступа и данных, шаблоны политик, фреймворк governance и калькулятор ROI.\n\nНабор помогает провести pre-sale аудит, задокументировать риски, согласовать human escalation и обосновать бюджет до запуска в production. Подходит для due diligence, quarterly review и handoff между sales и delivery.',
+    descriptionEn: 'AI Agent Audit Kit is a governance pack for agencies and engineers deploying AI agents for clients. It includes access and data checklists, policy templates, a governance framework and an ROI calculator.\n\nUse it for pre-sale audits, risk documentation, human escalation alignment and budget justification before production launch. Ideal for due diligence, quarterly reviews and sales-to-delivery handoff.',
+    priceEur: 59,
     coverImage: '/marketplace/launch/ai-agent-audit-kit.png',
     fileName: 'ai-agent-audit-kit.md', fileType: 'text/markdown',
     content: '# AI Agent Audit Kit\n\n## Access\n- [ ] Least privilege applied\n- [ ] Write actions require confirmation\n- [ ] Credentials rotate and never enter prompts\n\n## Data\n- [ ] PII inventory exists\n- [ ] Retention and deletion tested\n- [ ] Logs mask sensitive fields\n\n## Reliability\n- [ ] Timeout, retry and idempotency defined\n- [ ] Human escalation tested\n- [ ] Budget and rate limits enabled\n\n## Business\n- Baseline cost:\n- Automated volume:\n- Error cost:\n- Monthly value:\n- Recommended remediation owner and deadline:\n',
+  },
+  {
+    id: 'mp-mcp-crm-kit', slug: 'crm-mcp-kit', sku: 'MCP-CRM-001', categoryId: 'mcp-skills',
+    titleRu: 'CRM MCP Kit', titleEn: 'CRM MCP Kit',
+    shortRu: 'Безопасная работа AI-агента с лидами, сделками и задачами в CRM.',
+    shortEn: 'Secure AI agent access to CRM leads, deals and tasks.', priceEur: 59,
+    solutionType: 'mcp', industry: 'cross-industry', platforms: ['Claude', 'Codex', 'Cursor'],
+    integrations: ['HubSpot', 'Pipedrive', 'Airtable'], difficulty: 'intermediate', installationTime: '45–90 min',
+    licenseType: 'commercial-client', version: '1.0.0', testedVersions: ['MCP 2025-11-25'], supportLevel: 'updates',
+    requirementsRu: ['Node.js 20+', 'API-токен CRM', 'Claude, Codex или Cursor'],
+    requirementsEn: ['Node.js 20+', 'CRM API token', 'Claude, Codex or Cursor'],
+    includedRu: ['MCP server contract', 'HubSpot/Pipedrive/Airtable adapters', 'read/write confirmation policy', 'Dockerfile и .env.example', 'smoke tests и setup guide'],
+    includedEn: ['MCP server contract', 'HubSpot/Pipedrive/Airtable adapters', 'read/write confirmation policy', 'Dockerfile and .env.example', 'smoke tests and setup guide'],
+    coverGradient: 'linear-gradient(135deg, #4338ca, #0ea5e9)', coverIcon: '🔌', badges: ['new', 'trending'], badge: 'hit',
+    fileName: 'crm-mcp-kit.json', fileType: 'application/json',
+    content: JSON.stringify({ version: '1.0.0', type: 'mcp-kit', tools: ['crm_search_contacts', 'crm_get_deal', 'crm_create_task', 'crm_update_deal'], security: { leastPrivilege: true, writeConfirmation: true, secretSource: 'environment', auditLog: true, destructiveTools: false }, adapters: ['hubspot', 'pipedrive', 'airtable'], files: ['README.md', 'SKILL.md', 'server/', 'tests/', 'Dockerfile', '.env.example'] }, null, 2),
+  },
+  {
+    id: 'mp-skill-email-agent', slug: 'email-agent-skill', sku: 'SKILL-EMAIL-001', categoryId: 'mcp-skills',
+    titleRu: 'Email Agent Skill', titleEn: 'Email Agent Skill',
+    shortRu: 'Классификация почты, безопасные черновики и follow-up без автосенд-риска.',
+    shortEn: 'Inbox triage, safe drafts and follow-ups without auto-send risk.', priceEur: 49,
+    solutionType: 'skill', industry: 'cross-industry', platforms: ['Claude', 'Codex'], integrations: ['Gmail', 'Outlook'],
+    difficulty: 'beginner', installationTime: '20–40 min', licenseType: 'commercial-client', version: '1.0.0', supportLevel: 'updates',
+    includedRu: ['SKILL.md', 'правила классификации', 'draft-only guardrail', 'шаблоны follow-up', 'evaluation cases'],
+    includedEn: ['SKILL.md', 'classification rules', 'draft-only guardrail', 'follow-up templates', 'evaluation cases'],
+    coverGradient: 'linear-gradient(135deg, #7c3aed, #ec4899)', coverIcon: '✉️', badges: ['new'],
+    fileName: 'email-agent-skill.json', fileType: 'application/json',
+    content: JSON.stringify({ version: '1.0.0', type: 'agent-skill', actions: ['classify', 'summarize', 'draft_reply', 'schedule_followup'], guardrails: { sendEmail: false, requireApproval: ['send', 'delete', 'move_bulk'], redactSensitiveLogs: true }, evaluation: ['urgent_customer', 'phishing', 'invoice', 'ambiguous_request'] }, null, 2),
+  },
+  {
+    id: 'mp-mcp-analytics-kit', slug: 'analytics-mcp-kit', sku: 'MCP-ANALYTICS-001', categoryId: 'mcp-skills',
+    titleRu: 'Analytics MCP Kit', titleEn: 'Analytics MCP Kit',
+    shortRu: 'GA4, Search Console, KPI-отчёты и anomaly alerts через агента.',
+    shortEn: 'GA4, Search Console, KPI reports and anomaly alerts through an agent.', priceEur: 69,
+    solutionType: 'mcp', industry: 'cross-industry', platforms: ['Claude', 'Codex', 'Cursor'], integrations: ['GA4', 'Google Search Console'],
+    difficulty: 'intermediate', installationTime: '60–90 min', licenseType: 'commercial-client', version: '1.0.0', supportLevel: 'updates',
+    includedRu: ['read-only MCP tools', 'KPI report skill', 'anomaly rules', 'service-account guide', 'test queries'],
+    includedEn: ['read-only MCP tools', 'KPI report skill', 'anomaly rules', 'service-account guide', 'test queries'],
+    coverGradient: 'linear-gradient(135deg, #0891b2, #22c55e)', coverIcon: '📊', badges: ['new'],
+    fileName: 'analytics-mcp-kit.json', fileType: 'application/json',
+    content: JSON.stringify({ version: '1.0.0', type: 'mcp-kit', access: 'read-only', tools: ['ga4_report', 'gsc_queries', 'compare_periods', 'detect_anomaly'], limits: { maxDateRangeDays: 366, maxRows: 10000 }, privacy: { aggregateOnlyDefault: true, piiFieldsBlocked: true } }, null, 2),
+  },
+  {
+    id: 'mp-voice-beauty-salon', slug: 'voice-agent-kit-beauty-salon', sku: 'VOICE-BEAUTY-001', categoryId: 'voice-agents',
+    titleRu: 'Voice Agent Kit: Beauty Salon', titleEn: 'Voice Agent Kit: Beauty Salon',
+    shortRu: 'Голосовая запись клиентов, перенос визита и передача сложных звонков администратору.',
+    shortEn: 'Voice booking, rescheduling and safe handoff for beauty salons.', priceEur: 99,
+    solutionType: 'voice-agent', industry: 'beauty', platforms: ['Vapi', 'Retell', 'ElevenLabs'], integrations: ['Google Calendar', 'n8n'],
+    difficulty: 'intermediate', installationTime: '1 day', licenseType: 'commercial-client', version: '1.0.0', supportLevel: 'updates',
+    complianceNotesRu: ['Получение согласия на запись', 'Эскалация человеку', 'Запрет сбора платёжных данных голосом'],
+    complianceNotesEn: ['Call recording consent', 'Human escalation', 'No voice collection of payment data'],
+    includedRu: ['Vapi и Retell configs', 'ElevenLabs voice settings', 'call state machine', 'calendar workflow', 'evaluation scorecard'],
+    includedEn: ['Vapi and Retell configs', 'ElevenLabs voice settings', 'call state machine', 'calendar workflow', 'evaluation scorecard'],
+    coverGradient: 'linear-gradient(135deg, #0f766e, #a855f7)', coverIcon: '🎙️', badges: ['new', 'trending'], badge: 'hit',
+    fileName: 'voice-agent-beauty.json', fileType: 'application/json',
+    content: JSON.stringify({ version: '1.0.0', stateMachine: ['greeting_consent', 'identify_intent', 'collect_booking_details', 'check_availability', 'confirm', 'handoff'], providers: ['vapi', 'retell', 'elevenlabs'], forbidden: ['medical_advice', 'payment_card_capture', 'invent_availability'], metrics: ['booking_rate', 'handoff_rate', 'latency', 'task_success'] }, null, 2),
+  },
+  {
+    id: 'mp-voice-clinic-services', slug: 'voice-agent-kit-clinic-services', sku: 'VOICE-CLINIC-001', categoryId: 'voice-agents',
+    titleRu: 'Voice Agent Kit: Clinic Intake', titleEn: 'Voice Agent Kit: Clinic Intake',
+    shortRu: 'Запись и маршрутизация обращений клиники без диагностики и медицинских советов.',
+    shortEn: 'Clinic booking and routing without diagnosis or medical advice.', priceEur: 129,
+    solutionType: 'voice-agent', industry: 'clinics', platforms: ['Vapi', 'Retell', 'ElevenLabs'], integrations: ['Google Calendar', 'n8n'],
+    difficulty: 'advanced', installationTime: '1–2 days', licenseType: 'commercial-client', version: '1.0.0', supportLevel: 'updates',
+    complianceNotesRu: ['Не ставит диагноз', 'Не даёт медицинских рекомендаций', 'Urgent symptoms → экстренная служба/человек', 'Минимизация персональных данных'],
+    complianceNotesEn: ['No diagnosis', 'No medical advice', 'Urgent symptoms route to emergency service/human', 'Data minimization'],
+    includedRu: ['intake flow', 'consent scripts', 'urgent escalation rules', 'provider configs', 'privacy checklist'],
+    includedEn: ['intake flow', 'consent scripts', 'urgent escalation rules', 'provider configs', 'privacy checklist'],
+    coverGradient: 'linear-gradient(135deg, #0369a1, #14b8a6)', coverIcon: '🩺', badges: ['new'],
+    fileName: 'voice-agent-clinic.json', fileType: 'application/json',
+    content: JSON.stringify({ version: '1.0.0', scope: ['booking', 'rescheduling', 'service_faq', 'routing'], prohibited: ['diagnosis', 'treatment_recommendation', 'medication_advice'], escalation: { urgent: 'local_emergency_instructions_and_human', uncertain: 'human_front_desk' }, retention: 'customer-configured' }, null, 2),
+  },
+  {
+    id: 'mp-stack-beauty-business', slug: 'beauty-business-agent-stack', sku: 'STACK-BEAUTY-001', categoryId: 'ai-agents',
+    titleRu: 'Beauty Business Agent Stack', titleEn: 'Beauty Business Agent Stack',
+    shortRu: 'Запись, напоминания, CRM follow-up и аудит одним отраслевым комплектом.',
+    shortEn: 'Booking, reminders, CRM follow-up and audit in one industry stack.', priceEur: 249,
+    solutionType: 'vertical-stack', industry: 'beauty', platforms: ['Vapi', 'Retell', 'n8n'], integrations: ['Google Calendar', 'CRM'],
+    difficulty: 'advanced', installationTime: '1–3 days', licenseType: 'commercial-client', version: '1.0.0', supportLevel: 'priority-updates',
+    bundleItems: ['mp-voice-beauty-salon', 'mp-salon-reminder-system', 'mp-mcp-crm-kit', 'mp-biz-agent-audit'],
+    includedRu: ['4 полных продукта', 'deployment map', 'KPI dashboard schema', 'client handoff SOP'],
+    includedEn: ['4 complete products', 'deployment map', 'KPI dashboard schema', 'client handoff SOP'],
+    coverGradient: 'linear-gradient(135deg, #7c3aed, #f97316)', coverIcon: '💎', badges: ['new', 'trending'], badge: 'hit',
+    fileName: 'beauty-business-stack.json', fileType: 'application/json',
+    content: JSON.stringify({ version: '1.0.0', industry: 'beauty', deploymentOrder: ['audit', 'crm', 'reminders', 'voice'], kpis: ['booking_rate', 'confirmation_rate', 'no_show_rate', 'recovered_revenue'], handoffRequired: true }, null, 2),
+  },
+  {
+    id: 'mp-stack-clinic-intake', slug: 'clinic-intake-agent-stack', sku: 'STACK-CLINIC-001', categoryId: 'ai-agents',
+    titleRu: 'Clinic Intake Agent Stack', titleEn: 'Clinic Intake Agent Stack',
+    shortRu: 'Безопасная запись, маршрутизация и CRM-процесс для сервисной клиники.',
+    shortEn: 'Safe booking, routing and CRM workflow for service clinics.', priceEur: 299,
+    solutionType: 'vertical-stack', industry: 'clinics', platforms: ['Vapi', 'Retell', 'n8n'], integrations: ['Google Calendar', 'CRM'],
+    difficulty: 'advanced', installationTime: '2–4 days', licenseType: 'commercial-client', version: '1.0.0', supportLevel: 'priority-updates',
+    bundleItems: ['mp-voice-clinic-services', 'mp-mcp-crm-kit', 'mp-biz-agent-audit'],
+    includedRu: ['3 полных продукта', 'privacy map', 'escalation playbook', 'client handoff SOP'],
+    includedEn: ['3 complete products', 'privacy map', 'escalation playbook', 'client handoff SOP'],
+    coverGradient: 'linear-gradient(135deg, #075985, #7c3aed)', coverIcon: '🏥', badges: ['new'],
+    fileName: 'clinic-intake-stack.json', fileType: 'application/json',
+    content: JSON.stringify({ version: '1.0.0', industry: 'clinics', deploymentOrder: ['privacy_audit', 'crm', 'voice'], kpis: ['booking_completion', 'handoff_rate', 'task_success'], prohibited: ['diagnosis', 'medical_advice'] }, null, 2),
   },
 ]
 
@@ -152,18 +255,26 @@ export async function seedMarketplaceCatalog(db) {
 
   for (const item of LAUNCH_PRODUCTS) {
     const legacy = MARKETPLACE_PRODUCTS.find((p) => p.id === item.id)
-    const metadata = scrubMetadata({ ...(legacy || {}), badges: legacy?.badges || ['new'], fileTypes: [item.fileName.split('.').pop().toUpperCase()] })
+    const { content: _assetContent, fileName: _assetFileName, fileType: _assetFileType, ...itemMetadata } = item
+    const metadata = scrubMetadata({
+      ...(legacy || {}),
+      ...itemMetadata,
+      badges: item.badges || legacy?.badges || ['new'],
+      fileTypes: item.fileTypes || [item.fileName.split('.').pop().toUpperCase()],
+    })
     await db.run(`INSERT INTO marketplace_products (
       id, slug, sku, status, product_type, category_id, title_ru, title_en, short_ru, short_en,
-      price_eur, currency, is_free, creator_email, cover_image, metadata, published_at, created_at, updated_at
-    ) VALUES (?, ?, ?, 'published', 'marketplace', ?, ?, ?, ?, ?, ?, 'EUR', ?, ?, ?, ?, ?, ?, ?)
+      description_ru, description_en, price_eur, currency, is_free, creator_email, cover_image, metadata, published_at, created_at, updated_at
+    ) VALUES (?, ?, ?, 'published', 'marketplace', ?, ?, ?, ?, ?, ?, ?, ?, 'EUR', ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET slug = ?, sku = ?, status = 'published', category_id = ?, title_ru = ?, title_en = ?,
-      short_ru = ?, short_en = ?, price_eur = ?, is_free = ?, cover_image = ?, metadata = ?,
+      short_ru = ?, short_en = ?, description_ru = ?, description_en = ?, price_eur = ?, is_free = ?, cover_image = ?, metadata = ?,
       published_at = COALESCE(marketplace_products.published_at, ?), updated_at = ?`, [
       item.id, item.slug, item.sku, item.categoryId, item.titleRu, item.titleEn, item.shortRu, item.shortEn,
+      item.descriptionRu || '', item.descriptionEn || item.descriptionRu || '',
       item.priceEur, item.isFree ? 1 : 0, 'marketplace@insiderai.it.com', item.coverImage || legacy?.coverImage || null,
       JSON.stringify(metadata), createdAt, createdAt, createdAt,
       item.slug, item.sku, item.categoryId, item.titleRu, item.titleEn, item.shortRu, item.shortEn,
+      item.descriptionRu || '', item.descriptionEn || item.descriptionRu || '',
       item.priceEur, item.isFree ? 1 : 0, item.coverImage || legacy?.coverImage || null,
       JSON.stringify(metadata), createdAt, createdAt,
     ])
@@ -209,11 +320,20 @@ export async function fulfillMarketplaceOrder(db, { paymentId, userId, productId
     const grantedAt = nowIso()
     const update = await tx.run("UPDATE marketplace_orders SET status = 'completed', external_id = COALESCE(external_id, ?), completed_at = ? WHERE id = ? AND status = 'pending'", [externalId, grantedAt, order.id])
     if (Number(update?.changes ?? update?.rowCount ?? 0) !== 1) throw Object.assign(new Error('Order changed during reconciliation'), { status: 409 })
-    await tx.run(`INSERT INTO asset_entitlements (id, user_id, product_id, order_id, source, status, granted_at)
-      VALUES (?, ?, ?, ?, ?, 'active', ?)
-      ON CONFLICT(user_id, product_id) DO UPDATE SET order_id = excluded.order_id, source = excluded.source, status = 'active', granted_at = excluded.granted_at, expires_at = NULL`, [
-      crypto.randomUUID(), userId, productId, order.id, provider, grantedAt,
-    ])
+    const purchasedProduct = await getMarketplaceProduct(tx, productId)
+    const bundledIds = Array.isArray(purchasedProduct?.bundleItems) ? purchasedProduct.bundleItems : []
+    const entitlementIds = [...new Set([productId, ...bundledIds])]
+    for (const entitlementProductId of entitlementIds) {
+      const entitlementProduct = await getMarketplaceProduct(tx, entitlementProductId)
+      if (!entitlementProduct || entitlementProduct.assetCount < 1) {
+        throw Object.assign(new Error('Bundle contains unavailable product'), { status: 409 })
+      }
+      await tx.run(`INSERT INTO asset_entitlements (id, user_id, product_id, order_id, source, status, granted_at)
+        VALUES (?, ?, ?, ?, ?, 'active', ?)
+        ON CONFLICT(user_id, product_id) DO UPDATE SET order_id = excluded.order_id, source = excluded.source, status = 'active', granted_at = excluded.granted_at, expires_at = NULL`, [
+        crypto.randomUUID(), userId, entitlementProductId, order.id, entitlementProductId === productId ? provider : `bundle:${productId}`, grantedAt,
+      ])
+    }
     return { handled: true, idempotent: false, order: { ...order, status: 'completed', completed_at: grantedAt } }
   }
   return db.transaction ? db.transaction(execute) : execute(db)

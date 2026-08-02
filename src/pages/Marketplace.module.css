@@ -94,9 +94,60 @@
 
 .toolbarRow {
   display: flex;
+  flex-wrap: wrap;
   min-width: 0;
   align-items: center;
   gap: 9px;
+}
+
+.industryFilter {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 4px 1px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.industryLabel {
+  flex: 0 0 auto;
+  color: #807b8a;
+  font-size: 0.63rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.industryChips {
+  display: flex;
+  min-width: 0;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.industryChips::-webkit-scrollbar { display: none; }
+
+.industryBtn {
+  min-height: 32px;
+  flex: 0 0 auto;
+  padding: 0 11px;
+  border: 1px solid #2a2931;
+  border-radius: 999px;
+  color: #85818d;
+  background: #151419;
+  font: inherit;
+  font-size: 0.68rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.industryBtn:hover { border-color: #514765; color: #ddd7e7; }
+
+.industryActive {
+  border-color: rgba(244, 176, 102, 0.42);
+  color: #ffd1a3;
+  background: rgba(244, 176, 102, 0.09);
 }
 
 .search,
@@ -264,6 +315,8 @@
     order: 3;
     flex-basis: 100%;
   }
+
+  .industryFilter { order: 4; }
 }
 
 @media (max-width: 840px) {
@@ -309,6 +362,8 @@
   .sort {
     flex: 1;
   }
+
+  .industryFilter { align-items: flex-start; flex-direction: column; }
 
   .resultCount {
     display: none;
