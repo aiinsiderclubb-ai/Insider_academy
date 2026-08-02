@@ -18,7 +18,18 @@ export async function handleStripeWebhook(req, res) {
     const event = constructWebhookEvent(req.body, req.headers['stripe-signature'])
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object
-      const { userId, courseId, courseTitle } = session.metadata || {}
+      const { userId, courseId, courseTitle, commerceType, licenseTier, paymentId } = session.metadata || {}
+      if (commerceType === 'marketplace') {
+        const payment = await getDb().get(
+          `SELECT p.*, c.license_tier, c.quoted_amount_eur
+           FROM payments p JOIN checkout_contexts c ON c.payment_id = p.id
+           WHERE p.id = ? AND p.external_id = ?`,
+          [paymentId, session.id]
+        )
+        if (!payment || Math.round(Number(payment.quoted_amount_eur) * 100) !== Number(session.amount_total)) {
+          throw new Error('Marketplace checkout amount or identity mismatch')
+        }
+      }
       await grantAccess({
         userId: Number(userId),
         email: session.customer_email,
@@ -27,6 +38,7 @@ export async function handleStripeWebhook(req, res) {
         amount: (session.amount_total || 0) / 100,
         provider: 'stripe',
         externalId: session.id,
+        licenseTier: licenseTier || 'personal',
       })
       await logWebhookEvent({ provider: 'stripe', eventName: event.type, status: 'ok', payload: { courseId } })
     }
@@ -42,8 +54,16 @@ router.post('/liqpay', async (req, res) => {
   const decoded = verifyCallback(req.body.data, req.body.signature)
   if (!decoded) return res.status(400).send('Invalid signature')
   if (decoded.status === 'success' || decoded.status === 'sandbox') {
-    const payment = await getDb().get('SELECT * FROM payments WHERE external_id = ? OR id = ?', [decoded.order_id, decoded.order_id])
+    const payment = await getDb().get(
+      `SELECT p.*, c.license_tier, c.quoted_amount_eur FROM payments p
+       LEFT JOIN checkout_contexts c ON c.payment_id = p.id
+       WHERE p.external_id = ? OR p.id = ?`,
+      [decoded.order_id, decoded.order_id]
+    )
     if (payment) {
+      if (payment.quoted_amount_eur != null && Number(payment.quoted_amount_eur) !== Number(decoded.amount)) {
+        return res.status(400).send('Amount mismatch')
+      }
       await grantAccess({
         userId: payment.user_id,
         email: payment.email,
@@ -52,6 +72,7 @@ router.post('/liqpay', async (req, res) => {
         amount: payment.amount,
         provider: 'liqpay',
         externalId: decoded.order_id,
+        licenseTier: payment.license_tier || 'personal',
       })
       await logWebhookEvent({ provider: 'liqpay', eventName: decoded.status, status: 'ok', payload: { orderId: decoded.order_id } })
     }
@@ -92,9 +113,10 @@ export async function handleTributeWebhook(req, res) {
       let amount = payload.amount ? (payload.amount > 1000 ? payload.amount / 100 : payload.amount) : null
 
       const pendingByProduct = await db.get(
-        `SELECT user_id, email, course_id, course_title, amount FROM payments
-         WHERE (external_id = ? OR course_id IS NOT NULL) AND provider = 'tribute' AND status = 'pending'
-         ORDER BY created_at DESC LIMIT 1`,
+        `SELECT p.user_id, p.email, p.course_id, p.course_title, p.amount, c.license_tier
+         FROM payments p LEFT JOIN checkout_contexts c ON c.payment_id = p.id
+         WHERE p.external_id = ? AND p.provider = 'tribute' AND p.status = 'pending'
+         ORDER BY p.created_at DESC LIMIT 1`,
         [String(productId)]
       )
       if (pendingByProduct) {
@@ -149,7 +171,8 @@ export async function handleTributeWebhook(req, res) {
         courseTitle,
         amount,
         provider: 'tribute',
-        externalId: `product-${productId}-${Date.now()}`,
+        externalId: String(payload.transaction_id || payload.purchase_id || payload.order_id || `product-${productId}`),
+        licenseTier: pendingByProduct?.license_tier || 'personal',
       })
     }
 
@@ -157,7 +180,12 @@ export async function handleTributeWebhook(req, res) {
     if (shopEvents.includes(name)) {
       const orderUuid = payload.uuid || payload.orderUuid || payload.order_id
       const payment = orderUuid
-        ? await db.get('SELECT * FROM payments WHERE external_id = ? AND provider = ?', [orderUuid, 'tribute'])
+        ? await db.get(
+          `SELECT p.*, c.license_tier, c.quoted_amount_eur FROM payments p
+           LEFT JOIN checkout_contexts c ON c.payment_id = p.id
+           WHERE p.external_id = ? AND p.provider = ?`,
+          [orderUuid, 'tribute']
+        )
         : null
 
       const customerId = payload.customerId || payload.customer_id
@@ -175,6 +203,7 @@ export async function handleTributeWebhook(req, res) {
           amount: payment?.amount,
           provider: 'tribute',
           externalId: orderUuid,
+          licenseTier: payment?.license_tier || 'personal',
         })
       }
     }

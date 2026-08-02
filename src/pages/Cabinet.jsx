@@ -17,6 +17,8 @@ import { ContinueLearningPanel } from '../components/ContinueLearningPanel'
 import { ActivityFeed } from '../components/ActivityFeed'
 import { WeeklyChallenge } from '../components/WeeklyChallenge'
 import { CertificateShare } from '../components/CertificateShare'
+import { N8nDeployPanel } from '../components/N8nDeployPanel'
+import { GovernanceDashboard } from '../components/GovernanceDashboard'
 import { RecommendationsStrip } from '../components/RecommendationsStrip'
 import { CabinetDashboard } from '../components/CabinetDashboard'
 import { ProgressRing } from '../components/ProgressRing'
@@ -44,6 +46,8 @@ export function Cabinet() {
   const [myCertificates, setMyCertificates] = useState([])
   const [feedItems, setFeedItems] = useState(() => buildCommunityFeed({ lang }))
   const [giveawayCount, setGiveawayCount] = useState(null)
+  const [marketplaceDownloads, setMarketplaceDownloads] = useState([])
+  const [downloadError, setDownloadError] = useState('')
 
   const hasPriority = hasClubMembership(purchases)
   const { products: recProducts, seed: recSeed } = getPersonalUpsells({ purchases, limit: 3 })
@@ -80,6 +84,7 @@ export function Cabinet() {
           setTeam(await api.getTeam())
           const certs = await api.getCertificates()
           setMyCertificates(certs || [])
+          setMarketplaceDownloads(await api.marketplaceDownloads())
           return
         }
       } catch (_) {}
@@ -156,6 +161,16 @@ export function Cabinet() {
       setTimeout(() => setCopied(false), 2500)
     })
   }, [referralLink])
+
+  const downloadMarketplaceAsset = async (asset) => {
+    setDownloadError('')
+    try {
+      const result = await api.marketplaceDownload(asset.assetId)
+      if (result?.url) window.location.assign(result.url)
+    } catch (err) {
+      setDownloadError(err.message || (lang === 'ru' ? 'Файл временно недоступен' : 'File is temporarily unavailable'))
+    }
+  }
 
   const formatScore = (value) => {
     if (value == null || Number.isNaN(value)) return lang === 'ru' ? 'Оценка появится после проверки ДЗ' : 'Score will appear after homework review'
@@ -276,30 +291,20 @@ export function Cabinet() {
               ? 'Покупки, загрузки и избранное AI Insider Marketplace.'
               : 'Purchases, downloads and favorites from AI Insider Marketplace.'}
           </p>
-          {myMarketplace.length > 0 ? (
+          {downloadError && <p className={styles.muted} role="alert">{downloadError}</p>}
+          {marketplaceDownloads.length > 0 ? (
             <div className={styles.cards}>
-              {myMarketplace.map((item) => {
-                const title = lang === 'ru' ? item.titleRu : item.titleEn
-                return (
-                  <Link to={`/marketplace/${item.slug}`} key={item.id} className={styles.card}>
-                    <div
-                      className={styles.cardImageWrap}
-                      style={{ background: item.coverGradient, minHeight: 120 }}
-                    >
-                      {item.coverImage ? (
-                        <img src={item.coverImage} alt="" className={styles.cardImage} />
-                      ) : (
-                        <span style={{ fontSize: '2.5rem', padding: 16 }} aria-hidden>{item.coverIcon}</span>
-                      )}
-                      <span className={styles.cardBadge}>{lang === 'ru' ? 'Скачать' : 'Download'}</span>
-                    </div>
-                    <h3 className={styles.cardTitle}>{title}</h3>
+              {marketplaceDownloads.map((item) => (
+                  <article key={`${item.entitlementId}:${item.assetId}`} className={styles.card}>
+                    <h3 className={styles.cardTitle}>{item.title}</h3>
                     <p className={styles.cardMeta}>
-                      {item.fileTypes?.join(' · ') || 'ZIP'}
+                      {item.fileName} · v{item.version} · {item.licenseTier}
                     </p>
-                  </Link>
-                )
-              })}
+                    <button type="button" className={styles.link} onClick={() => downloadMarketplaceAsset(item)}>
+                      {lang === 'ru' ? 'Скачать защищённый файл →' : 'Download secure file →'}
+                    </button>
+                  </article>
+              ))}
             </div>
           ) : (
             <p className={styles.muted}>
@@ -343,6 +348,9 @@ export function Cabinet() {
             </>
           )}
         </section>
+
+        <N8nDeployPanel products={marketplaceDownloads} lang={lang} />
+        <GovernanceDashboard lang={lang} />
 
         {recProducts.length > 0 && (
           <RecommendationsStrip

@@ -1,0 +1,13 @@
+---
+description: Anti-vibe-code UI checklist for AI Insider Academy
+alwaysApply: true
+---
+
+# Anti-vibe-code (Academy UI)
+
+- **No emojis in UI** — use `UiIcon` / lucide only.
+- **No gradient text** except at most one accent word in the home hero (`heroTitleAccent`). Prefer solid `--accent` or `--text-primary`.
+- **Glow only on primary CTA** via `--shadow-cta`. No glow on cards, pills, badges, or hover states.
+- **No stock AI robot / Unsplash “AI” covers** — marketplace uses generative brand gradients + category icons.
+- **No three identical equal cards** where hierarchy is possible (featured / asymmetric / stepper / bento).
+- **No infinite decorative pulses / floats / shimmers**. Allowed: one-shot scroll reveals, button scale, typewriter caret blink, functional loaders (`spin`).

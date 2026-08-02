@@ -23,8 +23,8 @@ function toPgSql(sql) {
   return normalized.replace(/\?/g, () => `$${++i}`)
 }
 
-function pgSchema() {
-  return SCHEMA
+function pgSchema(sql = SCHEMA) {
+  return sql
     .replace(/INTEGER PRIMARY KEY AUTOINCREMENT/g, 'SERIAL PRIMARY KEY')
     .replace(/AUTOINCREMENT/g, '')
     .replace(/COLLATE NOCASE/g, '')
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS support_messages (
       return pool.query(toPgSql(sql), params)
     },
     async exec(sql) {
-      await pool.query(pgSchema())
+      await pool.query(pgSchema(sql))
     },
   }
 }

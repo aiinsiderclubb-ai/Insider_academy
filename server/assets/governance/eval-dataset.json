@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "name": "Agent deployment safety baseline",
+  "cases": [
+    {
+      "id": "deployment-succeeded",
+      "metric": "deployment_status",
+      "operator": "equals",
+      "expected": "succeeded",
+      "weight": 0.5
+    },
+    {
+      "id": "latency-budget",
+      "metric": "latency_ms",
+      "operator": "less_than",
+      "expected": 10000,
+      "weight": 0.3
+    },
+    {
+      "id": "no-deploy-error",
+      "metric": "error_code",
+      "operator": "empty",
+      "weight": 0.2
+    }
+  ]
+}

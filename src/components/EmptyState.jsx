@@ -1,4 +1,4 @@
-import { SearchX } from 'lucide-react'
+import SearchX from 'lucide-react/dist/esm/icons/search-x.mjs'
 import styles from './EmptyState.module.css'
 
 /**

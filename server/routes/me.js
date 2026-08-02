@@ -82,41 +82,10 @@ router.get('/stats', async (req, res) => {
 })
 
 router.post('/purchases', async (req, res) => {
-  const db = getDb()
-  const courseId = String(req.body.courseId || '')
-  const courseTitle = String(req.body.courseTitle || '')
-  const amount = req.body.amount ?? null
-  if (!courseId) return res.status(400).json({ error: 'courseId required' })
-
-  const user = await db.get('SELECT email, personal_id FROM users WHERE id = ?', [req.userId])
-  const exists = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [req.userId, courseId])
-  if (!exists) {
-    await db.run('INSERT INTO purchases (user_id, course_id) VALUES (?, ?)', [req.userId, courseId])
-    await db.run(
-      'INSERT INTO purchase_log (id, email, course_id, course_title, amount, date) VALUES (?, ?, ?, ?, ?, ?)',
-      [`purchase-${Date.now()}`, user.email, courseId, courseTitle, amount, new Date().toISOString()]
-    )
-    sheetsTrack.trackPurchase({
-      email: user.email,
-      personalId: user.personal_id,
-      courseId,
-      courseTitle,
-      amount,
-      source: 'cabinet',
-    }).catch(() => {})
-    const ref = await db.get('SELECT referrer_email FROM referrals WHERE referred_email = ?', [user.email])
-    if (ref?.referrer_email) {
-      await db.run('UPDATE referrals SET referred_purchased = 1 WHERE referred_email = ?', [user.email])
-      const d = await db.get('SELECT percent FROM referral_discounts WHERE email = ?', [ref.referrer_email])
-      const next = (d?.percent || 0) + 5
-      await db.run(
-        'INSERT INTO referral_discounts (email, percent) VALUES (?, ?) ON CONFLICT(email) DO UPDATE SET percent = excluded.percent',
-        [ref.referrer_email, next]
-      )
-    }
-  }
-  const purchases = await db.all('SELECT course_id AS id, purchased_at AS purchasedAt FROM purchases WHERE user_id = ?', [req.userId])
-  res.json({ purchases })
+  res.status(403).json({
+    error: 'Purchases can only be granted by a verified payment webhook',
+    errorRu: 'Доступ выдаётся только после подтверждённой оплаты',
+  })
 })
 
 router.get('/activity', async (req, res) => {

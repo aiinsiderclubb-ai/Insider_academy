@@ -1,4 +1,6 @@
-import { Flame, TrendingUp, Sparkles } from 'lucide-react'
+import Flame from 'lucide-react/dist/esm/icons/flame.mjs'
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up.mjs'
+import Sparkles from 'lucide-react/dist/esm/icons/sparkles.mjs'
 import styles from './ProductBadge.module.css'
 
 /** @typedef {'hit' | 'trend-2026' | 'new'} ProductBadgeType */

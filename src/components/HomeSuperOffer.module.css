@@ -2,16 +2,34 @@
   padding: 0 0 var(--section-py);
   margin-bottom: 0;
   border-bottom: none;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #07060f;
+}
+
+.section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(167, 139, 250, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(167, 139, 250, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 70% at 40% 20%, #000 15%, transparent 70%);
 }
 
 .hotStrip {
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   padding: 14px 24px;
-  background: var(--gradient-primary);
+  background: linear-gradient(105deg, #7C3AED 0%, #9333EA 45%, #A855F7 100%);
   overflow: hidden;
 }
 
@@ -48,6 +66,8 @@
 }
 
 .container {
+  position: relative;
+  z-index: 1;
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 28px 28px 0;

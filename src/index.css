@@ -81,7 +81,7 @@
   --accent-dim: color-mix(in srgb, var(--accent) 22%, transparent);
   --gradient-primary: linear-gradient(135deg, #6D28D9 0%, #8B5CF6 50%, #A78BFA 100%);
   --gradient-primary-hover: linear-gradient(135deg, #7C3AED 0%, #9333EA 50%, #C084FC 100%);
-  --gradient-text: linear-gradient(120deg, #A78BFA 0%, #C084FC 45%, #F97316 100%);
+  --gradient-text: linear-gradient(120deg, #C4B5FD 0%, #A78BFA 45%, #8B5CF6 100%);
   --glow-purple: #A78BFA;
   --glow-purple-dim: rgba(124, 58, 237, 0.14);
   --glow-pink: var(--accent-pink);

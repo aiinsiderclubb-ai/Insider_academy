@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Heart } from 'lucide-react'
+import Heart from 'lucide-react/dist/esm/icons/heart.mjs'
 import { getMarketplaceCategory } from '../../data/marketplace/categories'
 import { getMarketplacePrice } from '../../data/marketplace/discounts'
 import { getMarketplaceCoverStyle } from '../../utils/marketplaceCover'

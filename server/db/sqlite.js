@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { config } from '../config.js'
+import { MARKETPLACE_SCHEMA } from './marketplaceSchema.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dataDir = path.join(__dirname, '..', 'data')
@@ -287,6 +288,7 @@ export function createSqliteDb() {
   db.pragma('journal_mode = WAL')
   db.pragma('foreign_keys = ON')
   db.exec(SCHEMA)
+  db.exec(MARKETPLACE_SCHEMA)
   migrateColumns(db)
   return {
     driver: 'sqlite',

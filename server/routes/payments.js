@@ -9,8 +9,16 @@ import {
   getDigitalProduct,
   getProductIdForCourse,
 } from '../services/tribute.js'
+import { quoteMarketplaceItem, trackMarketplaceEvent } from '../services/marketplace.js'
 
 const router = Router()
+
+function requireMarketplaceCommerce(req, res, next) {
+  if (process.env.FEATURE_MARKETPLACE_COMMERCE !== 'true') {
+    return res.status(404).json({ error: 'Not found' })
+  }
+  next()
+}
 
 router.get('/tribute/status', (_req, res) => {
   res.json({
@@ -19,6 +27,118 @@ router.get('/tribute/status', (_req, res) => {
     currency: config.tribute.currency,
     productMap: config.tribute.productMap,
   })
+})
+
+async function createMarketplacePayment(db, {
+  provider, req, quote, externalId = null,
+}) {
+  const id = `mp-${provider}-${Date.now()}`
+  await db.run(
+    `INSERT INTO payments
+     (id, user_id, email, course_id, course_title, amount, currency, provider, external_id, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, 'EUR', ?, ?, 'pending', ?)`,
+    [
+      id, req.userId, req.userEmail, quote.productId, quote.title, quote.amountEur,
+      provider, externalId, new Date().toISOString(),
+    ]
+  )
+  await db.run(
+    `INSERT INTO checkout_contexts
+     (payment_id, product_id, license_tier, quoted_amount_eur, legal_snapshot, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      id, quote.productId, quote.licenseTier, quote.amountEur,
+      JSON.stringify(quote.legalSnapshot), new Date().toISOString(),
+    ]
+  )
+  await trackMarketplaceEvent(db, {
+    userId: req.userId,
+    productId: quote.productId,
+    eventName: 'checkout_started',
+    metadata: { provider, licenseTier: quote.licenseTier, paymentId: id },
+  })
+  return id
+}
+
+router.post('/stripe/marketplace', requireUser, requireMarketplaceCommerce, async (req, res) => {
+  if (!isStripeEnabled()) return res.status(503).json({ error: 'Stripe not configured' })
+  try {
+    const quote = quoteMarketplaceItem(req.body)
+    const db = getDb()
+    const paymentId = await createMarketplacePayment(db, { provider: 'stripe', req, quote })
+    const session = await createCheckoutSession({
+      userId: req.userId,
+      email: req.userEmail,
+      courseId: quote.productId,
+      courseTitle: quote.title,
+      amountEur: quote.amountEur,
+      metadata: {
+        commerceType: 'marketplace',
+        productId: quote.productId,
+        licenseTier: quote.licenseTier,
+        paymentId,
+      },
+      successUrl: `${config.appUrl}/cabinet?section=downloads&paid=1&provider=stripe`,
+      cancelUrl: `${config.appUrl}/marketplace/${req.body.productId}?cancel=1`,
+    })
+    await db.run('UPDATE payments SET external_id = ? WHERE id = ?', [session.id, paymentId])
+    res.json({ url: session.url, sessionId: session.id, quote })
+  } catch (err) {
+    res.status(err.status || 400).json({ error: err.message })
+  }
+})
+
+router.post('/tribute/marketplace', requireUser, requireMarketplaceCommerce, async (req, res) => {
+  if (!isTributeEnabled() || !config.tribute.shopId) {
+    return res.status(503).json({ error: 'Tribute Shop is not configured' })
+  }
+  try {
+    const quote = quoteMarketplaceItem(req.body)
+    const db = getDb()
+    const order = await createShopOrder({
+      shopId: config.tribute.shopId,
+      amountCents: quote.amountEur * 100,
+      currency: 'eur',
+      title: quote.title,
+      description: `Marketplace ${quote.licenseTier} license`,
+      email: req.userEmail,
+      customerId: String(req.userId),
+      successUrl: `${config.appUrl}/cabinet?section=downloads&paid=1&provider=tribute`,
+      failUrl: `${config.appUrl}/marketplace/${req.body.productId}?cancel=1`,
+      comment: JSON.stringify({
+        commerceType: 'marketplace',
+        productId: quote.productId,
+        licenseTier: quote.licenseTier,
+      }),
+    })
+    const paymentId = await createMarketplacePayment(db, {
+      provider: 'tribute', req, quote, externalId: order.uuid,
+    })
+    res.json({ url: order.paymentUrl || order.webappPaymentUrl, orderUuid: order.uuid, paymentId, quote })
+  } catch (err) {
+    res.status(err.status || 400).json({ error: err.message })
+  }
+})
+
+router.post('/liqpay/marketplace', requireUser, requireMarketplaceCommerce, async (req, res) => {
+  if (!isLiqPayEnabled()) return res.status(503).json({ error: 'LiqPay not configured' })
+  try {
+    const quote = quoteMarketplaceItem(req.body)
+    const db = getDb()
+    const paymentId = await createMarketplacePayment(db, { provider: 'liqpay', req, quote })
+    await db.run('UPDATE payments SET external_id = ? WHERE id = ?', [paymentId, paymentId])
+    const payload = createPaymentPayload({
+      amount: quote.amountEur,
+      currency: 'EUR',
+      description: `${quote.title} — ${quote.licenseTier}`,
+      orderId: paymentId,
+      resultUrl: `${config.appUrl}/cabinet?section=downloads&paid=1&provider=liqpay`,
+      serverUrl: `${process.env.API_PUBLIC_URL || config.appUrl.replace('5173', '3001')}/api/webhooks/liqpay`,
+    })
+    res.json({ ...payload, paymentId, quote })
+  } catch (err) {
+    res.status(err.status || 400).json({ error: err.message })
+  }
 })
 
 router.post('/tribute/checkout', requireUser, async (req, res) => {
@@ -131,6 +251,9 @@ router.post('/liqpay/create', requireUser, async (req, res) => {
 })
 
 router.post('/demo', requireUser, async (req, res) => {
+  if (process.env.NODE_ENV === 'production' || process.env.ENABLE_DEMO_PURCHASES !== 'true') {
+    return res.status(404).json({ error: 'Not found' })
+  }
   const db = getDb()
   const { courseId, courseTitle, amount, promoCode } = req.body
   let finalAmount = Number(amount) || 0

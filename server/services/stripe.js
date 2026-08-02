@@ -8,7 +8,9 @@ function getStripe() {
   return stripe
 }
 
-export async function createCheckoutSession({ userId, email, courseId, courseTitle, amountEur, successUrl, cancelUrl }) {
+export async function createCheckoutSession({
+  userId, email, courseId, courseTitle, amountEur, successUrl, cancelUrl, metadata = {},
+}) {
   const client = getStripe()
   if (!client) throw new Error('Stripe not configured')
 
@@ -18,12 +20,12 @@ export async function createCheckoutSession({ userId, email, courseId, courseTit
     line_items: [{
       price_data: {
         currency: config.stripe.currency,
-        product_data: { name: courseTitle, metadata: { courseId } },
+        product_data: { name: courseTitle, metadata: { courseId, ...metadata } },
         unit_amount: Math.round(amountEur * 100),
       },
       quantity: 1,
     }],
-    metadata: { userId: String(userId), courseId, courseTitle },
+    metadata: { userId: String(userId), courseId, courseTitle, ...metadata },
     success_url: successUrl,
     cancel_url: cancelUrl,
   })

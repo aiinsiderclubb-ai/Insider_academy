@@ -1,6 +1,10 @@
 import express from 'express'
 import cors from 'cors'
 import { initDatabase, getDb } from './db.js'
+import { ensureMarketplaceSchema } from './db/marketplaceSchema.js'
+import { backfillMarketplacePurchases, seedMarketplaceCatalog } from './services/marketplace.js'
+import { seedGovernanceAssets } from './services/governanceAssets.js'
+import { enforceGovernanceRetention } from './services/governanceRetention.js'
 import { seedIfEmpty } from './seed.js'
 import { backfillPersonalIds } from './services/personalId.js'
 import { config, isGoogleSheetsEnabled } from './config.js'
@@ -20,9 +24,17 @@ import telegramRoutes from './routes/telegram.js'
 import giveawaysRoutes from './routes/giveaways.js'
 import filesRoutes from './routes/files.js'
 import promoRoutes from './routes/promo.js'
+import marketplaceRoutes from './routes/marketplace.js'
+import n8nRoutes from './routes/n8n.js'
+import governanceRoutes from './routes/governance.js'
 
 export async function createApp() {
   await initDatabase()
+  await ensureMarketplaceSchema(getDb())
+  await seedMarketplaceCatalog(getDb())
+  await backfillMarketplacePurchases(getDb())
+  await seedGovernanceAssets(getDb())
+  await enforceGovernanceRetention(getDb())
 
   if (process.env.IMPORT_MIGRATION === '1') {
     const { runImport } = await import('./scripts/import-json-to-postgres.js')
@@ -109,6 +121,9 @@ export async function createApp() {
         googleSheets: isGoogleSheetsEnabled(),
         googleOAuth: Boolean(config.oauth.google.clientId),
         appleOAuth: Boolean(config.oauth.apple.clientId),
+        marketplaceCommerce: process.env.FEATURE_MARKETPLACE_COMMERCE === 'true',
+        n8nDeploy: process.env.FEATURE_N8N_DEPLOY === 'true',
+        governance: process.env.FEATURE_GOVERNANCE === 'true',
       },
       config: process.env.NODE_ENV === 'production'
         ? { warnings: warnings.length, errors: errors.length }
@@ -141,6 +156,9 @@ export async function createApp() {
   app.use('/api/giveaways', giveawaysRoutes)
   app.use('/api/files', filesRoutes)
   app.use('/api/promo', promoRoutes)
+  app.use('/api/marketplace', marketplaceRoutes)
+  app.use('/api/n8n', n8nRoutes)
+  app.use('/api/governance', governanceRoutes)
   app.use('/api', publicRoutes)
 
   app.use((err, _req, res, _next) => {

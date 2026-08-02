@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
-import { ProductBadge, productHasPublicStats } from '../components/ProductBadge'
+import { ProductBadge } from '../components/ProductBadge'
 import { StarRating } from '../components/StarRating'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
@@ -18,17 +18,7 @@ import { ScrollReveal } from '../components/ScrollReveal'
 import { UiIcon } from '../components/UiIcon'
 import { getMarketplaceCoverStyle } from '../utils/marketplaceCover'
 import styles from './MarketplaceProduct.module.css'
-
-const MOCK_REVIEWS_RU = [
-  { name: 'Алексей М.', rating: 5, text: 'Сэкономил неделю настройки — всё по инструкции.' },
-  { name: 'Maria K.', rating: 5, text: 'Качество шаблонов на уровне, рекомендую агентствам.' },
-  { name: 'Dev Studio', rating: 4, text: 'Отличная база, доработал под клиента за день.' },
-]
-const MOCK_REVIEWS_EN = [
-  { name: 'Alexey M.', rating: 5, text: 'Saved a week of setup — clear instructions.' },
-  { name: 'Maria K.', rating: 5, text: 'Template quality is top tier for agencies.' },
-  { name: 'Dev Studio', rating: 4, text: 'Great base, customized for a client in one day.' },
-]
+import { api } from '../api/client'
 
 export function MarketplaceProduct() {
   const { productSlug } = useParams()
@@ -36,6 +26,7 @@ export function MarketplaceProduct() {
   const { lang } = useLanguage()
   const { hasPurchased, purchases } = useAuth()
   const ru = lang === 'ru'
+  const [marketplaceData, setMarketplaceData] = useState(null)
 
   const product = getMarketplaceProduct(productSlug)
   if (!product) return <Navigate to="/marketplace" replace />
@@ -51,7 +42,15 @@ export function MarketplaceProduct() {
   const category = getMarketplaceCategory(product.categoryId)
   const creator = getMarketplaceCreator(product.creatorId)
   const related = getRelatedProducts(product)
-  const reviews = ru ? MOCK_REVIEWS_RU : MOCK_REVIEWS_EN
+  const reviews = marketplaceData?.reviews || []
+
+  useEffect(() => {
+    let cancelled = false
+    api.marketplaceProduct(product.id)
+      .then((data) => { if (!cancelled) setMarketplaceData(data) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [product.id])
 
   useEffect(() => {
     if (searchParams.get('paid') !== '1') return
@@ -180,14 +179,17 @@ export function MarketplaceProduct() {
                 <h2>{ru ? 'Отзывы' : 'Reviews'}</h2>
                 <div className={styles.reviews}>
                   {reviews.map((r) => (
-                    <article key={r.name} className={styles.review}>
+                    <article key={r.id} className={styles.review}>
                       <div className={styles.reviewHead}>
-                        <strong>{r.name}</strong>
+                        <strong>{r.userName || (ru ? 'Покупатель' : 'Customer')}</strong>
                         <StarRating rating={r.rating} className={styles.reviewStars} />
                       </div>
                       <p>{r.text}</p>
                     </article>
                   ))}
+                  {reviews.length === 0 && (
+                    <p>{ru ? 'Пока нет подтверждённых отзывов.' : 'No verified reviews yet.'}</p>
+                  )}
                 </div>
               </section>
             </ScrollReveal>
@@ -228,11 +230,10 @@ export function MarketplaceProduct() {
           <aside className={styles.sidebar}>
             <h1 className={styles.title}>{title}</h1>
             <div className={styles.meta}>
-              {productHasPublicStats(product) ? (
+              {marketplaceData?.product?.reviewCount > 0 ? (
                 <>
-                  <span className={styles.reviewStars}>★ {product.rating}</span>
-                  <span>({product.reviewCount})</span>
-                  <span>↓ {product.downloads.toLocaleString()}</span>
+                  <span className={styles.reviewStars}>★ {marketplaceData.product.rating}</span>
+                  <span>({marketplaceData.product.reviewCount})</span>
                 </>
               ) : product.badge ? (
                 <ProductBadge type={product.badge} lang={lang} variant="inline" />

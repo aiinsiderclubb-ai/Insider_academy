@@ -73,6 +73,26 @@ export function validateProductionConfig() {
     warnings.push('APP_URL should be https://myinsideracademy.com for password-reset emails')
   }
 
+  if (process.env.FEATURE_MARKETPLACE_COMMERCE === 'true') {
+    if (config.storage.driver !== 's3') errors.push('Marketplace commerce requires STORAGE_DRIVER=s3 in production')
+    if (!process.env.DOWNLOAD_SIGNING_SECRET || process.env.DOWNLOAD_SIGNING_SECRET.length < 32) {
+      errors.push('DOWNLOAD_SIGNING_SECRET must be at least 32 characters')
+    }
+    if (!config.stripe.webhookSecret && !config.tribute.apiKey && !config.liqpay.privateKey) {
+      errors.push('Marketplace commerce requires at least one verified payment provider')
+    }
+  }
+
+  if (process.env.FEATURE_N8N_DEPLOY === 'true') {
+    if (!process.env.N8N_CREDENTIALS_ENCRYPTION_KEY || process.env.N8N_CREDENTIALS_ENCRYPTION_KEY.length < 32) {
+      errors.push('N8N_CREDENTIALS_ENCRYPTION_KEY must be at least 32 characters')
+    }
+  }
+
+  if (process.env.FEATURE_GOVERNANCE === 'true' && process.env.FEATURE_N8N_DEPLOY !== 'true') {
+    errors.push('FEATURE_GOVERNANCE requires FEATURE_N8N_DEPLOY=true')
+  }
+
   return { errors, warnings }
 }
 

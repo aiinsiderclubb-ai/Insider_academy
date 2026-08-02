@@ -1,5 +1,11 @@
 import { getDb } from '../db.js'
 import * as sheetsTrack from './sheetsTrack.js'
+import {
+  getBundle,
+  getMarketplaceProduct,
+  grantMarketplaceEntitlement,
+  trackMarketplaceEvent,
+} from './marketplace.js'
 
 export async function logWebhookEvent({ provider, eventName, status, payload }) {
   try {
@@ -12,7 +18,9 @@ export async function logWebhookEvent({ provider, eventName, status, payload }) 
   } catch (_) {}
 }
 
-export async function grantAccess({ userId, email, courseId, courseTitle, amount, provider, externalId }) {
+export async function grantAccess({
+  userId, email, courseId, courseTitle, amount, provider, externalId, licenseTier = 'personal',
+}) {
   const db = getDb()
   if (!courseId) return { ok: false, reason: 'no courseId' }
 
@@ -28,6 +36,32 @@ export async function grantAccess({ userId, email, courseId, courseTitle, amount
       [email, courseId]
     )
     if (pending?.user_id) resolvedUserId = pending.user_id
+  }
+
+  const marketplaceItem = getMarketplaceProduct(courseId) || getBundle(courseId)
+  if (marketplaceItem) {
+    if (!['stripe', 'tribute', 'liqpay', 'admin'].includes(provider) || !externalId || !resolvedUserId) {
+      return { ok: false, reason: 'unverified marketplace grant' }
+    }
+    const result = await grantMarketplaceEntitlement(db, {
+      userId: resolvedUserId,
+      productId: courseId,
+      licenseTier,
+      sourceType: provider === 'admin' ? 'admin' : 'webhook',
+      sourceId: `${provider}:${externalId}`,
+    })
+    await trackMarketplaceEvent(db, {
+      userId: resolvedUserId,
+      productId: courseId,
+      eventName: 'paid',
+      metadata: { provider, externalId, amount },
+    })
+    await db.run(
+      `UPDATE payments SET status = 'completed', completed_at = ?
+       WHERE external_id = ? OR id = ?`,
+      [new Date().toISOString(), externalId, externalId]
+    )
+    return { ok: true, userId: resolvedUserId, courseId, entitlement: result }
   }
 
   const exists = resolvedUserId

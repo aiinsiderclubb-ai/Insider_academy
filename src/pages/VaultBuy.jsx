@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
-import { getUserDiscountPercent } from '../api/adminStore'
 import { api, checkApiOnline } from '../api/client'
 import { getVaultProduct } from '../data/vaultProducts'
-import { getCourseTributePaymentUrl } from '../data/tributePayments'
 import buyStyles from './CourseBuy.module.css'
 import styles from './VaultProduct.module.css'
 
@@ -13,7 +11,6 @@ const PAY_METHODS = [
   { id: 'tribute', label: 'Tribute', descRu: 'Карта, СБП, Stars, TON', descEn: 'Card, SBP, Stars, TON', icon: '✦' },
   { id: 'stripe', label: 'Stripe', descRu: 'Visa, Mastercard', descEn: 'Visa, Mastercard', icon: '◈' },
   { id: 'liqpay', label: 'LiqPay', descRu: 'Украина', descEn: 'Ukraine', icon: '◉' },
-  { id: 'demo', label: 'Demo', descRu: 'Тестовая оплата', descEn: 'Test payment', icon: '◇' },
 ]
 
 const BENEFITS_RU = [
@@ -31,9 +28,8 @@ const BENEFITS_EN = [
 
 export function VaultBuy() {
   const { vaultSlug } = useParams()
-  const navigate = useNavigate()
   const product = getVaultProduct(vaultSlug)
-  const { user, hasPurchased, login, purchaseCourse, apiMode } = useAuth()
+  const { user, hasPurchased, login } = useAuth()
   const { lang } = useLanguage()
   const ru = lang === 'ru'
 
@@ -44,11 +40,15 @@ export function VaultBuy() {
   const [error, setError] = useState('')
   const [method, setMethod] = useState('tribute')
   const [tributeEnabled, setTributeEnabled] = useState(false)
+  const [licenseTier, setLicenseTier] = useState('personal')
+  const [commerceEnabled, setCommerceEnabled] = useState(false)
 
   useEffect(() => {
     checkApiOnline().then(async (ok) => {
       if (!ok) return
       try {
+        const catalog = await api.marketplaceCatalog()
+        setCommerceEnabled(Boolean(catalog.enabled))
         const status = await api.tributeStatus()
         setTributeEnabled(Boolean(status.enabled))
         if (status.enabled) setMethod('tribute')
@@ -69,12 +69,9 @@ export function VaultBuy() {
 
   const purchased = hasPurchased(product.id)
   const priceEur = product.priceEur
-  const referralDiscountPercent = getUserDiscountPercent(user?.email || email)
-  const priceAfterReferral = referralDiscountPercent > 0
-    ? Math.max(0, priceEur - Math.round((priceEur * referralDiscountPercent) / 100))
-    : priceEur
+  const licenseMultiplier = licenseTier === 'agency' ? 3 : licenseTier === 'client' ? 1.75 : 1
+  const priceAfterReferral = Math.round(priceEur * licenseMultiplier)
   const title = ru ? product.titleRu : product.titleEn
-  const tributePaymentUrl = getCourseTributePaymentUrl(product.id)
   const benefits = ru ? BENEFITS_RU : BENEFITS_EN
 
   const ensureAuth = async () => {
@@ -86,51 +83,26 @@ export function VaultBuy() {
     await login(emailTrim, password, name.trim() || emailTrim)
   }
 
-  const completeDemoPurchase = async () => {
-    const payload = { courseId: product.id, courseTitle: title, amount: priceAfterReferral, slug: product.slug }
-    const online = apiMode || await checkApiOnline()
-    if (online) await api.demoPurchase(payload)
-    else {
-      await purchaseCourse(product.id, {
-        recordAdmin: true,
-        courseTitle: title,
-        amount: priceAfterReferral,
-        email: user?.email || email,
-      })
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
       await ensureAuth()
-      const payload = {
-        courseId: product.id,
-        courseTitle: title,
-        amount: priceAfterReferral,
-        slug: product.slug,
-      }
-
       if (method === 'tribute') {
-        if (tributePaymentUrl) {
-          window.location.href = tributePaymentUrl
-          return
-        }
-        const result = await api.tributeCheckout(payload)
+        const result = await api.marketplaceTributeCheckout(product.id, licenseTier)
         const payUrl = result.url || result.webappUrl
         if (!payUrl) throw new Error(ru ? 'Tribute не вернул ссылку на оплату' : 'No payment URL from Tribute')
         window.location.href = payUrl
         return
       }
       if (method === 'stripe') {
-        const { url } = await api.stripeCheckout(payload)
+        const { url } = await api.marketplaceStripeCheckout(product.id, licenseTier)
         window.location.href = url
         return
       }
       if (method === 'liqpay') {
-        const lp = await api.liqpayCreate(payload)
+        const lp = await api.marketplaceLiqpayCheckout(product.id, licenseTier)
         const form = document.createElement('form')
         form.method = 'POST'
         form.action = 'https://www.liqpay.ua/api/3/checkout'
@@ -139,8 +111,7 @@ export function VaultBuy() {
         form.submit()
         return
       }
-      await completeDemoPurchase()
-      navigate(`/vault/${product.slug}?paid=1`)
+      throw new Error(ru ? 'Выберите способ оплаты' : 'Choose a payment method')
     } catch (err) {
       setError(err.message || (ru ? 'Ошибка оплаты' : 'Payment error'))
     } finally {
@@ -240,6 +211,26 @@ export function VaultBuy() {
                 </div>
               )}
 
+              <p className={buyStyles.payLabel}>{ru ? 'Лицензия' : 'License'}</p>
+              <div className={buyStyles.payMethods}>
+                {['personal', 'client', 'agency'].map((tier) => (
+                  <button
+                    key={tier}
+                    type="button"
+                    className={`${buyStyles.payCard} ${licenseTier === tier ? buyStyles.payCardActive : ''}`}
+                    onClick={() => setLicenseTier(tier)}
+                  >
+                    <span className={buyStyles.payName}>{tier[0].toUpperCase() + tier.slice(1)}</span>
+                    <span className={buyStyles.payDesc}>
+                      {tier === 'personal'
+                        ? (ru ? 'Для себя' : 'Own use')
+                        : tier === 'client'
+                          ? (ru ? 'До 5 клиентов' : 'Up to 5 clients')
+                          : (ru ? 'Без лимита клиентов' : 'Unlimited clients')}
+                    </span>
+                  </button>
+                ))}
+              </div>
               <p className={buyStyles.payLabel}>{ru ? 'Способ оплаты' : 'Payment method'}</p>
               <div className={buyStyles.payMethods}>
                 {PAY_METHODS.map((pm) => {
@@ -264,7 +255,10 @@ export function VaultBuy() {
                 })}
               </div>
 
-              <button type="submit" className={buyStyles.submit} disabled={loading}>
+              {!commerceEnabled && (
+                <p className={buyStyles.error}>{ru ? 'Продажи временно закрыты до завершения безопасного запуска.' : 'Sales are paused until the secure rollout is complete.'}</p>
+              )}
+              <button type="submit" className={buyStyles.submit} disabled={loading || !commerceEnabled}>
                 {loading ? (
                   <span className={buyStyles.spinner} aria-hidden />
                 ) : (

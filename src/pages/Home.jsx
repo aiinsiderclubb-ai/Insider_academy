@@ -119,11 +119,17 @@ export function Home() {
         path="/"
       />
 
-      <section className={`${styles.hero} ${styles.bandBase}`}>
+      <section className={`${styles.hero} ${styles.bandBase} ${styles.stage}`}>
         <div className={styles.heroBg} />
         <div className={`${styles.container} ${styles.heroGrid}`}>
           <div className={styles.heroCopy}>
-            <span className={`${styles.heroPill} ${styles.heroEnter}`}>{t('home.heroPill')}</span>
+            <div className={styles.stageBadge}>
+              <span className={styles.stageBadgeMain}>
+                <UiIcon name="sparkles" size={14} />
+                {lang === 'ru' ? 'Academy' : 'Academy'}
+              </span>
+              <span className={styles.stageBadgeMeta}>{t('home.heroPill')}</span>
+            </div>
             <h1 className={styles.heroTitle}>
               <span className={styles.heroLine} style={{ '--line-delay': '0ms' }}>
                 <span className={styles.heroTitleWhite}>{t('home.heroTitle1')}</span>
@@ -143,6 +149,7 @@ export function Home() {
                 {t('home.toCatalog')}
               </Link>
               <Link to="/courses" className={styles.ctaSecondary}>
+                <UiIcon name="play" size={14} />
                 {t('home.learnMore')}
               </Link>
             </div>
@@ -175,7 +182,7 @@ export function Home() {
         </div>
       </section>
 
-      <ScrollReveal as="section" className={`${styles.statsStrip} ${styles.bandSurface}`}>
+      <ScrollReveal as="section" className={`${styles.statsStrip} ${styles.bandSurface} ${styles.stage}`}>
         <div className={styles.container}>
           <div className={styles.statsRow}>
             <div className={styles.statItem}>
@@ -207,7 +214,7 @@ export function Home() {
       <HomeDirectionsSection lang={lang} theme={theme} />
 
       {user && (
-        <section className={`${styles.continueSection} ${styles.bandBase}`}>
+        <section className={`${styles.continueSection} ${styles.bandBase} ${styles.stage}`}>
           <div className={styles.container}>
             <ContinueLearningPanel streakCurrent={streakCurrent} />
           </div>
@@ -216,7 +223,7 @@ export function Home() {
 
       {user && userStats && (
         <ScrollReveal>
-          <section className={`${styles.userStatsSection} ${styles.bandSurface}`}>
+          <section className={`${styles.userStatsSection} ${styles.bandSurface} ${styles.stage}`}>
             <div className={styles.container}>
               <div className={styles.progressPanel}>
                 <div className={styles.progressPanelHead}>
@@ -304,35 +311,55 @@ export function Home() {
         </ScrollReveal>
       )}
 
-      <ScrollReveal as="section" className={`${styles.whatIncluded} ${user && userStats ? styles.bandBase : styles.bandSurface}`}>
+      <ScrollReveal as="section" className={`${styles.whatIncluded} ${user && userStats ? styles.bandBase : styles.bandSurface} ${styles.stage}`}>
         <div className={styles.container}>
-          <div className={styles.whatIncludedHead}>
-            <span className={styles.sectionPill}>{lang === 'ru' ? 'Learning flow' : 'Learning flow'}</span>
-            <h2 className={styles.sectionTitle}>{t('home.whatIncludedTitle')}</h2>
-            <p className={styles.sectionDesc}>
+          <div className={styles.stageIntro}>
+            <div className={styles.stageBadge}>
+              <span className={styles.stageBadgeMain}>
+                <UiIcon name="sparkles" size={14} />
+                Learning flow
+              </span>
+              <span className={styles.stageBadgeMeta}>
+                {lang === 'ru' ? '3 шага до результата' : '3 steps to results'}
+              </span>
+            </div>
+            <h2 className={styles.stageTitle}>{t('home.whatIncludedTitle')}</h2>
+            <p className={styles.stageDesc}>
               {lang === 'ru'
                 ? 'От урока к практике, проверке и сертификату — всё собрано в понятный путь обучения.'
                 : 'From lesson to practice, review and certificate — a clear learning path in one place.'}
             </p>
           </div>
-          <StaggerReveal as="ol" className={styles.stepper} stagger={60}>
-            <li className={styles.step}>
-              <span className={styles.stepNum}>01</span>
-              <UiIcon name="headphones" variant="box" tone="accent" />
-              <h3 className={styles.stepTitle}>{t('home.support247')}</h3>
-              <p className={styles.stepText}>{t('home.support247Desc')}</p>
+          <StaggerReveal as="ol" className={`${styles.stepper} ${styles.featureGrid}`} stagger={60}>
+            <li className={`${styles.step} ${styles.featureCard}`}>
+              <div className={styles.featureCardTop}>
+                <span className={styles.featureIcon} aria-hidden>
+                  <UiIcon name="check" size={14} />
+                </span>
+                <span className={styles.featureLabel}>{lang === 'ru' ? 'Шаг 01' : 'Step 01'}</span>
+              </div>
+              <h3 className={styles.featureTitle}>{t('home.support247')}</h3>
+              <p className={styles.featureText}>{t('home.support247Desc')}</p>
             </li>
-            <li className={styles.step}>
-              <span className={styles.stepNum}>02</span>
-              <UiIcon name="target" variant="box" tone="accent" />
-              <h3 className={styles.stepTitle}>{t('home.checkingTasks')}</h3>
-              <p className={styles.stepText}>{t('home.checkingTasksDesc')}</p>
+            <li className={`${styles.step} ${styles.featureCard}`}>
+              <div className={styles.featureCardTop}>
+                <span className={styles.featureIcon} aria-hidden>
+                  <UiIcon name="check" size={14} />
+                </span>
+                <span className={styles.featureLabel}>{lang === 'ru' ? 'Шаг 02' : 'Step 02'}</span>
+              </div>
+              <h3 className={styles.featureTitle}>{t('home.checkingTasks')}</h3>
+              <p className={styles.featureText}>{t('home.checkingTasksDesc')}</p>
             </li>
-            <li className={styles.step}>
-              <span className={styles.stepNum}>03</span>
-              <UiIcon name="graduationCap" variant="box" tone="accent" />
-              <h3 className={styles.stepTitle}>{t('home.certificates')}</h3>
-              <p className={styles.stepText}>{t('home.certificatesDesc')}</p>
+            <li className={`${styles.step} ${styles.featureCard}`}>
+              <div className={styles.featureCardTop}>
+                <span className={styles.featureIcon} aria-hidden>
+                  <UiIcon name="check" size={14} />
+                </span>
+                <span className={styles.featureLabel}>{lang === 'ru' ? 'Шаг 03' : 'Step 03'}</span>
+              </div>
+              <h3 className={styles.featureTitle}>{t('home.certificates')}</h3>
+              <p className={styles.featureText}>{t('home.certificatesDesc')}</p>
             </li>
           </StaggerReveal>
         </div>
@@ -340,15 +367,25 @@ export function Home() {
 
       <HomeCertificatesSection lang={lang} />
 
-      <ScrollReveal as="section" className={`${styles.courses} ${styles.bandSurface}`}>
+      <ScrollReveal as="section" className={`${styles.courses} ${styles.bandSurface} ${styles.stage}`}>
         <div className={styles.container}>
-          <div className={styles.sectionHead}>
-            <span className={styles.sectionPillPaid}>{lang === 'ru' ? 'Pro' : 'Pro'}</span>
-            <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Платные программы' : 'Paid programs'}</h2>
+          <div className={styles.stageIntro}>
+            <div className={styles.stageBadge}>
+              <span className={styles.stageBadgeMain}>
+                <UiIcon name="sparkles" size={14} />
+                Pro
+              </span>
+              <span className={styles.stageBadgeMeta}>
+                {lang === 'ru' ? 'Платные программы' : 'Paid programs'}
+              </span>
+            </div>
+            <h2 className={styles.stageTitle}>
+              {lang === 'ru' ? 'Платные программы' : 'Paid programs'}
+            </h2>
+            <p className={styles.stageDesc}>
+              {lang === 'ru' ? 'Видео, домашние задания и сертификат.' : 'Video lessons, homework, and certificate.'}
+            </p>
           </div>
-          <p className={styles.sectionDesc}>
-            {lang === 'ru' ? 'Видео, домашние задания и сертификат.' : 'Video lessons, homework, and certificate.'}
-          </p>
           <StaggerReveal className={styles.bento} stagger={60}>
             {flagshipCourse && (
               <article className={styles.bentoFeatured}>
@@ -407,7 +444,7 @@ export function Home() {
 
       <HomeReviewsSection lang={lang} />
 
-      <section className={`${styles.communitySection} ${styles.bandSurface}`}>
+      <section className={`${styles.communitySection} ${styles.bandSurface} ${styles.stage}`}>
         <div className={styles.container}>
           <div className={styles.communityGrid}>
             <ActivityFeed items={feedItems} lang={lang} />
@@ -433,7 +470,7 @@ export function Home() {
             ? 'Подборка под ваши курсы и покупки'
             : 'Picked for your courses and purchases')
         return (
-          <section className={styles.recsSection}>
+          <section className={`${styles.recsSection} ${styles.stage}`}>
             <div className={styles.container}>
               <RecommendationsStrip
                 products={recs}
@@ -449,13 +486,21 @@ export function Home() {
 
       <MembershipsSection lang={lang} compact />
 
-      <ScrollReveal as="section" className={`${styles.tryNow} ${styles.bandBase}`}>
+      <ScrollReveal as="section" className={`${styles.tryNow} ${styles.bandBase} ${styles.stage}`}>
         <div className={styles.container}>
-          <div className={styles.sectionHead}>
-            <span className={styles.sectionPill}>{lang === 'ru' ? 'Бесплатно' : 'Free'}</span>
-            <h2 className={styles.sectionTitle}>{lang === 'ru' ? 'Начните бесплатно' : 'Start for free'}</h2>
+          <div className={styles.stageIntro}>
+            <div className={styles.stageBadge}>
+              <span className={styles.stageBadgeMain}>
+                <UiIcon name="sparkles" size={14} />
+                {lang === 'ru' ? 'Бесплатно' : 'Free'}
+              </span>
+              <span className={styles.stageBadgeMeta}>
+                {lang === 'ru' ? '3 вводных урока' : '3 intro lessons'}
+              </span>
+            </div>
+            <h2 className={styles.stageTitle}>{lang === 'ru' ? 'Начните бесплатно' : 'Start for free'}</h2>
+            <p className={styles.stageDesc}>{t('home.tryNowDesc')}</p>
           </div>
-          <p className={styles.sectionDesc}>{t('home.tryNowDesc')}</p>
           <StaggerReveal className={styles.cards} stagger={60}>
             {(loading ? [] : freeCourses).map((course) => (
               <CourseCatalogCard
@@ -470,10 +515,21 @@ export function Home() {
         </div>
       </ScrollReveal>
 
-      <ScrollReveal as="section" className={`${styles.blog} ${styles.bandSurface}`}>
+      <ScrollReveal as="section" className={`${styles.blog} ${styles.bandSurface} ${styles.stage}`}>
         <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>{t('home.blogTitle')}</h2>
-          <p className={styles.sectionDesc}>{t('home.blogDesc')}</p>
+          <div className={styles.stageIntro}>
+            <div className={styles.stageBadge}>
+              <span className={styles.stageBadgeMain}>
+                <UiIcon name="sparkles" size={14} />
+                Blog
+              </span>
+              <span className={styles.stageBadgeMeta}>
+                {lang === 'ru' ? 'Свежие материалы' : 'Fresh reads'}
+              </span>
+            </div>
+            <h2 className={styles.stageTitle}>{t('home.blogTitle')}</h2>
+            <p className={styles.stageDesc}>{t('home.blogDesc')}</p>
+          </div>
           {blogPreview.length > 0 && (
             <StaggerReveal className={styles.blogGrid} stagger={60}>
               {blogPreview.map((post) => (
@@ -492,27 +548,50 @@ export function Home() {
         </div>
       </ScrollReveal>
 
-      <ScrollReveal as="section" className={`${styles.teamSection} ${styles.bandBase}`}>
+      <ScrollReveal as="section" className={`${styles.teamSection} ${styles.bandBase} ${styles.stage}`}>
         <div className={styles.container}>
-          <div className={styles.sectionHead}>
-            <span className={styles.sectionPill}>{lang === 'ru' ? 'Команда' : 'Team'}</span>
-            <h2 className={styles.sectionTitle}>{t('home.teamTitle')}</h2>
+          <div className={styles.stageIntro}>
+            <div className={styles.stageBadge}>
+              <span className={styles.stageBadgeMain}>
+                <UiIcon name="sparkles" size={14} />
+                {lang === 'ru' ? 'Команда' : 'Team'}
+              </span>
+              <span className={styles.stageBadgeMeta}>
+                {lang === 'ru' ? 'Кто ведёт Academy' : 'Who runs Academy'}
+              </span>
+            </div>
+            <h2 className={styles.stageTitle}>{t('home.teamTitle')}</h2>
           </div>
-          <StaggerReveal className={styles.teamGrid} stagger={60}>
-            <div className={styles.teamCard}>
-              <UiIcon name="users" variant="box" tone="accent" className={styles.teamCardIcon} />
-              <h3 className={styles.teamCardTitle}>{t('home.teamCreators')}</h3>
-              <p className={styles.teamCardText}>{t('home.teamCreatorsDesc')}</p>
+          <StaggerReveal className={`${styles.teamGrid} ${styles.featureGrid}`} stagger={60}>
+            <div className={`${styles.teamCard} ${styles.featureCard}`}>
+              <div className={styles.featureCardTop}>
+                <span className={styles.featureIcon} aria-hidden>
+                  <UiIcon name="check" size={14} />
+                </span>
+                <span className={styles.featureLabel}>{lang === 'ru' ? 'Роль 01' : 'Role 01'}</span>
+              </div>
+              <h3 className={styles.featureTitle}>{t('home.teamCreators')}</h3>
+              <p className={styles.featureText}>{t('home.teamCreatorsDesc')}</p>
             </div>
-            <div className={styles.teamCard}>
-              <UiIcon name="trendingUp" variant="box" tone="accent" className={styles.teamCardIcon} />
-              <h3 className={styles.teamCardTitle}>{t('home.teamSeo')}</h3>
-              <p className={styles.teamCardText}>{t('home.teamSeoDesc')}</p>
+            <div className={`${styles.teamCard} ${styles.featureCard}`}>
+              <div className={styles.featureCardTop}>
+                <span className={styles.featureIcon} aria-hidden>
+                  <UiIcon name="check" size={14} />
+                </span>
+                <span className={styles.featureLabel}>{lang === 'ru' ? 'Роль 02' : 'Role 02'}</span>
+              </div>
+              <h3 className={styles.featureTitle}>{t('home.teamSeo')}</h3>
+              <p className={styles.featureText}>{t('home.teamSeoDesc')}</p>
             </div>
-            <div className={styles.teamCard}>
-              <UiIcon name="graduationCap" variant="box" tone="accent" className={styles.teamCardIcon} />
-              <h3 className={styles.teamCardTitle}>{t('home.teamMentors')}</h3>
-              <p className={styles.teamCardText}>{t('home.teamMentorsDesc')}</p>
+            <div className={`${styles.teamCard} ${styles.featureCard}`}>
+              <div className={styles.featureCardTop}>
+                <span className={styles.featureIcon} aria-hidden>
+                  <UiIcon name="check" size={14} />
+                </span>
+                <span className={styles.featureLabel}>{lang === 'ru' ? 'Роль 03' : 'Role 03'}</span>
+              </div>
+              <h3 className={styles.featureTitle}>{t('home.teamMentors')}</h3>
+              <p className={styles.featureText}>{t('home.teamMentorsDesc')}</p>
             </div>
           </StaggerReveal>
         </div>
@@ -525,13 +604,26 @@ export function Home() {
       </div>
 
       <ScrollReveal>
-      <section className={`${styles.ctaBlock} ${styles.bandSurface}`}>
+      <section className={`${styles.ctaBlock} ${styles.bandSurface} ${styles.stage}`}>
         <div className={styles.container}>
-          <h2 className={styles.ctaTitle}>{t('home.ctaTitle')}</h2>
-          <p className={styles.ctaText}>{t('home.ctaText')}</p>
-          <Link to="/courses" className={styles.ctaButtonGradient}>
-            {t('home.toCatalog')}
-          </Link>
+          <div className={styles.stageIntro}>
+            <div className={styles.stageBadge}>
+              <span className={styles.stageBadgeMain}>
+                <UiIcon name="sparkles" size={14} />
+                Start
+              </span>
+              <span className={styles.stageBadgeMeta}>
+                {lang === 'ru' ? 'Готовы начать?' : 'Ready to start?'}
+              </span>
+            </div>
+            <h2 className={styles.stageTitle}>{t('home.ctaTitle')}</h2>
+            <p className={styles.stageDesc}>{t('home.ctaText')}</p>
+            <div className={styles.stageActions}>
+              <Link to="/courses" className={styles.ctaPrimary}>
+                {t('home.toCatalog')}
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
       </ScrollReveal>
