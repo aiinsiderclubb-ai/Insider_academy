@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
+import { ArrowUpRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useCourses } from '../context/CoursesContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { getCourseField } from '../data/courses'
 import { pickContinueTarget } from '../utils/continueLearning'
+import { getCourseDesignCover } from '../utils/designAssets'
 import { ProgressRing } from './ProgressRing'
 import { UiIcon } from './UiIcon'
 import styles from './ContinueLearningPanel.module.css'
@@ -41,15 +43,20 @@ export function ContinueLearningPanel({ streakCurrent = 0, compact = false }) {
   return (
     <section className={`${styles.panel} ${compact ? styles.compact : ''}`}>
       <div className={styles.main}>
-        <div className={styles.head}>
-          <span className={styles.eyebrow}>{ru ? 'Продолжить обучение' : 'Continue learning'}</span>
-          <h2 className={styles.courseTitle}>{title}</h2>
-          {lessonTitle && (
-            <p className={styles.nextLesson}>
-              {ru ? 'Следующий урок' : 'Next lesson'}:{' '}
-              <strong>{lessonIndex + 1}. {lessonTitle}</strong>
-            </p>
-          )}
+        <div className={styles.courseOverview}>
+          <div className={styles.head}>
+            <span className={styles.eyebrow}>{ru ? 'Продолжить обучение' : 'Continue learning'}</span>
+            <h2 className={styles.courseTitle}>{title}</h2>
+            {lessonTitle && (
+              <p className={styles.nextLesson}>
+                {ru ? 'Следующий урок' : 'Next lesson'}:{' '}
+                <strong>{lessonIndex + 1}. {lessonTitle}</strong>
+              </p>
+            )}
+          </div>
+          <div className={styles.courseCover} aria-hidden="true">
+            <img src={getCourseDesignCover(course)} alt="" loading="lazy" />
+          </div>
         </div>
 
         <div className={styles.progressRow}>
@@ -70,8 +77,9 @@ export function ContinueLearningPanel({ streakCurrent = 0, compact = false }) {
 
         <Link to={`/courses/${course.slug}?lesson=${lessonIndex}`} className={styles.cta}>
           {percent > 0
-            ? (ru ? 'Продолжить урок →' : 'Continue lesson →')
-            : (ru ? 'Начать урок →' : 'Start lesson →')}
+            ? (ru ? 'Продолжить урок' : 'Continue lesson')
+            : (ru ? 'Начать урок' : 'Start lesson')}
+          <ArrowUpRight size={15} aria-hidden />
         </Link>
       </div>
 

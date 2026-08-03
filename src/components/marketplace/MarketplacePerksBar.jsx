@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Gem } from 'lucide-react'
 import styles from './MarketplacePerksBar.module.css'
 
 export function MarketplacePerksBar({ lang, discountPercent = 0 }) {
@@ -23,7 +24,7 @@ export function MarketplacePerksBar({ lang, discountPercent = 0 }) {
         </span>
       )}
       <span className={`${styles.chip} ${styles.chipMuted}`}>
-        <span className={styles.chipIcon} aria-hidden>◆</span>
+        <Gem className={styles.chipIcon} size={15} aria-hidden />
         {ru ? '70% креатору · 30% платформе' : '70% creator · 30% platform'}
       </span>
     </div>

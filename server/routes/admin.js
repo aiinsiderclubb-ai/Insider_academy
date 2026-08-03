@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { timingSafeEqual } from 'node:crypto'
 import { getDb, parseJson } from '../db.js'
 import { requireAdmin, signAdminToken } from '../middleware/auth.js'
 import { sendEmail, sendHomeworkFeedbackEmail } from '../services/email.js'
@@ -23,21 +24,40 @@ import {
   formatGoogleDriveError,
 } from '../services/googleSheets.js'
 import adminOpsRoutes from './adminOps.js'
+import adminGiveawaysRoutes from './adminGiveaways.js'
+import adminMarketplaceRoutes from './adminMarketplace.js'
 import { queueEmail } from '../services/emailQueue.js'
 import { logAudit } from '../services/auditLog.js'
 import { deleteUserAccount } from '../services/deleteUser.js'
+import { prelaunchBlocked } from '../middleware/prelaunch.js'
+import { rateLimitMiddleware } from '../middleware/rateLimit.js'
 
 const router = Router()
+const adminLoginRateLimit = rateLimitMiddleware({
+  windowMs: 15 * 60_000,
+  max: 5,
+  keyFn: (req) => `admin:${req.ip || 'unknown'}`,
+})
+
+const WEAK_ADMIN_PASSWORDS = new Set(['admin123', 'editor123', 'moderator123'])
+
+function securePasswordMatch(candidate, configured) {
+  const input = String(candidate || '')
+  const expected = String(configured || '')
+  if (!input || !expected || expected.length < 12 || WEAK_ADMIN_PASSWORDS.has(expected)) return false
+  const inputBuffer = Buffer.from(input)
+  const expectedBuffer = Buffer.from(expected)
+  return inputBuffer.length === expectedBuffer.length && timingSafeEqual(inputBuffer, expectedBuffer)
+}
 
 function resolveAdminRole(password) {
-  const p = String(password || '')
-  if (p === config.adminPassword) return 'admin'
-  if (p === config.editorPassword) return 'editor'
-  if (p === config.moderatorPassword) return 'moderator'
+  if (securePasswordMatch(password, config.adminPassword)) return 'admin'
+  if (securePasswordMatch(password, config.editorPassword)) return 'editor'
+  if (securePasswordMatch(password, config.moderatorPassword)) return 'moderator'
   return null
 }
 
-router.post('/login', (req, res) => {
+router.post('/login', adminLoginRateLimit, (req, res) => {
   const role = resolveAdminRole(req.body.password)
   if (!role) return res.status(401).json({ error: 'Invalid password' })
   res.json({ token: signAdminToken(role), role })
@@ -91,7 +111,9 @@ router.post('/test-email', requireAdmin('admin'), async (req, res) => {
 })
 
 router.use(requireAdmin('admin', 'editor', 'moderator'))
+router.use(adminMarketplaceRoutes)
 router.use(adminOpsRoutes)
+router.use(adminGiveawaysRoutes)
 
 router.get('/dashboard', async (req, res) => {
   const db = getDb()
@@ -261,7 +283,7 @@ router.put('/calendar', requireAdmin('admin', 'editor'), async (req, res) => {
   res.json({ ok: true })
 })
 
-router.patch('/homework/:id', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.patch('/homework/:id', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const { status, adminComment, score } = req.body
   const row = await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])
@@ -412,7 +434,7 @@ router.delete('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, re
   res.json({ ok: true, id: req.params.id })
 })
 
-router.post('/applications/bulk-approve', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/applications/bulk-approve', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const ids = Array.isArray(req.body.ids) ? req.body.ids.slice(0, 50) : []
   if (!ids.length) return res.status(400).json({ error: 'ids array required' })
@@ -545,7 +567,7 @@ router.get('/applications/:id/history', requireAdmin('admin', 'moderator'), asyn
   res.json({ history })
 })
 
-router.post('/applications/:id/approve', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/applications/:id/approve', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
   if (!row) return res.status(404).json({ error: 'Not found' })
@@ -647,7 +669,7 @@ router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req
   res.json({ ok: true, application: (await enrichApplications(db, [updated]))[0] })
 })
 
-router.post('/certificates', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/certificates', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const db = getDb()
   const { email, courseId, courseTitle, fileName, fileType, fileDataUrl, score } = req.body
   const id = `cert-${Date.now()}`

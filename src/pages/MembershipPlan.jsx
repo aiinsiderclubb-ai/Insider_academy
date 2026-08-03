@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { Check, Minus, X } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 import { MEMBERSHIP_PLANS, isMembershipExcludedLine } from '../data/memberships'
 import {
@@ -12,8 +13,10 @@ import { getCourseById, getCourseField } from '../data/courses'
 import { ScrollReveal } from '../components/ScrollReveal'
 import styles from './MembershipPlan.module.css'
 
-function mark(value, lang) {
-  return value ? '✓' : (lang === 'ru' ? '—' : '-')
+function mark(value) {
+  return value
+    ? <Check size={17} strokeWidth={2.4} aria-hidden="true" />
+    : <Minus size={17} strokeWidth={2.4} aria-hidden="true" />
 }
 
 export function MembershipPlan() {
@@ -63,10 +66,16 @@ export function MembershipPlan() {
 
         <ScrollReveal>
           <header className={`${styles.hero} ${isPro ? styles.heroPro : styles.heroClub}`}>
-            <span className={styles.badge}>{ru ? details.badgeRu : details.badgeEn}</span>
-            <h1 className={styles.title}>{ru ? details.nameRu : details.nameEn}</h1>
-            <p className={styles.heroLead}>{ru ? details.heroRu : details.heroEn}</p>
-            <p className={styles.lead}>{ru ? details.leadRu : details.leadEn}</p>
+            <div className={styles.heroCopy}>
+              <span className={styles.badge}>{ru ? details.badgeRu : details.badgeEn}</span>
+              <h1 className={styles.title}>{ru ? details.nameRu : details.nameEn}</h1>
+              <p className={styles.heroLead}>{ru ? details.heroRu : details.heroEn}</p>
+              <p className={styles.lead}>{ru ? details.leadRu : details.leadEn}</p>
+            </div>
+            <div className={styles.heroVisual} aria-hidden="true">
+              <img src="/design/course-ai-content-business.webp" alt="" />
+              <span>{isPro ? 'PRO / FULL ACCESS' : 'CLUB / LEARN'}</span>
+            </div>
           </header>
         </ScrollReveal>
 
@@ -154,14 +163,19 @@ export function MembershipPlan() {
               <section className={styles.block}>
                 <h2>{ru ? 'Что входит' : 'What is included'}</h2>
                 <ul className={styles.list}>
-                  {(ru ? plan.includesRu : plan.includesEn).map((item) => (
-                    <li
-                      key={item}
-                      className={isMembershipExcludedLine(item) ? styles.listExcluded : undefined}
-                    >
-                      {item}
-                    </li>
-                  ))}
+                  {(ru ? plan.includesRu : plan.includesEn).map((item) => {
+                    const excluded = isMembershipExcludedLine(item)
+                    return (
+                      <li key={item} className={excluded ? styles.listExcluded : undefined}>
+                        <span className={styles.listIcon} aria-hidden="true">
+                          {excluded
+                            ? <X size={15} strokeWidth={2.4} />
+                            : <Check size={15} strokeWidth={2.4} />}
+                        </span>
+                        {item}
+                      </li>
+                    )
+                  })}
                 </ul>
                 {(ru ? plan.bonusRu : plan.bonusEn)?.length > 0 && (
                   <div className={styles.bonusBox}>
@@ -219,8 +233,8 @@ export function MembershipPlan() {
               {comparisonRows.map(([label, club, pro]) => (
                 <div className={styles.compareRow} key={label}>
                   <span>{label}</span>
-                  <strong className={club ? styles.yes : styles.no}>{mark(club, lang)}</strong>
-                  <strong className={pro ? styles.yes : styles.no}>{mark(pro, lang)}</strong>
+                  <strong className={club ? styles.yes : styles.no}>{mark(club)}</strong>
+                  <strong className={pro ? styles.yes : styles.no}>{mark(pro)}</strong>
                 </div>
               ))}
             </div>

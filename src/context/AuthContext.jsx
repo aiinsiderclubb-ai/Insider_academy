@@ -325,7 +325,7 @@ export function AuthProvider({ children }) {
     }
   }, [applyReferral])
 
-  const register = useCallback(async (email, password, name) => {
+  const register = useCallback(async (email, password, name, returnTo) => {
     const emailTrim = email.trim()
     const passwordTrim = String(password || '').trim()
     const nameTrim = String(name || emailTrim).trim()
@@ -345,7 +345,7 @@ export function AuthProvider({ children }) {
       return u
     }
 
-    const res = await api.register(emailTrim, passwordTrim, nameTrim)
+    const res = await api.register(emailTrim, passwordTrim, nameTrim, returnTo)
     if (res.requiresVerification) {
       setPendingVerifyEmail(res.email || emailTrim)
       return {
@@ -399,16 +399,8 @@ export function AuthProvider({ children }) {
   const purchaseCourse = useCallback(async (courseId, meta = {}) => {
     const buyerEmail = user?.email || meta.email || ''
     if (apiMode && user) {
-      const result = await api.purchaseCourse({
-        courseId,
-        courseTitle: meta.courseTitle,
-        amount: meta.amount,
-      })
-      setPurchases(result.purchases || [])
-      savePurchasesLocal(result.purchases || [])
-      return
+      throw new Error('Course access is granted only after verified payment.')
     }
-
     setPurchases((prev) => {
       if (prev.some((p) => p.id === courseId)) return prev
       const next = [...prev, { id: courseId, purchasedAt: new Date().toISOString() }]

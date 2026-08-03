@@ -1,12 +1,22 @@
 .wrap {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 24px 28px;
-  background: linear-gradient(135deg, rgba(0, 136, 204, 0.12) 0%, var(--bg-glass) 50%);
-  border: 1px solid rgba(0, 136, 204, 0.25);
-  border-radius: 16px;
-  backdrop-filter: blur(var(--glass-blur));
+  padding: 22px 26px;
+  background: var(--bg-surface);
+  border: 1px solid rgba(46, 159, 224, 0.28);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-inset), 0 0 44px rgba(46, 159, 224, 0.07);
+  overflow: hidden;
+}
+
+.wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(420px 160px at 4% 50%, rgba(46, 159, 224, 0.14), transparent 65%);
+  pointer-events: none;
 }
 
 .compact {
@@ -15,18 +25,21 @@
 }
 
 .iconWrap {
+  position: relative;
   width: 52px;
   height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
-  background: #0088cc;
-  color: var(--text-on-primary);
+  border-radius: 15px;
+  background: linear-gradient(135deg, #2e9fe0, #1f7fc4);
+  color: #fff;
   flex-shrink: 0;
+  box-shadow: 0 8px 26px rgba(46, 159, 224, 0.32);
 }
 
 .content {
+  position: relative;
   flex: 1;
   min-width: 0;
 }
@@ -35,7 +48,9 @@
   font-family: var(--font-display);
   font-size: 1.0625rem;
   font-weight: 700;
-  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+  margin-bottom: 5px;
+  color: var(--text-primary);
 }
 
 .desc {
@@ -45,19 +60,25 @@
 }
 
 .btn {
+  position: relative;
   flex-shrink: 0;
-  padding: 12px 20px;
-  background: #0088cc;
-  color: var(--text-on-primary);
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0 22px;
+  background: linear-gradient(120deg, #2e9fe0 0%, #59a8e8 100%);
+  color: #fff;
+  font-weight: 650;
   font-size: 0.9375rem;
-  border-radius: var(--radius);
-  transition: filter 0.2s, transform 0.15s;
+  border-radius: var(--radius-button);
+  text-decoration: none;
+  box-shadow: 0 10px 28px rgba(46, 159, 224, 0.28);
+  transition: transform var(--motion-fast) var(--ease-motion), box-shadow var(--motion-fast) var(--ease-motion);
 }
 
 .btn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(46, 159, 224, 0.4);
 }
 
 @media (max-width: 640px) {

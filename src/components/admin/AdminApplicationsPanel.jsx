@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Bot, Check, X } from 'lucide-react'
 import { api } from '../../api/client'
 import {
   getAcceleratorApplications,
@@ -357,7 +358,7 @@ export function AdminApplicationsPanel({
             disabled={bulkBusy}
             onClick={bulkApprove}
           >
-            {bulkBusy ? 'Одобряем…' : '✓ Одобрить выбранные'}
+            {bulkBusy ? 'Одобряем…' : <><Check size={14} aria-hidden /> Одобрить выбранные</>}
           </button>
           <button type="button" className={styles.inlineBtn} onClick={() => setSelected(new Set())}>
             Снять выбор
@@ -463,7 +464,7 @@ export function AdminApplicationsPanel({
                           className={app.telegramConnected ? styles.tgBadgeOn : styles.tgBadgeOff}
                           title={app.telegramConnected ? 'Бот подключён' : 'Бот не подключён — отправьте шаблон «Подключить бота»'}
                         >
-                          {app.telegramConnected ? '✓ бот' : '— бот'}
+                          <Bot size={13} aria-hidden /> {app.telegramConnected ? 'подключён' : 'не подключён'}
                         </span>
                       </td>
                       <td>
@@ -473,7 +474,7 @@ export function AdminApplicationsPanel({
                       </td>
                       <td>
                         {app.accessGranted ? (
-                          <span className={styles.accessGranted}>✓ выдан</span>
+                          <span className={styles.accessGranted}><Check size={14} aria-hidden /> выдан</span>
                         ) : (
                           <span className={styles.drawerMuted}>—</span>
                         )}
@@ -488,7 +489,7 @@ export function AdminApplicationsPanel({
                               onClick={() => approveApplication(app)}
                               title="Одобрить и открыть доступ к курсу"
                             >
-                              {approvingId === app.id ? '…' : '✓ Одобрить'}
+                              {approvingId === app.id ? '…' : <><Check size={14} aria-hidden /> Одобрить</>}
                             </button>
                           )}
                           {status !== 'accepted' && status !== 'rejected' && (
@@ -499,7 +500,7 @@ export function AdminApplicationsPanel({
                                 disabled={rejectingId === app.id}
                                 onClick={() => rejectApplication(app, REJECT_TEMPLATES[0])}
                               >
-                                ✕ Отказ
+                                <X size={14} aria-hidden /> Отказ
                               </button>
                               <select
                                 className={styles.statusSelect}
@@ -581,7 +582,7 @@ export function AdminApplicationsPanel({
                                   disabled={approvingId === app.id}
                                   onClick={() => approveApplication(app)}
                                 >
-                                  {approvingId === app.id ? 'Одобряем…' : '✓ Одобрить и открыть доступ'}
+                                  {approvingId === app.id ? 'Одобряем…' : <><Check size={14} aria-hidden /> Одобрить и открыть доступ</>}
                                 </button>
                               )}
                             </div>
@@ -658,8 +659,8 @@ export function AdminApplicationsPanel({
                             </div>
 
                             {status === 'accepted' && (
-                              <p className={styles.sectionDesc} style={{ margin: 0 }}>
-                                ✅ Доступ к курсу выдан · студент может войти на myinsideracademy.com
+                              <p className={`${styles.sectionDesc} ${styles.inlineStatus}`} style={{ margin: 0 }}>
+                                <Check size={15} aria-hidden /> Доступ к курсу выдан · студент может войти на myinsideracademy.com
                               </p>
                             )}
                           </div>

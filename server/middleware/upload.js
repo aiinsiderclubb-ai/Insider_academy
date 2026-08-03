@@ -9,9 +9,10 @@ export const upload = multer({
   fileFilter(_req, file, cb) {
     const allowed = [
       'image/jpeg', 'image/png', 'image/webp', 'application/pdf',
-      'text/plain', 'application/zip',
+      'text/plain', 'text/markdown', 'application/json', 'application/zip',
     ]
-    cb(null, allowed.includes(file.mimetype) || file.mimetype.startsWith('text/'))
+    if (!allowed.includes(file.mimetype)) return cb(Object.assign(new Error('Unsupported file type'), { status: 400 }))
+    cb(null, true)
   },
 })
 

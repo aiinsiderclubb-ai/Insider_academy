@@ -5,13 +5,21 @@ const emptyPost = () => ({
   id: `post-${Date.now()}`,
   slug: '',
   title: '',
+  titleRu: '',
+  titleUk: '',
   titleEn: '',
   excerpt: '',
+  excerptRu: '',
+  excerptUk: '',
   excerptEn: '',
   content: '',
+  contentRu: '',
+  contentUk: '',
   contentEn: '',
   date: new Date().toISOString().slice(0, 10),
   category: '',
+  categoryRu: '',
+  categoryUk: '',
   categoryEn: '',
 })
 
@@ -58,13 +66,21 @@ export function AdminBlogEditor({ posts, onSave, onDelete, canEdit = true }) {
           <div className={styles.editGrid}>
             <label>Slug <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} className={styles.editInput} /></label>
             <label>Дата <input type="date" value={form.date?.slice(0, 10)} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} className={styles.editInput} /></label>
-            <label className={styles.editFullWidth}>Название (RU) <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className={styles.editInput} /></label>
+            <label className={styles.editFullWidth}>Название (исходное) <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className={styles.editInput} /></label>
+            <label className={styles.editFullWidth}>Название (RU) <input value={form.titleRu || ''} onChange={(e) => setForm((f) => ({ ...f, titleRu: e.target.value }))} className={styles.editInput} /></label>
+            <label className={styles.editFullWidth}>Назва (UK) <input value={form.titleUk || ''} onChange={(e) => setForm((f) => ({ ...f, titleUk: e.target.value }))} className={styles.editInput} /></label>
             <label className={styles.editFullWidth}>Название (EN) <input value={form.titleEn} onChange={(e) => setForm((f) => ({ ...f, titleEn: e.target.value }))} className={styles.editInput} /></label>
-            <label>Категория (RU) <input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className={styles.editInput} /></label>
+            <label>Категория (исходная) <input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className={styles.editInput} /></label>
+            <label>Категория (RU) <input value={form.categoryRu || ''} onChange={(e) => setForm((f) => ({ ...f, categoryRu: e.target.value }))} className={styles.editInput} /></label>
+            <label>Категорія (UK) <input value={form.categoryUk || ''} onChange={(e) => setForm((f) => ({ ...f, categoryUk: e.target.value }))} className={styles.editInput} /></label>
             <label>Категория (EN) <input value={form.categoryEn} onChange={(e) => setForm((f) => ({ ...f, categoryEn: e.target.value }))} className={styles.editInput} /></label>
-            <label className={styles.editFullWidth}>Краткое описание (RU) <textarea value={form.excerpt} onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))} className={styles.editTextarea} rows={2} /></label>
+            <label className={styles.editFullWidth}>Краткое описание (исходное) <textarea value={form.excerpt} onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))} className={styles.editTextarea} rows={2} /></label>
+            <label className={styles.editFullWidth}>Краткое описание (RU) <textarea value={form.excerptRu || ''} onChange={(e) => setForm((f) => ({ ...f, excerptRu: e.target.value }))} className={styles.editTextarea} rows={2} /></label>
+            <label className={styles.editFullWidth}>Короткий опис (UK) <textarea value={form.excerptUk || ''} onChange={(e) => setForm((f) => ({ ...f, excerptUk: e.target.value }))} className={styles.editTextarea} rows={2} /></label>
             <label className={styles.editFullWidth}>Краткое описание (EN) <textarea value={form.excerptEn} onChange={(e) => setForm((f) => ({ ...f, excerptEn: e.target.value }))} className={styles.editTextarea} rows={2} /></label>
-            <label className={styles.editFullWidth}>Контент (RU, HTML/Markdown) <textarea value={form.content || ''} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} className={styles.editTextarea} rows={6} /></label>
+            <label className={styles.editFullWidth}>Контент (исходный, HTML/Markdown) <textarea value={form.content || ''} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} className={styles.editTextarea} rows={6} /></label>
+            <label className={styles.editFullWidth}>Контент (RU) <textarea value={form.contentRu || ''} onChange={(e) => setForm((f) => ({ ...f, contentRu: e.target.value }))} className={styles.editTextarea} rows={6} /></label>
+            <label className={styles.editFullWidth}>Контент (UK) <textarea value={form.contentUk || ''} onChange={(e) => setForm((f) => ({ ...f, contentUk: e.target.value }))} className={styles.editTextarea} rows={6} /></label>
             <label className={styles.editFullWidth}>Контент (EN) <textarea value={form.contentEn || ''} onChange={(e) => setForm((f) => ({ ...f, contentEn: e.target.value }))} className={styles.editTextarea} rows={6} /></label>
           </div>
           <div className={styles.editFormActions}>

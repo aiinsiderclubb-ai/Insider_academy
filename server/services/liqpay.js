@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { config, isLiqPayEnabled } from '../config.js'
+import { safeSecretEqual } from '../utils/security.js'
 
 function sign(data) {
   const str = config.liqpay.privateKey + data + config.liqpay.privateKey
@@ -25,6 +26,10 @@ export function createPaymentPayload({ amount, currency = 'EUR', description, or
 
 export function verifyCallback(data, signature) {
   if (!isLiqPayEnabled()) return null
-  if (sign(data) !== signature) return null
-  return JSON.parse(Buffer.from(data, 'base64').toString('utf8'))
+  if (!safeSecretEqual(sign(data), signature)) return null
+  try {
+    return JSON.parse(Buffer.from(data, 'base64').toString('utf8'))
+  } catch {
+    return null
+  }
 }

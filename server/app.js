@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import { initDatabase, getDb } from './db.js'
 import { ensureMarketplaceSchema } from './db/marketplaceSchema.js'
 import { backfillMarketplacePurchases, seedMarketplaceCatalog } from './services/marketplace.js'
@@ -7,8 +8,7 @@ import { seedGovernanceAssets } from './services/governanceAssets.js'
 import { enforceGovernanceRetention } from './services/governanceRetention.js'
 import { seedIfEmpty } from './seed.js'
 import { backfillPersonalIds } from './services/personalId.js'
-import { config, isGoogleSheetsEnabled } from './config.js'
-import { validateProductionConfig } from './utils/productionChecks.js'
+import { config } from './config.js'
 import authRoutes from './routes/auth.js'
 import coursesRoutes from './routes/courses.js'
 import meRoutes from './routes/me.js'
@@ -16,6 +16,7 @@ import adminRoutes from './routes/admin.js'
 import publicRoutes from './routes/public.js'
 import paymentsRoutes from './routes/payments.js'
 import webhooksRoutes, { handleStripeWebhook, handleTributeWebhook } from './routes/webhooks.js'
+import { marketplaceWebhookAllowed } from './middleware/prelaunch.js'
 import chatRoutes from './routes/chat.js'
 import reviewsRoutes from './routes/reviews.js'
 import applicationsRoutes from './routes/applications.js'
@@ -43,6 +44,7 @@ export async function createApp() {
   }
 
   await seedIfEmpty()
+  await seedMarketplaceCatalog(getDb())
   try {
     await backfillPersonalIds(getDb())
   } catch (err) {
@@ -68,6 +70,11 @@ export async function createApp() {
 
   const app = express()
   app.set('trust proxy', 1)
+  app.disable('x-powered-by')
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }))
 
   const corsOrigins = String(config.corsOrigin || '')
     .split(',')
@@ -76,36 +83,40 @@ export async function createApp() {
 
   function isAllowedCorsOrigin(origin) {
     if (!origin) return true
-    if (corsOrigins.includes(origin)) return true
-    if (/^https:\/\/(www\.)?insiderai\.it\.com$/i.test(origin)) return true
-    if (/^https:\/\/(www\.)?myinsideracademy\.com$/i.test(origin)) return true
-    if (process.env.NODE_ENV === 'production') {
-      if (/^https:\/\/insider-academy[\w-]*\.vercel\.app$/i.test(origin)) return true
-    } else if (/^https:\/\/[\w-]+\.vercel\.app$/i.test(origin)) {
-      return true
-    }
-    if (/^https:\/\/insider-academy\.onrender\.com$/i.test(origin)) return true
-    if (/^http:\/\/localhost(:\d+)?$/i.test(origin)) return true
-    if (/^http:\/\/127\.0\.0\.1(:\d+)?$/i.test(origin)) return true
-    return false
+    return corsOrigins.includes(origin)
   }
 
   app.use(cors({
     origin(origin, callback) {
       if (isAllowedCorsOrigin(origin)) return callback(null, true)
-      return callback(new Error('CORS not allowed'))
+      const error = new Error('CORS not allowed')
+      error.status = 403
+      return callback(error)
     },
     credentials: true,
   }))
 
-  app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook)
-  app.post('/api/webhooks/tribute', express.raw({ type: 'application/json' }), handleTributeWebhook)
+  app.use('/api', rateLimitMiddleware({
+    windowMs: 60_000,
+    max: 300,
+    keyFn: (req) => req.ip || 'unknown',
+  }))
+
+  app.use('/api', (req, res, next) => {
+    if (req.headers.authorization || req.path.startsWith('/admin') || req.path.startsWith('/me') || req.path.startsWith('/marketplace/downloads')) {
+      res.setHeader('Cache-Control', 'no-store')
+      res.setHeader('Pragma', 'no-cache')
+    }
+    next()
+  })
+
+  app.post('/api/webhooks/stripe', marketplaceWebhookAllowed, express.raw({ type: 'application/json' }), handleStripeWebhook)
+  app.post('/api/webhooks/tribute', marketplaceWebhookAllowed, express.raw({ type: 'application/json' }), handleTributeWebhook)
 
   app.use(express.json({ limit: '2mb' }))
   app.use(express.urlencoded({ extended: true }))
 
   app.get('/api/health', (_req, res) => {
-    const { errors, warnings } = validateProductionConfig()
     res.json({
       ok: true,
       version: '2.0.0',
@@ -138,7 +149,8 @@ export async function createApp() {
       await db.get('SELECT 1 AS ok')
       res.json({ ok: true, db: db.driver, time: new Date().toISOString() })
     } catch (err) {
-      res.status(503).json({ ok: false, error: err.message })
+      console.error('[health/ready]', err)
+      res.status(503).json({ ok: false, error: 'Database unavailable' })
     }
   })
 
@@ -163,7 +175,10 @@ export async function createApp() {
 
   app.use((err, _req, res, _next) => {
     console.error(err)
-    res.status(500).json({ error: err.message || 'Internal server error' })
+    const status = Number(err.status) >= 400 && Number(err.status) < 500 ? Number(err.status) : 500
+    res.status(status).json({
+      error: process.env.NODE_ENV === 'production' ? (status === 403 ? 'Forbidden' : 'Internal server error') : err.message || 'Internal server error',
+    })
   })
 
   return app

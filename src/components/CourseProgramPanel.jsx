@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react'
+import { ChevronDown, Circle, CircleAlert, CircleDashed } from 'lucide-react'
 import { getLessonDisplayTitle, getLessonDescription } from '../data/courses'
 import { UiIcon } from './UiIcon'
-import { IconChevronDown } from './Icons'
 import styles from './CourseProgramPanel.module.css'
 
 export function CourseProgramPanel({
@@ -96,21 +96,21 @@ export function CourseProgramPanel({
             {description && <span className={styles.desc}>{description}</span>}
           </span>
           <span className={styles.status} aria-hidden>
-            {isFreeTrial && <span className={styles.statusOpen}>●</span>}
-            {!isFreeTrial && index === 0 && <span className={styles.statusFree}>●</span>}
+            {isFreeTrial && <Circle className={styles.statusOpen} size={10} fill="currentColor" />}
+            {!isFreeTrial && index === 0 && <Circle className={styles.statusFree} size={10} fill="currentColor" />}
             {!isFreeTrial && index > 0 && !purchased && (
               <span className={styles.statusLock} aria-hidden>
                 <UiIcon name="lock" size={14} tone="secondary" />
               </span>
             )}
-            {!isFreeTrial && purchased && status === 'open' && <span className={styles.statusOpen}>●</span>}
-            {!isFreeTrial && purchased && status === 'review' && <span className={styles.statusReview}>◐</span>}
+            {!isFreeTrial && purchased && status === 'open' && <Circle className={styles.statusOpen} size={10} fill="currentColor" />}
+            {!isFreeTrial && purchased && status === 'review' && <CircleDashed className={styles.statusReview} size={12} />}
             {!isFreeTrial && purchased && status === 'homework' && !available && (
               <span className={styles.statusLock} aria-hidden>
                 <UiIcon name="lock" size={14} tone="secondary" />
               </span>
             )}
-            {!isFreeTrial && purchased && status === 'homework' && available && <span className={styles.statusHomework}>!</span>}
+            {!isFreeTrial && purchased && status === 'homework' && available && <CircleAlert className={styles.statusHomework} size={12} />}
           </span>
         </button>
       </li>
@@ -160,7 +160,7 @@ export function CourseProgramPanel({
                 {group.goal && <span className={styles.weekGoal}>{group.goal}</span>}
               </span>
               <span className={`${styles.weekChevron} ${open ? styles.weekChevronOpen : ''}`} aria-hidden>
-                <IconChevronDown />
+                <ChevronDown size={16} />
               </span>
             </button>
             {open && (

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Check, Circle, Minus, X } from 'lucide-react'
 import { MEMBERSHIPS_TITLE, MEMBERSHIP_PLANS, isMembershipExcludedLine } from '../data/memberships'
 import { PLAN_COMPARISON_ROWS } from '../data/membershipDetails'
 import { ScrollReveal } from './ScrollReveal'
@@ -20,8 +21,14 @@ const BONUS_CARDS = {
   ],
 }
 
-function mark(value, lang) {
-  return value ? '✓' : (lang === 'ru' ? '—' : '-')
+function mark(value) {
+  const Icon = value ? Check : Minus
+  return <Icon size={15} strokeWidth={2} aria-hidden />
+}
+
+function markLabel(value, lang) {
+  if (lang === 'ru') return value ? 'Включено' : 'Не включено'
+  return value ? 'Included' : 'Not included'
 }
 
 export function MembershipsSection({ lang, compact = false, showHeader = true }) {
@@ -39,6 +46,7 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
         {showHeader && (
           <ScrollReveal>
             <header className={styles.header}>
+              <span className={styles.eyebrow}>{lang === 'ru' ? 'Выберите свой уровень' : 'Choose your level'}</span>
               <h2 className={styles.title}>
                 {lang === 'en' ? MEMBERSHIPS_TITLE.en : MEMBERSHIPS_TITLE.ru}
               </h2>
@@ -104,9 +112,13 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
               <ScrollReveal key={plan.id} delay={index * 40}>
                 <article
                   className={`${styles.card} ${isPro ? styles.cardFeatured : ''} ${isPro ? styles.cardPro : ''}`}
+                  data-tier={isPro ? 'pro' : 'club'}
                 >
+                  <div className={styles.planTop}>
+                    <span className={styles.planOrdinal}>0{index + 1}</span>
+                    <span className={isPro ? styles.popular : styles.planBadge}>{planBadge}</span>
+                  </div>
                   {save && <span className={styles.save}>{save}</span>}
-                  <span className={isPro ? styles.popular : styles.planBadge}>{planBadge}</span>
 
                   <h3 className={styles.planName}>{name}</h3>
                   <p className={styles.planSubline}>{subline}</p>
@@ -118,15 +130,18 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
                     </span>
                   </div>
 
+                  <span className={styles.featuresLabel}>{lang === 'ru' ? 'В доступе' : 'Included'}</span>
                   <ul className={styles.features}>
-                    {includes.map((item) => (
-                      <li
-                        key={item}
-                        className={isMembershipExcludedLine(item) ? styles.featureExcluded : undefined}
-                      >
-                        {item}
-                      </li>
-                    ))}
+                    {includes.map((item) => {
+                      const excluded = isMembershipExcludedLine(item)
+                      const FeatureIcon = excluded ? X : Check
+                      return (
+                        <li key={item} className={excluded ? styles.featureExcluded : undefined}>
+                          <FeatureIcon className={styles.featureIcon} size={15} strokeWidth={2} aria-hidden />
+                          <span>{item}</span>
+                        </li>
+                      )
+                    })}
                   </ul>
 
                   {bonus.length > 0 && (
@@ -134,7 +149,10 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
                       <strong>{lang === 'ru' ? 'Бонус:' : 'Bonus:'}</strong>
                       <ul>
                         {bonus.map((item) => (
-                          <li key={item}>{item}</li>
+                          <li key={item}>
+                            <Circle className={styles.bonusIcon} size={6} strokeWidth={2.2} aria-hidden />
+                            <span>{item}</span>
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -174,7 +192,7 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
             <div className={styles.bonusGrid} aria-label={lang === 'ru' ? 'Бонусы подписки' : 'Membership bonuses'}>
               {bonusCards.map(([title, text]) => (
                 <article className={styles.bonusCard} key={title}>
-                  <span className={styles.bonusMark} aria-hidden />
+                  <Circle className={styles.bonusMark} size={14} strokeWidth={2} aria-hidden />
                   <h3>{title}</h3>
                   <p>{text}</p>
                 </article>
@@ -204,8 +222,18 @@ export function MembershipsSection({ lang, compact = false, showHeader = true })
                 {comparisonRows.map(([label, club, pro]) => (
                   <div className={styles.compareRow} key={label}>
                     <span>{label}</span>
-                    <strong className={club ? styles.compareYes : styles.compareNo}>{mark(club, lang)}</strong>
-                    <strong className={pro ? styles.compareYes : styles.compareNo}>{mark(pro, lang)}</strong>
+                    <strong
+                      className={club ? styles.compareYes : styles.compareNo}
+                      aria-label={markLabel(club, lang)}
+                    >
+                      {mark(club)}
+                    </strong>
+                    <strong
+                      className={pro ? styles.compareYes : styles.compareNo}
+                      aria-label={markLabel(pro, lang)}
+                    >
+                      {mark(pro)}
+                    </strong>
                   </div>
                 ))}
               </div>

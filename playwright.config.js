@@ -14,6 +14,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       env: {
         LMS_TEST_DB: 'data/lms-e2e.sqlite',
+        GIVEAWAY_TELEGRAM_BYPASS: '1',
       },
     },
     {

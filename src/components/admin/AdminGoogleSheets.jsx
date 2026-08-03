@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react'
+import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { api, getAdminToken, getApiBase } from '../../api/client'
 import styles from '../../pages/Admin.module.css'
 
 const ARCHIVE_KEYS = new Set(['users', 'logins', 'purchases', 'homework', 'reviews'])
+
+function StatusMark({ ok = false, children }) {
+  const Icon = ok ? CheckCircle2 : AlertTriangle
+  return <span className={styles.inlineStatus}><Icon size={15} aria-hidden />{children}</span>
+}
 
 export function AdminGoogleSheets({ online, onToast }) {
   const [status, setStatus] = useState(null)
@@ -89,12 +95,14 @@ export function AdminGoogleSheets({ online, onToast }) {
         <>
           <p className={styles.sectionDesc}>
             Статус: {status.enabled
-              ? (status.ok ? '✅ подключено · авто-синхронизация включена' : `⚠️ ${status.error || status.message}`)
-              : `⚠️ ${status.message}`}
+              ? (status.ok
+                ? <StatusMark ok>подключено · авто-синхронизация включена</StatusMark>
+                : <StatusMark>{status.error || status.message}</StatusMark>)
+              : <StatusMark>{status.message}</StatusMark>}
           </p>
           {status.lastFullSync?.at && (
             <p className={styles.sectionDesc}>
-              Последняя синхронизация БД → Drive:{' '}
+              Последняя синхронизация из БД в Drive:{' '}
               <strong>{new Date(status.lastFullSync.at).toLocaleString('ru-RU')}</strong>
             </p>
           )}
@@ -114,14 +122,14 @@ export function AdminGoogleSheets({ online, onToast }) {
                     <strong>{status.folderInspection.folderName || '—'}</strong>
                     {' · '}
                     {status.folderInspection.canAddChildren
-                      ? '✅ робот может создавать файлы'
-                      : '⚠️ робот не может создавать файлы (нужен доступ «Редактор»)'}
+                      ? <StatusMark ok>робот может создавать файлы</StatusMark>
+                      : <StatusMark>робот не может создавать файлы (нужен доступ «Редактор»)</StatusMark>}
                     {' · '}
                     таблиц в папке: {status.folderInspection.existingSpreadsheets ?? 0}
                   </>
                 )
                 : (
-                  <>⚠️ робот не видит папку — расшарьте её на email сервис-аккаунта</>
+                  <StatusMark>робот не видит папку — расшарьте её на email сервис-аккаунта</StatusMark>
                 )}
             </p>
           )}
@@ -129,7 +137,7 @@ export function AdminGoogleSheets({ online, onToast }) {
             <p className={styles.sectionDesc} style={{ color: '#fbbf24', maxWidth: 720 }}>
               <strong>Если Drive пустой:</strong> откройте{' '}
               <a href={status.folderUrl} target="_blank" rel="noreferrer noopener">папку архива</a>
-              {' → Поделиться → добавьте '}
+              {', нажмите «Поделиться» и добавьте '}
               <code>{status.serviceAccountEmail}</code>
               {' с правом «Редактор». Или создайте в папке 5 таблиц: Пользователи, Входы, Покупки, Домашнее задание, Отзывы.'}
             </p>

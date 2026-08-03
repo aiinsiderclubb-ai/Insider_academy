@@ -14,7 +14,7 @@ function parseVideoUrl(url) {
   return { type: 'none' }
 }
 
-export function VideoPlayer({ lesson, title, locked, lockedMessage, unlockAt, onEnded, initialTime = 0, onTimeUpdate }) {
+export function VideoPlayer({ lesson, title, poster, locked, lockedMessage, unlockAt, onEnded, initialTime = 0, onTimeUpdate }) {
   const videoUrl = lesson?.videoUrl
   const parsed = parseVideoUrl(videoUrl)
 
@@ -73,12 +73,16 @@ export function VideoPlayer({ lesson, title, locked, lockedMessage, unlockAt, on
         </video>
       )}
       {parsed.type === 'none' && (
-        <div style={{ textAlign: 'center', padding: 48, color: 'var(--text-muted)' }}>
-          <p style={{ fontWeight: 600, marginBottom: 8 }}>{title || lesson.title}</p>
-          <p style={{ fontSize: '0.875rem' }}>
-            Добавьте ссылку YouTube, Vimeo или .mp4 в поле <code>videoUrl</code> урока.
-          </p>
-          <p style={{ fontSize: '0.875rem', marginTop: 16 }}>Длительность: {lesson.duration}</p>
+        <div style={placeholderStyle}>
+          {poster && <img src={poster} alt="" aria-hidden="true" style={placeholderImageStyle} />}
+          <div style={placeholderScrimStyle} aria-hidden="true" />
+          <div style={placeholderCopyStyle}>
+            <p style={{ fontWeight: 700, marginBottom: 8 }}>{title || lesson.title}</p>
+            <p style={{ fontSize: '0.875rem' }}>
+              Материал урока появится здесь после публикации видео.
+            </p>
+            <p style={{ fontSize: '0.875rem', marginTop: 16 }}>Длительность: {lesson.duration}</p>
+          </div>
         </div>
       )}
     </div>
@@ -87,13 +91,50 @@ export function VideoPlayer({ lesson, title, locked, lockedMessage, unlockAt, on
 }
 
 const wrapStyle = {
-  background: 'var(--bg-card)',
-  borderRadius: '12px',
+  width: '100%',
+  background: '#08080b',
+  borderRadius: '18px',
   overflow: 'hidden',
-  border: '1px solid var(--border)',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  boxShadow: '0 24px 70px rgba(0, 0, 0, 0.34), inset 0 1px rgba(255, 255, 255, 0.035)',
   aspectRatio: '16/9',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: 320,
+  minHeight: 0,
+  position: 'relative',
+}
+
+const placeholderStyle = {
+  position: 'relative',
+  width: '100%',
+  height: '100%',
+  display: 'grid',
+  placeItems: 'center',
+  overflow: 'hidden',
+  color: 'var(--text-secondary)',
+  textAlign: 'center',
+}
+
+const placeholderImageStyle = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  opacity: 0.62,
+}
+
+const placeholderScrimStyle = {
+  position: 'absolute',
+  inset: 0,
+  background: 'linear-gradient(180deg, rgba(7,9,15,.16), rgba(7,9,15,.82))',
+}
+
+const placeholderCopyStyle = {
+  position: 'relative',
+  zIndex: 1,
+  maxWidth: 480,
+  padding: 32,
+  textShadow: '0 2px 18px rgba(0,0,0,.55)',
 }

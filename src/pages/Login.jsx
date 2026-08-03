@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { isTestAccountEmail } from '../data/testAccount'
 import { formatApiError } from '../utils/formatApiError'
-import { setPendingVerifyEmail } from '../utils/pendingVerification'
+import {
+  normalizeReturnPath,
+  setPendingVerifyEmail,
+  setPendingVerifyReturnPath,
+} from '../utils/pendingVerification'
 import { NeuronGlow } from '../components/NeuronGlow'
+import { AuthVisual } from '../components/AuthVisual'
 import { SocialAuthButtons } from '../components/SocialAuthButtons'
 import styles from './Login.module.css'
 
@@ -14,7 +20,8 @@ export function Login() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname || '/cabinet'
+  const returnFromQuery = new URLSearchParams(location.search).get('returnTo')
+  const from = normalizeReturnPath(returnFromQuery || location.state?.from?.pathname, '/cabinet')
 
   useEffect(() => {
     if (user) navigate(from, { replace: true })
@@ -55,7 +62,8 @@ export function Login() {
       if (err?.requiresVerification || err?.data?.requiresVerification) {
         const verifyEmail = err.email || err.data?.email || emailTrim
         setPendingVerifyEmail(verifyEmail)
-        const q = new URLSearchParams({ email: verifyEmail })
+        setPendingVerifyReturnPath(from)
+        const q = new URLSearchParams({ email: verifyEmail, returnTo: from })
         if (err.devCode || err.data?.devCode) q.set('devCode', err.devCode || err.data.devCode)
         navigate(`/verify-email?${q.toString()}`, { replace: true })
         return
@@ -88,20 +96,16 @@ export function Login() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.bg}>
-        <NeuronGlow className={styles.neuron} />
-        <div className={styles.gradientOrb} aria-hidden />
-        <div className={styles.gradientOrb2} aria-hidden />
-      </div>
+      <AuthVisual />
 
       <div className={styles.content}>
         <div className={styles.topBar}>
           <Link to="/" className={styles.backLink}>
-            <span className={styles.backArrow}>←</span>
+            <ArrowLeft className={styles.backArrow} size={17} aria-hidden="true" />
             {t('login.back')}
           </Link>
           <Link
-            to="/register"
+            to={`/register?returnTo=${encodeURIComponent(from)}`}
             state={{ from: location.state?.from }}
             className={styles.registerTopBtn}
           >
@@ -175,7 +179,7 @@ export function Login() {
             <p className={styles.footerAuth}>
               {t('login.noAccount')}{' '}
               <Link
-                to="/register"
+                to={`/register?returnTo=${encodeURIComponent(from)}`}
                 state={{ from: location.state?.from }}
                 className={styles.footerAuthLink}
               >
@@ -183,7 +187,7 @@ export function Login() {
               </Link>
             </p>
 
-            <p className={styles.demoHint}>{t('login.demoHint')}</p>
+            {!import.meta.env.PROD && <p className={styles.demoHint}>{t('login.demoHint')}</p>}
             <Link to="/forgot-password" className={styles.backLink} style={{ marginTop: 12, display: 'inline-block' }}>
               {t('login.forgotPassword')}
             </Link>

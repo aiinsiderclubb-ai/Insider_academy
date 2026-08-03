@@ -100,8 +100,8 @@ export const VAULT_PRODUCTS = [
     coverImage: '/vault/vault-automation.png',
     highlightRu: '50+ workflow',
     highlightEn: '50+ workflows',
-    accent: '#22c55e',
-    gradient: 'linear-gradient(135deg, #16a34a 0%, #06b6d4 100%)',
+    accent: '#8da783',
+    gradient: 'linear-gradient(135deg, #71896a 0%, #8da783 58%, #8b5cf6 100%)',
     categoryRu: 'Автоматизация',
     categoryEn: 'Automation',
     includesRu: [

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { ClipboardCheck, ExternalLink, Flag, Inbox, Star } from 'lucide-react'
 import styles from '../../pages/Admin.module.css'
 
 function hoursSince(iso) {
@@ -44,7 +45,7 @@ export function AdminInbox({
         type: 'review',
         date: r.date,
         title: r.courseId,
-        subtitle: `${r.userName || r.email} · ★${r.rating}`,
+        subtitle: `${r.userName || r.email} · оценка ${r.rating}/5`,
         raw: r,
       }))
     const apps = applications
@@ -76,14 +77,17 @@ export function AdminInbox({
         ДЗ, отзывы и заявки Accelerator в одном списке. Всего в очереди: <strong>{items.length}</strong>
       </p>
       {items.length === 0 ? (
-        <p className={styles.emptyState}>Очередь пуста 🎉</p>
+        <p className={styles.emptyState}><Inbox size={18} aria-hidden /> Очередь пуста</p>
       ) : (
         <ul className={styles.inboxList}>
-          {items.map((item) => (
-            <li key={item.id} className={styles.inboxItem}>
+          {items.map((item) => {
+            const TypeIcon = item.type === 'homework' ? ClipboardCheck : item.type === 'review' ? Star : Flag
+            const typeLabel = item.type === 'homework' ? 'ДЗ' : item.type === 'review' ? 'Отзыв' : 'Отбор'
+            return (
+              <li key={item.id} className={styles.inboxItem}>
               <div className={styles.inboxMeta}>
                 <span className={styles.inboxType}>
-                  {item.type === 'homework' ? '📝 ДЗ' : item.type === 'review' ? '⭐ Отзыв' : '🏁 Отбор'}
+                  <TypeIcon size={14} aria-hidden /> {typeLabel}
                 </span>
                 <SlaBadge date={item.date} />
                 <time className={styles.inboxDate}>{formatDate(item.date)}</time>
@@ -96,12 +100,13 @@ export function AdminInbox({
                 </button>
                 {item.type === 'homework' && item.raw.courseId && (
                   <Link to={`/courses/${item.raw.courseId}`} className={styles.smallBtnGhost} target="_blank" rel="noreferrer">
-                    Курс ↗
+                    Курс <ExternalLink size={13} aria-hidden />
                   </Link>
                 )}
               </div>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       )}
     </section>

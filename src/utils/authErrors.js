@@ -1,7 +1,8 @@
 const API_ERROR_MAP = {
   ru: {
     'Invalid email': 'Введите корректный email.',
-    'Password must be at least 6 characters': 'Пароль должен быть не менее 6 символов.',
+    'Password must be at least 10 characters': 'Пароль должен содержать минимум 10 символов, букву и цифру.',
+    'Password must include a letter and a number': 'Пароль должен содержать минимум 10 символов, букву и цифру.',
     'User already exists': 'Этот email уже зарегистрирован. Войдите или восстановите пароль.',
     'Registration failed': 'Не удалось создать аккаунт. Попробуйте снова.',
     'Invalid email or password': 'Неверный email или пароль.',
@@ -9,7 +10,8 @@ const API_ERROR_MAP = {
   },
   en: {
     'Invalid email': 'Please enter a valid email.',
-    'Password must be at least 6 characters': 'Password must be at least 6 characters.',
+    'Password must be at least 10 characters': 'Use at least 10 characters with a letter and a number.',
+    'Password must include a letter and a number': 'Use at least 10 characters with a letter and a number.',
     'User already exists': 'This email is already registered. Log in or reset your password.',
     'Registration failed': 'Could not create account. Please try again.',
     'Invalid email or password': 'Invalid email or password.',

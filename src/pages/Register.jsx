@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { mapAuthApiError } from '../utils/authErrors'
 import { formatApiError } from '../utils/formatApiError'
-import { getPendingVerifyEmail } from '../utils/pendingVerification'
+import {
+  getPendingVerifyEmail,
+  normalizeReturnPath,
+  setPendingVerifyReturnPath,
+} from '../utils/pendingVerification'
 import { NeuronGlow } from '../components/NeuronGlow'
+import { AuthVisual } from '../components/AuthVisual'
 import { SocialAuthButtons } from '../components/SocialAuthButtons'
 import styles from './Login.module.css'
 
@@ -14,7 +20,8 @@ export function Register() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname || '/onboarding'
+  const returnFromQuery = new URLSearchParams(location.search).get('returnTo')
+  const from = normalizeReturnPath(returnFromQuery || location.state?.from?.pathname, '/onboarding')
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -32,7 +39,9 @@ export function Register() {
     }
     const pending = getPendingVerifyEmail()
     if (pending) {
-      navigate(`/verify-email?email=${encodeURIComponent(pending)}`, { replace: true })
+      setPendingVerifyReturnPath(from)
+      const q = new URLSearchParams({ email: pending, returnTo: from })
+      navigate(`/verify-email?${q.toString()}`, { replace: true })
     }
   }, [user, from, navigate, authLoading])
 
@@ -45,7 +54,8 @@ export function Register() {
   }
 
   const goToVerifyEmail = (emailAddr, devCode) => {
-    const q = new URLSearchParams({ email: emailAddr })
+    setPendingVerifyReturnPath(from)
+    const q = new URLSearchParams({ email: emailAddr, returnTo: from })
     if (devCode) q.set('devCode', devCode)
     navigate(`/verify-email?${q.toString()}`, { replace: true })
   }
@@ -77,7 +87,7 @@ export function Register() {
       setError(t('register.errorPassword'))
       return
     }
-    if (passwordValue.length < 6) {
+    if (passwordValue.length < 10 || !/[A-Za-zА-Яа-яІіЇїЄє]/.test(passwordValue) || !/\d/.test(passwordValue)) {
       setError(t('register.errorPasswordShort'))
       return
     }
@@ -88,7 +98,7 @@ export function Register() {
 
     setLoading(true)
     try {
-      const result = await register(emailTrim, passwordValue.trim(), nameTrim)
+      const result = await register(emailTrim, passwordValue.trim(), nameTrim, from)
       if (result?.requiresVerification) {
         goToVerifyEmail(result.email || emailTrim, result.devCode)
         return
@@ -119,20 +129,16 @@ export function Register() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.bg}>
-        <NeuronGlow className={styles.neuron} />
-        <div className={styles.gradientOrb} aria-hidden />
-        <div className={styles.gradientOrb2} aria-hidden />
-      </div>
+      <AuthVisual />
 
       <div className={styles.content}>
         <div className={styles.topBar}>
           <Link to="/" className={styles.backLink}>
-            <span className={styles.backArrow}>←</span>
+            <ArrowLeft className={styles.backArrow} size={17} aria-hidden="true" />
             {t('login.back')}
           </Link>
           <Link
-            to="/login"
+            to={`/login?returnTo=${encodeURIComponent(from)}`}
             state={{ from: location.state?.from }}
             className={styles.loginTopBtn}
           >
@@ -235,7 +241,7 @@ export function Register() {
             <p className={styles.footerAuth}>
               {t('register.hasAccount')}{' '}
               <Link
-                to="/login"
+                to={`/login?returnTo=${encodeURIComponent(from)}`}
                 state={{ from: location.state?.from }}
                 className={styles.footerAuthLink}
               >

@@ -5,6 +5,10 @@ export function tributeSignature(rawBody, apiKey) {
   return crypto.createHmac('sha256', apiKey).update(body).digest('hex')
 }
 
+export function authHeaders(token) {
+  return { Authorization: `Bearer ${token}` }
+}
+
 export async function apiRegisterAndVerify(request, { email, password, name = 'E2E User' }) {
   const base = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3001/api'
   const reg = await request.post(`${base}/auth/register`, {
@@ -30,4 +34,17 @@ export async function apiRegisterAndVerify(request, { email, password, name = 'E
   if (!verify.ok()) throw new Error(`verify failed: ${await verify.text()}`)
   const { token, user } = await verify.json()
   return { token, user, base }
+}
+
+/** Link a fake Telegram chat id (numeric). Requires GIVEAWAY_TELEGRAM_BYPASS=1 for channel checks. */
+export async function linkTelegramForE2E(request, token, chatId) {
+  const base = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3001/api'
+  const res = await request.post(`${base}/telegram/link`, {
+    headers: authHeaders(token),
+    data: { chatId: String(chatId) },
+  })
+  if (!res.ok()) {
+    throw new Error(`telegram link failed: ${res.status()} ${await res.text()}`)
+  }
+  return res.json()
 }

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowLeft, LogOut, Monitor, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { api, setToken } from '../api/client'
@@ -152,7 +153,7 @@ export function AccountSettings() {
       showMsg(t('account.passwordMismatch'), true)
       return
     }
-    if (newPassword.length < 6) {
+    if (newPassword.length < 10 || !/[A-Za-zА-Яа-яІіЇїЄє]/.test(newPassword) || !/\d/.test(newPassword)) {
       showMsg(t('account.passwordShort'), true)
       return
     }
@@ -177,9 +178,19 @@ export function AccountSettings() {
       <div className={styles.container}>
         <div className={styles.headerRow}>
           <div>
-            <Link to="/cabinet" className={styles.backLink}>← {t('account.backToCabinet')}</Link>
+            <Link to="/cabinet" className={styles.backLink}>
+              <ArrowLeft size={16} aria-hidden="true" />
+              {t('account.backToCabinet')}
+            </Link>
             <h1 className={styles.title}>{t('account.title')}</h1>
             <p className={styles.subtitle}>{t('account.subtitle')}</p>
+          </div>
+          <div className={styles.headerIdentity}>
+            <span className={styles.headerAvatar}>{initial.toUpperCase()}</span>
+            <span>
+              <strong>{user?.name || user?.email}</strong>
+              <small>{user?.emailVerified ? (lang === 'ru' ? 'Профиль подтверждён' : 'Verified profile') : (lang === 'ru' ? 'Требуется подтверждение' : 'Verification required')}</small>
+            </span>
           </div>
         </div>
 
@@ -188,6 +199,13 @@ export function AccountSettings() {
             {error || success}
           </div>
         )}
+
+        <nav className={styles.sectionNav} aria-label={lang === 'ru' ? 'Разделы профиля' : 'Profile sections'}>
+          <a href="#profile">{lang === 'ru' ? 'Профиль' : 'Profile'}</a>
+          <a href="#email">Email</a>
+          <a href="#security">{lang === 'ru' ? 'Безопасность' : 'Security'}</a>
+          <a href="#telegram">Telegram</a>
+        </nav>
 
         {needsVerification && (
           <section className={`${styles.card} ${styles.verifyCard}`} id="verify-email">
@@ -248,7 +266,7 @@ export function AccountSettings() {
         )}
 
         <div className={styles.grid}>
-          <section className={styles.card}>
+          <section className={`${styles.card} ${styles.profileCard}`} id="profile">
             <h2 className={styles.cardTitle}>{t('account.profileSection')}</h2>
             <div className={styles.avatarBlock}>
               <button type="button" className={styles.avatarBtn} onClick={() => fileRef.current?.click()} disabled={loading}>
@@ -296,7 +314,7 @@ export function AccountSettings() {
             </form>
           </section>
 
-          <section className={styles.card}>
+          <section className={styles.card} id="email">
             <h2 className={styles.cardTitle}>{t('account.emailSection')}</h2>
             <form onSubmit={handleEmailSave} className={styles.form}>
               <label className={styles.label}>
@@ -311,7 +329,7 @@ export function AccountSettings() {
             </form>
           </section>
 
-          <section className={styles.card}>
+          <section className={styles.card} id="security">
             <h2 className={styles.cardTitle}>{t('account.passwordSection')}</h2>
             <p className={user?.passwordChangedAt ? styles.passwordStatusChanged : styles.passwordStatusDefault}>
               {user?.passwordChangedAt
@@ -325,11 +343,11 @@ export function AccountSettings() {
               </label>
               <label className={styles.label}>
                 <span>{t('account.newPassword')}</span>
-                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={styles.input} required minLength={6} autoComplete="new-password" />
+                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={styles.input} required minLength={10} autoComplete="new-password" />
               </label>
               <label className={styles.label}>
                 <span>{t('account.confirmPassword')}</span>
-                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={styles.input} required minLength={6} autoComplete="new-password" />
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={styles.input} required minLength={10} autoComplete="new-password" />
               </label>
               <button type="submit" className={styles.btnPrimary} disabled={loading}>{t('account.savePassword')}</button>
               <Link to="/forgot-password" className={styles.linkMuted}>{t('account.forgotPassword')}</Link>
@@ -339,13 +357,17 @@ export function AccountSettings() {
           <section className={styles.card} id="telegram">
             <h2 className={styles.cardTitle}>{t('account.telegramSection')}</h2>
             <p className={styles.hint}>{t('account.telegramHint')}</p>
-            <TelegramConnect lang={lang} personalId={user?.personalId} />
+            <TelegramConnect lang={lang} personalId={user?.personalId} variant="settings" />
           </section>
 
-          <section className={styles.card}>
+          <section className={`${styles.card} ${styles.sessionCard}`}>
+            <div className={styles.sessionIcon}><Monitor size={22} aria-hidden="true" /></div>
+            <p className={styles.sessionEyebrow}><ShieldCheck size={14} aria-hidden="true" />{lang === 'ru' ? 'Текущая сессия защищена' : 'Current session is secure'}</p>
             <h2 className={styles.cardTitle}>{t('account.dangerSection')}</h2>
             <p className={styles.hint}>{t('account.logoutHint')}</p>
-            <button type="button" className={styles.btnDanger} onClick={logout}>{t('nav.logout')}</button>
+            <button type="button" className={styles.btnDanger} onClick={logout}>
+              {t('nav.logout')}<LogOut size={16} aria-hidden="true" />
+            </button>
           </section>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { TrendingDown } from 'lucide-react'
 import styles from '../../pages/Admin.module.css'
 
 function lastNDays(n = 14) {
@@ -19,11 +20,6 @@ function mapByDay(rows, valueKey = 'count') {
 
 function MiniLineChart({ data, label, color = 'var(--glow-purple)', suffix = '' }) {
   const max = Math.max(...data.map((d) => d.value), 1)
-  const points = data.map((d, i) => {
-    const x = (i / Math.max(data.length - 1, 1)) * 100
-    const y = 100 - (d.value / max) * 100
-    return `${x},${y}`
-  }).join(' ')
 
   return (
     <div className={styles.chartBlock}>
@@ -31,10 +27,16 @@ function MiniLineChart({ data, label, color = 'var(--glow-purple)', suffix = '' 
         <span>{label}</span>
         <strong>{data.reduce((s, d) => s + d.value, 0).toLocaleString('ru-RU')}{suffix}</strong>
       </div>
-      <svg viewBox="0 0 100 40" className={styles.miniChart} preserveAspectRatio="none">
-        <polyline fill="none" stroke={color} strokeWidth="2" points={points} />
-        <polyline fill={`${color}33`} stroke="none" points={`0,40 ${points} 100,40`} />
-      </svg>
+      <div className={styles.miniChart} role="img" aria-label={`${label}: динамика за 14 дней`}>
+        {data.map((item) => (
+          <span
+            key={item.day}
+            className={styles.miniBar}
+            style={{ height: `${Math.max((item.value / max) * 100, 3)}%`, backgroundColor: color }}
+            title={`${item.day}: ${item.value}${suffix}`}
+          />
+        ))}
+      </div>
     </div>
   )
 }
@@ -46,7 +48,7 @@ function FunnelStep({ label, value, pct, widthPct }) {
         <span>{label}</span>
         <strong>{value.toLocaleString('ru-RU')}</strong>
       </div>
-      {pct != null && <span className={styles.funnelPct}>{pct}% →</span>}
+      {pct != null && <span className={styles.funnelPct}>{pct}% <TrendingDown size={13} aria-hidden /></span>}
     </div>
   )
 }
@@ -92,9 +94,9 @@ export function AdminCharts({ charts, analytics, registrations, purchases }) {
     <section className={styles.chartsSection}>
       <h3 className={styles.panelTitle}>Аналитика за 14 дней</h3>
       <div className={styles.chartsGrid}>
-        <MiniLineChart data={visitData} label="Визиты" color="#818cf8" />
-        <MiniLineChart data={regData} label="Регистрации" color="#c084fc" />
-        <MiniLineChart data={revenueData} label="Выручка" color="#34d399" suffix=" €" />
+        <MiniLineChart data={visitData} label="Визиты" color="var(--accent-soft)" />
+        <MiniLineChart data={regData} label="Регистрации" color="var(--accent-hot)" />
+        <MiniLineChart data={revenueData} label="Выручка" color="var(--success)" suffix=" €" />
       </div>
 
       <h3 className={styles.panelTitle} style={{ marginTop: 24 }}>Воронка конверсии</h3>

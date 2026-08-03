@@ -218,7 +218,7 @@
   },
   "resetPassword": {
     "title": "New password",
-    "subtitle": "Choose a new password (at least 6 characters).",
+    "subtitle": "Choose a password with 10+ characters, a letter, and a number.",
     "newPassword": "New password",
     "confirmPassword": "Confirm password",
     "submit": "Save password",
@@ -228,7 +228,7 @@
     "requestAgain": "Request a new link",
     "noToken": "This reset link is invalid. Please request password reset again.",
     "mismatch": "Passwords do not match.",
-    "short": "Password must be at least 6 characters.",
+    "short": "Use at least 10 characters with a letter and a number.",
     "offline": "Reset requires the API server.",
     "error": "Could not reset password. The link may have expired."
   },
@@ -249,7 +249,7 @@
     "errorEmail": "Please enter your email.",
     "errorEmailInvalid": "Please enter a valid email.",
     "errorPassword": "Please enter a password.",
-    "errorPasswordShort": "Password must be at least 6 characters.",
+    "errorPasswordShort": "Use at least 10 characters with a letter and a number.",
     "errorPasswordMatch": "Passwords do not match.",
     "errorExists": "This email is already registered. Log in or reset your password.",
     "errorGeneric": "Registration failed. Please try again.",
@@ -261,7 +261,9 @@
     "errorCodeLength": "Enter all 6 digits.",
     "successTitle": "Registration successful!",
     "successSubtitle": "Your account is verified. Welcome to AI Insider Academy.",
-    "successRedirect": "Opening your dashboard…"
+    "successRedirect": "Opening your dashboard…",
+    "successRedirectGiveaway": "Taking you back to the giveaway…",
+    "successRedirectGeneric": "Taking you back to where you started…"
   },
   "verifyEmail": {
     "title": "Verify your email",
@@ -329,7 +331,7 @@
     "telegramSaved": "Telegram connected.",
     "telegramOffline": "Telegram linking requires the API server.",
     "passwordMismatch": "Passwords do not match.",
-    "passwordShort": "Password must be at least 6 characters.",
+    "passwordShort": "Use at least 10 characters with a letter and a number.",
     "errorGeneric": "Could not save changes."
   }
 }

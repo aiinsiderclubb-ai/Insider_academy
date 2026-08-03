@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
 import { api } from '../../api/client'
 import styles from '../../pages/Admin.module.css'
 
@@ -30,10 +31,16 @@ export function AdminEmail({ emailStatus, online, onToast }) {
         Настраивается на <strong>Render</strong> (сервис API), не в интерфейсе сайта.
       </p>
       <ul className={styles.settingsList}>
-        <li>SMTP: {emailStatus?.enabled ? '✅ включён' : '❌ не настроен (показывается ссылка сброса на экране)'}</li>
+        <li className={styles.inlineStatus}>
+          {emailStatus?.enabled ? <CheckCircle2 size={15} aria-hidden /> : <XCircle size={15} aria-hidden />}
+          SMTP: {emailStatus?.enabled ? 'включён' : 'не настроен (показывается ссылка сброса на экране)'}
+        </li>
         <li>Отправитель: <code>{emailStatus?.from || '—'}</code></li>
         <li>Сервер: {emailStatus?.smtpHost ? <code>{emailStatus.smtpHost}:{emailStatus.smtpPort}</code> : '—'}</li>
-        <li>Дайджест админу: {emailStatus?.adminEmail ? `✅ ${emailStatus.adminEmail}` : '⚠️ задайте ADMIN_EMAIL на Render'}</li>
+        <li className={styles.inlineStatus}>
+          {emailStatus?.adminEmail ? <CheckCircle2 size={15} aria-hidden /> : <AlertTriangle size={15} aria-hidden />}
+          Дайджест админу: {emailStatus?.adminEmail || 'задайте ADMIN_EMAIL на Render'}
+        </li>
       </ul>
 
       {emailStatus?.enabled ? (

@@ -19,13 +19,14 @@ jobs:
       TRIBUTE_API_KEY: ci-tribute-test-key-for-hmac-signing
       TRIBUTE_WEBHOOK_SKIP_VERIFY: '0'
       TRIBUTE_PRODUCT_MAP: '{"ai-start":65858}'
+      PRELAUNCH_MODE: '1'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
           cache-dependency-path: |
             package-lock.json
@@ -36,6 +37,12 @@ jobs:
 
       - name: Production build (Vite)
         run: npm run build
+
+      - name: Server integration tests
+        run: npm test --prefix server
+
+      - name: Server production dependency audit
+        run: npm audit --omit=dev --audit-level=high --prefix server
 
       - name: Install Playwright
         run: npx playwright install chromium --with-deps

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AlertTriangle, Check, CheckCircle2, FileUp, PackageOpen, RefreshCw, UserRound, X } from 'lucide-react'
 import { api } from '../../api/client'
 import { courses } from '../../data/courses'
 import styles from '../../pages/Admin.module.css'
@@ -33,6 +34,11 @@ const AUDIT_ACTION_OPTIONS = [
   { value: 'telegram.broadcast', label: 'Telegram' },
 ]
 
+function ToolStatus({ ok = false, children }) {
+  const Icon = ok ? CheckCircle2 : AlertTriangle
+  return <span className={styles.inlineStatus}><Icon size={15} aria-hidden />{children}</span>
+}
+
 function formatAction(action) {
   const map = {
     'promo.create': 'Создан промокод',
@@ -58,6 +64,9 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
   const [flags, setFlags] = useState({})
   const [audit, setAudit] = useState([])
   const [products, setProducts] = useState([])
+  const [productStatusCounts, setProductStatusCounts] = useState({})
+  const [productFilter, setProductFilter] = useState('all')
+  const [newProduct, setNewProduct] = useState({ titleRu: '', slug: '', sku: '', priceEur: 0, productType: 'marketplace' })
   const [payouts, setPayouts] = useState([])
   const [sheetsStatus, setSheetsStatus] = useState(null)
   const [loadErrors, setLoadErrors] = useState({})
@@ -98,7 +107,10 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
       if (key === 'promos') setPromos(data)
       if (key === 'flags') setFlags(data)
       if (key === 'audit') setAudit(data)
-      if (key === 'products') setProducts(data.products || [])
+      if (key === 'products') {
+        setProducts(data.products || [])
+        setProductStatusCounts(data.statusCounts || {})
+      }
       if (key === 'payouts') setPayouts(data)
       if (key === 'sheets') setSheetsStatus(data)
     })
@@ -162,18 +174,61 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
     }
   }
 
-  const toggleProduct = async (product) => {
+  const saveProduct = async (product) => {
     setProductBusy(product.id)
     try {
-      await api.adminUpdateMarketplaceProduct(product.id, { active: !product.active })
-      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, active: !p.active } : p)))
-      showToast(product.active ? 'Продукт скрыт' : 'Продукт включён')
+      await api.adminUpdateMarketplaceProduct(product.id, {
+        titleRu: product.titleRu,
+        titleEn: product.titleEn,
+        slug: product.slug,
+        sku: product.sku,
+        shortRu: product.shortRu,
+        priceEur: Number(product.priceEur || 0),
+        status: product.status,
+        productType: product.productType,
+      })
+      showToast('Продукт сохранён')
+      await load()
     } catch (err) {
       showToast(err.message, 'error')
     } finally {
       setProductBusy(null)
     }
   }
+
+  const createProduct = async () => {
+    if (!newProduct.titleRu.trim() || !newProduct.slug.trim() || !newProduct.sku.trim()) {
+      return showToast('Нужны название, slug и SKU', 'error')
+    }
+    try {
+      await api.adminCreateMarketplaceProduct(newProduct)
+      setNewProduct({ titleRu: '', slug: '', sku: '', priceEur: 0, productType: 'marketplace' })
+      showToast('Draft создан')
+      await load()
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
+  }
+
+  const uploadProductAsset = async (product, file) => {
+    if (!file) return
+    setProductBusy(product.id)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      form.append('label', `Release ${Number(product.assets?.[0]?.version || 0) + 1}`)
+      form.append('changelog', 'Uploaded from admin catalog')
+      await api.adminUploadMarketplaceAsset(product.id, form)
+      showToast('Новая версия asset загружена')
+      await load()
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setProductBusy(null)
+    }
+  }
+
+  const visibleProducts = products.filter((p) => productFilter === 'all' || p.status === productFilter)
 
   const sendBroadcast = async () => {
     if (!broadcastText.trim()) return showToast('Введите текст сообщения', 'error')
@@ -199,7 +254,8 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
     <div>
       <div className={styles.courseActions} style={{ marginBottom: 16 }}>
         <button type="button" className={styles.smallBtn} disabled={loading} onClick={load}>
-          {loading ? 'Обновление…' : '↻ Обновить данные'}
+          {!loading && <RefreshCw size={14} aria-hidden />}
+          {loading ? 'Обновление…' : 'Обновить данные'}
         </button>
         {onTabChange && (
           <button
@@ -207,7 +263,8 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
             className={styles.quickBtn}
             onClick={() => onTabChange('registrations')}
           >
-            👤 Удалить пользователя → Регистрации
+            <UserRound size={15} aria-hidden />
+            Удалить пользователя · Регистрации
           </button>
         )}
         {Object.keys(loadErrors).length > 0 && (
@@ -224,8 +281,10 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
             <>
               <p className={styles.sectionDesc} style={{ margin: '0 0 8px' }}>
                 {sheetsStatus.enabled
-                  ? (sheetsStatus.ok ? '✅ Подключено · события пишутся автоматически' : `⚠️ ${sheetsStatus.error || sheetsStatus.message}`)
-                  : `⚠️ ${sheetsStatus.message}`}
+                  ? (sheetsStatus.ok
+                    ? <ToolStatus ok>Подключено · события пишутся автоматически</ToolStatus>
+                    : <ToolStatus>{sheetsStatus.error || sheetsStatus.message}</ToolStatus>)
+                  : <ToolStatus>{sheetsStatus.message}</ToolStatus>}
               </p>
               {sheetsStatus.folderUrl && (
                 <a href={sheetsStatus.folderUrl} target="_blank" rel="noreferrer noopener" className={styles.inlineBtn}>
@@ -412,29 +471,61 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
           )}
         </section>
 
-        <section className={styles.toolCard} style={{ gridColumn: 'span 2' }}>
-          <h3>Marketplace — продукты</h3>
-          <p className={styles.sectionDesc}>Включите или скройте продукты на витрине Marketplace.</p>
-          {products.length === 0 ? (
+        <section className={styles.toolCard} style={{ gridColumn: '1 / -1' }}>
+          <div className={styles.appPanelHeader}>
+            <div>
+              <h3>Marketplace · каталог и assets</h3>
+              <p className={styles.sectionDesc}>Draft → review → published → archived. Публикация требует активный файл.</p>
+            </div>
+            <PackageOpen size={22} aria-hidden />
+          </div>
+          <div className={styles.courseActions} style={{ marginBottom: 14 }}>
+            {['all', 'draft', 'review', 'published', 'archived'].map((status) => (
+              <button key={status} type="button" className={productFilter === status ? styles.primaryBtn : styles.smallBtn} onClick={() => setProductFilter(status)}>
+                {status} · {status === 'all' ? products.length : (productStatusCounts[status] || 0)}
+              </button>
+            ))}
+          </div>
+          <div className={styles.inlineForm}>
+            <input placeholder="Название" value={newProduct.titleRu} onChange={(e) => setNewProduct({ ...newProduct, titleRu: e.target.value })} />
+            <input placeholder="slug" value={newProduct.slug} onChange={(e) => setNewProduct({ ...newProduct, slug: e.target.value })} />
+            <input placeholder="SKU" value={newProduct.sku} onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })} />
+            <input type="number" min="0" step="1" placeholder="EUR" value={newProduct.priceEur} onChange={(e) => setNewProduct({ ...newProduct, priceEur: Number(e.target.value) })} />
+            <select className={styles.statusSelect} value={newProduct.productType} onChange={(e) => setNewProduct({ ...newProduct, productType: e.target.value })}>
+              <option value="marketplace">Marketplace</option><option value="vault">Vault</option>
+            </select>
+            <button type="button" className={styles.primaryBtn} onClick={createProduct}>Создать draft</button>
+          </div>
+          {visibleProducts.length === 0 ? (
             <p className={styles.drawerMuted}>{loadErrors.products || 'Нет продуктов'}</p>
           ) : (
             <ul className={styles.marketplaceAdminList}>
-              {products.map((p) => (
-                <li key={p.id} className={styles.marketplaceAdminRow}>
-                  <div>
-                    <strong>{p.titleRu}</strong>
-                    <span className={styles.drawerMuted}> · €{p.priceEur}</span>
-                    {!p.active && <span className={styles.slaWarn} style={{ marginLeft: 8 }}>скрыт</span>}
+              {visibleProducts.map((p) => (
+                <li key={p.id} className={styles.marketplaceAdminRow} style={{ alignItems: 'stretch', flexDirection: 'column', padding: '16px 0' }}>
+                  <div className={styles.inlineForm} style={{ margin: 0 }}>
+                    <input aria-label="Название" value={p.titleRu || ''} onChange={(e) => setProducts((list) => list.map((x) => x.id === p.id ? { ...x, titleRu: e.target.value } : x))} />
+                    <input aria-label="Slug" value={p.slug || ''} onChange={(e) => setProducts((list) => list.map((x) => x.id === p.id ? { ...x, slug: e.target.value } : x))} />
+                    <input aria-label="SKU" value={p.sku || ''} onChange={(e) => setProducts((list) => list.map((x) => x.id === p.id ? { ...x, sku: e.target.value } : x))} />
+                    <input aria-label="Цена EUR" type="number" min="0" value={p.priceEur ?? 0} onChange={(e) => setProducts((list) => list.map((x) => x.id === p.id ? { ...x, priceEur: Number(e.target.value) } : x))} />
+                    <select className={styles.statusSelect} value={p.status} onChange={(e) => setProducts((list) => list.map((x) => x.id === p.id ? { ...x, status: e.target.value } : x))}>
+                      <option value="draft">draft</option><option value="review">review</option><option value="published">published</option><option value="archived">archived</option>
+                    </select>
+                    <button type="button" className={styles.primaryBtn} disabled={productBusy === p.id} onClick={() => saveProduct(p)}>Сохранить</button>
                   </div>
-                  <label className={styles.flagRow}>
-                    <input
-                      type="checkbox"
-                      checked={Boolean(p.active)}
-                      disabled={productBusy === p.id}
-                      onChange={() => toggleProduct(p)}
-                    />
-                    На сайте
-                  </label>
+                  <textarea className={styles.input} rows={2} aria-label="Краткое описание" value={p.shortRu || ''} onChange={(e) => setProducts((list) => list.map((x) => x.id === p.id ? { ...x, shortRu: e.target.value } : x))} />
+                  <div className={styles.courseActions}>
+                    <label className={styles.smallBtn} style={{ cursor: 'pointer' }}>
+                      <FileUp size={14} aria-hidden /> Загрузить новую версию
+                      <input type="file" hidden accept=".zip,.pdf,.md,.json,.xlsx,.csv,.png,.jpg,.jpeg" onChange={(e) => uploadProductAsset(p, e.target.files?.[0])} />
+                    </label>
+                    <span className={styles.drawerMuted}>{p.productType} · €{p.priceEur} · assets {p.assetCount || 0} · downloads {p.downloads || 0}</span>
+                  </div>
+                  {(p.assets || []).map((asset) => (
+                    <div key={asset.id} className={styles.marketplaceAdminRow}>
+                      <span>v{asset.version} · {asset.label} · {asset.file_name} · {Math.ceil(Number(asset.file_size || 0) / 1024)} KB</span>
+                      <span className={asset.status === 'active' ? styles.tgBadgeOn : styles.drawerMuted}>{asset.status}</span>
+                    </div>
+                  ))}
                 </li>
               ))}
             </ul>
@@ -479,7 +570,7 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
                         disabled={payoutBusy === p.id}
                         onClick={() => updatePayoutStatus(p.id, 'paid')}
                       >
-                        ✓ Выплачено
+                        <Check size={14} aria-hidden /> Выплачено
                       </button>
                       <button
                         type="button"
@@ -487,7 +578,7 @@ export function AdminToolsPanel({ online, showToast, reviews = [], onReviewsUpda
                         disabled={payoutBusy === p.id}
                         onClick={() => updatePayoutStatus(p.id, 'cancelled')}
                       >
-                        ✕ Отменить
+                        <X size={14} aria-hidden /> Отменить
                       </button>
                     </span>
                   )}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowRight, Check, Gift, Send, Share2, Sparkles, Ticket, Trophy, UserPlus, Users } from 'lucide-react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
@@ -11,21 +12,19 @@ import { getGiveaway } from '../data/giveaways'
 import {
   buildParticipantAvatars,
   buildReferralLink,
-  bumpReferral,
   captureReferralFromUrl,
   CHANCE_REFERRAL,
   CHANCE_SHARE,
   CHANCE_TELEGRAM,
-  computeChances,
   consumePendingReferral,
-  getChanceState,
+  getPendingReferral,
   getReferralCode,
-  markShared,
   maxPossibleChances,
   userInitials,
 } from '../data/giveawayChances'
 import { UiIcon } from '../components/UiIcon'
 import { getTelegramPostEmbedId } from '../utils/telegramPost'
+import { localizePath } from '../routing/locale'
 import styles from './Giveaway.module.css'
 
 function pad2(n) {
@@ -110,19 +109,36 @@ function PrizeTiltCard({ giveaway, lang }) {
       }}
     >
       <div className={styles.prizeTiltInner}>
-        <span className={styles.prizeLogo}>{giveaway.logoText || giveaway.brand}</span>
-        <strong className={styles.prizeName}>
-          {ru ? giveaway.prizeRu : giveaway.prizeEn}
-          {' '}
-          {ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}
-        </strong>
-        <span className={styles.prizeWinners}>
-          {giveaway.winnersCount}
-          {' '}
-          {ru
-            ? (giveaway.winnersCount === 1 ? 'победитель' : 'победителей')
-            : (giveaway.winnersCount === 1 ? 'winner' : 'winners')}
-        </span>
+        <img
+          className={styles.prizeMentor}
+          src="/design/mentor-giveaway.webp"
+          alt=""
+          aria-hidden="true"
+        />
+        <div className={styles.prizeOrbit} aria-hidden>
+          <span className={styles.prizeOrbitDot} />
+        </div>
+        <div className={styles.prizeAccessCard} aria-hidden>
+          <span>CLAUDE</span>
+          <strong>PRO</strong>
+          <small>{ru ? '30 ДНЕЙ ДОСТУПА' : '30 DAYS ACCESS'}</small>
+        </div>
+        <div className={styles.prizeCaption}>
+          <span className={styles.prizeDrop}>AI INSIDER · PRIVATE DROP 01</span>
+          <span className={styles.prizeLogo}>{giveaway.logoText || giveaway.brand}</span>
+          <strong className={styles.prizeName}>
+            {ru ? giveaway.prizeRu : giveaway.prizeEn}
+            {' '}
+            {ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}
+          </strong>
+          <span className={styles.prizeWinners}>
+            {giveaway.winnersCount}
+            {' '}
+            {ru
+              ? (giveaway.winnersCount === 1 ? 'победитель' : 'победителей')
+              : (giveaway.winnersCount === 1 ? 'winner' : 'winners')}
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -131,7 +147,13 @@ function PrizeTiltCard({ giveaway, lang }) {
 function Accordion({ items, idPrefix, numbered = false }) {
   const [open, setOpen] = useState(numbered ? 0 : null)
   return (
-    <div className={`${styles.accordion} ${numbered ? styles.accordionRules : ''}`}>
+    <div
+      className={[
+        styles.accordion,
+        numbered ? styles.accordionRules : '',
+        idPrefix === 'faq' ? styles.accordionFaq : '',
+      ].filter(Boolean).join(' ')}
+    >
       {items.map((item, i) => {
         const key = `${idPrefix}-${i}`
         const isOpen = open === i
@@ -186,27 +208,21 @@ function GiveawayDetail({ giveaway, lang }) {
   const countdown = useCountdown(giveaway.endsAt)
   const embedId = useMemo(() => getTelegramPostEmbedId(giveaway.telegramPostUrl), [giveaway.telegramPostUrl])
   const faq = (ru ? giveaway.faqRu : giveaway.faqEn) || []
-  const redirectPath = `/giveaway/${giveaway.slug}`
+  const redirectPath = localizePath(`/giveaway/${giveaway.slug}`, lang)
 
   const [state, setState] = useState(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [apiOffline, setApiOffline] = useState(false)
-  const [bonus, setBonus] = useState({ shared: false, referralCount: 0 })
   const [showConfetti, setShowConfetti] = useState(false)
   const confettiShown = useRef(false)
 
-  const userKey = user?.email || user?.id || ''
   const refCode = getReferralCode(user)
   const referralLink = buildReferralLink(giveaway.slug, refCode)
 
   useEffect(() => {
-    captureReferralFromUrl()
-  }, [searchParams])
-
-  useEffect(() => {
-    setBonus(getChanceState(giveaway.slug, userKey))
-  }, [giveaway.slug, userKey])
+    captureReferralFromUrl(giveaway.slug)
+  }, [giveaway.slug, searchParams])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -231,16 +247,29 @@ function GiveawayDetail({ giveaway, lang }) {
 
   const entered = Boolean(state?.entered)
   const count = state?.participantCount ?? 0
-  const chances = computeChances({
-    entered,
-    channelSubscribed: Boolean(state?.channelSubscribed),
-    shared: bonus.shared,
-    referralCount: bonus.referralCount,
-  })
+  const bonus = {
+    shared: Boolean(state?.shared),
+    referralCount: Math.max(0, Number(state?.referralCount) || 0),
+  }
+  const chances = entered ? Math.max(0, Number(state?.chances) || 0) : 0
   const chanceCap = Math.max(maxPossibleChances(bonus.referralCount), chances || 1)
   const avatars = buildParticipantAvatars(count, entered ? userInitials(user) : '')
-  const isEnded = giveaway.status === 'ended' || countdown?.done
-  const winner = giveaway.winner
+  const serverEnded = state?.status === 'ended'
+    || (state?.endsAt && new Date(state.endsAt).getTime() < Date.now())
+  const isEnded = giveaway.status === 'ended' || countdown?.done || serverEnded || Boolean(state?.result)
+  const winner = (() => {
+    if (state?.result?.winnerTelegramUsername) {
+      const name = state.result.winnerTelegramUsername
+      const handle = String(name).replace(/^@/, '')
+      return {
+        name,
+        initials: handle.slice(0, 2).toUpperCase() || '★',
+        publishedAt: state.result.publishedAt || null,
+        participantCount: state.result.participantCount,
+      }
+    }
+    return giveaway.winner || null
+  })()
 
   const triggerConfetti = () => {
     if (confettiShown.current) return
@@ -285,13 +314,14 @@ function GiveawayDetail({ giveaway, lang }) {
           return
         }
       }
-      const res = await api.enterGiveaway(giveaway.slug)
-      const pendingRef = consumePendingReferral()
-      if (pendingRef && pendingRef !== refCode) {
-        bumpReferral(giveaway.slug, pendingRef)
-      }
+      const pendingRef = getPendingReferral(giveaway.slug)
+      const res = await api.enterGiveaway(giveaway.slug, {
+        referralCode: pendingRef && pendingRef !== refCode ? pendingRef : undefined,
+      })
+      consumePendingReferral(giveaway.slug)
       setState((prev) => ({
         ...prev,
+        ...res,
         entered: true,
         participantCount: res.participantCount ?? ((prev?.participantCount || 0) + 1),
         channelSubscribed: true,
@@ -323,9 +353,18 @@ function GiveawayDetail({ giveaway, lang }) {
       } catch (__) {}
     }
     if (entered) {
-      const next = markShared(giveaway.slug, userKey)
-      setBonus(next)
-      showToast(ru ? '+2 шанса за шаринг' : '+2 chances for sharing', 'success')
+      try {
+        const res = await api.recordGiveawayShare(giveaway.slug)
+        setState((prev) => ({ ...prev, ...res }))
+        showToast(
+          res.alreadyRecorded
+            ? (ru ? 'Шансы за публикацию уже начислены' : 'Share chances already recorded')
+            : (ru ? '+2 шанса за публикацию' : '+2 chances for sharing'),
+          'success',
+        )
+      } catch (err) {
+        showToast(err.data?.errorRu || err.message, 'error')
+      }
     }
   }
 
@@ -363,17 +402,32 @@ function GiveawayDetail({ giveaway, lang }) {
               {ru ? '← Розыгрыши и события' : '← Giveaways & events'}
             </Link>
 
-            {!isEnded && (
-              <span className={styles.liveBadge}>
-                <span className={styles.liveDot} aria-hidden />
-                {ru ? giveaway.tagRu : giveaway.tagEn}
-              </span>
-            )}
+            <div className={styles.heroBadges}>
+              <span className={styles.dropBadge}><Sparkles size={13} aria-hidden /> AI INSIDER DROP</span>
+              {!isEnded && (
+                <span className={styles.liveBadge}>
+                  <span className={styles.liveDot} aria-hidden />
+                  {ru ? giveaway.tagRu : giveaway.tagEn}
+                </span>
+              )}
+            </div>
             {isEnded && (
               <span className={styles.endedBadge}>{ru ? 'Завершён' : 'Ended'}</span>
             )}
 
-            <h1 className={styles.heroTitle}>{ru ? giveaway.headlineRu : giveaway.headlineEn}</h1>
+            <h1 className={styles.heroTitle}>
+              {giveaway.slug === 'claude-pro' ? (
+                <>
+                  {ru ? 'Выиграйте' : 'Win'}
+                  {' '}
+                  <span className={styles.heroTitleAccent}>Claude Pro</span>
+                </>
+              ) : (ru ? giveaway.headlineRu : giveaway.headlineEn)}
+            </h1>
+            <p className={styles.heroPrizeDetail}>
+              {ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}
+              <span>{ru ? ' · без оплаты · 1 победитель' : ' · free entry · 1 winner'}</span>
+            </p>
             <p className={styles.heroLead}>{ru ? giveaway.leadRu : giveaway.leadEn}</p>
 
             <div className={styles.participantsRow}>
@@ -394,6 +448,7 @@ function GiveawayDetail({ giveaway, lang }) {
             {!isEnded && !entered && (
               <button type="button" className={styles.btnPrimary} onClick={scrollToCta}>
                 {ru ? 'Участвовать бесплатно' : 'Enter for free'}
+                <ArrowRight size={18} aria-hidden />
               </button>
             )}
           </div>
@@ -405,7 +460,13 @@ function GiveawayDetail({ giveaway, lang }) {
       <div className={styles.container}>
         {countdown && !countdown.done && (
           <section className={styles.timerSection} aria-label={ru ? 'До итогов' : 'Until results'}>
-            <p className={styles.timerLabel}>{ru ? 'до итогов' : 'until results'}</p>
+            <div className={styles.timerIntro}>
+              <span className={styles.timerPulse}><Gift size={18} aria-hidden /></span>
+              <div>
+                <p className={styles.timerLabel}>{ru ? 'LIVE DRAW · ДО ИТОГОВ' : 'LIVE DRAW · UNTIL RESULTS'}</p>
+                <strong>{ru ? 'Победителя объявим в Telegram' : 'Winner announced on Telegram'}</strong>
+              </div>
+            </div>
             <div className={styles.flipRow} role="timer">
               <FlipUnit value={countdown.days} label={ru ? 'дн' : 'd'} />
               <span className={styles.flipSep}>:</span>
@@ -426,6 +487,13 @@ function GiveawayDetail({ giveaway, lang }) {
               <div>
                 <strong>{winner.name}</strong>
                 <p>{ru ? giveaway.prizeRu : giveaway.prizeEn}</p>
+                {winner.participantCount != null && (
+                  <p className={styles.winnerMeta}>
+                    {ru
+                      ? `Среди ${formatCount(winner.participantCount)} участников`
+                      : `Among ${formatCount(winner.participantCount)} participants`}
+                  </p>
+                )}
               </div>
             </div>
             <Link to="/events" className={styles.btnPrimary}>
@@ -437,20 +505,25 @@ function GiveawayDetail({ giveaway, lang }) {
         {!isEnded && (
           <ScrollReveal>
             <section className={styles.section}>
+              <p className={styles.sectionEyebrow}>{ru ? 'ТРИ ШАГА · ОДИН ПРИЗ' : 'THREE STEPS · ONE PRIZE'}</p>
               <h2 className={styles.sectionTitle}>{ru ? 'Как участвовать' : 'How to enter'}</h2>
+              <p className={styles.sectionLead}>{ru ? 'Весь путь занимает меньше двух минут.' : 'The whole flow takes less than two minutes.'}</p>
               <ol className={styles.stepper}>
-                <li className={styles.step}>
-                  <span className={styles.stepNum}>1</span>
+                <li className={`${styles.step} ${styles.stepViolet}`}>
+                  <span className={styles.stepGhost} aria-hidden>01</span>
+                  <span className={styles.stepIcon}><UserPlus size={22} strokeWidth={1.8} aria-hidden /></span>
                   <strong>{ru ? 'Регистрация' : 'Sign up'}</strong>
                   <p>{ru ? 'Аккаунт Academy за минуту' : 'Academy account in a minute'}</p>
                 </li>
-                <li className={styles.step}>
-                  <span className={styles.stepNum}>2</span>
+                <li className={`${styles.step} ${styles.stepMagenta}`}>
+                  <span className={styles.stepGhost} aria-hidden>02</span>
+                  <span className={styles.stepIcon}><Send size={22} strokeWidth={1.8} aria-hidden /></span>
                   <strong>{ru ? 'Участие' : 'Enter'}</strong>
                   <p>{ru ? 'Telegram + кнопка участия' : 'Telegram + enter button'}</p>
                 </li>
-                <li className={styles.step}>
-                  <span className={styles.stepNum}>3</span>
+                <li className={`${styles.step} ${styles.stepEmber}`}>
+                  <span className={styles.stepGhost} aria-hidden>03</span>
+                  <span className={styles.stepIcon}><Trophy size={22} strokeWidth={1.8} aria-hidden /></span>
                   <strong>{ru ? 'Итоги в Telegram' : 'Results on Telegram'}</strong>
                   <p>{ru ? 'Анонс победителя в канале' : 'Winner announced in the channel'}</p>
                 </li>
@@ -463,7 +536,10 @@ function GiveawayDetail({ giveaway, lang }) {
           <ScrollReveal>
             <section className={styles.section} id="giveaway-chances">
               <div className={styles.chancesHead}>
-                <h2 className={styles.sectionTitle}>{ru ? 'Дополнительные шансы' : 'Bonus chances'}</h2>
+                <div>
+                  <p className={styles.sectionEyebrow}>{ru ? 'УВЕЛИЧЬ ВЕРОЯТНОСТЬ' : 'BOOST YOUR ODDS'}</p>
+                  <h2 className={styles.sectionTitle}>{ru ? 'Дополнительные шансы' : 'Bonus chances'}</h2>
+                </div>
                 {entered && (
                   <div className={styles.chanceMeter}>
                     <span className={styles.chanceYou}>
@@ -477,14 +553,22 @@ function GiveawayDetail({ giveaway, lang }) {
               </div>
 
               <div className={styles.chanceGrid}>
-                <article className={`${styles.chanceCard} ${entered ? styles.chanceDone : ''}`}>
-                  <span className={styles.chancePlus}>+{1}</span>
+                <article className={`${styles.chanceCard} ${styles.chanceViolet} ${entered ? styles.chanceDone : ''}`}>
+                  <span className={styles.chanceTop}>
+                    <span className={styles.chanceIcon}><Ticket size={20} strokeWidth={1.8} aria-hidden /></span>
+                    <span className={styles.chancePlus}>+{1}</span>
+                    {entered && <span className={styles.chanceCheck} aria-label={ru ? 'Выполнено' : 'Done'}><Check size={13} strokeWidth={3} /></span>}
+                  </span>
                   <h3>{ru ? 'Базовое участие' : 'Base entry'}</h3>
                   <p>{ru ? '1 шанс за регистрацию в розыгрыше' : '1 chance for joining the giveaway'}</p>
                 </article>
 
-                <article className={`${styles.chanceCard} ${entered && state?.channelSubscribed ? styles.chanceDone : ''}`}>
-                  <span className={styles.chancePlus}>+{CHANCE_TELEGRAM}</span>
+                <article className={`${styles.chanceCard} ${styles.chanceBlue} ${entered && state?.channelSubscribed ? styles.chanceDone : ''}`}>
+                  <span className={styles.chanceTop}>
+                    <span className={styles.chanceIcon}><Send size={20} strokeWidth={1.8} aria-hidden /></span>
+                    <span className={styles.chancePlus}>+{CHANCE_TELEGRAM}</span>
+                    {entered && state?.channelSubscribed && <span className={styles.chanceCheck} aria-label={ru ? 'Выполнено' : 'Done'}><Check size={13} strokeWidth={3} /></span>}
+                  </span>
                   <h3>{ru ? 'Telegram-канал' : 'Telegram channel'}</h3>
                   <p>{ru ? 'Подписка на канал AI Insider' : 'Subscribe to AI Insider channel'}</p>
                   <div className={styles.chanceActions}>
@@ -504,8 +588,12 @@ function GiveawayDetail({ giveaway, lang }) {
                   </div>
                 </article>
 
-                <article className={`${styles.chanceCard} ${entered && bonus.referralCount > 0 ? styles.chanceDone : ''}`}>
-                  <span className={styles.chancePlus}>+{CHANCE_REFERRAL}</span>
+                <article className={`${styles.chanceCard} ${styles.chanceEmber} ${entered && bonus.referralCount > 0 ? styles.chanceDone : ''}`}>
+                  <span className={styles.chanceTop}>
+                    <span className={styles.chanceIcon}><Users size={20} strokeWidth={1.8} aria-hidden /></span>
+                    <span className={styles.chancePlus}>+{CHANCE_REFERRAL}</span>
+                    {entered && bonus.referralCount > 0 && <span className={styles.chanceCheck} aria-label={ru ? 'Выполнено' : 'Done'}><Check size={13} strokeWidth={3} /></span>}
+                  </span>
                   <h3>{ru ? 'Пригласи друга' : 'Invite a friend'}</h3>
                   <p>{ru ? '+3 шанса за каждого друга по ссылке' : '+3 chances per friend who joins via your link'}</p>
                   {entered && referralLink ? (
@@ -525,8 +613,12 @@ function GiveawayDetail({ giveaway, lang }) {
                   )}
                 </article>
 
-                <article className={`${styles.chanceCard} ${entered && bonus.shared ? styles.chanceDone : ''}`}>
-                  <span className={styles.chancePlus}>+{CHANCE_SHARE}</span>
+                <article className={`${styles.chanceCard} ${styles.chanceMagenta} ${entered && bonus.shared ? styles.chanceDone : ''}`}>
+                  <span className={styles.chanceTop}>
+                    <span className={styles.chanceIcon}><Share2 size={20} strokeWidth={1.8} aria-hidden /></span>
+                    <span className={styles.chancePlus}>+{CHANCE_SHARE}</span>
+                    {entered && bonus.shared && <span className={styles.chanceCheck} aria-label={ru ? 'Выполнено' : 'Done'}><Check size={13} strokeWidth={3} /></span>}
+                  </span>
                   <h3>{ru ? 'Поделись страницей' : 'Share the page'}</h3>
                   <p>{ru ? '+2 шанса за шаринг розыгрыша' : '+2 chances for sharing this giveaway'}</p>
                   <button type="button" className={styles.btnSecondary} onClick={handleShare} disabled={!entered}>
@@ -573,23 +665,37 @@ function GiveawayDetail({ giveaway, lang }) {
                 {ru ? 'Полные правила →' : 'Full rules →'}
               </Link>
             </div>
-            <Accordion
-              idPrefix="rules"
-              numbered
-              items={(ru ? giveaway.rulesRu : giveaway.rulesEn).map((r) => (
-                typeof r === 'string'
-                  ? { q: r, a: r }
-                  : { q: r.title, a: r.text }
-              ))}
-            />
+            <ol className={styles.rulesGrid}>
+              {(ru ? giveaway.rulesRu : giveaway.rulesEn).map((r, index) => {
+                const title = typeof r === 'string' ? null : r.title
+                const text = typeof r === 'string' ? r : r.text
+                return (
+                  <li key={index} className={styles.ruleCard}>
+                    <span className={styles.ruleNum} aria-hidden>{String(index + 1).padStart(2, '0')}</span>
+                    <div className={styles.ruleBody}>
+                      {title && <strong>{title}</strong>}
+                      <p>{text}</p>
+                    </div>
+                  </li>
+                )
+              })}
+            </ol>
           </section>
         </ScrollReveal>
 
         {faq.length > 0 && (
           <ScrollReveal>
-            <section className={styles.section}>
+            <section className={`${styles.section} ${styles.faqSection}`}>
+              <p className={styles.sectionEyebrow}>
+                {ru ? 'ОТВЕТЫ · DROP 01' : 'ANSWERS · DROP 01'}
+              </p>
               <h2 className={styles.sectionTitle}>FAQ</h2>
-              <Accordion idPrefix="faq" items={faq} />
+              <p className={styles.sectionLead}>
+                {ru
+                  ? 'Коротко о правилах, призе и том, как проходит розыгрыш.'
+                  : 'Short answers on rules, the prize, and how the draw works.'}
+              </p>
+              <Accordion idPrefix="faq" items={faq} numbered />
             </section>
           </ScrollReveal>
         )}
@@ -599,11 +705,59 @@ function GiveawayDetail({ giveaway, lang }) {
             {loading && <p className={styles.hint}>{ru ? 'Загрузка…' : 'Loading…'}</p>}
 
             {!loading && !user && (
-              <>
-                <h2 className={styles.finalTitle}>{ru ? 'Участвуй бесплатно' : 'Enter for free'}</h2>
-                <p className={styles.finalLead}>
-                  {ru ? 'Создай аккаунт — вернёмся сюда сразу после регистрации.' : 'Create an account — we’ll bring you right back.'}
-                </p>
+              <div className={styles.guestEntry}>
+                <div className={styles.guestEntryCopy}>
+                  <p className={styles.guestEntryEyebrow}>
+                    <Sparkles size={15} aria-hidden />
+                    {ru ? 'AI INSIDER · PRIVATE DROP 01' : 'AI INSIDER · PRIVATE DROP 01'}
+                  </p>
+                  <h2 className={styles.guestEntryTitle}>
+                    {ru ? 'Твой шанс' : 'Your chance'}
+                    <span>{ru ? 'начинается здесь' : 'starts here'}</span>
+                  </h2>
+                  <p className={styles.guestEntryLead}>
+                    {ru
+                      ? `Создай аккаунт и получи шанс выиграть ${giveaway.prizeRu}. Без оплаты.`
+                      : `Create an account and get a chance to win ${giveaway.prizeEn}. No payment.`}
+                  </p>
+                  <div className={styles.guestEntryFacts} aria-label={ru ? 'Условия участия' : 'Entry terms'}>
+                    <span><Check size={14} aria-hidden /> {ru ? 'Бесплатно' : 'Free'}</span>
+                    <span><Check size={14} aria-hidden /> {ru ? 'Меньше 2 минут' : 'Under 2 minutes'}</span>
+                  </div>
+                </div>
+
+                <div className={styles.guestEntryPortal} aria-hidden="true">
+                  <span className={styles.portalRingOuter} />
+                  <span className={styles.portalRingInner} />
+                  <img src="/design/mentor-giveaway.webp" alt="" />
+                  <div className={styles.guestPrizePass}>
+                    <small>CLAUDE</small>
+                    <strong>PRO</strong>
+                    <span>{ru ? '30 ДНЕЙ' : '30 DAYS'}</span>
+                  </div>
+                  <span className={styles.portalTag}>DROP / 01</span>
+                </div>
+
+                <div className={styles.guestEntryPanel}>
+                  <p className={styles.guestPanelLabel}>{ru ? 'ТВОЙ МАРШРУТ' : 'YOUR ENTRY FLOW'}</p>
+                  <ol className={styles.guestEntrySteps}>
+                    <li>
+                      <span>01</span>
+                      <div>
+                        <strong>{ru ? 'Создай аккаунт' : 'Create account'}</strong>
+                        <small>{ru ? 'Одна короткая регистрация' : 'One short registration'}</small>
+                      </div>
+                      <UserPlus size={18} aria-hidden />
+                    </li>
+                    <li>
+                      <span>02</span>
+                      <div>
+                        <strong>{ru ? 'Подключи Telegram' : 'Connect Telegram'}</strong>
+                        <small>{ru ? 'Подтверди участие в кабинете' : 'Confirm entry in cabinet'}</small>
+                      </div>
+                      <Send size={18} aria-hidden />
+                    </li>
+                  </ol>
                 {apiOffline && (
                   <p className={styles.hint}>
                     {ru
@@ -612,13 +766,18 @@ function GiveawayDetail({ giveaway, lang }) {
                   </p>
                 )}
                 <Link
-                  to="/register"
+                  to={`/register?returnTo=${encodeURIComponent(redirectPath)}`}
                   state={{ from: { pathname: redirectPath } }}
                   className={styles.btnPrimaryLg}
                 >
-                  {ru ? 'Участвовать бесплатно' : 'Enter for free'}
+                    <span>{ru ? 'Получить шанс' : 'Get my chance'}</span>
+                    <ArrowRight size={19} aria-hidden />
                 </Link>
-              </>
+                  <small className={styles.guestEntryNote}>
+                    {ru ? 'Вернём тебя сюда после регистрации' : 'We’ll bring you back after registration'}
+                  </small>
+                </div>
+              </div>
             )}
 
             {!loading && user && apiOffline && (
@@ -631,25 +790,66 @@ function GiveawayDetail({ giveaway, lang }) {
 
             {!loading && !apiOffline && user && !entered && (
               <>
-                <h2 className={styles.finalTitle}>{ru ? 'Готов участвовать?' : 'Ready to enter?'}</h2>
-                <p className={styles.finalLead}>
-                  {!state?.telegramConnected
-                    ? (ru ? 'Подключи Telegram-бота в кабинете, затем подтверди участие.' : 'Connect the Telegram bot in your cabinet, then confirm.')
-                    : (ru ? 'Проверь подписку на канал и нажми кнопку.' : 'Verify channel subscription and tap the button.')}
-                </p>
-                {!state?.telegramConnected && (
-                  <Link to="/cabinet#telegram" className={styles.btnGhost}>
-                    {ru ? 'Подключить Telegram →' : 'Connect Telegram →'}
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  className={styles.btnPrimaryLg}
-                  disabled={busy || !state?.telegramConnected}
-                  onClick={handleEnter}
-                >
-                  {ru ? 'Участвовать бесплатно' : 'Enter for free'}
-                </button>
+                <div className={styles.finalIntro}>
+                  <p className={styles.finalEyebrow}>
+                    {ru ? 'ФИНАЛЬНЫЙ ШАГ · АКТИВАЦИЯ' : 'FINAL STEP · ACTIVATION'}
+                  </p>
+                  <h2 className={styles.finalTitle}>{ru ? 'Готов участвовать?' : 'Ready to enter?'}</h2>
+                  <p className={styles.finalLead}>
+                    {!state?.telegramConnected
+                      ? (ru ? 'Подключи Telegram — там объявим победителя и подтвердим участие.' : 'Connect Telegram — winner announcement and entry confirmation happen there.')
+                      : (ru ? 'Telegram подключён. Осталось подтвердить участие.' : 'Telegram connected. Confirm your entry.')}
+                  </p>
+                </div>
+
+                <div className={styles.finalActivation}>
+                  <div className={styles.activationFlow}>
+                    <div className={`${styles.activationStep} ${styles.activationStepActive}`}>
+                      <span className={styles.activationIcon}><Send size={19} aria-hidden /></span>
+                      <div>
+                        <small>01</small>
+                        <strong>{ru ? 'Подключить Telegram' : 'Connect Telegram'}</strong>
+                      </div>
+                      <span className={styles.activationState}>
+                        {state?.telegramConnected
+                          ? <Check size={17} aria-label={ru ? 'Готово' : 'Done'} />
+                          : (ru ? 'Сейчас' : 'Now')}
+                      </span>
+                    </div>
+                    <div className={`${styles.activationStep} ${state?.telegramConnected ? styles.activationStepReady : styles.activationStepLocked}`}>
+                      <span className={styles.activationIcon}><Ticket size={19} aria-hidden /></span>
+                      <div>
+                        <small>02</small>
+                        <strong>{ru ? 'Подтвердить участие' : 'Confirm entry'}</strong>
+                      </div>
+                      <span className={styles.activationState}>
+                        {state?.telegramConnected ? (ru ? 'Готово' : 'Ready') : (ru ? 'После Telegram' : 'After Telegram')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={styles.finalActions}>
+                    {!state?.telegramConnected && (
+                      <Link
+                        to={`/cabinet?returnTo=${encodeURIComponent(redirectPath)}#telegram`}
+                        className={styles.btnGhost}
+                      >
+                        <Send size={17} aria-hidden />
+                        {ru ? 'Подключить Telegram' : 'Connect Telegram'}
+                        <ArrowRight size={17} aria-hidden />
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      className={styles.btnPrimaryLg}
+                      disabled={busy || !state?.telegramConnected}
+                      onClick={handleEnter}
+                    >
+                      {state?.telegramConnected && <Check size={18} aria-hidden />}
+                      {ru ? 'Подтвердить участие' : 'Confirm entry'}
+                    </button>
+                  </div>
+                </div>
               </>
             )}
 

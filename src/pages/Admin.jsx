@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { AlertTriangle, ArrowLeft, Camera, CheckCircle2, Clock3, LockKeyhole, RefreshCw } from 'lucide-react'
 import {
   getRegistrations,
   getCertificates,
@@ -43,8 +44,6 @@ import { LessonDragList } from '../components/admin/LessonDragList'
 import { useAdminPushNotifications, useAdminStaleApplicationAlert, requestAdminNotificationPermission } from '../hooks/useAdminPushNotifications'
 import { getAdminRole, setAdminRole, canAccessTab, resolveLocalRole, ROLE_LABELS } from '../utils/adminAuth'
 import styles from './Admin.module.css'
-
-const ADMIN_PASSWORD = 'admin123'
 
 const SEARCH_TABS = new Set(['registrations', 'purchases', 'homework', 'reviews', ACCELERATOR_ADMIN_TAB, 'certificates', 'referrals', 'courses', 'blog'])
 
@@ -266,7 +265,7 @@ export function Admin() {
         return
       }
     }
-    const localRole = resolveLocalRole(password)
+    const localRole = import.meta.env.DEV && isLocalDev ? resolveLocalRole(password) : null
     if (localRole) {
       setAdminToken(null)
       setAdminRole(localRole)
@@ -274,7 +273,7 @@ export function Admin() {
       localStorage.setItem('lms_admin_auth', localRole)
       setAuthenticated(true)
     } else {
-      setError(online ? 'Неверный пароль (admin123 / editor123 / moderator123)' : 'Неверный пароль')
+      setError('Неверный пароль')
     }
   }
 
@@ -449,7 +448,7 @@ export function Admin() {
             <button type="submit" className={styles.loginBtn}>Войти в панель</button>
           </form>
           <p className={styles.loginHint}>
-            {online ? 'API: admin123 · editor123 · moderator123' : 'Локально: admin123 / editor123 / moderator123'}
+            {online ? 'Пароль задаётся переменной ADMIN_PASSWORD на сервере' : 'Оффлайн-режим: пароль локальной демо-версии'}
           </p>
         </div>
       </div>
@@ -752,19 +751,20 @@ export function Admin() {
           <header className={styles.header}>
             <div>
               <h1 className={styles.title}>{tabTitles[activeTab] || 'Админ'}</h1>
-              <p className={styles.headerSub}>
+              <p className={`${styles.headerSub} ${!online ? styles.headerWarning : ''}`}>
+                {!online && <AlertTriangle size={14} aria-hidden />}
                 {online && useServerData
                   ? 'PostgreSQL + Google Sheets'
                   : online
                     ? 'API доступен — войдите паролем админа для синхронизации'
-                    : '⚠️ API недоступен — данные не сохраняются. Дождитесь подключения (кнопка вверху) или обновите страницу.'}
+                    : 'API недоступен — данные не сохраняются. Дождитесь подключения или обновите страницу.'}
               </p>
             </div>
             <div className={styles.headerActions}>
               <button type="button" className={styles.refreshBtn} onClick={() => { setRefresh((r) => r + 1); showToast('Данные обновлены') }} title="Обновить">
-                ↻
+                <RefreshCw size={17} aria-hidden />
               </button>
-              <Link to="/" className={styles.backLink}>← На сайт</Link>
+              <Link to="/" className={styles.backLink}><ArrowLeft size={15} aria-hidden /> На сайт</Link>
               <button type="button" onClick={handleLogout} className={styles.logoutBtn}>Выйти</button>
             </div>
           </header>
@@ -1217,7 +1217,7 @@ export function Admin() {
                   <th>Фото</th>
                   <th>Email</th>
                   <th>Имя</th>
-                  <th>Email ✓</th>
+                  <th>Email подтверждён</th>
                   <th>Регистрация</th>
                   <th>Профиль</th>
                   <th>Пароль</th>
@@ -1235,7 +1235,7 @@ export function Admin() {
                     return (
                       <tr key={r.id || r.email || i} className={unseen ? styles.unseenRow : ''}>
                         <td><code className={styles.personalId}>{r.personalId || '—'}</code></td>
-                        <td>{r.hasAvatar ? '📷' : '—'}</td>
+                        <td>{r.hasAvatar ? <Camera size={16} aria-label="Фото загружено" /> : '—'}</td>
                         <td>
                           <button
                             type="button"
@@ -1246,13 +1246,13 @@ export function Admin() {
                           </button>
                         </td>
                         <td>{r.name || '—'}</td>
-                        <td>{r.emailVerified ? '✅' : '⏳'}</td>
+                        <td>{r.emailVerified ? <CheckCircle2 size={16} aria-label="Подтверждён" /> : <Clock3 size={16} aria-label="Ожидает подтверждения" />}</td>
                         <td>{formatDate(r.registeredAt || r.date)}</td>
                         <td>{r.profileUpdatedAt ? formatDate(r.profileUpdatedAt) : '—'}</td>
                         <td>
                           {r.passwordChangedAt ? (
                             <span className={styles.passwordChangedBadge} title={formatDate(r.passwordChangedAt)}>
-                              🔐 {formatDate(r.passwordChangedAt)}
+                              <LockKeyhole size={13} aria-hidden /> {formatDate(r.passwordChangedAt)}
                             </span>
                           ) : (
                             <span className={styles.passwordNeverBadge}>Не менялся</span>
@@ -1262,7 +1262,7 @@ export function Admin() {
                         <td>
                           {r.telegramConnected ? (
                             <span className={styles.passwordChangedBadge} title={r.telegramChatId}>
-                              ✓ {r.telegramUsername ? `@${r.telegramUsername}` : r.telegramChatId}
+                              <CheckCircle2 size={13} aria-hidden /> {r.telegramUsername ? `@${r.telegramUsername}` : r.telegramChatId}
                             </span>
                           ) : (
                             <span className={styles.passwordNeverBadge}>—</span>

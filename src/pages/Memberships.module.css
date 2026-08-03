@@ -1,41 +1,311 @@
 .wrap {
-  min-height: 60vh;
+  --bg-base: #0a0714;
+  --bg-surface: #120d1d;
+  --bg-elevated: #1a1229;
+  --bg-card: #120d1d;
+  --bg-glass: rgba(17, 17, 22, 0.9);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(168, 128, 255, 0.4);
+  --text: #f7f5fb;
+  --text-primary: #f7f5fb;
+  --text-secondary: #a39eaa;
+  --text-muted: #a39eaa;
+  --accent: #8b5cf6;
+  --accent-primary: #8b5cf6;
+  min-height: 100vh;
+  color: #f7f5fb;
+  background:
+    radial-gradient(circle at 80% 7%, rgba(124, 77, 255, 0.28), transparent 28rem),
+    radial-gradient(circle at 8% 30%, rgba(255, 138, 61, 0.11), transparent 22rem),
+    #0a0714;
 }
 
 .hero {
-  padding: 48px 0 8px;
+  padding: clamp(44px, 5vw, 68px) 0 clamp(36px, 4vw, 56px);
 }
 
 .container {
-  max-width: 720px;
+  width: min(100%, 1336px);
   margin: 0 auto;
-  padding: 0 24px;
-  text-align: center;
+  padding: 0 clamp(20px, 4vw, 48px);
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(360px, 0.96fr);
+  gap: clamp(44px, 8vw, 104px);
+  align-items: center;
+}
+
+.heroCopy {
+  min-width: 0;
 }
 
 .pill {
-  display: inline-block;
-  margin-bottom: 16px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  background: var(--accent-dim);
-  border: 1px solid var(--border-accent);
-  color: var(--accent-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 24px;
+  color: #bca8f6;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pill::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #91aa96;
+  box-shadow: 0 0 0 5px rgba(145, 170, 150, 0.11);
 }
 
 .title {
+  max-width: 11ch;
+  margin: 0 0 22px;
+  color: #faf8fd;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 2.75rem);
-  font-weight: 800;
-  margin: 0 0 12px;
-  letter-spacing: -0.03em;
+  font-size: clamp(2.65rem, 4.6vw, 4rem);
+  font-weight: 650;
+  line-height: 0.99;
+  letter-spacing: -0.058em;
 }
 
 .subtitle {
+  max-width: 620px;
   margin: 0;
-  color: var(--text-muted);
-  font-size: 1.0625rem;
-  line-height: 1.6;
+  color: #aaa6b2;
+  font-size: clamp(1rem, 1.3vw, 1.13rem);
+  line-height: 1.7;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.primaryLink,
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 22px;
+  border-radius: 15px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.primaryLink {
+  border: 1px solid #7c3aed;
+  background: #7c3aed;
+  color: #fff;
+  box-shadow: 0 12px 34px rgba(76, 29, 149, 0.28);
+}
+
+.secondaryLink {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.025);
+  color: #ddd8e2;
+}
+
+.primaryLink:hover,
+.secondaryLink:hover {
+  transform: translateY(-1px);
+}
+
+.primaryLink:hover {
+  background: #8953ed;
+}
+
+.secondaryLink:hover {
+  border-color: rgba(168, 128, 255, 0.42);
+}
+
+.accessVisual {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: clamp(340px, 40vw, 400px);
+  overflow: hidden;
+  padding: clamp(28px, 4vw, 42px);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 58% 34%, rgba(167, 139, 250, 0.32), transparent 4rem),
+    radial-gradient(circle at 58% 34%, rgba(124, 58, 237, 0.2), transparent 12rem),
+    linear-gradient(145deg, #15131c, #0d0d11 64%);
+  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.38);
+}
+
+.accessVisual::before,
+.accessVisual::after {
+  content: '';
+  position: absolute;
+  top: 48%;
+  left: 58%;
+  border: 1px solid rgba(168, 128, 255, 0.18);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.accessVisual::before {
+  width: 250px;
+  height: 250px;
+}
+
+.accessVisual::after {
+  width: 360px;
+  height: 360px;
+}
+
+.visualOrbit {
+  position: absolute;
+  top: 50%;
+  left: 58%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f28a3b;
+  box-shadow: 0 0 30px rgba(242, 138, 59, 0.8);
+  transform: translate(122px, -126px);
+}
+
+.visualKicker,
+.visualPlans,
+.visualCaption {
+  position: relative;
+  z-index: 1;
+}
+
+.visualKicker,
+.visualCaption {
+  font-size: 0.64rem;
+  font-weight: 750;
+  letter-spacing: 0.15em;
+}
+
+.visualKicker {
+  margin-bottom: 18px;
+  color: #8f8997;
+}
+
+.visualPlans {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  color: #f7f4fb;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.visualClub {
+  color: #d8d3dd;
+}
+
+.visualArrow {
+  color: #655f6d;
+  font-size: 0.52em;
+}
+
+.visualPro {
+  color: #bca6f7;
+}
+
+.visualCaption {
+  margin-top: 20px;
+  color: #91aa96;
+}
+
+@media (max-width: 880px) {
+  .heroGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .accessVisual {
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 620px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .hero {
+    padding-top: 48px;
+  }
+
+  .title {
+    font-size: clamp(2.55rem, 13vw, 3.8rem);
+  }
+
+  .heroActions {
+    display: grid;
+  }
+
+  .accessVisual {
+    min-height: 320px;
+    border-radius: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryLink,
+  .secondaryLink {
+    transition: none;
+  }
+
+  .primaryLink:hover,
+  .secondaryLink:hover {
+    transform: none;
+  }
+}
+
+@media (min-width: 881px) {
+  .hero {
+    padding: 64px 0 42px;
+  }
+
+  .heroGrid {
+    gap: clamp(40px, 6vw, 76px);
+  }
+
+  .pill {
+    margin-bottom: 16px;
+  }
+
+  .title {
+    margin-bottom: 18px;
+    font-size: clamp(2.75rem, 4.7vw, 4.2rem);
+  }
+
+  .subtitle {
+    font-size: 1.02rem;
+    line-height: 1.6;
+  }
+
+  .heroActions {
+    margin-top: 22px;
+  }
+
+  .accessVisual {
+    min-height: 350px;
+    padding: 32px;
+    border-radius: 24px;
+  }
+
+  .visualPlans {
+    font-size: clamp(2.2rem, 4vw, 3.45rem);
+  }
 }

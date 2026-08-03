@@ -1,4 +1,5 @@
 import { getCoursePromoVideo } from '../data/promo'
+import { getCourseDesignCover } from '../utils/designAssets'
 import { PromoVideo } from './PromoVideo'
 import styles from './CoursePromoSection.module.css'
 
@@ -12,7 +13,7 @@ export function CoursePromoSection({ course, lang, title }) {
   return (
     <section className={styles.section} aria-label={heading}>
       <h2 className={styles.title}>{heading}</h2>
-      <PromoVideo url={url} poster={course?.image} title={title} />
+      <PromoVideo url={url} poster={getCourseDesignCover(course)} title={title} />
     </section>
   )
 }

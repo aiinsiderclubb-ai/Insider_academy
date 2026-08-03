@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom'
+import { ArrowUpRight } from 'lucide-react'
+import { ComingSoonLock } from './ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import styles from './VaultCatalogCard.module.css'
 
 export function VaultCatalogCard({ product, lang, purchased = false }) {
@@ -7,6 +10,7 @@ export function VaultCatalogCard({ product, lang, purchased = false }) {
   const desc = ru ? product.shortRu : product.shortEn
   const category = ru ? product.categoryRu : product.categoryEn
   const highlight = ru ? product.highlightRu : product.highlightEn
+  const comingSoon = isComingSoon('vault')
 
   return (
     <article
@@ -17,18 +21,12 @@ export function VaultCatalogCard({ product, lang, purchased = false }) {
       }}
     >
       <Link to={`/vault/${product.slug}`} className={styles.hero}>
-        {product.coverImage ? (
-          <img
-            src={product.coverImage}
-            alt=""
-            className={styles.coverImg}
-            loading="lazy"
-          />
-        ) : (
-          <span className={styles.icon} aria-hidden>
-            {product.icon}
-          </span>
-        )}
+        <img
+          src={product.coverImage}
+          alt=""
+          className={styles.coverImg}
+          loading="lazy"
+        />
         <div className={styles.heroOverlay} aria-hidden />
         <span className={styles.category}>{category}</span>
         {highlight && <span className={styles.highlight}>{highlight}</span>}
@@ -53,10 +51,11 @@ export function VaultCatalogCard({ product, lang, purchased = false }) {
             </Link>
           )}
           <Link to={`/vault/${product.slug}`} className={styles.detailsBtn}>
-            {ru ? 'Подробнее' : 'Details'}
+            {ru ? 'Подробнее' : 'Details'} <ArrowUpRight size={13} aria-hidden />
           </Link>
         </div>
       </div>
+      {comingSoon && <ComingSoonLock kind="vault" lang={lang} compact />}
     </article>
   )
 }

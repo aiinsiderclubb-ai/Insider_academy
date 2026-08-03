@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight, BadgeCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useProgress } from '../context/ProgressContext'
 import { useLanguage } from '../context/LanguageContext'
 import { useCourses } from '../context/CoursesContext'
 import { getBlogPosts, fetchBlogPosts } from '../api/blogStore'
-import { getBlogPostLang } from '../data/blog'
+import { getBlogPostLocalized } from '../data/blog'
+import { localizePath } from '../routing/locale'
 import { SOCIAL_PROOF } from '../data/courseLanding'
 import { getCourseField, getCourseDescription, formatCourseDuration } from '../data/courses'
 import { api, checkApiOnline } from '../api/client'
 import { UiIcon } from '../components/UiIcon'
-import { HeroProductPreview } from '../components/HeroProductPreview'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { StaggerReveal } from '../components/StaggerReveal'
 import { CountUp } from '../components/CountUp'
 import { TelegramWidget } from '../components/TelegramWidget'
-import { ThemePreview } from '../components/ThemePreview'
 import { CourseCatalogCard } from '../components/CourseCatalogCard'
 import { useTheme } from '../context/ThemeContext'
 import { HomeSuperOffer } from '../components/HomeSuperOffer'
@@ -23,9 +23,8 @@ import { MembershipsSection } from '../components/MembershipsSection'
 import { HomeProductsSection } from '../components/HomeProductsSection'
 import { HomeCertificatesSection } from '../components/HomeCertificatesSection'
 import { HomeReviewsSection } from '../components/HomeReviewsSection'
-import { HomeDirectionsSection } from '../components/HomeDirectionsSection'
 import { PlatformBridge } from '../components/PlatformBridge'
-import { TELEGRAM_COMMUNITY } from '../data/siteLinks'
+import { TELEGRAM_COMMUNITY, TELEGRAM_MANAGER } from '../data/siteLinks'
 import { PageMeta } from '../components/PageMeta'
 import { ContinueLearningPanel } from '../components/ContinueLearningPanel'
 import { ActivityFeed } from '../components/ActivityFeed'
@@ -34,7 +33,20 @@ import { RecommendationsStrip } from '../components/RecommendationsStrip'
 import { buildCommunityFeed } from '../data/activityFeed'
 import { getPersonalUpsells } from '../data/marketplace/recommendations'
 import { hasClubMembership } from '../data/club'
+import { MARKETPLACE_CREATORS } from '../data/marketplace/creators'
+import { HeroShowcase } from '../components/HeroShowcase'
+import { EditorialPosts } from '../components/EditorialPosts'
 import styles from './Home.module.css'
+
+/** Свежие посты с доступной локализованной метаинформацией. */
+function pickBlogPreview(posts, lang) {
+  const sorted = [...posts].sort((a, b) => new Date(b.date) - new Date(a.date))
+  const matched = sorted.filter((post) => {
+    const localized = getBlogPostLocalized(post, lang)
+    return localized.title && localized.excerpt
+  })
+  return (matched.length > 0 ? matched : sorted).slice(0, 3)
+}
 
 export function Home() {
   const { user, hasPurchased, purchases } = useAuth()
@@ -44,23 +56,13 @@ export function Home() {
   const { courses, freeCourses, paidCourses, acceleratorCourse, loading } = useCourses()
   const [userStats, setUserStats] = useState(null)
   const [feedItems, setFeedItems] = useState(() => buildCommunityFeed({ lang }))
-  const [blogPreview, setBlogPreview] = useState(() =>
-    [...getBlogPosts()]
-      .filter((p) => getBlogPostLang(p) === 'ru')
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 3)
-  )
+  const [blogPreview, setBlogPreview] = useState(() => pickBlogPreview(getBlogPosts(), lang))
 
   useEffect(() => {
     fetchBlogPosts().then((posts) => {
-      setBlogPreview(
-        [...posts]
-          .filter((p) => getBlogPostLang(p) === 'ru')
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .slice(0, 3)
-      )
+      setBlogPreview(pickBlogPreview(posts, lang))
     })
-  }, [])
+  }, [lang])
 
   useEffect(() => {
     checkApiOnline().then(async (ok) => {
@@ -89,13 +91,7 @@ export function Home() {
     })
   }, [user])
 
-  const getPostTitle = (post) => (lang === 'en' && post.titleEn ? post.titleEn : post.title)
-  const getPostExcerpt = (post) => (lang === 'en' && post.excerptEn ? post.excerptEn : post.excerpt)
-  const getPostCategory = (post) => (lang === 'en' && post.categoryEn ? post.categoryEn : post.category)
-
   const streakCurrent = userStats?.streak?.current || 0
-  const streakGoal = streakCurrent >= 14 ? 14 : streakCurrent >= 7 ? 14 : streakCurrent >= 3 ? 7 : 3
-  const streakProgress = Math.min(100, Math.round((streakCurrent / streakGoal) * 100))
   const activeCourses = purchases?.filter((p) => {
     const course = courses.find((c) => c.id === p.id)
     const pct = getPercent(p.id, course?.lessons?.length ?? 0)
@@ -112,7 +108,7 @@ export function Home() {
   const flagshipLesson = flagshipCourse?.lessons?.[0]
 
   return (
-    <>
+    <div className={styles.page}>
       <PageMeta
         title={lang === 'ru' ? 'AI Insider Academy' : 'AI Insider Academy'}
         description={t('home.heroDesc')}
@@ -177,7 +173,7 @@ export function Home() {
             </a>
           </div>
           <div className={`${styles.heroPreview} ${styles.heroEnter} ${styles.heroEnterDelay2}`}>
-            <HeroProductPreview lang={lang} />
+            <HeroShowcase lang={lang} />
           </div>
         </div>
       </section>
@@ -211,8 +207,6 @@ export function Home() {
 
       <HomeSuperOffer course={acceleratorCourse} lang={lang} />
 
-      <HomeDirectionsSection lang={lang} theme={theme} />
-
       {user && (
         <section className={`${styles.continueSection} ${styles.bandBase} ${styles.stage}`}>
           <div className={styles.container}>
@@ -238,43 +232,12 @@ export function Home() {
                     </p>
                   </div>
                   <Link to="/cabinet" className={styles.progressPanelLink}>
-                    {lang === 'ru' ? 'Кабинет →' : 'Dashboard →'}
+                    {lang === 'ru' ? 'Кабинет' : 'Dashboard'}
+                    <ArrowRight size={14} strokeWidth={1.8} aria-hidden style={{ marginLeft: 6, verticalAlign: '-0.15em' }} />
                   </Link>
                 </div>
 
                 <div className={styles.progressPanelGrid}>
-                  <article className={styles.streakCard}>
-                    <div className={styles.streakCardVisual}>
-                      <div
-                        className={styles.streakRing}
-                        style={{ '--streak-pct': `${streakProgress}%` }}
-                        aria-hidden
-                      >
-                        <span className={styles.streakRingEmoji} aria-hidden>
-                          <UiIcon name="flame" size={20} tone="accent" />
-                        </span>
-                      </div>
-                      <div className={styles.streakCardMain}>
-                        <span className={styles.streakCardValue}>{streakCurrent}</span>
-                        <span className={styles.streakCardLabel}>
-                          {lang === 'ru' ? 'дней подряд' : 'day streak'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.streakCardGoal}>
-                      <div className={styles.streakBarTrack}>
-                        <div className={styles.streakBarFill} style={{ width: `${streakProgress}%` }} />
-                      </div>
-                      <span className={styles.streakGoalText}>
-                        {streakCurrent >= 14
-                          ? (lang === 'ru' ? 'Награды 3 / 7 / 14 дней открыты!' : '3 / 7 / 14 day rewards unlocked!')
-                          : (lang === 'ru'
-                            ? `До награды ${streakGoal} дней: ${Math.max(0, streakGoal - streakCurrent)}`
-                            : `${Math.max(0, streakGoal - streakCurrent)} days to ${streakGoal}-day reward`)}
-                      </span>
-                    </div>
-                  </article>
-
                   <div className={styles.progressMetrics}>
                     <article className={styles.metricCard}>
                       <span className={styles.metricIcon} aria-hidden>
@@ -306,9 +269,10 @@ export function Home() {
                   </div>
                 </div>
               </div>
+              )}
             </div>
-          </section>
-        </ScrollReveal>
+          </div>
+        </section>
       )}
 
       <ScrollReveal as="section" className={`${styles.whatIncluded} ${user && userStats ? styles.bandBase : styles.bandSurface} ${styles.stage}`}>
@@ -362,6 +326,24 @@ export function Home() {
               <p className={styles.featureText}>{t('home.certificatesDesc')}</p>
             </li>
           </StaggerReveal>
+
+          <div className={styles.supportStrip}>
+            <span className={styles.supportIcon} aria-hidden>
+              <UiIcon name="headphones" tone="inherit" />
+            </span>
+            <div className={styles.supportBody}>
+              <strong>{t('home.support247')}</strong>
+              <span>{t('home.support247Desc')}</span>
+            </div>
+            <a
+              className={styles.supportBtn}
+              href={TELEGRAM_MANAGER}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {lang === 'ru' ? 'Задать вопрос' : 'Ask a question'}
+            </a>
+          </div>
         </div>
       </ScrollReveal>
 
@@ -398,6 +380,7 @@ export function Home() {
                     percent={getPercent(flagshipCourse.id, flagshipCourse.lessons?.length ?? 0)}
                     completedLabel={t('courses.completed')}
                     featured
+                    mediaOnly
                   />
                 </div>
                 <div className={styles.bentoFeaturedCopy}>
@@ -627,6 +610,6 @@ export function Home() {
         </div>
       </section>
       </ScrollReveal>
-    </>
+    </div>
   )
 }

@@ -1,10 +1,10 @@
 .wrap {
   min-height: 60vh;
-  padding: 32px 0 72px;
+  padding: 18px 0 64px;
 }
 
 .container {
-  max-width: 880px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -14,7 +14,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   font-size: 0.875rem;
   color: var(--text-muted);
 }
@@ -24,13 +24,59 @@
 }
 
 .hero {
-  margin-bottom: 28px;
-  padding: 28px 28px 24px;
-  border-radius: 20px;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
+  align-items: stretch;
+  min-height: 320px;
+  margin-bottom: 20px;
+  padding: 0;
+  border-radius: 28px;
   border: 1px solid var(--border);
-  background:
-    linear-gradient(180deg, var(--surface-shine-top), transparent),
-    var(--bg-card);
+  background: #10131c;
+  overflow: hidden;
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 44px);
+}
+
+.heroVisual {
+  position: relative;
+  min-height: 320px;
+  overflow: hidden;
+  background: #090b11;
+}
+
+.heroVisual::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #10131c 0%, transparent 38%), linear-gradient(0deg, rgba(8, 10, 16, 0.72), transparent 48%);
+}
+
+.heroVisual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  filter: saturate(0.9) contrast(1.03);
+}
+
+.heroVisual span {
+  position: absolute;
+  z-index: 2;
+  right: 24px;
+  bottom: 22px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  color: var(--accent-soft);
 }
 
 .heroClub {
@@ -59,8 +105,8 @@
 .title {
   margin: 0 0 8px;
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 800;
+  font-size: clamp(2.1rem, 4.4vw, 3.8rem);
+  font-weight: 700;
   letter-spacing: -0.03em;
 }
 
@@ -118,9 +164,9 @@
 
 .priceCard {
   position: relative;
-  margin-bottom: 36px;
-  padding: 24px 26px;
-  border-radius: 18px;
+  margin-bottom: 26px;
+  padding: 20px 22px;
+  border-radius: 24px;
   border: 1px solid var(--border);
   background: var(--bg-card);
 }
@@ -229,7 +275,7 @@
 
 .block {
   padding: 22px 24px;
-  border-radius: 16px;
+  border-radius: 22px;
   border: 1px solid var(--border);
   background: var(--bg-card);
 }
@@ -251,29 +297,27 @@
 
 .list li {
   position: relative;
-  padding-left: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   color: var(--text-muted);
   line-height: 1.55;
   font-size: 0.9375rem;
 }
 
-.list li::before {
-  content: '✓';
-  position: absolute;
-  left: 0;
+.listIcon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 4px;
   color: var(--glow-purple);
-  font-weight: 700;
 }
 
 .list li.listExcluded {
   color: color-mix(in srgb, var(--text-muted) 88%, #f87171);
 }
 
-.list li.listExcluded::before {
-  content: '×';
+.listExcluded .listIcon {
   color: #f87171;
-  font-size: 1.125rem;
-  line-height: 1.35;
 }
 
 .bonusBox {
@@ -333,7 +377,7 @@
 .compare {
   margin-bottom: 28px;
   padding: 24px;
-  border-radius: 16px;
+  border-radius: 22px;
   border: 1px solid var(--border);
   background: var(--bg-card);
 }
@@ -377,6 +421,13 @@
 
 .no {
   color: var(--text-muted);
+}
+
+.yes,
+.no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .faq {
@@ -428,6 +479,19 @@
 }
 
 @media (max-width: 720px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .heroVisual {
+    min-height: 280px;
+    order: -1;
+  }
+
+  .heroVisual::after {
+    background: linear-gradient(0deg, #10131c 0%, transparent 46%);
+  }
+
   .grid {
     grid-template-columns: 1fr;
   }

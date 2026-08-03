@@ -1,0 +1,21 @@
+node_modules
+dist
+.git
+.github
+
+# Секреты — не попадают в build context
+.env
+.env.*
+!.env.example
+
+# Локальные данные
+server/data/*.sqlite
+server/data/*.sqlite-shm
+server/data/*.sqlite-wal
+server/uploads/
+**/migration-export.json
+
+.DS_Store
+**/.DS_Store
+e2e
+playwright.config.js

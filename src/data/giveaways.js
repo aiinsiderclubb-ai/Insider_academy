@@ -23,7 +23,7 @@ export const GIVEAWAYS = [
     prizeDetailEn: '× 1 month',
     winnersCount: 1,
     startsAt: '2026-07-10T00:00:00+03:00',
-    endsAt: '2026-07-25T23:59:59+03:00',
+    endsAt: import.meta.env.VITE_GIVEAWAY_CLAUDE_ENDS_AT || '2026-08-31T23:59:59+03:00',
     telegramChannel: 'aiinsiderclub',
     telegramInviteUrl: TELEGRAM_GIVEAWAY_CLAUDE,
     telegramPostUrl: import.meta.env.VITE_GIVEAWAY_TELEGRAM_URL || '',
@@ -36,17 +36,17 @@ export const GIVEAWAYS = [
     leadEn:
       'Claude Pro subscription — for deep AI work, long context and projects. We are giving it away to AI Insider community members.',
     rulesRu: [
-      { title: 'Бесплатное участие', text: 'Участие бесплатное. Базовое участие даёт 1 шанс.' },
-      { title: 'Дополнительные шансы', text: 'Подписка на Telegram (+1), приглашение друга (+3), шаринг страницы (+2).' },
-      { title: 'Как выбираем победителя', text: 'Победитель выбирается случайно с учётом шансов участников.' },
+      { title: 'Бесплатное участие', text: 'Участие бесплатное. Один подтверждённый аккаунт получает один шанс.' },
+      { title: 'Проверка участия', text: 'Для участия нужно подключить Telegram и быть подписанным на канал AI Insider.' },
+      { title: 'Как выбираем победителя', text: 'Победитель выбирается сервером случайно среди уникальных подтверждённых участников.' },
       { title: 'Публикация итогов', text: 'Итоги публикуем в Telegram и на этой странице.' },
       { title: 'Что получит победитель', text: 'Приз — промокод или оплата подписки Claude Pro на 1 месяц.' },
       { title: 'Честная игра', text: 'Команда AI Insider может отказать участнику при нарушении правил или фейковом аккаунте.' },
     ],
     rulesEn: [
-      { title: 'Free to enter', text: 'Participation is free. Base entry gives 1 chance.' },
-      { title: 'Bonus chances', text: 'Telegram subscribe (+1), invite a friend (+3), share the page (+2).' },
-      { title: 'How we pick a winner', text: 'Winner is picked at random weighted by chances.' },
+      { title: 'Free to enter', text: 'Participation is free. One verified account receives one chance.' },
+      { title: 'Entry verification', text: 'Connect Telegram and subscribe to the AI Insider channel to enter.' },
+      { title: 'How we pick a winner', text: 'The server randomly selects one unique verified participant.' },
       { title: 'Results', text: 'Results are published on Telegram and this page.' },
       { title: 'What you win', text: 'Prize is a promo code or Claude Pro subscription for 1 month.' },
       { title: 'Fair play', text: 'AI Insider team may disqualify entries that break rules or use fake accounts.' },
@@ -54,7 +54,7 @@ export const GIVEAWAYS = [
     faqRu: [
       {
         q: 'Как выбирается победитель?',
-        a: 'Случайным образом среди участников с учётом шансов: больше шансов — выше вероятность. Итоги публикуем в Telegram и на странице розыгрыша.',
+        a: 'Сервер выбирает одного победителя случайно среди уникальных подтверждённых участников. Итоги публикуем в Telegram и на странице розыгрыша.',
       },
       {
         q: 'Как я получу приз?',
@@ -72,7 +72,7 @@ export const GIVEAWAYS = [
     faqEn: [
       {
         q: 'How is the winner chosen?',
-        a: 'At random among participants, weighted by chances. Results go live on Telegram and this page.',
+        a: 'The server randomly selects one winner among unique verified participants. Results go live on Telegram and this page.',
       },
       {
         q: 'How do I receive the prize?',

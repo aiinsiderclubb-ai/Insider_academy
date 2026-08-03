@@ -1,0 +1,180 @@
+.zone {
+  position: relative;
+  width: min(100%, 560px);
+  aspect-ratio: 1;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* брендовое кольцо-гало вокруг ядра */
+.halo {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  padding: 1.5px;
+  background: conic-gradient(
+    from 210deg,
+    rgba(139, 92, 246, 0) 0deg,
+    rgba(139, 92, 246, 0.85) 80deg,
+    rgba(217, 76, 165, 0.75) 160deg,
+    rgba(242, 139, 67, 0.85) 250deg,
+    rgba(139, 92, 246, 0) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.35));
+  animation: haloSpin 26s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes haloSpin {
+  to { transform: rotate(360deg); }
+}
+
+.coreLabel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  text-align: center;
+}
+
+.coreLabelTop {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 5vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  background: linear-gradient(120deg, #b9a4ff 10%, #e88ac8 55%, #ffb27a 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 26px rgba(139, 92, 246, 0.55));
+}
+
+.coreLabelSub {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(241, 237, 252, 0.66);
+}
+
+/* floating chips */
+.chip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 11px 16px;
+  border-radius: 15px;
+  border: 1px solid var(--border-strong);
+  background: rgba(14, 18, 30, 0.78);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-card);
+  animation: chipFloat 7s ease-in-out infinite;
+}
+
+.chip strong {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  line-height: 1.1;
+  color: var(--accent-hot, #f28b43);
+}
+
+.chip span {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.chipTl {
+  top: 6%;
+  left: -2%;
+}
+
+.chipTr {
+  top: 16%;
+  right: -4%;
+  animation-delay: -2.3s;
+}
+
+.chipTr strong {
+  color: var(--accent-soft);
+}
+
+.chipBr {
+  bottom: 15%;
+  right: 2%;
+  animation-delay: -4.6s;
+}
+
+.chipBr strong {
+  color: var(--sage-soft);
+}
+
+@keyframes chipFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+.caption {
+  position: absolute;
+  bottom: -1%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  white-space: nowrap;
+  padding: 11px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: rgba(14, 18, 30, 0.85);
+  backdrop-filter: blur(10px);
+  font-size: 0.82rem;
+  font-weight: 550;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+}
+
+.captionDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sage-soft);
+  box-shadow: 0 0 10px var(--sage);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halo {
+    animation: none;
+  }
+
+  .chip {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .zone {
+    margin: 0 auto;
+    width: min(100%, 440px);
+  }
+
+  .chipTl { left: 0; }
+  .chipTr { right: 0; }
+  .caption { white-space: normal; text-align: center; width: max-content; max-width: 92%; }
+}

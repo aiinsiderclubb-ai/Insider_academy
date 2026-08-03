@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Check } from 'lucide-react'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { formatApiError } from '../utils/formatApiError'
 import {
   clearPendingVerifyEmail,
+  clearPendingVerifyReturnPath,
   getPendingVerifyEmail,
+  getPendingVerifyReturnPath,
+  normalizeReturnPath,
   setPendingVerifyEmail,
 } from '../utils/pendingVerification'
 import { EmailCodeInput } from '../components/EmailCodeInput'
 import { NeuronGlow } from '../components/NeuronGlow'
+import { AuthVisual } from '../components/AuthVisual'
 import styles from './Login.module.css'
 
 export function VerifyEmail() {
@@ -21,6 +26,15 @@ export function VerifyEmail() {
   const tokenFromUrl = params.get('token')
   const emailFromUrl = params.get('email') || getPendingVerifyEmail() || ''
   const devCodeFromUrl = params.get('devCode') || ''
+  const returnTo = normalizeReturnPath(
+    params.get('returnTo') || getPendingVerifyReturnPath(),
+    '/onboarding',
+  )
+  const successRedirectKey = returnTo.startsWith('/giveaway')
+    ? 'register.successRedirectGiveaway'
+    : (returnTo === '/onboarding' || returnTo.startsWith('/cabinet'))
+      ? 'register.successRedirect'
+      : 'register.successRedirectGeneric'
 
   const [email, setEmail] = useState(emailFromUrl)
   const [code, setCode] = useState('')
@@ -39,11 +53,13 @@ export function VerifyEmail() {
     api.verifyEmail(tokenFromUrl)
       .then(async (res) => {
         if (res.token) await completeAuthSession(res.token, res.user)
+        clearPendingVerifyEmail()
+        clearPendingVerifyReturnPath()
         setStatus('ok')
-        setTimeout(() => navigate('/onboarding', { replace: true }), 2200)
+        setTimeout(() => navigate(returnTo, { replace: true }), 2200)
       })
       .catch(() => setStatus('link-error'))
-  }, [tokenFromUrl, completeAuthSession, navigate])
+  }, [tokenFromUrl, completeAuthSession, navigate, returnTo])
 
   useEffect(() => {
     if (resendCooldown <= 0) return undefined
@@ -63,8 +79,9 @@ export function VerifyEmail() {
       const res = await api.verifyEmailCode(email.trim(), code.trim())
       await completeAuthSession(res.token, res.user)
       clearPendingVerifyEmail()
+      clearPendingVerifyReturnPath()
       setStatus('ok')
-      setTimeout(() => navigate('/onboarding', { replace: true }), 2200)
+      setTimeout(() => navigate(returnTo, { replace: true }), 2200)
     } catch (err) {
       setError(formatApiError(err, lang) || t('verifyEmail.error'))
     } finally {
@@ -77,7 +94,7 @@ export function VerifyEmail() {
     setError('')
     setLoading(true)
     try {
-      const res = await api.resendVerificationCode(email.trim())
+      const res = await api.resendVerificationCode(email.trim(), returnTo)
       if (res.devCode) setDevCode(res.devCode)
       setResendCooldown(60)
     } catch (err) {
@@ -102,17 +119,17 @@ export function VerifyEmail() {
   if (status === 'ok') {
     return (
       <div className={styles.page}>
-        <div className={styles.bg}>
-          <NeuronGlow className={styles.neuron} />
-        </div>
+        <AuthVisual />
         <div className={styles.content}>
           <div className={styles.card}>
             <div className={styles.cardInner}>
               <div className={styles.successBlock}>
-                <div className={styles.successIcon} aria-hidden>✓</div>
+                <div className={styles.successIcon} aria-hidden="true">
+                  <Check size={22} strokeWidth={2.5} />
+                </div>
                 <h1 className={styles.title}>{t('register.successTitle')}</h1>
                 <p className={styles.subtitle}>{t('register.successSubtitle')}</p>
-                <p className={styles.successRedirect}>{t('register.successRedirect')}</p>
+                <p className={styles.successRedirect}>{t(successRedirectKey)}</p>
               </div>
             </div>
           </div>
@@ -194,7 +211,11 @@ export function VerifyEmail() {
                 : t('verifyEmail.resend')}
             </button>
 
-            <Link to="/login" className={styles.backLink} style={{ display: 'block', marginTop: 12 }}>
+            <Link
+              to={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+              className={styles.backLink}
+              style={{ display: 'block', marginTop: 12 }}
+            >
               {t('verifyEmail.backLogin')}
             </Link>
           </div>

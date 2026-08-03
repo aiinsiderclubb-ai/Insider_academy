@@ -551,3 +551,88 @@ export const BLOG_CONTENT_LANGS = [
   { id: 'uk', labelRu: 'Українська', labelEn: 'Ukrainian' },
   { id: 'ru', labelRu: 'Русский', labelEn: 'Russian' },
 ]
+
+const ARTICLE_COPY = {
+  ru: {
+    framework: 'Практический фреймворк',
+    frameworkText: 'Начните с измеримой бизнес-задачи: определите входящий сигнал, ожидаемый результат, владельца процесса и метрику качества. Это превращает идею в управляемый сценарий, а не в разрозненный эксперимент.',
+    implementation: 'Как внедрить без лишнего риска',
+    implementationText: 'Соберите первую версию на ограниченном участке процесса, подключите проверку данных и оставьте понятный путь передачи задачи человеку. После недели реального использования зафиксируйте ошибки, сценарии исключений и вопросы команды.',
+    checklist: 'Чеклист перед запуском',
+    checklistItems: ['Опишите входные данные и допустимые форматы.', 'Определите ответственного за результат и эскалацию.', 'Настройте логирование действий и контроль качества.', 'Измерьте время, конверсию или стоимость процесса до и после запуска.'],
+    faq: [
+      ['С чего начать?', 'С одной повторяющейся задачи с понятным результатом и доступными данными.'],
+      ['Нужна ли разработка?', 'Для первого сценария часто достаточно no-code инструментов и готовых API; кастомная разработка нужна после проверки гипотезы.'],
+    ],
+    conclusion: 'Следующий шаг — выбрать один процесс, запустить пилот и улучшать его на реальных данных. Так автоматизация становится частью операционной системы бизнеса.',
+    related: 'Читайте также',
+  },
+  ukr: {
+    framework: 'Практичний фреймворк',
+    frameworkText: 'Почніть із вимірюваного бізнес-завдання: визначте вхідний сигнал, очікуваний результат, власника процесу та метрику якості. Так ідея стає керованим сценарієм, а не розрізненим експериментом.',
+    implementation: 'Як впровадити без зайвого ризику',
+    implementationText: 'Зберіть першу версію на обмеженій ділянці процесу, додайте перевірку даних і залиште зрозумілий шлях передачі задачі людині. Після тижня реального використання зафіксуйте помилки, винятки та запитання команди.',
+    checklist: 'Чекліст перед запуском',
+    checklistItems: ['Опишіть вхідні дані та допустимі формати.', 'Визначте відповідального за результат і ескалацію.', 'Налаштуйте логування дій і контроль якості.', 'Виміряйте час, конверсію або вартість процесу до та після запуску.'],
+    faq: [
+      ['З чого почати?', 'З однієї повторюваної задачі з чітким результатом і доступними даними.'],
+      ['Чи потрібна розробка?', 'Для першого сценарію часто достатньо no-code інструментів і готових API; кастомна розробка потрібна після перевірки гіпотези.'],
+    ],
+    conclusion: 'Наступний крок — обрати один процес, запустити пілот і покращувати його на реальних даних. Так автоматизація стає частиною операційної системи бізнесу.',
+    related: 'Читайте також',
+  },
+  en: {
+    framework: 'A practical framework',
+    frameworkText: 'Start with a measurable business outcome: define the input signal, expected result, process owner, and quality metric. This turns an idea into an operating workflow instead of an isolated experiment.',
+    implementation: 'How to implement with less risk',
+    implementationText: 'Build the first version around a limited part of the process, validate inputs, and leave a clear handoff path to a human. After a week of real use, document errors, edge cases, and the team’s questions.',
+    checklist: 'Pre-launch checklist',
+    checklistItems: ['Document the input data and accepted formats.', 'Assign an owner for results and escalation.', 'Set up action logs and quality review.', 'Measure time, conversion, or process cost before and after launch.'],
+    faq: [
+      ['Where should I start?', 'Start with one repetitive task that has a clear outcome and accessible data.'],
+      ['Do I need custom development?', 'For a first scenario, no-code tools and existing APIs are often enough; custom development follows after the hypothesis is validated.'],
+    ],
+    conclusion: 'The next step is to choose one process, launch a pilot, and improve it with real operating data. That is how automation becomes part of a business operating system.',
+    related: 'Related articles',
+  },
+}
+
+function fallbackValue(post, locale, field) {
+  const suffix = locale === 'ukr' ? 'Uk' : locale === 'ru' ? 'Ru' : 'En'
+  const localized = post?.[`${field}${suffix}`]
+  if (localized) return localized
+  if (locale === 'en') return post?.[`${field}En`] || post?.[field] || ''
+  return post?.[field] || ''
+}
+
+export function getBlogPostLocalized(post, locale = 'ru') {
+  const copy = ARTICLE_COPY[locale] || ARTICLE_COPY.ru
+  const title = fallbackValue(post, locale, 'title')
+  const excerpt = fallbackValue(post, locale, 'excerpt')
+  const category = fallbackValue(post, locale, 'category')
+  const rawContent = fallbackValue(post, locale, 'content')
+  const sections = rawContent
+    ? rawContent.split(/\n{2,}/).filter(Boolean).map((paragraph) => ({ paragraphs: [paragraph] }))
+    : [
+        { heading: copy.framework, paragraphs: [excerpt, copy.frameworkText] },
+        { heading: copy.implementation, paragraphs: [copy.implementationText] },
+        { heading: copy.checklist, items: copy.checklistItems },
+        { paragraphs: [copy.conclusion] },
+      ]
+  const relatedSlugs = Array.isArray(post?.relatedSlugs)
+    ? post.relatedSlugs
+    : blogPosts
+      .filter((candidate) => candidate.slug !== post?.slug && candidate.category === post?.category)
+      .slice(0, 3)
+      .map((candidate) => candidate.slug)
+
+  return {
+    title,
+    excerpt,
+    category,
+    sections,
+    faq: post?.[`faq${locale === 'ukr' ? 'Uk' : locale === 'ru' ? 'Ru' : 'En'}`] || copy.faq,
+    relatedSlugs,
+    relatedLabel: copy.related,
+  }
+}

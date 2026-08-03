@@ -5,7 +5,6 @@ import { requireAdmin } from '../middleware/auth.js'
 import { nowIso } from '../db/time.js'
 import { logAudit } from '../services/auditLog.js'
 import { getFeatureFlags, setFeatureFlags } from '../services/featureFlags.js'
-import { MARKETPLACE_PRODUCTS } from '../../src/data/marketplace/products.js'
 import { broadcastTelegram } from '../services/telegramNotify.js'
 
 const router = Router()
@@ -94,8 +93,9 @@ router.patch('/promo-codes/:code', requireAdmin('admin'), async (req, res) => {
 
 import { grantCourseAccess } from '../services/grantCourse.js'
 import { unlockLessonForUser } from '../services/unlockLesson.js'
+import { prelaunchBlocked } from '../middleware/prelaunch.js'
 
-router.post('/grant-course', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/grant-course', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase()
   const courseId = String(req.body.courseId || '').trim()
   const courseTitle = String(req.body.courseTitle || courseId)
@@ -114,7 +114,7 @@ router.post('/grant-course', requireAdmin('admin', 'moderator'), async (req, res
   res.json({ ok: true, granted: access.granted, userCreated: access.userCreated })
 })
 
-router.post('/unlock-lesson', requireAdmin('admin', 'moderator'), async (req, res) => {
+router.post('/unlock-lesson', requireAdmin('admin', 'moderator'), prelaunchBlocked, async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase()
   const courseId = String(req.body.courseId || '').trim()
   const courseTitle = String(req.body.courseTitle || courseId)
@@ -181,36 +181,6 @@ router.put('/feature-flags', requireAdmin('admin'), async (req, res) => {
   const flags = await setFeatureFlags(req.body || {})
   await logAudit({ actorEmail: req.adminEmail, action: 'flags.update', targetType: 'feature_flags', meta: flags })
   res.json(flags)
-})
-
-router.get('/marketplace/products', requireAdmin('admin'), async (_req, res) => {
-  const db = getDb()
-  const overridesRow = await db.get('SELECT value FROM analytics WHERE key = ?', ['marketplace_admin'])
-  const overrides = parseJson(overridesRow?.value, {})
-  const products = MARKETPLACE_PRODUCTS.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    titleRu: p.titleRu,
-    priceEur: p.priceEur,
-    categoryId: p.categoryId,
-    creatorEmail: p.creatorEmail || 'marketplace@insiderai.it.com',
-    active: overrides[p.id]?.active !== false,
-  }))
-  res.json({ products })
-})
-
-router.patch('/marketplace/products/:id', requireAdmin('admin'), async (req, res) => {
-  const db = getDb()
-  const productId = req.params.id
-  const row = await db.get('SELECT value FROM analytics WHERE key = ?', ['marketplace_admin'])
-  const overrides = parseJson(row?.value, {})
-  overrides[productId] = { ...overrides[productId], ...req.body }
-  await db.run(
-    `INSERT INTO analytics (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
-    ['marketplace_admin', JSON.stringify(overrides)]
-  )
-  await logAudit({ actorEmail: req.adminEmail, action: 'marketplace.update', targetType: 'product', targetId: productId, meta: req.body })
-  res.json({ ok: true })
 })
 
 router.get('/creator-payouts', requireAdmin('admin'), async (_req, res) => {

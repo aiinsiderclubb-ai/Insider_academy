@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { X } from 'lucide-react'
 import styles from '../../pages/Admin.module.css'
 
 export function AdminToast({ message, type = 'success', onClose }) {
@@ -13,7 +14,7 @@ export function AdminToast({ message, type = 'success', onClose }) {
   return (
     <div className={`${styles.toast} ${styles[`toast_${type}`]}`} role="status">
       <span>{message}</span>
-      <button type="button" className={styles.toastClose} onClick={onClose} aria-label="Закрыть">×</button>
+      <button type="button" className={styles.toastClose} onClick={onClose} aria-label="Закрыть"><X size={15} aria-hidden /></button>
     </div>
   )
 }

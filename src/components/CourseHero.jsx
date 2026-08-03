@@ -1,9 +1,40 @@
 import { Link } from 'react-router-dom'
-import { IconBook } from './Icons'
+import {
+  ArrowLeft,
+  BookOpen,
+  Bot,
+  BriefcaseBusiness,
+  ChartNoAxesCombined,
+  Workflow,
+} from 'lucide-react'
 import { getCourseField, getCourseDescription } from '../data/courses'
-import { getCourseTheme, getCourseThemeStyle } from '../data/courseThemes'
+import { getCourseThemeStyle } from '../data/courseThemes'
 import { useTheme } from '../context/ThemeContext'
 import styles from './CourseHero.module.css'
+
+export function getCourseVisual(course) {
+  const key = `${course?.id || ''} ${course?.slug || ''} ${course?.category || ''}`.toLowerCase()
+  if (key.includes('agent') || key.includes('voice') || key.includes('conversational')) {
+    return '/design/course-ai-agents.webp'
+  }
+  if (key.includes('automation') || key.includes('n8n')) {
+    return '/design/course-ai-automation.webp'
+  }
+  if (key.includes('content') || key.includes('business') || key.includes('agency') || key.includes('saas')) {
+    return '/design/course-ai-content-business.webp'
+  }
+  return '/design/course-ai-data.webp'
+}
+
+function getCourseIcon(course) {
+  const key = `${course?.id || ''} ${course?.slug || ''} ${course?.category || ''}`.toLowerCase()
+  if (key.includes('agent') || key.includes('voice') || key.includes('conversational')) return Bot
+  if (key.includes('automation') || key.includes('n8n')) return Workflow
+  if (key.includes('content') || key.includes('business') || key.includes('agency') || key.includes('saas')) {
+    return BriefcaseBusiness
+  }
+  return ChartNoAxesCombined
+}
 
 export function CourseHero({
   course,
@@ -15,7 +46,8 @@ export function CourseHero({
 }) {
   const { theme } = useTheme()
   const themeStyle = getCourseThemeStyle(course.id, theme)
-  const accent = getCourseTheme(course.id)
+  const visual = getCourseVisual(course)
+  const CourseIcon = getCourseIcon(course)
   const title = getCourseField(course, 'title', lang)
   const subtitle = getCourseField(course, 'subtitle', lang)
   const description = getCourseDescription(course, lang)
@@ -28,7 +60,7 @@ export function CourseHero({
       style={themeStyle}
       aria-label={title}
     >
-      <div className={styles.bgImage} style={{ backgroundImage: `url(${course.image})` }} aria-hidden />
+      <div className={styles.bgImage} style={{ backgroundImage: `url(${visual})` }} aria-hidden />
       <div className={styles.bgOverlay} aria-hidden />
       <div className={styles.orbs} aria-hidden>
         <span className={styles.orb1} />
@@ -39,7 +71,7 @@ export function CourseHero({
       <div className={styles.inner}>
         {backTo && (
           <Link to={backTo} className={styles.back}>
-            <span className={styles.backArrow} aria-hidden>←</span>
+            <ArrowLeft className={styles.backArrow} size={15} aria-hidden />
             {backLabel || title}
           </Link>
         )}
@@ -58,7 +90,9 @@ export function CourseHero({
           </div>
 
           <div className={styles.titleRow}>
-            <span className={styles.icon} aria-hidden>{accent.icon}</span>
+            <span className={styles.icon} aria-hidden>
+              <CourseIcon size={18} strokeWidth={1.8} />
+            </span>
             <h1 className={styles.title}>{title}</h1>
           </div>
 
@@ -67,7 +101,7 @@ export function CourseHero({
 
           <div className={styles.meta}>
             <span className={styles.metaChip}>
-              <IconBook size={16} />
+              <BookOpen size={16} aria-hidden />
               {lessonsCount} {lang === 'ru' ? 'уроков' : 'lessons'}
             </span>
           </div>
@@ -77,7 +111,7 @@ export function CourseHero({
 
         {!compact && (
           <div className={styles.heroImageWrap}>
-            <img src={course.image} alt="" className={styles.heroImage} loading="eager" />
+            <img src={visual} alt="" className={styles.heroImage} loading="eager" />
             <div className={styles.imageGlow} aria-hidden />
           </div>
         )}

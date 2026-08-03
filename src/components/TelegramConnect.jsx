@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowUpRight, Check, Copy, RefreshCw, Send } from 'lucide-react'
 import { api } from '../api/client'
 import { TELEGRAM_NOTIFY_BOT } from '../data/siteLinks'
 import styles from './TelegramConnect.module.css'
@@ -29,8 +31,9 @@ async function copyText(text) {
   }
 }
 
-export function TelegramConnect({ lang, personalId: personalIdProp }) {
+export function TelegramConnect({ lang, personalId: personalIdProp, variant = 'default', returnTo = '' }) {
   const ru = lang === 'ru'
+  const navigate = useNavigate()
   const [status, setStatus] = useState(null)
   const [linkUrl, setLinkUrl] = useState('')
   const [botUrl, setBotUrl] = useState(TELEGRAM_NOTIFY_BOT || '')
@@ -39,6 +42,7 @@ export function TelegramConnect({ lang, personalId: personalIdProp }) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [copied, setCopied] = useState('')
+  const [redirecting, setRedirecting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -73,6 +77,13 @@ export function TelegramConnect({ lang, personalId: personalIdProp }) {
     const id = setInterval(() => { load().catch(() => {}) }, 5000)
     return () => clearInterval(id)
   }, [status, loading, load])
+
+  useEffect(() => {
+    if (!returnTo || !status?.connected || redirecting) return undefined
+    setRedirecting(true)
+    const id = setTimeout(() => navigate(returnTo, { replace: true }), 1500)
+    return () => clearTimeout(id)
+  }, [returnTo, status?.connected, redirecting, navigate])
 
   const togglePref = async (key) => {
     if (!status?.prefs) return
@@ -115,13 +126,16 @@ export function TelegramConnect({ lang, personalId: personalIdProp }) {
   const linkCommand = manualCommand || (personalId ? `/link ${personalId}` : '')
 
   return (
-    <div className={styles.wrap}>
+    <div className={`${styles.wrap} ${variant === 'settings' ? styles.settings : ''}`}>
       {status?.connected ? (
         <>
-          <p className={styles.ok}>
-            {ru ? 'Бот подключён' : 'Bot connected'}
-            {status.username && ` · @${status.username}`}
-          </p>
+          <div className={styles.connectionState}>
+            <span className={styles.stateIcon}><Check size={17} aria-hidden="true" /></span>
+            <p className={styles.ok}>
+              {ru ? 'Бот подключён' : 'Bot connected'}
+              {status.username && ` · @${status.username}`}
+            </p>
+          </div>
           <p className={styles.muted}>
             {ru
               ? 'Уведомления приходят в Telegram: ДЗ, промокоды, новости.'
@@ -131,31 +145,46 @@ export function TelegramConnect({ lang, personalId: personalIdProp }) {
             <a href={botUrl} target="_blank" rel="noreferrer noopener" className={styles.linkBtn}>
               {ru ? 'Открыть бота' : 'Open bot'}
               {botUsername ? ` ${botUsername}` : ''}
+              <ArrowUpRight size={16} aria-hidden="true" />
             </a>
+          )}
+          {redirecting && (
+            <p className={styles.muted}>
+              {ru ? 'Возвращаем вас обратно…' : 'Taking you back…'}{' '}
+              <button
+                type="button"
+                className={styles.textBtn}
+                onClick={() => navigate(returnTo, { replace: true })}
+              >
+                {ru ? 'Перейти сейчас' : 'Go now'}
+              </button>
+            </p>
           )}
         </>
       ) : (
         <>
-          <p className={styles.muted}>
-            {ru
-              ? 'Подключите бота уведомлений — ДЗ, промокоды, новости курсов. Два способа:'
-              : 'Connect the notify bot for homework, promos, and news. Two ways:'}
-          </p>
+          <div className={styles.connectionState}>
+            <span className={styles.stateIcon}><Send size={17} aria-hidden="true" /></span>
+            <div>
+              <strong>{ru ? 'Связать Academy с Telegram' : 'Connect Academy to Telegram'}</strong>
+              <p className={styles.muted}>
+                {ru
+                  ? 'Подключение занимает меньше минуты.'
+                  : 'It takes less than a minute.'}
+              </p>
+            </div>
+          </div>
 
-          <ol className={styles.steps}>
-            <li>
-              {ru ? 'Нажмите «Открыть бота» и подтвердите Start в Telegram.' : 'Tap “Open bot” and confirm Start in Telegram.'}
-            </li>
-            <li>
-              {ru
-                ? 'Или откройте бота и отправьте команду с вашим личным ID (ниже).'
-                : 'Or open the bot and send the command with your personal ID below.'}
-            </li>
+          <ol className={styles.steps} aria-label={ru ? 'Шаги подключения' : 'Connection steps'}>
+            <li><span>01</span>{ru ? 'Откройте бота' : 'Open the bot'}</li>
+            <li><span>02</span>{ru ? 'Нажмите Start' : 'Tap Start'}</li>
+            <li><span>03</span>{ru ? 'Проверьте статус' : 'Check status'}</li>
           </ol>
 
           {openBotUrl ? (
             <a href={openBotUrl} target="_blank" rel="noreferrer noopener" className={styles.primaryBtn}>
               {ru ? 'Открыть бота в Telegram' : 'Open bot in Telegram'}
+              <ArrowUpRight size={17} aria-hidden="true" />
             </a>
           ) : (
             <p className={styles.warn}>
@@ -173,27 +202,27 @@ export function TelegramConnect({ lang, personalId: personalIdProp }) {
 
           {personalId && (
             <div className={styles.idBox}>
-              <p className={styles.idLabel}>{ru ? 'Ваш личный ID на платформе' : 'Your platform ID'}</p>
-              <div className={styles.idRow}>
+              <div className={styles.credentialHeading}>
+                <strong>{ru ? 'Данные подключения' : 'Connection details'}</strong>
+                <span>{ru ? 'Запасной способ — отправить команду вручную' : 'Use the command for manual linking'}</span>
+              </div>
+              <div className={styles.credentialRow}>
+                <span className={styles.idLabel}>{ru ? 'Личный ID' : 'Personal ID'}</span>
                 <code className={styles.idCode}>{personalId}</code>
                 <button type="button" className={styles.copyBtn} onClick={() => onCopy('id', personalId)}>
-                  {copied === 'id' ? (ru ? 'Скопировано' : 'Copied') : (ru ? 'Копировать' : 'Copy')}
+                  {copied === 'id' ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
+                  <span>{copied === 'id' ? (ru ? 'Готово' : 'Copied') : (ru ? 'Копировать' : 'Copy')}</span>
                 </button>
               </div>
               {linkCommand && (
-                <>
-                  <p className={styles.idHint}>
-                    {ru
-                      ? 'Отправьте боту в Telegram (можно вставить целиком):'
-                      : 'Send this to the bot in Telegram:'}
-                  </p>
-                  <div className={styles.idRow}>
+                  <div className={styles.credentialRow}>
+                    <span className={styles.idLabel}>{ru ? 'Команда' : 'Command'}</span>
                     <code className={styles.cmdCode}>{linkCommand}</code>
                     <button type="button" className={styles.copyBtn} onClick={() => onCopy('cmd', linkCommand)}>
-                      {copied === 'cmd' ? (ru ? 'Скопировано' : 'Copied') : (ru ? 'Копировать' : 'Copy')}
+                      {copied === 'cmd' ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
+                      <span>{copied === 'cmd' ? (ru ? 'Готово' : 'Copied') : (ru ? 'Копировать' : 'Copy')}</span>
                     </button>
                   </div>
-                </>
               )}
             </div>
           )}
@@ -208,18 +237,24 @@ export function TelegramConnect({ lang, personalId: personalIdProp }) {
 
       {status?.prefs && (
         <div className={styles.prefs}>
-          <h4>{ru ? 'Что присылать' : 'What to send'}</h4>
-          {Object.entries(labels).map(([key, label]) => (
-            <label key={key} className={styles.prefRow}>
-              <input
-                type="checkbox"
-                checked={status.prefs[key] !== false}
-                disabled={busy || !status.connected}
-                onChange={() => togglePref(key)}
-              />
-              {label}
-            </label>
-          ))}
+          <div className={styles.prefsHeading}>
+            <h4>{ru ? 'Лента уведомлений' : 'Notification feed'}</h4>
+            <span>{ru ? 'Выберите, что присылать' : 'Choose what to receive'}</span>
+          </div>
+          <div className={styles.prefGrid}>
+            {Object.entries(labels).map(([key, label]) => (
+              <label key={key} className={styles.prefRow}>
+                <input
+                  type="checkbox"
+                  checked={status.prefs[key] !== false}
+                  disabled={busy || !status.connected}
+                  onChange={() => togglePref(key)}
+                />
+                <span className={styles.prefCheck}><Check size={13} aria-hidden="true" /></span>
+                {label}
+              </label>
+            ))}
+          </div>
         </div>
       )}
 
@@ -230,6 +265,7 @@ export function TelegramConnect({ lang, personalId: personalIdProp }) {
       )}
 
       <button type="button" className={styles.textBtn} onClick={load} disabled={busy}>
+        <RefreshCw size={14} aria-hidden="true" />
         {ru ? 'Обновить статус' : 'Refresh'}
       </button>
 

@@ -13,7 +13,7 @@ export const LEARNING_STAGES = [
     titleEn: 'Stage 1. Free introduction',
     subtitle: '7 дней · записанные уроки · без расписания',
     subtitleEn: '7 days · recorded · self-paced',
-    accent: '#22c55e',
+    accent: '#8da783',
     courseIds: ['ai-start', 'ai-for-productivity', 'first-automation-n8n'],
   },
   {

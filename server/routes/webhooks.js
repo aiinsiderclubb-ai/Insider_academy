@@ -2,16 +2,32 @@ import { Router } from 'express'
 import { getDb } from '../db.js'
 import { constructWebhookEvent } from '../services/stripe.js'
 import { verifyCallback } from '../services/liqpay.js'
-import {
-  verifyTributeSignature,
-  getCourseIdForProduct,
-} from '../services/tribute.js'
-import { grantAccess, logWebhookEvent } from '../services/access.js'
+import { verifyTributeSignature } from '../services/tribute.js'
+import { logWebhookEvent } from '../services/access.js'
+import { reconcilePaidPayment } from '../services/paymentFulfillment.js'
 import { config } from '../config.js'
+import { marketplaceWebhookAllowed } from '../middleware/prelaunch.js'
 
 const router = Router()
 
-export { grantAccess }
+function moneyFromPayload(value, fallback) {
+  const number = Number(value)
+  if (!Number.isFinite(number)) return Number(fallback)
+  return number > 1000 ? number / 100 : number
+}
+
+async function reconcile(payment, overrides = {}) {
+  return reconcilePaidPayment({
+    payment,
+    provider: payment.provider,
+    externalId: payment.external_id,
+    userId: payment.user_id,
+    productId: payment.course_id,
+    amount: payment.amount,
+    currency: payment.currency || 'EUR',
+    ...overrides,
+  })
+}
 
 export async function handleStripeWebhook(req, res) {
   try {
@@ -40,17 +56,17 @@ export async function handleStripeWebhook(req, res) {
         externalId: session.id,
         licenseTier: licenseTier || 'personal',
       })
-      await logWebhookEvent({ provider: 'stripe', eventName: event.type, status: 'ok', payload: { courseId } })
+      await logWebhookEvent({ provider: 'stripe', eventName: event.type, status: 'ok', payload: { courseId: result.courseId } })
     }
     res.json({ received: true })
   } catch (err) {
     console.error('[stripe webhook]', err.message)
     await logWebhookEvent({ provider: 'stripe', eventName: 'error', status: 'error', payload: { message: err.message } })
-    res.status(400).send(`Webhook Error: ${err.message}`)
+    res.status(err.status || 400).send(`Webhook Error: ${err.message}`)
   }
 }
 
-router.post('/liqpay', async (req, res) => {
+router.post('/liqpay', marketplaceWebhookAllowed, async (req, res) => {
   const decoded = verifyCallback(req.body.data, req.body.signature)
   if (!decoded) return res.status(400).send('Invalid signature')
   if (decoded.status === 'success' || decoded.status === 'sandbox') {
@@ -77,8 +93,23 @@ router.post('/liqpay', async (req, res) => {
       await logWebhookEvent({ provider: 'liqpay', eventName: decoded.status, status: 'ok', payload: { orderId: decoded.order_id } })
     }
   }
-  res.json({ ok: true })
 })
+
+async function findTributeDigitalPayment(db, payload) {
+  const productId = String(payload.product_id ?? payload.productId ?? payload.id ?? '')
+  if (!productId) return null
+  const candidates = await db.all(
+    `SELECT * FROM payments
+     WHERE provider = 'tribute' AND external_id = ? AND status IN ('pending', 'completed')
+     ORDER BY created_at DESC LIMIT 3`,
+    [productId]
+  )
+  if (candidates.length === 1) return candidates[0]
+  const email = String(payload.email || payload.buyer_email || '').trim().toLowerCase()
+  if (!email) return null
+  const matches = candidates.filter((item) => String(item.email || '').trim().toLowerCase() === email)
+  return matches.length === 1 ? matches[0] : null
+}
 
 export async function handleTributeWebhook(req, res) {
   const rawBody = req.body
@@ -177,6 +208,8 @@ export async function handleTributeWebhook(req, res) {
     }
 
     const shopEvents = ['shopOrderPaymentReceived', 'shopOrderChargeSuccess', 'shopOrder', 'order_paid']
+    const digitalEvents = ['new_digital_product', 'newDigitalProduct', 'digital_product_purchase']
+
     if (shopEvents.includes(name)) {
       const orderUuid = payload.uuid || payload.orderUuid || payload.order_id
       const payment = orderUuid
@@ -208,18 +241,31 @@ export async function handleTributeWebhook(req, res) {
       }
     }
 
+    if (!payment) {
+      await logWebhookEvent({ provider: 'tribute', eventName: name, status: 'ignored', payload: { reason: 'payment_not_unique_or_missing' } })
+      return res.status(202).json({ ok: true, granted: false, reviewRequired: true })
+    }
+
+    const result = await reconcile(payment, {
+      provider: 'tribute',
+      externalId: payment.external_id,
+      userId: payment.user_id,
+      productId: payment.course_id,
+      amount: moneyFromPayload(payload.amount, payment.amount),
+      currency: String(payload.currency || payment.currency || 'EUR').toUpperCase(),
+    })
+
     await logWebhookEvent({
       provider: 'tribute',
       eventName: name,
-      status: result?.ok ? 'ok' : 'processed',
-      payload: { courseId: result?.courseId, userId: result?.userId, productId: payload.product_id },
+      status: 'ok',
+      payload: { courseId: result.courseId, userId: result.userId, marketplace: result.marketplace || false },
     })
-
-    res.json({ ok: true, granted: result?.ok || false })
+    res.json({ ok: true, granted: result.ok })
   } catch (err) {
     console.error('[tribute webhook]', err)
     await logWebhookEvent({ provider: 'tribute', eventName: name, status: 'error', payload: { message: err.message } })
-    res.status(500).json({ error: err.message })
+    res.status(err.status || 500).json({ error: err.message })
   }
 }
 

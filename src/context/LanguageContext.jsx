@@ -1,24 +1,37 @@
-import { createContext, useContext, useState, useMemo, useEffect } from 'react'
+import { createContext, useContext, useMemo, useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ru from '../i18n/ru.json'
 import en from '../i18n/en.json'
+import ukr from '../i18n/ukr.json'
+import {
+  DEFAULT_LOCALE,
+  getLocaleFromPath,
+  isPublicPath,
+  LOCALE_LANGUAGE,
+  switchLocalePath,
+} from '../routing/locale'
 
-const translations = { ru, en }
+const translations = { ru, en, ukr: { ...ru, ...ukr, nav: { ...ru.nav, ...ukr.nav }, blog: { ...ru.blog, ...ukr.blog }, blogPost: { ...ru.blogPost, ...ukr.blogPost } } }
 
 const LanguageContext = createContext(null)
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState(() => {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [fallbackLocale, setFallbackLocale] = useState(() => {
     try {
-      return localStorage.getItem('ai-insider-lang') || 'ru'
+      const saved = localStorage.getItem('ai-insider-lang')
+      return saved && Object.hasOwn(LOCALE_LANGUAGE, saved) ? saved : DEFAULT_LOCALE
     } catch {
-      return 'ru'
+      return DEFAULT_LOCALE
     }
   })
+  const lang = getLocaleFromPath(location.pathname) || fallbackLocale
 
   useEffect(() => {
     try {
       localStorage.setItem('ai-insider-lang', lang)
-      document.documentElement.lang = lang === 'en' ? 'en' : 'ru'
+      document.documentElement.lang = LOCALE_LANGUAGE[lang] || 'ru'
     } catch (_) {}
   }, [lang])
 
@@ -40,7 +53,16 @@ export function LanguageProvider({ children }) {
     }
   }, [lang])
 
-  const toggleLang = () => setLang((l) => (l === 'ru' ? 'en' : 'ru'))
+  const setLang = (nextLocale) => {
+    if (!Object.hasOwn(LOCALE_LANGUAGE, nextLocale)) return
+    if (!isPublicPath(location.pathname)) {
+      setFallbackLocale(nextLocale)
+      return
+    }
+    const target = switchLocalePath(location.pathname, nextLocale)
+    navigate(`${target}${location.search}${location.hash}`)
+  }
+  const toggleLang = () => setLang(lang === 'ru' ? 'ukr' : lang === 'ukr' ? 'en' : 'ru')
 
   const value = useMemo(
     () => ({ lang, setLang, t, toggleLang }),

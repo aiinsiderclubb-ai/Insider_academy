@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
@@ -9,11 +9,6 @@ import { MarketplaceProductCard } from '../components/marketplace/MarketplacePro
 import { MARKETPLACE_CATEGORIES } from '../data/marketplace/categories'
 import { AI_INCOME_COLLECTION, MARKETPLACE_PRODUCTS } from '../data/marketplace/products'
 import { UiIcon } from '../components/UiIcon'
-import {
-  getRecommendedMarketplaceProducts,
-  searchMarketplaceProducts,
-} from '../data/marketplace/recommendations'
-import { getMarketplaceDiscountPercent } from '../data/marketplace/discounts'
 import {
   getMarketplaceFavorites,
   toggleMarketplaceFavorite,
@@ -48,6 +43,15 @@ const TABS = [
   { id: 'vault', ru: 'Vault', en: 'Vault' },
 ]
 
+const INDUSTRIES = [
+  { id: 'beauty', ru: 'Beauty & Wellness', en: 'Beauty & Wellness' },
+  { id: 'clinics', ru: 'Клиники', en: 'Clinics' },
+  { id: 'real-estate', ru: 'Недвижимость', en: 'Real Estate' },
+  { id: 'restaurants', ru: 'Рестораны', en: 'Restaurants' },
+  { id: 'legal', ru: 'Юридические услуги', en: 'Legal' },
+  { id: 'ecommerce', ru: 'E-commerce', en: 'E-commerce' },
+]
+
 export function Marketplace() {
   const { lang } = useLanguage()
   const { hasPurchased, purchases } = useAuth()
@@ -69,19 +73,36 @@ export function Marketplace() {
 
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
+  const [industry, setIndustry] = useState(() => searchParams.get('industry') || 'all')
   const [sort, setSort] = useState('popular')
   const [favorites, setFavorites] = useState(() => getMarketplaceFavorites())
+  const [products, setProducts] = useState([])
+  const [catalogLoading, setCatalogLoading] = useState(true)
+  const [catalogError, setCatalogError] = useState('')
 
-  const discountPercent = getMarketplaceDiscountPercent(purchases)
+  useEffect(() => {
+    let active = true
+    setCatalogLoading(true)
+    api.marketplaceProducts('marketplace')
+      .then((response) => {
+        if (active) setProducts(response.products || [])
+      })
+      .catch((error) => {
+        if (active) setCatalogError(error.message || 'Marketplace unavailable')
+      })
+      .finally(() => {
+        if (active) setCatalogLoading(false)
+      })
+    return () => { active = false }
+  }, [])
 
-  const recommended = useMemo(
-    () => getRecommendedMarketplaceProducts({ purchases, limit: 4 }),
-    [purchases]
-  )
+  const discountPercent = 0
+
+  const recommended = useMemo(() => purchases.length > 0 ? products.slice(0, 3) : [], [products, purchases])
 
   const featuredHits = useMemo(
-    () => MARKETPLACE_PRODUCTS.filter((p) => p.badge === 'hit').slice(0, 2),
-    []
+    () => products.filter((p) => p.badge === 'hit' || p.badges?.includes('hit')).slice(0, 2),
+    [products]
   )
 
   const incomeProducts = useMemo(
@@ -102,15 +123,29 @@ export function Marketplace() {
   )
 
   const catalogProducts = useMemo(() => {
-    const list = searchMarketplaceProducts(query, { categoryId: category, sort })
+    const normalizedQuery = query.trim().toLowerCase()
+    const list = products.filter((product) => {
+      const categoryMatch = category === 'all' || product.categoryId === category
+      const industryMatch = industry === 'all' || product.industry === industry
+      const queryMatch = !normalizedQuery || [product.titleRu, product.titleEn, product.shortRu, product.shortEn, product.sku]
+        .some((value) => String(value || '').toLowerCase().includes(normalizedQuery))
+      return categoryMatch && industryMatch && queryMatch
+    }).sort((a, b) => {
+      if (sort === 'price-asc') return Number(a.priceEur) - Number(b.priceEur)
+      if (sort === 'price-desc') return Number(b.priceEur) - Number(a.priceEur)
+      if (sort === 'rating') return Number(b.rating || 0) - Number(a.rating || 0)
+      if (sort === 'downloads') return Number(b.downloads || 0) - Number(a.downloads || 0)
+      if (sort === 'trending') return String(b.publishedAt || '').localeCompare(String(a.publishedAt || ''))
+      return Number(b.downloads || 0) - Number(a.downloads || 0)
+    })
     if (!featuredIds.length) return list
     const exclude = new Set(featuredIds)
     return list.filter((p) => !exclude.has(p.id))
-  }, [query, category, sort, featuredIds])
+  }, [products, query, category, industry, sort, featuredIds])
 
   const resultCount = useMemo(
-    () => searchMarketplaceProducts(query, { categoryId: category, sort }).length,
-    [query, category, sort]
+    () => catalogProducts.length + featuredIds.length,
+    [catalogProducts, featuredIds]
   )
 
   const handleFavorite = useCallback((productId) => {
@@ -248,6 +283,29 @@ export function Marketplace() {
                     ))}
                   </div>
 
+                  <div className={styles.industryFilter}>
+                    <span className={styles.industryLabel}>{ru ? 'Решения по нише' : 'Solutions by industry'}</span>
+                    <div className={styles.industryChips} aria-label={ru ? 'Отрасли' : 'Industries'}>
+                      <button
+                        type="button"
+                        className={`${styles.industryBtn} ${industry === 'all' ? styles.industryActive : ''}`}
+                        onClick={() => setIndustry('all')}
+                      >
+                        {ru ? 'Все ниши' : 'All industries'}
+                      </button>
+                      {INDUSTRIES.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`${styles.industryBtn} ${industry === item.id ? styles.industryActive : ''}`}
+                          onClick={() => setIndustry(item.id)}
+                        >
+                          {ru ? item.ru : item.en}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <select
                     className={styles.sort}
                     value={sort}
@@ -276,23 +334,28 @@ export function Marketplace() {
                 </div>
               </div>
 
-              {showFeatured && featuredHits.length > 0 && (
+              {catalogLoading ? (
+                <p className={styles.resultCount}>{ru ? 'Загружаем каталог…' : 'Loading catalog…'}</p>
+              ) : catalogError ? (
+                <EmptyState message={catalogError} />
+              ) : showFeatured && featuredHits.length > 0 && (
                 <StaggerReveal className={styles.featuredRow} stagger={60}>
                   {featuredHits.map((p) => renderCard(p, true))}
                 </StaggerReveal>
               )}
 
-              {catalogProducts.length === 0 && !(showFeatured && featuredHits.length) ? (
+              {!catalogLoading && !catalogError && catalogProducts.length === 0 && !(showFeatured && featuredHits.length) ? (
                 <EmptyState
                   message={ru ? 'Ничего не найдено по текущим фильтрам' : 'No results for current filters'}
                   actionLabel={ru ? 'Сбросить фильтры' : 'Reset filters'}
                   onAction={() => {
                     setQuery('')
                     setCategory('all')
+                    setIndustry('all')
                     setSort('popular')
                   }}
                 />
-              ) : catalogProducts.length > 0 ? (
+              ) : !catalogLoading && !catalogError && catalogProducts.length > 0 ? (
                 <StaggerReveal className={styles.grid} stagger={60}>
                   {catalogProducts.map((p) => renderCard(p))}
                 </StaggerReveal>

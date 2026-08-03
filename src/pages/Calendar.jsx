@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 import { getCalendarEvents } from '../api/calendarStore'
 import styles from './Calendar.module.css'
@@ -70,17 +71,27 @@ export function Calendar() {
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>
-        <h1 className={styles.title}>{t('calendar.title')}</h1>
-        <p className={styles.desc}>{t('calendar.desc')}</p>
+        <header className={styles.pageHead}>
+          <div>
+            <span className={styles.eyebrow}>{lang === 'ru' ? 'Учебный ритм' : 'Learning rhythm'}</span>
+            <h1 className={styles.title}>{t('calendar.title')}</h1>
+            <p className={styles.desc}>{t('calendar.desc')}</p>
+          </div>
+          <div className={styles.todayCard} aria-label={lang === 'ru' ? 'Сегодня' : 'Today'}>
+            <span>{lang === 'ru' ? 'Сегодня' : 'Today'}</span>
+            <strong>{now.getDate()}</strong>
+            <small>{now.toLocaleDateString(locale, { month: 'long', weekday: 'short' })}</small>
+          </div>
+        </header>
 
         <section className={styles.section}>
           <div className={styles.monthNav}>
             <button type="button" className={styles.monthBtn} onClick={prevMonth} aria-label={t('calendar.prevMonth')}>
-              ←
+              <ChevronLeft size={20} aria-hidden="true" />
             </button>
             <h2 className={styles.monthTitle}>{monthLabel}</h2>
             <button type="button" className={styles.monthBtn} onClick={nextMonth} aria-label={t('calendar.nextMonth')}>
-              →
+              <ChevronRight size={20} aria-hidden="true" />
             </button>
           </div>
           <div className={styles.calendarGrid}>
@@ -93,7 +104,7 @@ export function Calendar() {
               return (
                 <div
                   key={i}
-                  className={`${styles.calendarCell} ${!day ? styles.calendarCellEmpty : ''} ${isToday ? styles.calendarCellToday : ''}`}
+                  className={`${styles.calendarCell} ${!day ? styles.calendarCellEmpty : ''} ${isToday ? styles.calendarCellToday : ''} ${dayEvents.length ? styles.calendarCellHasEvent : ''}`}
                 >
                   {day && (
                     <>
@@ -102,7 +113,7 @@ export function Calendar() {
                         <div className={styles.cellEvents}>
                           {dayEvents.map((ev) => (
                             <span key={ev.title + String(ev.date)} className={styles.cellWebinar}>
-                              🎥 {ev.title}
+                              <i aria-hidden="true" /> {ev.title}
                             </span>
                           ))}
                         </div>
@@ -117,22 +128,31 @@ export function Calendar() {
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{t('calendar.upcoming')}</h2>
-          <ul className={styles.eventList}>
-            {events.map((e) => (
-              <li key={String(e.date) + e.title} className={styles.eventItem}>
-                <time className={styles.eventDate} dateTime={e.date.toISOString()}>
-                  {new Date(e.date).toLocaleDateString(locale, {
-                    day: 'numeric',
-                    month: 'long',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </time>
-                <span className={styles.eventTitle}>🎥 {e.title}</span>
-                <span className={styles.eventWebinar}>{t('calendar.webinar')}</span>
-              </li>
-            ))}
-          </ul>
+          {events.length > 0 ? (
+            <ul className={styles.eventList}>
+              {events.map((e) => (
+                <li key={String(e.date) + e.title} className={styles.eventItem}>
+                  <time className={styles.eventDate} dateTime={e.date.toISOString()}>
+                    <strong>{new Date(e.date).toLocaleDateString(locale, { day: '2-digit' })}</strong>
+                    <span>{new Date(e.date).toLocaleDateString(locale, {
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}</span>
+                  </time>
+                  <span className={styles.eventInfo}>
+                    <span className={styles.eventTitle}><i aria-hidden="true" /> {e.title}</span>
+                    {e.description && <small>{e.description}</small>}
+                  </span>
+                  <span className={styles.eventWebinar}>{t('calendar.webinar')}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className={styles.empty}>
+              <p>{lang === 'ru' ? 'На этот период событий пока нет.' : 'No events scheduled for this period.'}</p>
+            </div>
+          )}
         </section>
       </div>
     </div>

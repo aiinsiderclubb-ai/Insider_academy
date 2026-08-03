@@ -46,6 +46,9 @@ export function validateProductionConfig() {
   if (!process.env.ADMIN_JWT_SECRET || process.env.ADMIN_JWT_SECRET.length < 32) {
     errors.push('ADMIN_JWT_SECRET must be at least 32 characters')
   }
+  if (process.env.JWT_SECRET && process.env.JWT_SECRET === process.env.ADMIN_JWT_SECRET) {
+    errors.push('JWT_SECRET and ADMIN_JWT_SECRET must be different')
+  }
 
   for (const key of ['ADMIN_PASSWORD', 'EDITOR_PASSWORD', 'MODERATOR_PASSWORD']) {
     const val = process.env[key]

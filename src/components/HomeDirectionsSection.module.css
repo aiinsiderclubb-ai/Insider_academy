@@ -36,7 +36,7 @@
   z-index: 1;
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 28px;
+  padding: 0 clamp(20px, 4vw, 48px);
 }
 
 .head {
@@ -60,6 +60,20 @@
   text-transform: uppercase;
 }
 
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 18px;
+}
+
+.pill::before {
+  content: '';
+  width: 22px;
+  height: 1px;
+  background: #8b5cf6;
+}
+
 .title {
   margin: 0 0 12px;
   font-size: clamp(2rem, 4.5vw, 3.25rem);
@@ -70,6 +84,7 @@
 }
 
 .desc {
+  max-width: 690px;
   margin: 0;
   color: rgba(214, 211, 235, 0.82);
   line-height: 1.65;
@@ -116,13 +131,13 @@
   background: linear-gradient(165deg, rgba(28, 22, 48, 0.88) 0%, rgba(12, 10, 22, 0.72) 100%);
   backdrop-filter: blur(14px);
   align-items: stretch;
-  animation: panelIn var(--motion-base) var(--ease-motion) both;
+  animation: panelIn 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes panelIn {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -131,6 +146,7 @@
 }
 
 .panelAside {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -143,102 +159,139 @@
 
 .panelDesc {
   margin: 0;
-  font-size: var(--text-body);
-  line-height: 1.7;
-  color: var(--text-secondary);
+  color: #d6d1dc;
+  font-size: clamp(1rem, 1.4vw, 1.12rem);
+  line-height: 1.68;
 }
 
 .quote {
   margin: 0;
-  padding: 20px 22px;
-  border-left: 3px solid var(--accent);
-  background: var(--bg-elevated);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .quoteText {
-  margin: 0 0 12px;
-  font-size: 0.9375rem;
-  line-height: 1.65;
-  color: var(--text-primary);
-  font-style: italic;
+  margin: 0 0 14px;
+  color: #918c98;
+  font-size: 0.88rem;
+  font-style: normal;
+  line-height: 1.62;
+}
+
+.quoteText::before {
+  content: '“';
+  margin-right: 4px;
+  color: #8b5cf6;
+  font-family: var(--font-body);
+  font-size: 1.55rem;
+  line-height: 0;
+  vertical-align: -0.16em;
 }
 
 .quoteMeta {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  font-size: 0.8125rem;
+  gap: 1px;
+  font-size: 0.76rem;
 }
 
 .quoteMeta strong {
-  color: var(--text-primary);
+  color: #ddd8e2;
 }
 
-.quoteMeta span {
-  color: var(--text-secondary);
+.quoteMeta span,
+.panelFooter > span {
+  color: #706b76;
+}
+
+.panelFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.73rem;
 }
 
 .allLink {
-  margin-top: auto;
-  font-size: 0.9375rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #bca8f6;
+  font-size: 0.82rem;
   font-weight: 700;
-  color: var(--accent);
-  text-decoration: none;
+  white-space: nowrap;
 }
 
 .allLink:hover {
-  text-decoration: underline;
+  color: #dacdff;
 }
 
 .panelCourses {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  gap: 22px;
   align-items: stretch;
 }
 
 .panelCourses > * {
+  min-width: 0;
   height: 100%;
 }
 
 .panelCourses > *:only-child {
   grid-column: 1 / -1;
-  max-width: 480px;
+  max-width: 520px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1040px) {
+  .tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .panel {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 900px) {
-  .section {
-    padding: 64px 0;
+@media (max-width: 700px) {
+  .container {
+    padding: 0 16px;
   }
-}
 
-@media (max-width: 640px) {
-  .panelCourses {
-    grid-template-columns: 1fr;
+  .head {
+    margin-bottom: 34px;
   }
 
   .tabs {
-    justify-content: flex-start;
+    display: flex;
     overflow-x: auto;
-    flex-wrap: nowrap;
-    padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
+    border-radius: 16px;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .tab {
-    flex-shrink: 0;
+    flex: 0 0 190px;
+    min-height: 62px;
+  }
+
+  .panelCourses {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .panel {
     animation: none;
+  }
+
+  .tab {
+    transition: none;
   }
 }

@@ -1,9 +1,19 @@
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { CourseCatalogCard } from './CourseCatalogCard'
 import { COURSE_BUNDLES } from '../data/coursePacks'
 import { VaultSection } from './VaultSection'
 import { getCourseById, getCourseField } from '../data/courses'
+import { getCourseDesignCover } from '../utils/designAssets'
+import { ComingSoonLock } from './ComingSoonLock'
+import { isComingSoon } from '../config/availability'
 import styles from './CourseCatalogSections.module.css'
+
+const COURSE_BADGE_LABELS = {
+  hit: { ru: 'Хит', en: 'Hit' },
+  'trend-2026': { ru: 'Тренд 2026', en: 'Trend 2026' },
+  new: { ru: 'Новинка', en: 'New' },
+}
 
 function SectionHeader({ pill, title, desc, lang }) {
   return (
@@ -19,24 +29,36 @@ function CourseGrid({ courses, lang, theme, hasPurchased, getPercent, completedL
   if (!courses?.length) return null
   return (
     <div className={styles.grid}>
-      {courses.map((course) => (
-        <CourseCatalogCard
-          key={course.id}
-          course={course}
-          lang={lang}
-          theme={theme}
-          purchased={hasPurchased(course.id)}
-          percent={getPercent(course.id, course.lessons?.length ?? 0)}
-          completedLabel={completedLabel}
-          actionLabel={actionLabel}
-        />
-      ))}
+      {courses.map((course) => {
+        const badgeLabel = COURSE_BADGE_LABELS[course.badge]?.[lang]
+        const cardCourse = course.badge ? { ...course, badge: null } : course
+
+        return (
+          <div className={styles.courseSlot} key={course.id}>
+            {badgeLabel && (
+              <span className={styles.courseBadge} data-badge={course.badge}>
+                {badgeLabel}
+              </span>
+            )}
+            <CourseCatalogCard
+              course={cardCourse}
+              lang={lang}
+              theme={theme}
+              purchased={hasPurchased(course.id)}
+              percent={getPercent(course.id, course.lessons?.length ?? 0)}
+              completedLabel={completedLabel}
+              actionLabel={actionLabel}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }
 
 export function CourseBundleOffers({ lang, bundles = COURSE_BUNDLES, title, desc, compact = false }) {
   const ru = lang === 'ru'
+  const comingSoon = isComingSoon('courses')
 
   if (!bundles?.length) return null
 
@@ -70,7 +92,7 @@ export function CourseBundleOffers({ lang, bundles = COURSE_BUNDLES, title, desc
                 {bundleCourses.slice(0, 5).map((course, index) => (
                   <img
                     key={course.id}
-                    src={course.image}
+                    src={getCourseDesignCover(course)}
                     alt={getCourseField(course, 'title', lang)}
                     className={styles.bundleImage}
                     style={{ '--image-index': index }}
@@ -116,6 +138,7 @@ export function CourseBundleOffers({ lang, bundles = COURSE_BUNDLES, title, desc
                   {ru ? 'Подробнее' : 'Details'}
                 </Link>
               </div>
+              {comingSoon && <ComingSoonLock kind="courses" lang={lang} compact />}
             </article>
           )
         })}
@@ -138,6 +161,50 @@ export function CourseCatalogSections({
 
   return (
     <div className={styles.sections}>
+      <section className={styles.section}>
+        <SectionHeader
+          pill="Pro"
+          title={ru ? 'Платные программы' : 'Paid programs'}
+          desc={ru
+            ? 'Видео, домашние задания, сертификат и поддержка.'
+            : 'Video lessons, homework, certificates and community support.'}
+          lang={lang}
+        />
+        <CourseGrid
+          courses={paidCourses}
+          lang={lang}
+          theme={theme}
+          hasPurchased={hasPurchased}
+          getPercent={getPercent}
+          completedLabel={completedLabel}
+        />
+      </section>
+
+      <section className={styles.section}>
+        <SectionHeader
+          pill={ru ? 'Бесплатно' : 'Free'}
+          title={ru ? 'Начните без оплаты' : 'Start at zero cost'}
+          desc={ru
+            ? 'Три бесплатных программы — регистрация и сразу к урокам.'
+            : 'Three free programs — register and start learning.'}
+          lang={lang}
+        />
+        <CourseGrid
+          courses={freeCourses}
+          lang={lang}
+          theme={theme}
+          hasPurchased={hasPurchased}
+          getPercent={getPercent}
+          completedLabel={completedLabel}
+          actionLabel={(
+            <>
+              {ru ? 'Начать бесплатно' : 'Start free'}
+              <ArrowRight size={14} strokeWidth={1.8} aria-hidden style={{ marginLeft: 6, flexShrink: 0 }} />
+            </>
+          )}
+        />
+      </section>
+
       {acceleratorCourse && (
         <section className={styles.section}>
           <SectionHeader
@@ -159,46 +226,7 @@ export function CourseCatalogSections({
         </section>
       )}
 
-      <section className={styles.section}>
-        <SectionHeader
-          pill={ru ? 'Бесплатно' : 'Free'}
-          title={ru ? 'Начните без оплаты' : 'Start at zero cost'}
-          desc={ru
-            ? 'Три бесплатных программы — регистрация и сразу к урокам.'
-            : 'Three free programs — register and start learning.'}
-          lang={lang}
-        />
-        <CourseGrid
-          courses={freeCourses}
-          lang={lang}
-          theme={theme}
-          hasPurchased={hasPurchased}
-          getPercent={getPercent}
-          completedLabel={completedLabel}
-          actionLabel={ru ? 'Начать бесплатно →' : 'Start free →'}
-        />
-      </section>
-
       <CourseBundleOffers lang={lang} />
-
-      <section className={styles.section}>
-        <SectionHeader
-          pill="Pro"
-          title={ru ? 'Платные программы' : 'Paid programs'}
-          desc={ru
-            ? 'Видео, домашние задания, сертификат и поддержка.'
-            : 'Video lessons, homework, certificates and community support.'}
-          lang={lang}
-        />
-        <CourseGrid
-          courses={paidCourses}
-          lang={lang}
-          theme={theme}
-          hasPurchased={hasPurchased}
-          getPercent={getPercent}
-          completedLabel={completedLabel}
-        />
-      </section>
 
       <VaultSection lang={lang} hasPurchased={hasPurchased} compact showMoreLink />
 
@@ -208,7 +236,8 @@ export function CourseCatalogSections({
           <p>{ru ? 'Все этапы от бесплатного старта до AI-агентства.' : 'All stages from free start to AI agency.'}</p>
         </div>
         <Link to="/learning-map" className={styles.mapLink}>
-          {ru ? 'Открыть карту →' : 'Open map →'}
+          {ru ? 'Открыть карту' : 'Open map'}
+          <ArrowRight size={14} strokeWidth={1.8} aria-hidden style={{ marginLeft: 6, flexShrink: 0 }} />
         </Link>
       </aside>
     </div>

@@ -1,33 +1,34 @@
-/**
- * Generative marketplace covers from title hash.
- * Brand palette only: --accent → dark, varied angles.
- */
+const SVG_ONLY_COVERS = new Set([
+  'claude-skills-library',
+  'mcp-starter-pack-business',
+  'multi-agent-ops-team',
+  'voice-agent-kit-beauty-salon',
+  'voice-agent-kit-clinic-services',
+])
 
-function hashString(str) {
-  let h = 2166136261
-  for (let i = 0; i < str.length; i += 1) {
-    h ^= str.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return h >>> 0
+const LAUNCH_PRODUCT_COVERS = {
+  'agent-brief-canvas': '/marketplace/launch/ai-agent-brief-canvas.png',
+  'n8n-production-checklist': '/marketplace/launch/n8n-production-checklist.png',
+  'prompt-evaluation-starter': '/marketplace/launch/prompt-evaluation-starter.png',
+  'telegram-notify-bot-kit': '/marketplace/launch/telegram-notify-bot-kit.png',
+  'salon-reminder-system': '/marketplace/launch/salon-reminder-system.png',
+  'agent-audit-kit': '/marketplace/launch/ai-agent-audit-kit.png',
 }
 
 /**
- * @param {string} seed - usually product title
- * @returns {{ background: string, '--cover-angle': string }}
+ * Every Marketplace surface uses the shipped product artwork. Products may
+ * override the convention with coverImage; the rest resolve by slug.
  */
-export function getMarketplaceCoverStyle(seed = '') {
-  const h = hashString(String(seed))
-  const angle = (h % 24) * 15 // 0°…345° in 15° steps
-  const mid = 38 + (h % 28) // mid stop 38–65%
-  const dark = h % 2 === 0 ? 'var(--bg-base)' : 'var(--bg-elevated)'
-  const tip = (h % 7) === 0
-    ? `color-mix(in srgb, var(--accent-hot) 55%, var(--accent))`
-    : `var(--accent)`
-  const midColor = `color-mix(in srgb, var(--accent) ${28 + (h % 24)}%, ${dark})`
-
-  return {
-    background: `linear-gradient(${angle}deg, ${tip} 0%, ${midColor} ${mid}%, ${dark} 100%)`,
-    '--cover-angle': `${angle}deg`,
+export function getMarketplaceCoverImage(productOrSlug) {
+  if (productOrSlug && typeof productOrSlug === 'object') {
+    const slug = productOrSlug.slug || productOrSlug.id
+    if (LAUNCH_PRODUCT_COVERS[slug]) return LAUNCH_PRODUCT_COVERS[slug]
+    if (productOrSlug.coverImage) return productOrSlug.coverImage
+    return getMarketplaceCoverImage(slug)
   }
+
+  const slug = String(productOrSlug || 'chatgpt-prompt-vault')
+  if (LAUNCH_PRODUCT_COVERS[slug]) return LAUNCH_PRODUCT_COVERS[slug]
+  const extension = SVG_ONLY_COVERS.has(slug) ? 'svg' : 'png'
+  return `/marketplace/${slug}.${extension}`
 }
