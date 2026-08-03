@@ -4,7 +4,7 @@ import { ProductBadge } from '../components/ProductBadge'
 import { StarRating } from '../components/StarRating'
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
-import { getMarketplaceProduct, getRelatedProducts } from '../data/marketplace/products'
+import { AI_INCOME_COLLECTION, getMarketplaceProduct, getRelatedProducts } from '../data/marketplace/products'
 import { getMarketplaceCategory } from '../data/marketplace/categories'
 import { getMarketplaceCreator } from '../data/marketplace/creators'
 import {
@@ -42,6 +42,8 @@ export function MarketplaceProduct() {
   const category = getMarketplaceCategory(product.categoryId)
   const creator = getMarketplaceCreator(product.creatorId)
   const related = getRelatedProducts(product)
+  const incomeMeta = AI_INCOME_COLLECTION.find((item) => item.productId === product.id)
+  const isPreviewRelease = product.releaseStatus === 'preview'
   const reviews = marketplaceData?.reviews || []
 
   useEffect(() => {
@@ -76,12 +78,12 @@ export function MarketplaceProduct() {
   ].filter(Boolean)
   const requirements = ru ? requirementsRu : requirementsEn
 
-  const installRu = [
-    'Оплатите продукт',
-    'Откройте Личный кабинет → Marketplace',
-    'Скачайте ZIP и следуйте PDF-гайду',
-  ]
-  const installEn = ['Purchase the product', 'Open Account → Marketplace', 'Download ZIP and follow the PDF guide']
+  const installRu = isPreviewRelease
+    ? ['Мы завершаем файлы и тестовые сценарии', 'Проверяем инструкции и безопасность deploy', 'Продажи откроются только после публикации версии']
+    : ['Оплатите продукт', 'Откройте Личный кабинет → Marketplace', 'Скачайте ZIP и следуйте PDF-гайду']
+  const installEn = isPreviewRelease
+    ? ['We are finalizing files and test scenarios', 'Deployment instructions and security are being verified', 'Sales open only after a version is published']
+    : ['Purchase the product', 'Open Account → Marketplace', 'Download ZIP and follow the PDF guide']
   const install = ru ? installRu : installEn
 
   return (
@@ -194,17 +196,19 @@ export function MarketplaceProduct() {
               </section>
             </ScrollReveal>
 
-            <ScrollReveal>
-              <section className={styles.block}>
-                <h2>FAQ</h2>
-                {faq.map((item) => (
-                  <div key={item.q} className={styles.faqItem}>
-                    <strong>{item.q}</strong>
-                    <p>{item.a}</p>
-                  </div>
-                ))}
-              </section>
-            </ScrollReveal>
+            {!isPreviewRelease && (
+              <ScrollReveal>
+                <section className={styles.block}>
+                  <h2>FAQ</h2>
+                  {faq.map((item) => (
+                    <div key={item.q} className={styles.faqItem}>
+                      <strong>{item.q}</strong>
+                      <p>{item.a}</p>
+                    </div>
+                  ))}
+                </section>
+              </ScrollReveal>
+            )}
 
             {related.length > 0 && (
               <ScrollReveal>
@@ -239,6 +243,16 @@ export function MarketplaceProduct() {
                 <ProductBadge type={product.badge} lang={lang} variant="inline" />
               ) : null}
             </div>
+            {incomeMeta && (
+              <div className={styles.outcomePanel}>
+                <span>{ru ? 'Что вы сможете продавать' : 'What you can sell'}</span>
+                <strong>{ru ? incomeMeta.outcomeRu : incomeMeta.outcomeEn}</strong>
+                <div>
+                  <small>{ru ? 'Запуск' : 'Launch'} · {ru ? incomeMeta.launchRu : incomeMeta.launchEn}</small>
+                  <small>{ru ? incomeMeta.serviceRu : incomeMeta.serviceEn}</small>
+                </div>
+              </div>
+            )}
             <div>
               <span className={styles.price}>{finalPrice}€</span>
               {discountPercent > 0 && finalPrice < product.priceEur && (
@@ -269,7 +283,16 @@ export function MarketplaceProduct() {
               </Link>
             )}
 
-            {purchased ? (
+            {isPreviewRelease ? (
+              <>
+                <span className={`${styles.btnPrimary} ${styles.releasePending}`}>
+                  {ru ? 'Готовим проверенный релиз' : 'Verified release in progress'}
+                </span>
+                <Link to="/marketplace#catalog" className={styles.btnSecondary}>
+                  {ru ? 'Посмотреть доступные системы' : 'Browse available systems'}
+                </Link>
+              </>
+            ) : purchased ? (
               <>
                 <Link to="/cabinet#marketplace" className={styles.btnPrimary}>
                   {ru ? 'Скачать →' : 'Download →'}

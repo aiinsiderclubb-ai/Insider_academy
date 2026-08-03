@@ -225,6 +225,43 @@
   color: var(--text-muted);
 }
 
+.outcomePanel {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent-hot) 34%, var(--border));
+  border-radius: 15px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 13%, transparent), color-mix(in srgb, var(--accent-hot) 12%, transparent));
+}
+
+.outcomePanel > span {
+  color: var(--accent-hot);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.outcomePanel strong {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.outcomePanel div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.outcomePanel small {
+  padding: 4px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
 .price {
   font-family: var(--font-mono);
   font-size: 2rem;
@@ -275,10 +312,18 @@
   font-weight: 700;
 }
 
+.releasePending {
+  cursor: default;
+  background: color-mix(in srgb, var(--accent-hot) 14%, var(--bg-elevated));
+  border: 1px solid color-mix(in srgb, var(--accent-hot) 38%, transparent);
+  color: #fdba74;
+  box-shadow: none;
+}
+
 .btnPrimary {
-  background: var(--gradient-primary);
+  background: var(--gradient-commerce);
   color: var(--text-on-primary);
-  box-shadow: var(--btn-primary-shadow);
+  box-shadow: var(--shadow-commerce);
 }
 
 .btnSecondary {

@@ -16,6 +16,7 @@ export function MarketplaceProductCard({
   favorite = false,
   onToggleFavorite,
   featured = false,
+  outcomeMeta = null,
 }) {
   const ru = lang === 'ru'
   const title = ru ? product.titleRu : product.titleEn
@@ -70,6 +71,17 @@ export function MarketplaceProductCard({
 
         <p className={styles.desc}>{desc}</p>
 
+        {outcomeMeta && (
+          <div className={styles.outcome}>
+            <span className={styles.outcomeLabel}>{ru ? 'Результат' : 'Outcome'}</span>
+            <strong>{ru ? outcomeMeta.outcomeRu : outcomeMeta.outcomeEn}</strong>
+            <div className={styles.outcomeMeta}>
+              <span>{ru ? outcomeMeta.launchRu : outcomeMeta.launchEn}</span>
+              <span>{ru ? outcomeMeta.serviceRu : outcomeMeta.serviceEn}</span>
+            </div>
+          </div>
+        )}
+
         <div className={styles.footer}>
           <div className={styles.priceBlock}>
             <span className={styles.price}>{finalPrice}€</span>
@@ -81,7 +93,11 @@ export function MarketplaceProductCard({
             )}
           </div>
 
-          {purchased ? (
+          {product.releaseStatus === 'preview' ? (
+            <Link to={`/marketplace/${product.slug}`} className={`${styles.buyBtn} ${styles.previewRelease}`}>
+              {ru ? 'Скоро' : 'Preview'}
+            </Link>
+          ) : purchased ? (
             <Link to="/cabinet#marketplace" className={styles.buyBtn}>
               {ru ? 'Скачать' : 'Download'}
             </Link>

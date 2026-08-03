@@ -1,7 +1,12 @@
 .hero {
   position: relative;
-  padding: 56px 0 48px;
+  margin-top: 24px;
+  padding: clamp(42px, 7vw, 84px);
   overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border-subtle));
+  border-radius: clamp(24px, 4vw, 42px);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bg-surface) 94%, #7c3aed), var(--bg-surface));
+  box-shadow: var(--shadow-panel);
 }
 
 .bg {
@@ -9,9 +14,21 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(168, 85, 247, 0.22), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 90% 20%, rgba(249, 115, 22, 0.14), transparent 50%),
-    radial-gradient(ellipse 40% 40% at 50% 100%, rgba(99, 102, 241, 0.12), transparent 45%);
+    radial-gradient(ellipse 70% 80% at 0% 0%, rgba(124, 58, 237, 0.35), transparent 58%),
+    radial-gradient(ellipse 55% 75% at 100% 15%, rgba(249, 115, 22, 0.28), transparent 55%),
+    linear-gradient(120deg, transparent 55%, rgba(249, 115, 22, 0.04));
+}
+
+.bg::after {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  right: -80px;
+  bottom: -170px;
+  border: 46px solid color-mix(in srgb, var(--accent-hot) 24%, transparent);
+  border-radius: 46% 54% 62% 38%;
+  transform: rotate(24deg);
 }
 
 .floats {
@@ -52,7 +69,7 @@
 .inner {
   position: relative;
   z-index: 1;
-  max-width: 720px;
+  max-width: 880px;
   padding-right: 8px;
 }
 
@@ -65,19 +82,26 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: var(--glow-purple-dim);
-  border: 1px solid var(--border-accent);
-  color: var(--glow-purple);
+  background: color-mix(in srgb, var(--accent-hot) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-hot) 42%, transparent);
+  color: #fdba74;
 }
 
 .title {
   margin: 0 0 14px;
   font-family: var(--font-display);
-  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  font-size: clamp(2.25rem, 5.4vw, 4.25rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1.05;
   color: var(--text-primary);
+}
+
+.title span {
+  background: var(--gradient-commerce-text);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 .sub {
@@ -85,13 +109,83 @@
   font-size: 1.0625rem;
   line-height: 1.6;
   color: var(--text-muted);
-  max-width: 560px;
+  max-width: 720px;
 }
 
-.actions {
+.searchWrap {
+  display: grid;
+  gap: 8px;
+  max-width: 760px;
+}
+
+.searchLabel {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.search {
+  width: 100%;
+  min-height: 60px;
+  padding: 0 20px;
+  border: 1px solid color-mix(in srgb, var(--accent-hot) 32%, var(--border-subtle));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-elevated) 86%, transparent);
+  color: var(--text-primary);
+  font-size: 1rem;
+  box-shadow: 0 18px 50px -28px color-mix(in srgb, var(--accent-hot) 70%, transparent);
+}
+
+.search:focus {
+  outline: 3px solid color-mix(in srgb, var(--accent-hot) 22%, transparent);
+  border-color: var(--accent-hot);
+}
+
+.suggestions,
+.trust {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
+}
+
+.suggestions {
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.suggestions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--bg-elevated) 76%, transparent);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.suggestions button:hover {
+  border-color: var(--accent-hot);
+  color: #fdba74;
+}
+
+.trust {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+  gap: 12px 24px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.trust span::before {
+  content: '✓';
+  margin-right: 7px;
+  color: var(--accent-hot);
+  font-weight: 900;
 }
 
 .btnPrimary,
@@ -141,7 +235,16 @@
 }
 
 @media (max-width: 768px) {
+  .hero {
+    padding: 34px 22px;
+    border-radius: 24px;
+  }
+
   .floats {
     display: none;
+  }
+
+  .search {
+    min-height: 54px;
   }
 }

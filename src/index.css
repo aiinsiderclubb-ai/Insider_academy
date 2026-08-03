@@ -15,6 +15,8 @@
   /* ── Accents ── */
   --accent: #7C3AED;
   --accent-hot: #F97316;
+  --accent-warm: #FB923C;
+  --accent-warm-soft: #FDBA74;
   --accent-pink: #D946EF;
 
   /* ── Layout rhythm ── */
@@ -61,6 +63,7 @@
   --shadow-inset-card: var(--shadow-inset);
   --shadow-glow-sm: 0 0 24px color-mix(in srgb, var(--accent) 18%, transparent);
   --shadow-glow-md: 0 0 48px color-mix(in srgb, var(--accent) 22%, transparent);
+  --shadow-commerce: 0 16px 38px -12px color-mix(in srgb, var(--accent-hot) 58%, transparent);
   --btn-primary-shadow: var(--shadow-cta);
 
   /* ── Semantic / legacy aliases (components keep working) ── */
@@ -81,6 +84,8 @@
   --accent-dim: color-mix(in srgb, var(--accent) 22%, transparent);
   --gradient-primary: linear-gradient(135deg, #6D28D9 0%, #8B5CF6 50%, #A78BFA 100%);
   --gradient-primary-hover: linear-gradient(135deg, #7C3AED 0%, #9333EA 50%, #C084FC 100%);
+  --gradient-commerce: linear-gradient(115deg, #7C3AED 0%, #9333EA 48%, #F97316 100%);
+  --gradient-commerce-text: linear-gradient(110deg, #C4B5FD 0%, #A78BFA 38%, #FDBA74 78%, #F97316 100%);
   --gradient-text: linear-gradient(120deg, #C4B5FD 0%, #A78BFA 45%, #8B5CF6 100%);
   --glow-purple: #A78BFA;
   --glow-purple-dim: rgba(124, 58, 237, 0.14);
@@ -123,6 +128,8 @@
   --text-secondary: #565672;
   --accent: #7C3AED;
   --accent-hot: #EA580C;
+  --accent-warm: #F97316;
+  --accent-warm-soft: #C2410C;
   --accent-pink: #C026D3;
   --shadow-inset: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
   --shadow-cta: 0 8px 24px -6px color-mix(in srgb, var(--accent) 35%, transparent);
@@ -156,6 +163,16 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent-hot) 52%, var(--accent));
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent-hot) 58%, white);
+  outline-offset: 3px;
 }
 
 html {

@@ -7,6 +7,66 @@
   margin: 0 auto;
 }
 
+.incomeSection {
+  position: relative;
+  margin-top: 8px;
+  padding: clamp(24px, 4vw, 42px);
+  border: 1px solid color-mix(in srgb, var(--accent-hot) 28%, var(--border-subtle));
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-hot) 14%, transparent), transparent 34%),
+    radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 38%),
+    var(--bg-surface);
+  overflow: hidden;
+}
+
+.incomeHead {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: var(--accent-hot);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.incomeTitle {
+  max-width: 800px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3vw, 2.45rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+.incomeCta {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent-hot) 42%, transparent);
+  border-radius: var(--radius-pill);
+  color: #fdba74;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.incomeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
 .tabs {
   display: flex;
   gap: 8px;
@@ -56,7 +116,7 @@
   margin-bottom: 28px;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border-subtle));
   background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -83,8 +143,8 @@
 }
 
 .search:focus {
-  outline: none;
-  border-color: var(--border-strong);
+  outline: 3px solid color-mix(in srgb, var(--accent-hot) 16%, transparent);
+  border-color: var(--accent-hot);
 }
 
 .chips {
@@ -151,8 +211,8 @@
 }
 
 .catActive {
-  border-color: var(--accent);
-  background: var(--accent-dim);
+  border-color: var(--accent-hot);
+  background: color-mix(in srgb, var(--accent-hot) 14%, transparent);
   color: var(--text-primary);
 }
 
@@ -225,6 +285,9 @@
 }
 
 @media (max-width: 900px) {
+  .incomeGrid {
+    grid-template-columns: 1fr;
+  }
   .featuredRow {
     grid-template-columns: 1fr;
   }
@@ -254,6 +317,16 @@
 }
 
 @media (max-width: 640px) {
+  .incomeSection {
+    padding: 22px 16px;
+    border-radius: 22px;
+  }
+
+  .incomeHead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .future ul {
     columns: 1;
   }

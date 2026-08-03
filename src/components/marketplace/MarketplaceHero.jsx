@@ -1,38 +1,52 @@
-import { Link } from 'react-router-dom'
 import styles from './MarketplaceHero.module.css'
 
-export function MarketplaceHero({ lang }) {
+export function MarketplaceHero({ lang, query, onQueryChange }) {
   const ru = lang === 'ru'
 
-  const floats = ru
-    ? ['n8n Workflow', 'AI Agent', 'Prompt Pack', 'CRM Auto', 'RAG System']
-    : ['n8n Workflow', 'AI Agent', 'Prompt Pack', 'CRM Auto', 'RAG System']
+  const suggestions = [
+    { label: 'n8n', query: 'n8n' },
+    { label: ru ? 'Лиды' : 'Leads', query: ru ? 'лид' : 'lead' },
+    { label: 'Voice Agent', query: 'voice' },
+    { label: ru ? 'AI-агентство' : 'AI Agency', query: ru ? 'агентств' : 'agency' },
+  ]
 
   return (
     <header className={styles.hero}>
       <div className={styles.bg} aria-hidden />
-      <div className={styles.floats} aria-hidden>
-        {floats.map((label) => (
-          <span key={label} className={styles.chip}>
-            {label}
-          </span>
-        ))}
-      </div>
       <div className={styles.inner}>
-        <span className={styles.pill}>AI Insider Marketplace</span>
-        <h1 className={styles.title}>AI Insider Marketplace</h1>
+        <span className={styles.pill}>{ru ? 'Marketplace для AI-заработка' : 'Marketplace for AI income'}</span>
+        <h1 className={styles.title}>
+          {ru ? 'Не просто шаблоны.' : 'Not just templates.'}
+          <span>{ru ? ' Готовые AI-системы для результата.' : ' Ready AI systems built for outcomes.'}</span>
+        </h1>
         <p className={styles.sub}>
           {ru
-            ? 'Готовые AI-ассеты, автоматизации, шаблоны и бизнес-системы — скачайте и внедрите за часы.'
-            : 'Ready AI assets, automations, templates and business systems — deploy in hours.'}
+            ? 'Выберите нишу или бизнес-задачу, скачайте систему, разверните через n8n и продавайте клиенту как готовое внедрение.'
+            : 'Choose a niche or business outcome, download the system, deploy with n8n and sell it as a client-ready implementation.'}
         </p>
-        <div className={styles.actions}>
-          <a href="#catalog" className={styles.btnPrimary}>
-            {ru ? 'Смотреть каталог' : 'Browse Marketplace'}
-          </a>
-          <Link to="/marketplace/creators" className={styles.btnSecondary}>
-            {ru ? 'Стать креатором' : 'Become a Creator'}
-          </Link>
+        <label className={styles.searchWrap}>
+          <span className={styles.searchLabel}>{ru ? 'Что вы хотите автоматизировать?' : 'What do you want to automate?'}</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder={ru ? 'Например: лиды, салон, контент, CRM…' : 'Try leads, salon, content, CRM…'}
+            className={styles.search}
+          />
+        </label>
+        <div className={styles.suggestions}>
+          <span>{ru ? 'Популярное:' : 'Popular:'}</span>
+          {suggestions.map((suggestion) => (
+            <button key={suggestion.label} type="button" onClick={() => onQueryChange(suggestion.query)}>
+              {suggestion.label}
+            </button>
+          ))}
+        </div>
+        <div className={styles.trust}>
+          <span>{ru ? 'Проверенные файлы' : 'Verified files'}</span>
+          <span>{ru ? 'Безопасная оплата' : 'Secure checkout'}</span>
+          <span>{ru ? 'Лицензия для клиентов' : 'Client-ready licenses'}</span>
+          <span>One-click n8n</span>
         </div>
       </div>
     </header>

@@ -17,6 +17,7 @@ test('marketplace quote ignores client supplied price and rejects arbitrary SKU'
   assert.equal(quote.amountEur, 51)
   assert.equal(quote.licenseTier, 'client')
   assert.throws(() => quoteMarketplaceItem({ productId: 'arbitrary-sku' }), /Unknown/)
+  assert.throws(() => quoteMarketplaceItem({ productId: 'mp-income-agency-os' }), /not released/)
 })
 
 test('typed entitlements require verified source and are idempotent', async () => {

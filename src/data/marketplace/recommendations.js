@@ -53,9 +53,6 @@ function scoreProduct(product, context) {
   const relatedOwned = product.relatedIds?.some((id) => ownedProductIds.has(id))
   if (relatedOwned) score += 4
 
-  score += (product.rating || 0) * 0.5
-  score += Math.min((product.downloads || 0) / 2000, 3)
-
   if (purchasedIds.has(product.creatorId)) score += 0
 
   return score
@@ -153,16 +150,25 @@ export function searchMarketplaceProducts(query, { categoryId, sort, products = 
 
   if (sort === 'price-asc') list.sort((a, b) => a.priceEur - b.priceEur)
   else if (sort === 'price-desc') list.sort((a, b) => b.priceEur - a.priceEur)
-  else if (sort === 'rating') list.sort((a, b) => b.rating - a.rating)
-  else if (sort === 'downloads') list.sort((a, b) => b.downloads - a.downloads)
   else if (sort === 'trending') {
     list.sort((a, b) => {
       const ta = a.badges?.includes('trending') ? 1 : 0
       const tb = b.badges?.includes('trending') ? 1 : 0
       if (tb !== ta) return tb - ta
-      return b.downloads - a.downloads
+      const na = a.badges?.includes('new') ? 1 : 0
+      const nb = b.badges?.includes('new') ? 1 : 0
+      if (nb !== na) return nb - na
+      return String(a.titleEn || a.id).localeCompare(String(b.titleEn || b.id))
     })
-  } else list.sort((a, b) => (b.badges?.includes('top-selling') ? 1 : 0) - (a.badges?.includes('top-selling') ? 1 : 0))
+  } else {
+    list.sort((a, b) => {
+      const priority = (product) =>
+        (product.badges?.includes('trending') ? 2 : 0) +
+        (product.badges?.includes('new') ? 1 : 0)
+      return priority(b) - priority(a) ||
+        String(a.titleEn || a.id).localeCompare(String(b.titleEn || b.id))
+    })
+  }
 
   return list
 }

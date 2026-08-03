@@ -124,6 +124,9 @@ export function quoteMarketplaceItem({ productId, licenseTier = 'personal' }) {
   const product = getMarketplaceProduct(productId)
   const bundle = getBundle(productId)
   if (!product && !bundle) throw Object.assign(new Error('Unknown or inactive marketplace product'), { status: 404 })
+  if (product?.releaseStatus === 'preview') {
+    throw Object.assign(new Error('Product is not released for purchase yet'), { status: 409 })
+  }
   const basePrice = product?.priceEur ?? bundle.priceEur
   return {
     productId: product?.id ?? bundle.id,
@@ -147,14 +150,20 @@ export async function seedMarketplaceCatalog(db) {
     await db.run(
       `INSERT INTO marketplace_products
        (id, slug, title, category, creator_id, base_price_eur, active, metadata, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET slug = excluded.slug, title = excluded.title,
        category = excluded.category, creator_id = excluded.creator_id,
-       base_price_eur = excluded.base_price_eur, metadata = excluded.metadata, updated_at = excluded.updated_at`,
+       base_price_eur = excluded.base_price_eur, active = excluded.active,
+       metadata = excluded.metadata, updated_at = excluded.updated_at`,
       [
         product.id, product.slug, product.titleEn || product.titleRu, product.categoryId,
-        product.creatorId, product.priceEur,
-        JSON.stringify({ productType: product.productType, titleRu: product.titleRu, titleEn: product.titleEn }),
+        product.creatorId, product.priceEur, product.releaseStatus === 'preview' ? 0 : 1,
+        JSON.stringify({
+          productType: product.productType,
+          titleRu: product.titleRu,
+          titleEn: product.titleEn,
+          releaseStatus: product.releaseStatus || 'released',
+        }),
         now, now,
       ]
     )

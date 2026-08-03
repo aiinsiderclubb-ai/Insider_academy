@@ -7,7 +7,7 @@ import { MarketplaceHero } from '../components/marketplace/MarketplaceHero'
 import { MarketplacePerksBar } from '../components/marketplace/MarketplacePerksBar'
 import { MarketplaceProductCard } from '../components/marketplace/MarketplaceProductCard'
 import { MARKETPLACE_CATEGORIES } from '../data/marketplace/categories'
-import { MARKETPLACE_PRODUCTS } from '../data/marketplace/products'
+import { AI_INCOME_COLLECTION, MARKETPLACE_PRODUCTS } from '../data/marketplace/products'
 import { UiIcon } from '../components/UiIcon'
 import {
   getRecommendedMarketplaceProducts,
@@ -26,27 +26,21 @@ import styles from './Marketplace.module.css'
 const SORT_OPTIONS = [
   { id: 'popular', ru: 'Популярные', en: 'Popular' },
   { id: 'trending', ru: 'В тренде', en: 'Trending' },
-  { id: 'rating', ru: 'Рейтинг', en: 'Rating' },
-  { id: 'downloads', ru: 'Скачивания', en: 'Downloads' },
   { id: 'price-asc', ru: 'Цена ↑', en: 'Price ↑' },
   { id: 'price-desc', ru: 'Цена ↓', en: 'Price ↓' },
 ]
 
 const FUTURE_RU = [
-  'Рейтинги Marketplace',
-  'Лидерборд креаторов',
-  'Партнёрская программа',
-  'Конструктор бандлов',
-  'One-Click Deploy n8n',
-  'Ежемесячные дропы',
+  'Интерактивные live demo перед покупкой',
+  'Новые вертикальные системы для стоматологий и недвижимости',
+  'Партнёрская программа для внедренцев',
+  'Ежемесячные drops проверенных workflow',
 ]
 const FUTURE_EN = [
-  'Marketplace rankings',
-  'Creator leaderboards',
-  'Affiliate program',
-  'Bundle builder',
-  'One-click n8n deploy',
-  'Monthly drops',
+  'Interactive live demos before purchase',
+  'New vertical systems for dental and real estate teams',
+  'Implementation partner program',
+  'Monthly drops of verified workflows',
 ]
 
 const TABS = [
@@ -90,6 +84,16 @@ export function Marketplace() {
     []
   )
 
+  const incomeProducts = useMemo(
+    () => AI_INCOME_COLLECTION
+      .map((meta) => ({
+        meta,
+        product: MARKETPLACE_PRODUCTS.find((product) => product.id === meta.productId),
+      }))
+      .filter((item) => item.product),
+    []
+  )
+
   const showFeatured = !query && category === 'all'
 
   const featuredIds = useMemo(
@@ -113,7 +117,7 @@ export function Marketplace() {
     setFavorites(toggleMarketplaceFavorite(productId))
   }, [])
 
-  const renderCard = (product, featured = false) => (
+  const renderCard = (product, featured = false, outcomeMeta = null) => (
     <MarketplaceProductCard
       key={product.id}
       product={product}
@@ -124,6 +128,7 @@ export function Marketplace() {
       favorite={favorites.includes(product.id)}
       onToggleFavorite={handleFavorite}
       featured={featured}
+      outcomeMeta={outcomeMeta}
     />
   )
 
@@ -131,7 +136,7 @@ export function Marketplace() {
     <div className={styles.wrap}>
       <div className={styles.container}>
         {activeTab === 'catalog' && (
-          <MarketplaceHero lang={lang} />
+          <MarketplaceHero lang={lang} query={query} onQueryChange={setQuery} />
         )}
 
         <nav
@@ -162,6 +167,28 @@ export function Marketplace() {
           />
         ) : (
           <>
+            {!query && category === 'all' && (
+              <section className={`${styles.section} ${styles.incomeSection}`}>
+                <div className={styles.incomeHead}>
+                  <div>
+                    <span className={styles.eyebrow}>{ru ? 'AI Income Collection · 2026' : 'AI Income Collection · 2026'}</span>
+                    <h2 className={styles.incomeTitle}>
+                      {ru ? 'Системы, на которых можно строить AI-услугу' : 'Systems you can turn into an AI service'}
+                    </h2>
+                    <p className={styles.sectionDesc}>
+                      {ru
+                        ? 'Не обещание дохода, а готовая основа: deliverables, лицензия, внедрение и модель услуги для клиента.'
+                        : 'Not an income promise—a client-ready foundation with deliverables, licensing, deployment and service model.'}
+                    </p>
+                  </div>
+                  <a href="#catalog" className={styles.incomeCta}>{ru ? 'Весь каталог ↓' : 'Full catalog ↓'}</a>
+                </div>
+                <StaggerReveal className={styles.incomeGrid} stagger={45}>
+                  {incomeProducts.map(({ product, meta }) => renderCard(product, false, meta))}
+                </StaggerReveal>
+              </section>
+            )}
+
             {recommended.length > 0 && !query && category === 'all' && (
               <ScrollReveal>
                 <section className={styles.section}>
