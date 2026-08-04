@@ -32,3 +32,13 @@ export function getMarketplaceCoverImage(productOrSlug) {
   const extension = SVG_ONLY_COVERS.has(slug) ? 'svg' : 'png'
   return `/marketplace/${slug}.${extension}`
 }
+
+/** Legacy helper for gradient/cover backgrounds used by older marketplace cards. */
+export function getMarketplaceCoverStyle(productOrSlug) {
+  const image = getMarketplaceCoverImage(productOrSlug)
+  return {
+    backgroundImage: `linear-gradient(145deg, rgba(15, 17, 36, 0.18), rgba(15, 17, 36, 0.52)), url("${image}")`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+  }
+}
