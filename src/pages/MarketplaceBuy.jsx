@@ -51,10 +51,6 @@ export function MarketplaceBuy() {
     })
   }, [product?.id])
 
-  if (productLoading) {
-    return <div className={buyStyles.wrap}><div className={buyStyles.container}>{ru ? 'Загрузка…' : 'Loading…'}</div></div>
-  }
-
   if (!product) {
     return (
       <div className={buyStyles.wrap}>
@@ -64,14 +60,6 @@ export function MarketplaceBuy() {
         </div>
       </div>
     )
-  }
-
-  if (product.isFree) {
-    return <Navigate to={`/marketplace/${product.slug}`} replace />
-  }
-
-  if (isComingSoon('marketplace')) {
-    return <ComingSoonPage kind="marketplace" lang={lang} backTo="/marketplace" />
   }
 
   const purchased = hasPurchased(product.id)
@@ -96,8 +84,8 @@ export function MarketplaceBuy() {
   const ensureAuth = async () => {
     if (user) return
     const emailTrim = email.trim()
-    if (!emailTrim || !password || password.length < 10 || !/[A-Za-zА-Яа-яІіЇїЄє]/.test(password) || !/\d/.test(password)) {
-      throw new Error(ru ? 'Введите email и пароль (мин. 10 символов, буква и цифра)' : 'Enter email and password (10+ chars, letter and number)')
+    if (!emailTrim || !password || password.length < 6) {
+      throw new Error(ru ? 'Введите email и пароль (мин. 6 символов)' : 'Enter email and password (min 6 chars)')
     }
     await login(emailTrim, password, name.trim() || emailTrim)
   }
@@ -125,13 +113,7 @@ export function MarketplaceBuy() {
         const form = document.createElement('form')
         form.method = 'POST'
         form.action = 'https://www.liqpay.ua/api/3/checkout'
-        for (const [name, value] of [['data', lp.data], ['signature', lp.signature]]) {
-          const input = document.createElement('input')
-          input.type = 'hidden'
-          input.name = name
-          input.value = String(value || '')
-          form.appendChild(input)
-        }
+        form.innerHTML = `<input name="data" value="${lp.data}"/><input name="signature" value="${lp.signature}"/>`
         document.body.appendChild(form)
         form.submit()
         return
@@ -149,12 +131,12 @@ export function MarketplaceBuy() {
       <div className={buyStyles.wrap}>
         <div className={buyStyles.container}>
           <div className={buyStyles.purchasedCard}>
-            <div className={buyStyles.purchasedIcon}><Check size={26} strokeWidth={2.2} aria-hidden /></div>
+            <div className={buyStyles.purchasedIcon}>✓</div>
             <h2 className={buyStyles.purchasedTitle}>
               {ru ? 'Уже куплено' : 'Already purchased'}
             </h2>
             <Link to="/cabinet#marketplace" className={buyStyles.submit}>
-              {ru ? 'Скачать' : 'Download'} <ArrowRight size={16} aria-hidden />
+              {ru ? 'Скачать →' : 'Download →'}
             </Link>
           </div>
         </div>
@@ -163,28 +145,19 @@ export function MarketplaceBuy() {
   }
 
   return (
-    <div className={`${buyStyles.wrap} ${styles.buyPage}`}>
+    <div
+      className={buyStyles.wrap}
+      style={{ '--mp-cover': product.coverGradient }}
+    >
       <div className={buyStyles.container}>
-        <header className={styles.checkoutIntro}>
-          <div className={styles.checkoutSteps} aria-label={ru ? 'Этапы оформления' : 'Checkout steps'}>
-            <span className={`${styles.checkoutStep} ${styles.checkoutStepDone}`}>
-              <strong>1</strong>{ru ? 'Детали заказа' : 'Order details'}
-            </span>
-            <span className={`${styles.checkoutStep} ${styles.checkoutStepActive}`} aria-current="step">
-              <strong>2</strong>{ru ? 'Оплата' : 'Payment'}
-            </span>
-            <span className={styles.checkoutStep}>
-              <strong>3</strong>{ru ? 'Доступ' : 'Access'}
-            </span>
-          </div>
-          <div className={styles.checkoutProduct}>
-            <img src={getMarketplaceCoverImage(product)} alt="" className={styles.checkoutProductImage} />
-            <div className={styles.checkoutProductCopy}>
-              <span>AI Insider Marketplace</span>
-              <h1>{title}</h1>
-              <p>{ru ? product.shortRu : product.shortEn}</p>
-            </div>
-          </div>
+        <header className={styles.preview} style={{ marginBottom: 24, aspectRatio: 'auto', minHeight: 140 }}>
+          {product.coverImage ? (
+            <img src={product.coverImage} alt="" className={styles.previewCover} />
+          ) : (
+            <span className={styles.previewIcon}>{product.coverIcon}</span>
+          )}
+          <div className={styles.previewTint} aria-hidden />
+          <div className={styles.previewOverlay} aria-hidden />
         </header>
         <div className={buyStyles.layout}>
           <div className={buyStyles.leftCol}>
@@ -193,8 +166,7 @@ export function MarketplaceBuy() {
               <ul className={buyStyles.benefitsList}>
                 {benefits.map((item) => (
                   <li key={item} className={buyStyles.benefitItem}>
-                    <Check className={buyStyles.itemIcon} size={15} aria-hidden />
-                    <span>{item}</span>
+                    {item}
                   </li>
                 ))}
               </ul>
@@ -225,41 +197,27 @@ export function MarketplaceBuy() {
               {!user && (
                 <div className={buyStyles.authFields}>
                   <label className={buyStyles.label}>
-                    {ru ? 'Имя' : 'Name'}
-                    <input value={name} onChange={(e) => setName(e.target.value)} className={buyStyles.input} autoComplete="name" />
-                  </label>
-                  <label className={buyStyles.label}>
                     Email
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={buyStyles.input} required autoComplete="email" />
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={buyStyles.input} required />
                   </label>
                   <label className={buyStyles.label}>
                     {ru ? 'Пароль' : 'Password'}
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={buyStyles.input} required minLength={10} autoComplete="new-password" />
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={buyStyles.input} required minLength={6} />
                   </label>
                 </div>
               )}
-              <p className={buyStyles.payLabel}>{ru ? 'Способ оплаты' : 'Payment method'}</p>
               <div className={buyStyles.payMethods}>
                 {PAY_METHODS.map((pm) => {
                   const disabled = pm.id === 'tribute' && !tributeEnabled
-                  const PayIcon = pm.icon
                   return (
                     <button
                       key={pm.id}
                       type="button"
-                      className={`${buyStyles.payCard} ${method === pm.id ? buyStyles.payCardActive : ''} ${disabled ? buyStyles.payCardDisabled : ''}`}
+                      className={`${buyStyles.payCard} ${method === pm.id ? buyStyles.payCardActive : ''}`}
                       onClick={() => !disabled && setMethod(pm.id)}
                       disabled={disabled}
-                      aria-pressed={method === pm.id}
                     >
-                      <span className={buyStyles.payIcon} aria-hidden><PayIcon size={16} strokeWidth={1.8} /></span>
-                      <span className={buyStyles.payInfo}>
-                        <span className={buyStyles.payName}>{pm.label}</span>
-                        <span className={buyStyles.payDesc}>{ru ? pm.descRu : pm.descEn}</span>
-                      </span>
-                      {method === pm.id
-                        ? <CircleCheck className={`${buyStyles.payRadio} ${buyStyles.payRadioActive}`} size={16} aria-hidden />
-                        : <Circle className={buyStyles.payRadio} size={16} aria-hidden />}
+                      <span className={buyStyles.payName}>{pm.label}</span>
                     </button>
                   )
                 })}
@@ -270,11 +228,8 @@ export function MarketplaceBuy() {
               <button type="submit" className={buyStyles.submit} disabled={loading || !commerceEnabled}>
                 {ru ? `Оплатить ${serverPrice} €` : `Pay ${serverPrice} €`}
               </button>
-              <p className={buyStyles.secureNote}>
-                {ru ? 'После оплаты продукт появится в личном кабинете' : 'Your product appears in the cabinet after payment'}
-              </p>
-              <Link to={`/marketplace/${product.slug}`} className={`${buyStyles.secureNote} ${buyStyles.secureLink}`}>
-                <ArrowLeft size={13} aria-hidden /> {ru ? 'Назад' : 'Back'}
+              <Link to={`/marketplace/${product.slug}`} className={buyStyles.secureNote}>
+                {ru ? '← Назад' : '← Back'}
               </Link>
             </form>
           </aside>

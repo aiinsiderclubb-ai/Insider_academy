@@ -192,16 +192,6 @@ export function Cabinet() {
     setTeam(await api.getTeam())
   }
 
-  const downloadMarketplaceAsset = async (assetId) => {
-    setDownloadBusy(assetId)
-    try {
-      const result = await api.getMarketplaceDownloadUrl(assetId)
-      if (result.url) window.location.assign(result.url)
-    } finally {
-      setDownloadBusy(null)
-    }
-  }
-
   return (
     <div className={styles.wrap}>
       <div className={styles.container}>

@@ -7,30 +7,24 @@ import { useAuth } from '../context/AuthContext'
 import { AI_INCOME_COLLECTION, getMarketplaceProduct, getRelatedProducts } from '../data/marketplace/products'
 import { getMarketplaceCategory } from '../data/marketplace/categories'
 import { getMarketplaceCreator } from '../data/marketplace/creators'
+import {
+  getMarketplaceDiscountPercent,
+  getMarketplacePrice,
+  isMarketplaceProductIncludedForUser,
+} from '../data/marketplace/discounts'
 import { MarketplaceProductCard } from '../components/marketplace/MarketplaceProductCard'
 import { MarketplaceFreePreview } from '../components/MarketplaceFreePreview'
 import { ScrollReveal } from '../components/ScrollReveal'
-import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
-import { getMarketplaceProductAbout } from '../utils/marketplaceProductAbout'
-import { ComingSoonAction } from '../components/ComingSoonLock'
-import { isComingSoon } from '../config/availability'
+import { UiIcon } from '../components/UiIcon'
+import { getMarketplaceCoverStyle } from '../utils/marketplaceCover'
 import styles from './MarketplaceProduct.module.css'
 import { api } from '../api/client'
 
 export function MarketplaceProduct() {
   const { productSlug } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [activeMedia, setActiveMedia] = useState(0)
-  const [product, setProduct] = useState(null)
-  const [related, setRelated] = useState([])
-  const [reviews, setReviews] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [claiming, setClaiming] = useState(false)
-  const [claimError, setClaimError] = useState('')
-  const [accessGranted, setAccessGranted] = useState(false)
-  const navigate = useNavigate()
   const { lang } = useLanguage()
-  const { user, hasPurchased } = useAuth()
+  const { hasPurchased, purchases } = useAuth()
   const ru = lang === 'ru'
   const [marketplaceData, setMarketplaceData] = useState(null)
 
@@ -61,25 +55,28 @@ export function MarketplaceProduct() {
   }, [product.id])
 
   useEffect(() => {
-    setActiveMedia(0)
-  }, [productSlug])
-
-  useEffect(() => {
-    if (searchParams.get('paid') !== '1') return undefined
-    const timer = setTimeout(() => {
-      setSearchParams((previous) => {
-        const next = new URLSearchParams(previous)
+    if (searchParams.get('paid') !== '1') return
+    const t = setTimeout(() => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
         next.delete('paid')
         return next
       }, { replace: true })
     }, 4000)
-    return () => clearTimeout(timer)
+    return () => clearTimeout(t)
   }, [searchParams, setSearchParams])
 
-  const gallery = useMemo(() => {
-    if (!product) return []
-    return [...new Set([getMarketplaceCoverImage(product), ...(product.screenshots || [])])]
-  }, [product])
+  const requirementsRu = [
+    'Аккаунт AI Insider Academy',
+    product.categoryId === 'n8n-workflows' ? 'Self-hosted или cloud n8n' : null,
+    product.productType === 'agent-pack' ? 'API ключ LLM (OpenAI / Anthropic)' : null,
+  ].filter(Boolean)
+  const requirementsEn = [
+    'AI Insider Academy account',
+    product.categoryId === 'n8n-workflows' ? 'Self-hosted or cloud n8n' : null,
+    product.productType === 'agent-pack' ? 'LLM API key (OpenAI / Anthropic)' : null,
+  ].filter(Boolean)
+  const requirements = ru ? requirementsRu : requirementsEn
 
   const installRu = isPreviewRelease
     ? ['Мы завершаем файлы и тестовые сценарии', 'Проверяем инструкции и безопасность deploy', 'Продажи откроются только после публикации версии']
@@ -91,69 +88,69 @@ export function MarketplaceProduct() {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.container}>
-        {showPaid && (
-          <div className={styles.paidNotice} role="status">
-            <span className={styles.paidIcon} aria-hidden><Check size={15} strokeWidth={2.4} /></span>
-            <strong>{ru ? 'Оплата прошла успешно' : 'Payment complete'}</strong>
-            <span>{ru ? 'Продукт уже доступен в личном кабинете.' : 'Your product is ready in the cabinet.'}</span>
-          </div>
-        )}
-
+      <div
+        className={styles.container}
+        style={{ '--mp-cover': product.coverGradient }}
+      >
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">
           <Link to="/marketplace">Marketplace</Link>
-          <ChevronRight className={styles.breadcrumbIcon} size={14} aria-hidden />
-          {category && <span>{ru ? category.titleRu : category.titleEn}</span>}
-          <ChevronRight className={styles.breadcrumbIcon} size={14} aria-hidden />
+          <span aria-hidden>/</span>
+          {category && (
+            <>
+              <span>{ru ? category.titleRu : category.titleEn}</span>
+              <span aria-hidden>/</span>
+            </>
+          )}
           <span>{title}</span>
         </nav>
 
         <div className={styles.layout}>
-          <main className={styles.main}>
-            <section className={styles.gallery} aria-label={ru ? 'Галерея продукта' : 'Product gallery'}>
-              <div className={styles.preview}>
-                <img src={activeImage} alt={title} className={styles.previewCover} />
-                <span className={styles.previewTag}>
-                  {ru ? 'Реальный файл продукта' : 'Actual product artwork'}
-                </span>
+          <div>
+            <div className={styles.preview} style={getMarketplaceCoverStyle(title)}>
+              <span className={styles.previewIcon} aria-hidden>
+                <UiIcon name={category?.icon || 'sparkles'} size={40} tone="onAccent" />
+              </span>
+            </div>
+
+            {product.screenshots?.length > 0 && (
+              <div className={styles.shots}>
+                {product.screenshots.map((src) => (
+                  <img key={src} src={src} alt="" className={styles.shot} loading="lazy" />
+                ))}
               </div>
-              {gallery.length > 1 && (
-                <div className={styles.shots}>
-                  {gallery.map((src, index) => (
-                    <button
-                      key={src}
-                      type="button"
-                      className={`${styles.shotButton} ${index === activeMedia ? styles.shotActive : ''}`}
-                      onClick={() => setActiveMedia(index)}
-                      aria-label={`${ru ? 'Открыть изображение' : 'Open image'} ${index + 1}`}
-                    >
-                      <img src={src} alt="" className={styles.shot} loading="lazy" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </section>
+            )}
 
             {!purchased && product.freePreview && (
               <ScrollReveal>
-                <MarketplaceFreePreview preview={product.freePreview} lang={lang} productTitle={title} />
+                <MarketplaceFreePreview
+                  preview={product.freePreview}
+                  lang={lang}
+                  productTitle={title}
+                />
               </ScrollReveal>
             )}
 
             <ScrollReveal>
-              <section className={styles.detailsSection} aria-label={ru ? 'Детали продукта' : 'Product details'}>
-                <article className={`${styles.detailCard} ${styles.detailCardAbout}`}>
-                  <header className={styles.detailHead}>
-                    <span className={styles.detailEyebrow}>01</span>
-                    <h2>{ru ? 'О продукте' : 'About this product'}</h2>
-                  </header>
+              <section className={styles.block}>
+                <h2>{ru ? 'Обзор' : 'Overview'}</h2>
+                <p style={{ margin: 0, color: 'var(--text-muted)', lineHeight: 1.6 }}>{short}</p>
+              </section>
+            </ScrollReveal>
 
-                  <div className={styles.aboutGrid}>
-                    <div className={styles.aboutMain}>
-                      <p className={styles.aboutLead}>{about.lead}</p>
-                      {about.body.map((paragraph) => (
-                        <p key={paragraph} className={styles.aboutBody}>{paragraph}</p>
-                      ))}
+            <ScrollReveal>
+              <section className={styles.block}>
+                <h2>{ru ? 'Что входит' : 'What\'s included'}</h2>
+                <ul className={styles.list}>
+                  {included.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <p style={{ margin: '12px 0 0', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                  {ru ? 'Форматы: ' : 'Formats: '}
+                  {product.fileTypes.join(', ')}
+                </p>
+              </section>
+            </ScrollReveal>
 
             <ScrollReveal>
               <section className={styles.block}>
@@ -235,12 +232,7 @@ export function MarketplaceProduct() {
           </div>
 
           <aside className={styles.sidebar}>
-            <span className={styles.categoryLabel}>
-              {category ? (ru ? category.titleRu : category.titleEn) : product.productType}
-            </span>
             <h1 className={styles.title}>{title}</h1>
-            <p className={styles.short}>{short}</p>
-
             <div className={styles.meta}>
               {marketplaceData?.product?.reviewCount > 0 ? (
                 <>
@@ -263,44 +255,30 @@ export function MarketplaceProduct() {
             )}
             <div>
               <span className={styles.price}>{finalPrice}€</span>
+              {discountPercent > 0 && finalPrice < product.priceEur && (
+                <span className={styles.oldPrice}>{product.priceEur}€</span>
+              )}
             </div>
-
-            <ul className={styles.railPerks}>
-              <li><Check size={14} aria-hidden />{ru ? 'Мгновенный доступ' : 'Instant access'}</li>
-              <li><Check size={14} aria-hidden />{ru ? 'Коммерческая лицензия' : 'Commercial license'}</li>
-              <li><Check size={14} aria-hidden />{ru ? 'Обновления включены' : 'Updates included'}</li>
-            </ul>
-
-            {claimError && <p className={styles.discount} role="alert">{claimError}</p>}
-            {comingSoon ? (
-              <ComingSoonAction kind="marketplace" lang={lang} className={styles.btnPrimary} />
-            ) : purchased ? (
-              <>
-                <Link to="/cabinet#marketplace" className={styles.btnPrimary}>
-                  {ru ? 'Скачать продукт' : 'Download product'} <Download size={16} aria-hidden />
-                </Link>
-                <span className={styles.ownedRail}>{ru ? 'Уже в вашей библиотеке' : 'Already in your library'}</span>
-              </>
-            ) : product.isFree ? (
-              <button type="button" className={styles.btnPrimary} onClick={claimFree} disabled={claiming}>
-                {claiming ? (ru ? 'Открываем…' : 'Granting…') : (ru ? 'Получить бесплатно' : 'Get for free')}
-                <Download size={16} aria-hidden />
-              </button>
-            ) : (
-              <Link to={`/marketplace/${product.slug}/buy`} className={styles.btnPrimary}>
-                {ru ? 'Купить сейчас' : 'Buy now'} <ArrowUpRight size={16} aria-hidden />
-              </Link>
+            {discountPercent > 0 && (
+              <p style={{ fontSize: '0.8125rem', color: 'var(--accent-orange)', margin: '8px 0 0' }}>
+                {ru ? `Скидка подписки −${discountPercent}%` : `Membership discount −${discountPercent}%`}
+              </p>
             )}
 
             {creator && (
               <Link to={`/marketplace/creators/${creator.slug}`} className={styles.creator}>
-                <span className={styles.creatorAvatar} style={{ background: creator.avatarGradient }} aria-hidden />
+                <span
+                  className={styles.creatorAvatar}
+                  style={{ background: creator.avatarGradient }}
+                  aria-hidden
+                />
                 <span>
-                  <span className={styles.creatorOverline}>{ru ? 'Автор продукта' : 'Created by'}</span>
-                  <strong className={styles.creatorName}>
-                    {creator.name}
-                    {creator.verified && <BadgeCheck size={14} aria-label={ru ? 'Проверенный автор' : 'Verified creator'} />}
-                  </strong>
+                  <span className={styles.creatorName}>{creator.name}</span>
+                  {creator.verified && (
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      {ru ? 'Проверенный креатор' : 'Verified creator'}
+                    </span>
+                  )}
                 </span>
               </Link>
             )}
@@ -335,29 +313,6 @@ export function MarketplaceProduct() {
             )}
           </aside>
         </div>
-
-        {related.length > 0 && (
-          <ScrollReveal>
-            <section className={styles.relatedSection}>
-              <div className={styles.sectionHeading}>
-                <span>{ru ? 'Продолжить собирать стек' : 'Keep building your stack'}</span>
-                <h2>{ru ? 'Похожие продукты' : 'Related products'}</h2>
-              </div>
-              <div className={styles.relatedGrid}>
-                {related.map((relatedProduct) => (
-                  <MarketplaceProductCard
-                    key={relatedProduct.id}
-                    product={relatedProduct}
-                    lang={lang}
-                    purchased={hasPurchased(relatedProduct.id)}
-                    discountPercent={0}
-                    purchases={[]}
-                  />
-                ))}
-              </div>
-            </section>
-          </ScrollReveal>
-        )}
       </div>
     </div>
   )

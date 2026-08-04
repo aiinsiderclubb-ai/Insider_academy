@@ -48,50 +48,6 @@ export function MarketplaceHero({ lang, query, onQueryChange }) {
           <span>{ru ? 'Лицензия для клиентов' : 'Client-ready licenses'}</span>
           <span>One-click n8n</span>
         </div>
-        <div className={styles.proof} aria-label={ru ? 'Преимущества' : 'Benefits'}>
-          <span><Check size={14} aria-hidden />{ru ? 'Мгновенный доступ' : 'Instant access'}</span>
-          <span><Check size={14} aria-hidden />{ru ? 'Коммерческая лицензия' : 'Commercial license'}</span>
-          <span><Check size={14} aria-hidden />{ru ? 'Пожизненные обновления' : 'Lifetime updates'}</span>
-        </div>
-      </div>
-
-      <div className={styles.visual} aria-label={ru ? 'Популярные продукты' : 'Featured products'}>
-        <div className={styles.orbit} aria-hidden />
-        {featuredProducts.map((product, index) => {
-          const title = ru ? product.titleRu : product.titleEn
-          return (
-            <Link
-              key={product.id}
-              to={`/marketplace/${product.slug}`}
-              className={`${styles.artCard} ${index === 0 ? styles.artCardLead : ''}`}
-              aria-label={title}
-            >
-              <img src={getMarketplaceCoverImage(product)} alt="" />
-              <span className={styles.artMeta}>
-                <strong>{title}</strong>
-                <span>{product.priceEur}€</span>
-              </span>
-            </Link>
-          )
-        })}
-        {lead && (
-          <span className={styles.dropLabel}>
-            {ru ? 'Дроп недели' : 'Drop of the week'}
-          </span>
-        )}
-        {!lead && (
-          <div className={styles.dropLabel}>
-            {ru ? 'Первые продукты уже в каталоге' : 'First products now available'}
-          </div>
-        )}
-        {comingSoon && (
-          <ComingSoonLock
-            kind="marketplace"
-            lang={lang}
-            compact
-            className={styles.comingSoonVisual}
-          />
-        )}
       </div>
     </header>
   )

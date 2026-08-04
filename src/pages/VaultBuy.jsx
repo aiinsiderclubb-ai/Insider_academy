@@ -67,10 +67,6 @@ export function VaultBuy() {
     )
   }
 
-  if (isComingSoon('vault')) {
-    return <ComingSoonPage kind="vault" lang={lang} backTo="/marketplace?tab=vault" />
-  }
-
   const purchased = hasPurchased(product.id)
   const priceEur = product.priceEur
   const licenseMultiplier = licenseTier === 'agency' ? 3 : licenseTier === 'client' ? 1.75 : 1
@@ -81,8 +77,8 @@ export function VaultBuy() {
   const ensureAuth = async () => {
     if (user) return
     const emailTrim = email.trim()
-    if (!emailTrim || !password || password.length < 10 || !/[A-Za-zА-Яа-яІіЇїЄє]/.test(password) || !/\d/.test(password)) {
-      throw new Error(ru ? 'Введите email и пароль (мин. 10 символов, буква и цифра)' : 'Enter email and password (10+ chars, letter and number)')
+    if (!emailTrim || !password || password.length < 6) {
+      throw new Error(ru ? 'Введите email и пароль (мин. 6 символов)' : 'Enter email and password (min 6 chars)')
     }
     await login(emailTrim, password, name.trim() || emailTrim)
   }
@@ -110,13 +106,7 @@ export function VaultBuy() {
         const form = document.createElement('form')
         form.method = 'POST'
         form.action = 'https://www.liqpay.ua/api/3/checkout'
-        for (const [name, value] of [['data', lp.data], ['signature', lp.signature]]) {
-          const input = document.createElement('input')
-          input.type = 'hidden'
-          input.name = name
-          input.value = String(value || '')
-          form.appendChild(input)
-        }
+        form.innerHTML = `<input name="data" value="${lp.data}"/><input name="signature" value="${lp.signature}"/>`
         document.body.appendChild(form)
         form.submit()
         return
@@ -134,13 +124,13 @@ export function VaultBuy() {
       <div className={buyStyles.wrap}>
         <div className={buyStyles.container}>
           <div className={buyStyles.purchasedCard}>
-            <div className={buyStyles.purchasedIcon}><Check size={26} strokeWidth={2.2} aria-hidden /></div>
+            <div className={buyStyles.purchasedIcon}>✓</div>
             <h2 className={buyStyles.purchasedTitle}>
               {ru ? 'Vault уже куплен' : 'Vault already purchased'}
             </h2>
             <p className={buyStyles.purchasedDesc}>{title}</p>
             <Link to={`/vault/${product.slug}`} className={buyStyles.submit}>
-              {ru ? 'Открыть Vault' : 'Open Vault'} <ArrowRight size={16} aria-hidden />
+              {ru ? 'Открыть Vault →' : 'Open Vault →'}
             </Link>
           </div>
         </div>
@@ -149,28 +139,22 @@ export function VaultBuy() {
   }
 
   return (
-    <div className={`${buyStyles.wrap} ${styles.buyPage}`} style={{ '--vault-accent': product.accent }}>
+    <div
+      className={buyStyles.wrap}
+      style={{
+        '--vault-accent': product.accent,
+        '--vault-gradient': product.gradient,
+      }}
+    >
       <div className={buyStyles.container}>
-        <header className={styles.checkoutIntro}>
-          <div className={styles.checkoutSteps} aria-label={ru ? 'Этапы оформления' : 'Checkout steps'}>
-            <span className={`${styles.checkoutStep} ${styles.checkoutStepDone}`}>
-              <strong>1</strong>{ru ? 'Детали заказа' : 'Order details'}
-            </span>
-            <span className={`${styles.checkoutStep} ${styles.checkoutStepActive}`} aria-current="step">
-              <strong>2</strong>{ru ? 'Оплата' : 'Payment'}
-            </span>
-            <span className={styles.checkoutStep}>
-              <strong>3</strong>{ru ? 'Доступ' : 'Access'}
-            </span>
-          </div>
-          <div className={styles.checkoutProduct}>
-            <img src={product.coverImage} alt="" className={styles.checkoutProductImage} />
-            <div className={styles.checkoutProductCopy}>
-              <span>{ru ? product.categoryRu : product.categoryEn}</span>
-              <h1>{title}</h1>
-              <p>{ru ? product.shortRu : product.shortEn}</p>
-            </div>
-          </div>
+        <header
+          className={styles.hero}
+          style={{ marginBottom: 24 }}
+        >
+          <span className={styles.heroIcon} aria-hidden>{product.icon}</span>
+          <span className={styles.category}>{ru ? product.categoryRu : product.categoryEn}</span>
+          <h1 className={styles.title}>{title}</h1>
+          <p className={styles.heroLead}>{ru ? product.shortRu : product.shortEn}</p>
         </header>
 
         <div className={buyStyles.layout}>
@@ -181,16 +165,13 @@ export function VaultBuy() {
               </h2>
               <ul className={buyStyles.benefitsList}>
                 {benefits.map((item) => (
-                  <li key={item} className={buyStyles.benefitItem}>
-                    <Check className={buyStyles.itemIcon} size={15} aria-hidden />
-                    <span>{item}</span>
-                  </li>
+                  <li key={item} className={buyStyles.benefitItem}>{item}</li>
                 ))}
               </ul>
             </section>
             <div className={buyStyles.trustRow}>
-              <span className={buyStyles.trustBadge}><ShieldCheck size={14} aria-hidden />{ru ? 'Безопасная оплата' : 'Secure payment'}</span>
-              <span className={buyStyles.trustBadge}><Zap size={14} aria-hidden />{ru ? 'Мгновенный доступ' : 'Instant access'}</span>
+              <span className={buyStyles.trustBadge}>{ru ? 'Безопасная оплата' : 'Secure payment'}</span>
+              <span className={buyStyles.trustBadge}>{ru ? 'Мгновенный доступ' : 'Instant access'}</span>
             </div>
           </div>
 
@@ -225,7 +206,7 @@ export function VaultBuy() {
                   </label>
                   <label className={buyStyles.label}>
                     {ru ? 'Пароль' : 'Password'}
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={buyStyles.input} required minLength={10} autoComplete="new-password" />
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={buyStyles.input} required minLength={6} autoComplete="new-password" />
                   </label>
                 </div>
               )}
@@ -254,7 +235,6 @@ export function VaultBuy() {
               <div className={buyStyles.payMethods}>
                 {PAY_METHODS.map((pm) => {
                   const disabled = pm.id === 'tribute' && !tributeEnabled
-                  const PayIcon = pm.icon
                   return (
                     <button
                       key={pm.id}
@@ -264,14 +244,12 @@ export function VaultBuy() {
                       disabled={disabled}
                       aria-pressed={method === pm.id}
                     >
-                      <span className={buyStyles.payIcon} aria-hidden><PayIcon size={16} strokeWidth={1.8} /></span>
+                      <span className={buyStyles.payIcon} aria-hidden>{pm.icon}</span>
                       <span className={buyStyles.payInfo}>
                         <span className={buyStyles.payName}>{pm.label}</span>
                         <span className={buyStyles.payDesc}>{ru ? pm.descRu : pm.descEn}</span>
                       </span>
-                      {method === pm.id
-                        ? <CircleCheck className={`${buyStyles.payRadio} ${buyStyles.payRadioActive}`} size={16} aria-hidden />
-                        : <Circle className={buyStyles.payRadio} size={16} aria-hidden />}
+                      <span className={buyStyles.payRadio} aria-hidden />
                     </button>
                   )
                 })}
@@ -293,8 +271,8 @@ export function VaultBuy() {
                   ? 'После оплаты материалы появятся в личном кабинете'
                   : 'Materials appear in your account after payment'}
               </p>
-              <Link to={`/vault/${product.slug}`} className={`${buyStyles.secureNote} ${buyStyles.secureLink}`}>
-                <ArrowLeft size={13} aria-hidden /> {ru ? 'Назад к описанию' : 'Back to details'}
+              <Link to={`/vault/${product.slug}`} className={buyStyles.secureNote} style={{ display: 'block', marginTop: 8 }}>
+                {ru ? '← Назад к описанию' : '← Back to details'}
               </Link>
             </form>
           </aside>

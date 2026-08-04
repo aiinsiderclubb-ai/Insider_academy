@@ -269,10 +269,9 @@ export function Home() {
                   </div>
                 </div>
               </div>
-              )}
             </div>
-          </div>
-        </section>
+          </section>
+        </ScrollReveal>
       )}
 
       <ScrollReveal as="section" className={`${styles.whatIncluded} ${user && userStats ? styles.bandBase : styles.bandSurface} ${styles.stage}`}>
