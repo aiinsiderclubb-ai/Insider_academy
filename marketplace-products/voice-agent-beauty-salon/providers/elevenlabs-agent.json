@@ -1,0 +1,11 @@
+{
+  "name":"Beauty Salon Booking - RU",
+  "language":"ru",
+  "voice_id":"REPLACE_WITH_VOICE_ID",
+  "llm":"gpt-4.1-mini",
+  "temperature":0.2,
+  "first_message":"Здравствуйте! Это {{salon_name}}. Помогу с записью, переносом или отменой визита. Чем помочь?",
+  "client_tools":["check_slot","create_booking","cancel_booking","human_handoff"],
+  "webhook":"{{n8n_webhook_base}}/voice-agent-tools",
+  "metadata":{"kit":"beauty-salon","version":"1.1.0","environment":"staging"}
+}

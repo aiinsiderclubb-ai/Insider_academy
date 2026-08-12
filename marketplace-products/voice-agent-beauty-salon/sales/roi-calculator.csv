@@ -1,0 +1,10 @@
+metric,example_value,client_value,formula_or_note
+monthly_calls,400,,Client baseline
+missed_call_rate,0.30,,Client baseline
+booking_conversion,0.35,,Pilot result
+average_booking_value,85,,Currency per booking
+recoverable_bookings,42,,monthly_calls*missed_call_rate*booking_conversion
+recoverable_revenue,3570,,recoverable_bookings*average_booking_value
+provider_cost,250,,Actual provider invoice
+support_cost,500,,Agency monthly support
+estimated_net_value,2820,,recoverable_revenue-provider_cost-support_cost

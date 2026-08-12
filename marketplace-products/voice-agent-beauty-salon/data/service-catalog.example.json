@@ -1,0 +1,16 @@
+{
+  "currency":"CHF",
+  "timezone":"Europe/Zurich",
+  "services":[
+    {"id":"haircut-women","nameRu":"Женская стрижка","durationMinutes":60,"price":85,"staffIds":["anna","maria"]},
+    {"id":"haircut-men","nameRu":"Мужская стрижка","durationMinutes":45,"price":55,"staffIds":["anna"]},
+    {"id":"coloring-basic","nameRu":"Окрашивание","durationMinutes":150,"priceFrom":160,"staffIds":["maria"],"requiresConsultation":true},
+    {"id":"manicure-classic","nameRu":"Классический маникюр","durationMinutes":60,"price":65,"staffIds":["sofia"]}
+  ],
+  "staff":[
+    {"id":"anna","name":"Анна","calendarId":"REPLACE_ANNA_CALENDAR"},
+    {"id":"maria","name":"Мария","calendarId":"REPLACE_MARIA_CALENDAR"},
+    {"id":"sofia","name":"София","calendarId":"REPLACE_SOFIA_CALENDAR"}
+  ],
+  "policies":{"cancellationHours":24,"lateArrivalMinutes":15,"depositRequiredAbove":150}
+}

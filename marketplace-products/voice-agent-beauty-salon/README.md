@@ -1,15 +1,37 @@
 # Voice Agent Kit: Beauty Salon
 
-Release: 1.0.0
+Version 1.1.0 - production-oriented booking starter kit.
 
-Production-oriented starter kit for appointment calls. Supports Vapi, Retell and ElevenLabs through provider-neutral prompts and tool schemas.
+Build appointment calls for salons with Vapi, Retell or ElevenLabs. Package covers conversation policy, calendar actions, n8n orchestration, QA, privacy, handoff, deployment and client delivery.
 
-## Included
+## Start here
 
-- `agent-config.json`: voice-agent policy and provider settings.
-- `tools.json`: validated calendar and handoff tool schemas.
-- `sample-call.txt`: test conversation with expected tool calls.
-- `deployment-checklist.md`: launch, privacy, rollback and test checklist.
-- `voice-agent-beauty-salon-preview.pdf`: customer-facing preview.
+1. Read `docs/01-quick-start.md`.
+2. Copy `.env.example` into private deployment environment.
+3. Pick provider config from `providers/`.
+4. Import `workflows/beauty-salon-booking.json` into n8n.
+5. Map salon services using `data/service-catalog.example.json`.
+6. Run `tests/acceptance-tests.json` before routing live calls.
+7. Use `docs/05-client-handoff.md` for delivery.
 
-No API keys, customer data, phone numbers or credentials are included. Copy `.env.example` to local environment; never commit secrets.
+## Package map
+
+- `providers/` - Vapi, Retell and ElevenLabs templates.
+- `workflows/` - n8n booking and call-summary workflows.
+- `prompts/` - system prompt and reusable dialog modules.
+- `data/` - service catalog and test fixtures.
+- `tests/` - acceptance, failure and security scenarios.
+- `docs/` - setup, privacy, operations, rollback and client handoff.
+- `sales/` - discovery form, proposal scope and ROI calculator.
+
+## Boundaries
+
+- Templates, not hosted service.
+- Provider/API costs excluded.
+- Legal recording/consent rules depend on deployment country.
+- No credentials or customer data included.
+- Medical advice forbidden; sensitive or disputed calls transfer to human.
+
+## License
+
+See `LICENSE.md`. Personal, Client and Agency tiers are enforced by purchase entitlement.

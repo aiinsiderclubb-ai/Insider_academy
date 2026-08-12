@@ -7,22 +7,22 @@ import { saveUploadedFile } from './storage.js'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const sourceDir = path.join(root, 'marketplace-products', 'voice-agent-beauty-salon')
 const assets = [
-  ['voice-agent-beauty-salon-v1.0.0.zip', 'application/zip'],
-  ['voice-agent-beauty-salon-preview.pdf', 'application/pdf'],
+  ['voice-agent-beauty-salon-v1.1.0.zip', 'application/zip'],
+  ['voice-agent-beauty-salon-guide.pdf', 'application/pdf'],
   ['agent-config.json', 'application/json'],
   ['tools.json', 'application/json'],
 ]
 
 export async function seedVoiceAgentAssets(db) {
   const productId = 'mp-voice-beauty-salon'
-  const version = '1.0.0'
-  const versionId = 'mpv-voice-beauty-salon-1-0-0'
+  const version = '1.1.0'
+  const versionId = 'mpv-voice-beauty-salon-1-1-0'
   const now = new Date().toISOString()
   await db.run(
     `INSERT INTO product_versions (id, product_id, version, changelog, deploy_manifest, status, created_at)
      VALUES (?, ?, ?, ?, ?, 'published', ?)
      ON CONFLICT(product_id, version) DO UPDATE SET status = 'published', changelog = excluded.changelog`,
-    [versionId, productId, version, 'Initial tested booking kit with privacy defaults, calendar tools and rollback checklist', JSON.stringify({ providers: ['vapi', 'retell', 'elevenlabs'], restoreProcedure: 'deployment-checklist.md' }), now]
+    [versionId, productId, version, 'Provider configs, production workflows, privacy runbook, 12 acceptance tests and client sales pack', JSON.stringify({ providers: ['vapi', 'retell', 'elevenlabs'], workflows: ['beauty-salon-booking', 'call-summary'], acceptanceTests: 12, restoreProcedure: 'docs/04-rollback-recovery.md' }), now]
   )
   const stored = await db.get('SELECT id FROM product_versions WHERE product_id = ? AND version = ?', [productId, version])
   for (const [fileName, mimetype] of assets) {

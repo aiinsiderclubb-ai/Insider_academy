@@ -1,0 +1,18 @@
+{
+  "product": "Voice Agent Kit: Beauty Salon",
+  "version": "1.1.0",
+  "releaseDate": "2026-08-12",
+  "license": "Single-client commercial license",
+  "providers": ["Vapi", "Retell AI", "ElevenLabs Conversational AI"],
+  "contents": {
+    "providerTemplates": 3,
+    "workflowTemplates": 2,
+    "acceptanceScenarios": 12,
+    "operationalGuides": 5,
+    "salesDocuments": 3,
+    "languages": ["Russian", "English"]
+  },
+  "entrypoint": "README.md",
+  "requiredSecrets": ["CALENDAR_API_URL", "CALENDAR_API_KEY", "HANDOFF_PHONE"],
+  "supportBoundary": "Templates require provider, telephony and calendar accounts. Usage fees are not included."
+}

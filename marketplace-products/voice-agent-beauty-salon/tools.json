@@ -1,9 +1,37 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "tools": [
-    {"name":"check_slot","required":["service_id","date","timezone"],"timeoutMs":5000,"onFailure":"human_handoff"},
-    {"name":"create_booking","required":["service_id","starts_at","customer_name","customer_phone","consent"],"idempotencyKey":"call_id:slot_id"},
-    {"name":"cancel_booking","required":["booking_id","customer_phone"],"requiresConfirmation":true},
-    {"name":"human_handoff","required":["reason","call_summary"],"redact":true}
+    {
+      "name": "check_slot",
+      "description": "Return available appointment slots without creating a booking.",
+      "required": ["service_id", "date", "timezone"],
+      "timeoutMs": 5000,
+      "onFailure": "human_handoff"
+    },
+    {
+      "name": "create_booking",
+      "description": "Create one booking after customer explicitly confirms repeated details.",
+      "required": ["service_id", "starts_at", "customer_name", "customer_phone", "consent"],
+      "idempotencyKey": "call_id:slot_id",
+      "requiresConfirmation": true
+    },
+    {
+      "name": "reschedule_booking",
+      "description": "Move an existing booking after identity check and explicit confirmation.",
+      "required": ["booking_id", "new_starts_at", "customer_phone"],
+      "requiresConfirmation": true
+    },
+    {
+      "name": "cancel_booking",
+      "description": "Cancel an existing booking after identity check and explicit confirmation.",
+      "required": ["booking_id", "customer_phone"],
+      "requiresConfirmation": true
+    },
+    {
+      "name": "human_handoff",
+      "description": "Send a redacted call summary to salon staff and stop automation.",
+      "required": ["reason", "call_summary"],
+      "redact": true
+    }
   ]
 }

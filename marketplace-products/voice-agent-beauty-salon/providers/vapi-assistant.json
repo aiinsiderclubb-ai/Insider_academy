@@ -1,0 +1,12 @@
+{
+  "name": "Beauty Salon Booking - RU",
+  "model": {"provider":"openai","model":"gpt-4.1-mini","temperature":0.2,"maxTokens":350},
+  "voice": {"provider":"11labs","voiceId":"REPLACE_WITH_VOICE_ID","stability":0.55,"similarityBoost":0.75},
+  "firstMessage": "Здравствуйте! Вы позвонили в {{salon_name}}. Я помогу записаться, перенести или отменить визит. Разговор может записываться для обработки записи. Чем помочь?",
+  "endCallMessage": "Спасибо! Детали отправлены сообщением. Хорошего дня.",
+  "silenceTimeoutSeconds": 12,
+  "maxDurationSeconds": 480,
+  "serverUrl": "{{n8n_webhook_base}}/voice-agent-tools",
+  "serverUrlSecret": "{{n8n_webhook_secret}}",
+  "metadata": {"kit":"beauty-salon","version":"1.1.0","environment":"staging"}
+}

@@ -1,0 +1,11 @@
+{
+  "name":"Beauty Salon - Call Summary v1.1.0",
+  "nodes":[
+    {"parameters":{"httpMethod":"POST","path":"voice-agent-events"},"id":"event","name":"Call Event","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[0,0]},
+    {"parameters":{"jsCode":"const b=$json.body||$json; const clean={callId:b.call_id,status:b.status,intent:b.intent,bookingId:b.booking_id||null,handoff:Boolean(b.handoff),durationSeconds:Number(b.duration_seconds||0)}; return [{json:{...clean,receivedAt:new Date().toISOString()}}];"},"id":"redact","name":"Redact Summary","type":"n8n-nodes-base.code","typeVersion":2,"position":[260,0]},
+    {"parameters":{"operation":"append","documentId":{"__rl":true,"value":"REPLACE_SHEET_ID","mode":"id"},"sheetName":{"__rl":true,"value":"Calls","mode":"name"},"columns":{"mappingMode":"autoMapInputData"}},"id":"sheet","name":"Append Call Log","type":"n8n-nodes-base.googleSheets","typeVersion":4.5,"position":[520,0]}
+  ],
+  "connections":{"Call Event":{"main":[[{"node":"Redact Summary","type":"main","index":0}]]},"Redact Summary":{"main":[[{"node":"Append Call Log","type":"main","index":0}]]}},
+  "settings":{"executionOrder":"v1","saveDataErrorExecution":"all","saveDataSuccessExecution":"none"},
+  "active":false
+}
