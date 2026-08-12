@@ -516,9 +516,9 @@ export function Home() {
             <StaggerReveal className={styles.blogGrid} stagger={60}>
               {blogPreview.map((post) => (
                 <Link to={`/blog/${post.slug}`} key={post.id} className={styles.blogCard}>
-                  <span className={styles.blogCategory}>{getPostCategory(post)}</span>
-                  <h3 className={styles.blogCardTitle}>{getPostTitle(post)}</h3>
-                  <p className={styles.blogExcerpt}>{getPostExcerpt(post)}</p>
+                  <span className={styles.blogCategory}>{getBlogPostLocalized(post, lang).category}</span>
+                  <h3 className={styles.blogCardTitle}>{getBlogPostLocalized(post, lang).title}</h3>
+                  <p className={styles.blogExcerpt}>{getBlogPostLocalized(post, lang).excerpt}</p>
                   <span className={styles.blogLink}>{t('home.readMore')}</span>
                 </Link>
               ))}
