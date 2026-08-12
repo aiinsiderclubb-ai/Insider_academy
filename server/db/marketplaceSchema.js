@@ -1,5 +1,5 @@
 const MARKETPLACE_SCHEMA = `
-CREATE TABLE IF NOT EXISTS marketplace_products (
+CREATE TABLE IF NOT EXISTS commerce_products (
   id TEXT PRIMARY KEY,
   slug TEXT NOT NULL UNIQUE,
   title TEXT NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS product_versions (
   created_at TEXT NOT NULL,
   UNIQUE(product_id, version)
 );
-CREATE TABLE IF NOT EXISTS product_assets (
+CREATE TABLE IF NOT EXISTS commerce_assets (
   id TEXT PRIMARY KEY,
   product_version_id TEXT NOT NULL,
   file_name TEXT NOT NULL,
@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS checkout_contexts (
   license_tier TEXT NOT NULL,
   quoted_amount_eur REAL NOT NULL,
   legal_snapshot TEXT NOT NULL,
+  provider_reference TEXT,
   created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS marketplace_bundles (
@@ -164,6 +165,11 @@ CREATE TABLE IF NOT EXISTS incidents (
 
 export async function ensureMarketplaceSchema(db) {
   await db.exec(MARKETPLACE_SCHEMA)
+  try {
+    await db.exec('ALTER TABLE checkout_contexts ADD COLUMN provider_reference TEXT')
+  } catch (err) {
+    if (!/duplicate column|already exists/i.test(String(err.message))) throw err
+  }
 }
 
 export { MARKETPLACE_SCHEMA }

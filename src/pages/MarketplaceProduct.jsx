@@ -37,8 +37,8 @@ export function MarketplaceProduct() {
   const finalPrice = getMarketplacePrice(product.priceEur, purchases)
   const title = ru ? product.titleRu : product.titleEn
   const short = ru ? product.shortRu : product.shortEn
-  const included = ru ? product.includedRu : product.includedEn
-  const faq = ru ? product.faqRu : product.faqEn
+  const included = (ru ? product.includedRu : product.includedEn) || []
+  const faq = (ru ? product.faqRu : product.faqEn) || []
   const category = getMarketplaceCategory(product.categoryId)
   const creator = getMarketplaceCreator(product.creatorId)
   const related = getRelatedProducts(product)
@@ -147,7 +147,7 @@ export function MarketplaceProduct() {
                 </ul>
                 <p style={{ margin: '12px 0 0', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
                   {ru ? 'Форматы: ' : 'Formats: '}
-                  {product.fileTypes.join(', ')}
+                  {(product.fileTypes || []).join(', ') || (ru ? 'уточняются' : 'to be confirmed')}
                 </p>
               </section>
             </ScrollReveal>

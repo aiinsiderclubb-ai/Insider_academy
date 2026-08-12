@@ -37,8 +37,7 @@ export function LegalPage({ title, description, path, sections, draftNotice = fa
         {draftNotice && (
           <aside className={styles.todo}>
             <ShieldAlert size={20} aria-hidden />
-            <p><strong>DRAFT для юриста:</strong> реквизиты в блоках выше помечены TODO —
-              замените на финальные данные юрлица (название, рег. номер, адрес, IBAN) до приёма боевых платежей.</p>
+            <p><strong>Продажи приостановлены:</strong> финальные реквизиты продавца ещё не опубликованы. Оплата не принимается.</p>
           </aside>
         )}
       </div>

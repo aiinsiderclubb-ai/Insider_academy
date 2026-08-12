@@ -36,6 +36,7 @@ import {
   Settings,
   ShoppingBag,
   Sparkles,
+  Users,
   X,
 } from 'lucide-react'
 import styles from './Layout.module.css'
@@ -50,6 +51,7 @@ const navItemsKeys = [
   { to: '/memberships', labelKey: 'nav.memberships', Icon: Sparkles },
   { to: '/events', labelKey: 'nav.giveaway', Icon: Award },
   { to: '/blog', labelKey: 'nav.blog', Icon: Newspaper },
+  { to: '/team', labelRu: 'Команда', labelEn: 'Team', Icon: Users },
   { to: '/cabinet', labelKey: 'nav.myCourses', Icon: GraduationCap, auth: true },
   { to: '/calendar', labelKey: 'nav.calendar', Icon: CalendarDays, auth: true },
 ]

@@ -7,6 +7,7 @@ import { logWebhookEvent } from '../services/access.js'
 import { reconcilePaidPayment } from '../services/paymentFulfillment.js'
 import { config } from '../config.js'
 import { marketplaceWebhookAllowed } from '../middleware/prelaunch.js'
+import { revokeMarketplaceEntitlements } from '../services/marketplace.js'
 
 const router = Router()
 
@@ -29,6 +30,21 @@ async function reconcile(payment, overrides = {}) {
   })
 }
 
+async function revokePaymentAccess(db, payment, reason) {
+  if (!payment) return 0
+  return db.transaction(async (tx) => {
+    const modern = await revokeMarketplaceEntitlements(tx, { sourceId: payment.id, reason })
+    const legacy = await tx.run(
+      `UPDATE asset_entitlements SET status = 'revoked', expires_at = ?
+       WHERE order_id IN (SELECT id FROM marketplace_orders WHERE payment_id = ?) AND status = 'active'`,
+      [new Date().toISOString(), payment.id]
+    )
+    await tx.run("UPDATE marketplace_orders SET status = 'refunded' WHERE payment_id = ? AND status = 'completed'", [payment.id])
+    await tx.run("UPDATE payments SET status = 'refunded' WHERE id = ? AND status = 'completed'", [payment.id])
+    return modern + Number(legacy?.changes ?? legacy?.rowCount ?? 0)
+  })
+}
+
 export async function handleStripeWebhook(req, res) {
   try {
     const event = constructWebhookEvent(req.body, req.headers['stripe-signature'])
@@ -46,7 +62,21 @@ export async function handleStripeWebhook(req, res) {
         amount: Number(session.amount_total || 0) / 100,
         currency: String(session.currency || '').toUpperCase(),
       })
+      if (payment && session.payment_intent) {
+        await getDb().run('UPDATE checkout_contexts SET provider_reference = ? WHERE payment_id = ?', [String(session.payment_intent), payment.id])
+      }
       await logWebhookEvent({ provider: 'stripe', eventName: event.type, status: 'ok', payload: { courseId: result.courseId } })
+    } else if (event.type === 'charge.refunded' || event.type === 'charge.dispute.created') {
+      const charge = event.data.object
+      const providerReference = String(charge.payment_intent || '')
+      const context = providerReference
+        ? await getDb().get('SELECT * FROM checkout_contexts WHERE provider_reference = ? LIMIT 1', [providerReference])
+        : null
+      if (context) {
+        const payment = await getDb().get('SELECT * FROM payments WHERE id = ? LIMIT 1', [context.payment_id])
+        await revokePaymentAccess(getDb(), payment, event.type)
+      }
+      await logWebhookEvent({ provider: 'stripe', eventName: event.type, status: context ? 'ok' : 'ignored', payload: { paymentId: context?.payment_id } })
     }
     res.json({ received: true })
   } catch (err) {
@@ -61,7 +91,15 @@ router.post('/liqpay', marketplaceWebhookAllowed, async (req, res) => {
   if (!decoded) return res.status(400).send('Invalid signature')
   const successful = decoded.status === 'success'
     || (decoded.status === 'sandbox' && process.env.NODE_ENV !== 'production')
-  if (!successful) return res.json({ ok: true })
+  if (!successful) {
+    if (['reversed', 'refund', 'chargeback'].includes(decoded.status)) {
+      const payment = await getDb().get("SELECT * FROM payments WHERE provider = 'liqpay' AND external_id = ? LIMIT 1", [decoded.order_id])
+      if (payment) {
+        await revokePaymentAccess(getDb(), payment, `liqpay:${decoded.status}`)
+      }
+    }
+    return res.json({ ok: true })
+  }
 
   try {
     const payment = await getDb().get(
@@ -123,15 +161,36 @@ export async function handleTributeWebhook(req, res) {
 
   try {
     let payment = null
-    const shopEvents = ['shopOrderPaymentReceived', 'shopOrderChargeSuccess', 'shopOrder', 'order_paid']
+    const shopEvents = ['shopOrderPaymentReceived', 'shopOrderChargeSuccess']
     const digitalEvents = ['new_digital_product', 'newDigitalProduct', 'digital_product_purchase']
+    const reversalEvents = ['shopOrderRefunded', 'shopOrderChargeback', 'shopOrderCancelled', 'order_refunded', 'chargeback']
+    const paymentState = String(payload.payment_status || payload.paymentStatus || payload.status || '').toLowerCase()
+    const paidStates = ['paid', 'success', 'succeeded', 'captured', 'completed']
+
+    if (reversalEvents.includes(name)) {
+      const orderUuid = payload.uuid || payload.orderUuid || payload.order_id
+      payment = orderUuid
+        ? await db.get("SELECT * FROM payments WHERE provider = 'tribute' AND external_id = ? LIMIT 1", [orderUuid])
+        : await findTributeDigitalPayment(db, payload)
+      const revoked = await revokePaymentAccess(db, payment, `tribute:${name}`)
+      await logWebhookEvent({ provider: 'tribute', eventName: name, status: payment ? 'ok' : 'ignored', payload: { paymentId: payment?.id, revoked } })
+      return res.status(payment ? 200 : 202).json({ ok: true, revoked })
+    }
 
     if (shopEvents.includes(name)) {
+      if (!paidStates.includes(paymentState)) {
+        await logWebhookEvent({ provider: 'tribute', eventName: name, status: 'ignored', payload: { reason: 'payment_not_settled' } })
+        return res.status(202).json({ ok: true, granted: false })
+      }
       const orderUuid = payload.uuid || payload.orderUuid || payload.order_id
       payment = orderUuid
         ? await db.get("SELECT * FROM payments WHERE provider = 'tribute' AND external_id = ? LIMIT 1", [orderUuid])
         : null
     } else if (digitalEvents.includes(name)) {
+      if (!paidStates.includes(paymentState)) {
+        await logWebhookEvent({ provider: 'tribute', eventName: name, status: 'ignored', payload: { reason: 'payment_not_settled' } })
+        return res.status(202).json({ ok: true, granted: false })
+      }
       payment = await findTributeDigitalPayment(db, payload)
     }
 

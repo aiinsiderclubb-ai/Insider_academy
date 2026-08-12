@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "name": "beauty-salon-booking-agent",
+  "supportedProviders": ["vapi", "retell", "elevenlabs"],
+  "languages": ["ru", "en"],
+  "policy": {
+    "goal": "Book, reschedule or cancel salon appointments",
+    "requiredConfirmation": ["service", "date", "time", "customer_name"],
+    "maxAlternatives": 2,
+    "medicalAdvice": "forbidden",
+    "humanHandoff": ["medical_question", "complaint", "payment_dispute", "tool_failure"]
+  },
+  "privacy": {
+    "announceRecording": true,
+    "collectMinimumData": true,
+    "retentionDays": 30,
+    "redactCallSummary": ["payment_card", "health_data"]
+  }
+}

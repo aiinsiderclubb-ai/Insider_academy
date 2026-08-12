@@ -42,6 +42,7 @@ const Events = lazyPage(() => import('./pages/Events'), 'Events')
 const PublicOffer = lazyPage(() => import('./pages/PublicOffer'), 'PublicOffer')
 const PrivacyPolicy = lazyPage(() => import('./pages/PrivacyPolicy'), 'PrivacyPolicy')
 const RefundPolicy = lazyPage(() => import('./pages/RefundPolicy'), 'RefundPolicy')
+const Team = lazyPage(() => import('./pages/Team'), 'Team')
 const GiveawayRules = lazyPage(() => import('./pages/GiveawayRules'), 'GiveawayRules')
 const Onboarding = lazyPage(() => import('./pages/Onboarding'), 'Onboarding')
 const NotFound = lazyPage(() => import('./pages/NotFound'), 'NotFound')
@@ -101,6 +102,7 @@ function AppContent() {
           <Route path="/oferta" element={<LegacyPublicRedirect />} />
           <Route path="/privacy" element={<LegacyPublicRedirect />} />
           <Route path="/refund" element={<LegacyPublicRedirect />} />
+          <Route path="/team" element={<LegacyPublicRedirect />} />
           <Route path="/giveaway-rules" element={<LegacyPublicRedirect />} />
           <Route path="/:locale" element={<LocaleGuard />}>
             <Route index element={<Home />} />
@@ -139,6 +141,7 @@ function AppContent() {
             <Route path="oferta" element={<PublicOffer />} />
             <Route path="privacy" element={<PrivacyPolicy />} />
             <Route path="refund" element={<RefundPolicy />} />
+            <Route path="team" element={<Team />} />
             <Route path="giveaway-rules" element={<GiveawayRules />} />
             <Route path="*" element={<NotFound />} />
           </Route>

@@ -105,8 +105,8 @@ export const MEMBERSHIP_PLANS = [
     ],
     bonusRu: [],
     bonusEn: [],
-    saveLabelRu: 'Экономия 409€',
-    saveLabelEn: 'Save €409',
+    saveLabelRu: 'Экономия 289€',
+    saveLabelEn: 'Save €289',
   },
   {
     id: 'ai-insider-pro-annual',
@@ -143,8 +143,8 @@ export const MEMBERSHIP_PLANS = [
       'Premium AI Agents Pack',
       'Business Growth Resources',
     ],
-    saveLabelRu: 'Экономия 649€',
-    saveLabelEn: 'Save €649',
+    saveLabelRu: 'Экономия 529€',
+    saveLabelEn: 'Save €529',
   },
 ]
 

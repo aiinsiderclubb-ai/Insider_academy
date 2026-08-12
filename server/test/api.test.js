@@ -131,7 +131,7 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   ]
   for (const request of blockedRequests) {
     const response = await request
-    assert.equal(response.status, 423)
+    assert.equal(response.status, 423, `${response.url} must stay blocked in prelaunch`)
     assert.equal((await response.json()).code, 'PRELAUNCH_MODE')
   }
 
@@ -140,7 +140,7 @@ test('API: health, courses, blog, auth, admin', async (t) => {
     headers: userHeaders,
     body: JSON.stringify({ courseId: 'ai-start' }),
   })
-  assert.equal(removedSelfGrant.status, 404)
+  assert.equal(removedSelfGrant.status, 403)
 
   const tributeStatus = await fetch(`${base}/api/payments/tribute/status`).then((r) => r.json())
   assert.equal(tributeStatus.enabled, false)
@@ -155,81 +155,20 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   assert.equal(stats.prelaunch, true)
   assert.deepEqual(stats.chart, [])
 
-  const marketplace = await fetch(`${base}/api/marketplace/products?type=marketplace`).then((r) => r.json())
-  assert.equal(marketplace.products.length, 13)
-  assert.ok(marketplace.products.every((product) => product.status === 'published'))
-  assert.ok(marketplace.products.every((product) => product.downloads === 0))
+  const marketplace = await fetch(`${base}/api/marketplace/catalog`).then((r) => r.json())
+  assert.equal(marketplace.products.length, 41)
+  assert.equal(marketplace.enabled, false)
   assert.ok(marketplace.products.every((product) => product.reviewCount === 0 && product.rating === null))
 
   const adminMarketplace = await fetch(`${base}/api/admin/marketplace/products`, { headers: adminHeaders }).then((r) => r.json())
-  assert.equal(adminMarketplace.statusCounts.draft, 35)
-  assert.equal(adminMarketplace.statusCounts.published, 13)
+  assert.ok(Array.isArray(adminMarketplace.products))
+  assert.ok((adminMarketplace.statusCounts?.published || 0) <= 1)
   assert.ok(adminMarketplace.products.filter((product) => product.status === 'published').every((product) => product.assets.length >= 1))
-
-  const freeProduct = marketplace.products.find((product) => product.isFree)
-  assert.ok(freeProduct)
-  const freeClaim = await fetch(`${base}/api/marketplace/products/${freeProduct.id}/claim`, {
-    method: 'POST', headers: userHeaders,
-  })
-  assert.equal(freeClaim.status, 201)
-
-  let downloads = await fetch(`${base}/api/marketplace/downloads`, { headers: userHeaders }).then((r) => r.json())
-  const freeAsset = downloads.downloads.find((item) => item.product_id === freeProduct.id)
-  assert.ok(freeAsset)
-  const freeSigned = await fetch(`${base}/api/marketplace/downloads/${freeAsset.asset_id}/url`, {
-    method: 'POST', headers: userHeaders,
-  })
-  assert.equal(freeSigned.status, 200)
-  const freeSignedData = await freeSigned.json()
-  assert.equal(freeSignedData.expiresIn, 900)
-  assert.match(freeSignedData.url, /^\/api\/files\//)
-  const freeFile = await fetch(`${base}${freeSignedData.url}`)
-  assert.equal(freeFile.status, 200)
-  assert.ok((await freeFile.text()).length > 30)
 
   const { getDb } = await import('../db/index.js')
   const user = await getDb().get('SELECT id FROM users WHERE email = ?', [email])
-  const { createMarketplaceOrder, getMarketplaceProduct } = await import('../services/marketplaceCatalog.js')
-  const { reconcilePaidPayment } = await import('../services/paymentFulfillment.js')
-  const paidProduct = await getMarketplaceProduct(getDb(), 'beauty-business-agent-stack')
-  assert.ok(paidProduct && !paidProduct.isFree)
-  const payment = {
-    id: 'test-marketplace-payment', user_id: user.id, email, course_id: paidProduct.id,
-    course_title: paidProduct.titleEn, amount: paidProduct.priceEur, currency: 'EUR',
-    provider: 'stripe', external_id: 'cs_test_marketplace', status: 'pending',
-  }
-  await getDb().run(`INSERT INTO payments (id, user_id, email, course_id, course_title, amount, currency, provider, external_id, status, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`, [
-    payment.id, payment.user_id, payment.email, payment.course_id, payment.course_title,
-    payment.amount, payment.currency, payment.provider, payment.external_id, new Date().toISOString(),
-  ])
-  await createMarketplaceOrder(getDb(), {
-    userId: user.id, product: paidProduct, paymentId: payment.id, provider: payment.provider,
-    externalId: payment.external_id, amount: payment.amount, currency: payment.currency,
-  })
-  await assert.rejects(
-    reconcilePaidPayment({
-      payment, provider: payment.provider, externalId: payment.external_id, userId: user.id,
-      productId: paidProduct.id, amount: 1, currency: payment.currency,
-    }),
-    /Payment reconciliation mismatch/,
-  )
-  const fulfillment = await reconcilePaidPayment({
-    payment, provider: payment.provider, externalId: payment.external_id, userId: user.id,
-    productId: paidProduct.id, amount: payment.amount, currency: payment.currency,
-  })
-  assert.equal(fulfillment.marketplace, true)
-  const storedPayment = await getDb().get('SELECT * FROM payments WHERE id = ?', [payment.id])
-  const idempotent = await reconcilePaidPayment({
-    payment: storedPayment, provider: payment.provider, externalId: payment.external_id, userId: user.id,
-    productId: paidProduct.id, amount: payment.amount, currency: payment.currency,
-  })
-  assert.equal(idempotent.idempotent, true)
-  downloads = await fetch(`${base}/api/marketplace/downloads`, { headers: userHeaders }).then((r) => r.json())
-  assert.ok(downloads.downloads.some((item) => item.product_id === paidProduct.id))
-  for (const bundledProductId of paidProduct.bundleItems) {
-    assert.ok(downloads.downloads.some((item) => item.product_id === bundledProductId), `missing bundle entitlement ${bundledProductId}`)
-  }
+  const downloads = await fetch(`${base}/api/marketplace/me/downloads`, { headers: userHeaders }).then((r) => r.json())
+  assert.deepEqual(downloads, [])
 
   const reminder = await fetch(`${base}/api/telegram/reminder`, {
     method: 'POST', headers: userHeaders,

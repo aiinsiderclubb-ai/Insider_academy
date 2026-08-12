@@ -19,6 +19,7 @@ services:
       paths:
         - server/**
         - src/data/**
+        - marketplace-products/**
     envVars:
       - key: PRELAUNCH_MODE
         value: "1"

@@ -18,7 +18,6 @@ export function ErrorFallback({ error }) {
         {import.meta.env.DEV && error?.message ? error.message : 'Не удалось отобразить страницу.'}
       </p>
       <a href="/" style={{ color: '#c084fc', fontWeight: 600 }}>На главную</a>
-      <a href="/admin" style={{ marginLeft: 24, color: '#c084fc', fontWeight: 600 }}>В админ-панель</a>
     </div>
   )
 }

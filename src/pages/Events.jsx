@@ -78,7 +78,7 @@ function GiveawayFeature({ giveaway, lang, participantCount, result, index }) {
 
           <div className={styles.dropFacts}>
             <span><Clock3 size={16} />{ru ? giveaway.prizeDetailRu : giveaway.prizeDetailEn}</span>
-            {isActive && participantCount != null && (
+            {isActive && Number(participantCount) > 0 && (
               <span><Users size={16} />{formatCount(participantCount)} {ru ? 'участников' : 'participants'}</span>
             )}
           </div>

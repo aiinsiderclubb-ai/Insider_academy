@@ -63,6 +63,7 @@ export function MarketplaceBuy() {
   }
 
   const purchased = hasPurchased(product.id)
+  const releasedForSale = product.id === 'mp-voice-beauty-salon'
   const selectedLicense = serverProduct?.licenses?.find((item) => item.id === licenseTier)
   const serverPrice = selectedLicense?.priceEur ?? product.priceEur
   const title = ru ? product.titleRu : product.titleEn
@@ -144,6 +145,20 @@ export function MarketplaceBuy() {
     )
   }
 
+  if (!releasedForSale) {
+    return (
+      <div className={buyStyles.wrap}>
+        <div className={buyStyles.container}>
+          <div className={buyStyles.purchasedCard}>
+            <h2 className={buyStyles.purchasedTitle}>{ru ? 'Продукт ещё не выпущен' : 'Product is not released yet'}</h2>
+            <p>{ru ? 'Оплата недоступна. Страница оставлена как preview.' : 'Checkout is unavailable. Page remains available as a preview.'}</p>
+            <Link to={`/marketplace/${product.slug}`} className={buyStyles.submit}>{ru ? 'Назад к продукту' : 'Back to product'}</Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className={buyStyles.wrap}
@@ -181,7 +196,7 @@ export function MarketplaceBuy() {
                 </div>
               </div>
               {error && <div className={buyStyles.error} role="alert">{error}</div>}
-              <div className={buyStyles.payMethods} aria-label={ru ? 'Тип лицензии' : 'License tier'}>
+              {serverProduct && <div className={buyStyles.payMethods} aria-label={ru ? 'Тип лицензии' : 'License tier'}>
                 {Object.entries(LICENSE_LABELS).map(([id, label]) => (
                   <button
                     key={id}
@@ -190,10 +205,10 @@ export function MarketplaceBuy() {
                     onClick={() => setLicenseTier(id)}
                   >
                     <span className={buyStyles.payName}>{ru ? label.ru : label.en}</span>
-                    <span>{serverProduct?.licenses?.find((item) => item.id === id)?.priceEur ?? '—'} €</span>
+                    <span>{serverProduct.licenses.find((item) => item.id === id)?.priceEur} €</span>
                   </button>
                 ))}
-              </div>
+              </div>}
               {!user && (
                 <div className={buyStyles.authFields}>
                   <label className={buyStyles.label}>
@@ -225,7 +240,7 @@ export function MarketplaceBuy() {
               {!commerceEnabled && (
                 <p className={buyStyles.error}>{ru ? 'Продажи временно закрыты до завершения безопасного запуска.' : 'Sales are paused until the secure rollout is complete.'}</p>
               )}
-              <button type="submit" className={buyStyles.submit} disabled={loading || !commerceEnabled}>
+              <button type="submit" className={buyStyles.submit} disabled={loading || !commerceEnabled || !serverProduct}>
                 {ru ? `Оплатить ${serverPrice} €` : `Pay ${serverPrice} €`}
               </button>
               <Link to={`/marketplace/${product.slug}`} className={buyStyles.secureNote}>

@@ -9,12 +9,12 @@ process.env.JWT_SECRET = 'marketplace-test-secret'
 test('marketplace quote ignores client supplied price and rejects arbitrary SKU', async () => {
   const { quoteMarketplaceItem } = await import('../services/marketplace.js')
   const quote = quoteMarketplaceItem({
-    productId: 'mp-prompt-chatgpt-vault',
+    productId: 'mp-voice-beauty-salon',
     licenseTier: 'client',
     amount: 0.01,
     currency: 'USD',
   })
-  assert.equal(quote.amountEur, 51)
+  assert.equal(quote.amountEur, 138)
   assert.equal(quote.licenseTier, 'client')
   assert.throws(() => quoteMarketplaceItem({ productId: 'arbitrary-sku' }), /Unknown/)
   assert.throws(() => quoteMarketplaceItem({ productId: 'mp-income-agency-os' }), /not released/)
@@ -25,7 +25,7 @@ test('typed entitlements require verified source and are idempotent', async () =
   process.env.LMS_TEST_DB = dbPath
   const { createSqliteDb } = await import('../db/sqlite.js')
   const { ensureMarketplaceSchema } = await import('../db/marketplaceSchema.js')
-  const { grantMarketplaceEntitlement } = await import('../services/marketplace.js')
+  const { grantMarketplaceEntitlement, revokeMarketplaceEntitlements } = await import('../services/marketplace.js')
   const db = createSqliteDb()
   await ensureMarketplaceSchema(db)
 
@@ -41,7 +41,7 @@ test('typed entitlements require verified source and are idempotent', async () =
 
   const grant = {
     userId: 1,
-    productId: 'mp-prompt-chatgpt-vault',
+    productId: 'mp-voice-beauty-salon',
     licenseTier: 'agency',
     sourceType: 'webhook',
     sourceId: 'stripe:cs_test_1',
@@ -51,6 +51,11 @@ test('typed entitlements require verified source and are idempotent', async () =
   const rows = await db.all('SELECT * FROM entitlements WHERE user_id = ?', [1])
   assert.equal(rows.length, 1)
   assert.equal(rows[0].license_tier, 'agency')
+  const revoked = await revokeMarketplaceEntitlements(db, { sourceId: grant.sourceId, reason: 'test_refund' })
+  assert.equal(revoked, 1)
+  const afterRefund = await db.all("SELECT * FROM entitlements WHERE user_id = ? AND status = 'active'", [1])
+  assert.equal(afterRefund.length, 0)
+  assert.equal(await revokeMarketplaceEntitlements(db, { sourceId: grant.sourceId, reason: 'duplicate_refund' }), 0)
   db.raw.close()
   fs.unlinkSync(dbPath)
 })

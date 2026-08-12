@@ -278,6 +278,9 @@ export async function seedMarketplaceCatalog(db) {
       item.priceEur, item.isFree ? 1 : 0, item.coverImage || legacy?.coverImage || null,
       JSON.stringify(metadata), createdAt, createdAt,
     ])
+    if (item.id !== 'mp-voice-beauty-salon') {
+      await db.run("UPDATE marketplace_products SET status = 'draft', published_at = NULL, updated_at = ? WHERE id = ?", [createdAt, item.id])
+    }
 
     const existingAsset = await db.get("SELECT id FROM product_assets WHERE product_id = ? AND status = 'active' LIMIT 1", [item.id])
     if (!existingAsset) {
@@ -318,16 +321,20 @@ export async function fulfillMarketplaceOrder(db, { paymentId, userId, productId
     if (order.status !== 'pending') throw Object.assign(new Error('Order is not pending'), { status: 409 })
 
     const grantedAt = nowIso()
-    const update = await tx.run("UPDATE marketplace_orders SET status = 'completed', external_id = COALESCE(external_id, ?), completed_at = ? WHERE id = ? AND status = 'pending'", [externalId, grantedAt, order.id])
-    if (Number(update?.changes ?? update?.rowCount ?? 0) !== 1) throw Object.assign(new Error('Order changed during reconciliation'), { status: 409 })
     const purchasedProduct = await getMarketplaceProduct(tx, productId)
     const bundledIds = Array.isArray(purchasedProduct?.bundleItems) ? purchasedProduct.bundleItems : []
     const entitlementIds = [...new Set([productId, ...bundledIds])]
+    const entitlementProducts = []
     for (const entitlementProductId of entitlementIds) {
       const entitlementProduct = await getMarketplaceProduct(tx, entitlementProductId)
       if (!entitlementProduct || entitlementProduct.assetCount < 1) {
         throw Object.assign(new Error('Bundle contains unavailable product'), { status: 409 })
       }
+      entitlementProducts.push(entitlementProductId)
+    }
+    const update = await tx.run("UPDATE marketplace_orders SET status = 'completed', external_id = COALESCE(external_id, ?), completed_at = ? WHERE id = ? AND status = 'pending'", [externalId, grantedAt, order.id])
+    if (Number(update?.changes ?? update?.rowCount ?? 0) !== 1) throw Object.assign(new Error('Order changed during reconciliation'), { status: 409 })
+    for (const entitlementProductId of entitlementProducts) {
       await tx.run(`INSERT INTO asset_entitlements (id, user_id, product_id, order_id, source, status, granted_at)
         VALUES (?, ?, ?, ?, ?, 'active', ?)
         ON CONFLICT(user_id, product_id) DO UPDATE SET order_id = excluded.order_id, source = excluded.source, status = 'active', granted_at = excluded.granted_at, expires_at = NULL`, [
@@ -336,7 +343,8 @@ export async function fulfillMarketplaceOrder(db, { paymentId, userId, productId
     }
     return { handled: true, idempotent: false, order: { ...order, status: 'completed', completed_at: grantedAt } }
   }
-  return db.transaction ? db.transaction(execute) : execute(db)
+  if (!db.transaction) throw Object.assign(new Error('Marketplace fulfillment requires database transactions'), { status: 503 })
+  return db.transaction(execute)
 }
 
 export async function claimFreeProduct(db, { userId, productId }) {

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0.0",
+  "tools": [
+    {"name":"check_slot","required":["service_id","date","timezone"],"timeoutMs":5000,"onFailure":"human_handoff"},
+    {"name":"create_booking","required":["service_id","starts_at","customer_name","customer_phone","consent"],"idempotencyKey":"call_id:slot_id"},
+    {"name":"cancel_booking","required":["booking_id","customer_phone"],"requiresConfirmation":true},
+    {"name":"human_handoff","required":["reason","call_summary"],"redact":true}
+  ]
+}

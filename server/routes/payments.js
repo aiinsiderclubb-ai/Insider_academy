@@ -11,6 +11,9 @@ import {
   getProductIdForCourse,
 } from '../services/tribute.js'
 import { quoteMarketplaceItem, trackMarketplaceEvent } from '../services/marketplace.js'
+import { courses as courseCatalog } from '../../src/data/courses.js'
+import { VAULT_PRODUCTS } from '../../src/data/vaultProducts.js'
+import { LEGAL_ENTITY } from '../../src/data/legalEntity.js'
 
 const router = Router()
 const LOCALES = new Set(['ru', 'ukr', 'en'])
@@ -18,27 +21,10 @@ const PAID_CATALOG = [...courseCatalog, ...VAULT_PRODUCTS]
 
 async function checkoutAvailability(req, res, next) {
   if (!isPrelaunchMode()) return next()
-  if (process.env.MARKETPLACE_LIVE !== '1') return prelaunchBlocked(req, res, next)
-  const product = await getMarketplaceProduct(getDb(), req.body?.courseId)
-  if (!product) return prelaunchBlocked(req, res, next)
-  next()
+  return prelaunchBlocked(req, res, next)
 }
 
 async function resolveCheckoutItem(db, courseId, email) {
-  const marketplaceProduct = await getMarketplaceProduct(db, courseId)
-  if (marketplaceProduct) {
-    if (marketplaceProduct.productType !== 'marketplace' || marketplaceProduct.isFree || marketplaceProduct.assetCount < 1 || marketplaceProduct.priceEur <= 0) {
-      throw Object.assign(new Error('Marketplace product unavailable for checkout'), { status: 400 })
-    }
-    return {
-      kind: 'marketplace',
-      product: marketplaceProduct,
-      amount: marketplaceProduct.priceEur,
-      title: marketplaceProduct.titleRu,
-      slug: marketplaceProduct.slug,
-      currency: marketplaceProduct.currency,
-    }
-  }
   const item = PAID_CATALOG.find((entry) => entry.id === courseId)
   const baseAmount = Number(item?.priceEur ?? item?.price)
   if (!item || !Number.isFinite(baseAmount) || baseAmount <= 0) {
@@ -59,10 +45,6 @@ async function resolveCheckoutItem(db, courseId, email) {
 }
 
 function checkoutPaths(item, provider) {
-  if (item.kind === 'marketplace') return {
-    success: `/marketplace/${item.slug}?paid=1&provider=${provider}`,
-    cancel: `/marketplace/${item.slug}/buy?cancel=1`,
-  }
   if (item.kind === 'vault') return {
     success: `/marketplace/${item.slug}?tab=vault&paid=1&provider=${provider}`,
     cancel: `/marketplace/${item.slug}/buy?tab=vault&cancel=1`,
@@ -79,7 +61,7 @@ function publicUrl(locale, path) {
 }
 
 function requireMarketplaceCommerce(req, res, next) {
-  if (process.env.FEATURE_MARKETPLACE_COMMERCE !== 'true') {
+  if (process.env.FEATURE_MARKETPLACE_COMMERCE !== 'true' || LEGAL_ENTITY.draft) {
     return res.status(404).json({ error: 'Not found' })
   }
   next()
@@ -209,7 +191,7 @@ router.post('/liqpay/marketplace', requireUser, requireMarketplaceCommerce, asyn
   }
 })
 
-router.post('/tribute/checkout', requireUser, async (req, res) => {
+router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, res) => {
   if (!isTributeEnabled()) {
     return res.status(503).json({ error: 'Tribute not configured. Set TRIBUTE_API_KEY in server/.env' })
   }
@@ -248,7 +230,6 @@ router.post('/tribute/checkout', requireUser, async (req, res) => {
          VALUES (?, ?, ?, ?, ?, ?, ?, 'tribute', ?, 'pending', ?)`,
         [paymentId, req.userId, req.userEmail, courseId, courseTitle, amount, item.currency, order.uuid, new Date().toISOString()]
       )
-      if (item.kind === 'marketplace') await createMarketplaceOrder(db, { userId: req.userId, product: item.product, paymentId, provider: 'tribute', externalId: order.uuid, amount, currency: item.currency })
 
       return res.json({
         url: order.paymentUrl || order.webappPaymentUrl,
@@ -258,9 +239,6 @@ router.post('/tribute/checkout', requireUser, async (req, res) => {
       })
     }
 
-    if (item.kind === 'marketplace') {
-      return res.status(503).json({ error: 'Tribute Shop API is required for marketplace pricing' })
-    }
     if (!productId) {
       return res.status(503).json({
         error: 'Set TRIBUTE_DEFAULT_PRODUCT_ID or TRIBUTE_PRODUCT_MAP in server/.env',
@@ -275,7 +253,6 @@ router.post('/tribute/checkout', requireUser, async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?, 'tribute', ?, 'pending', ?)`,
       [paymentId, req.userId, req.userEmail, courseId, courseTitle, amount, item.currency, String(productId), new Date().toISOString()]
     )
-    if (item.kind === 'marketplace') await createMarketplaceOrder(db, { userId: req.userId, product: item.product, paymentId, provider: 'tribute', externalId: String(productId), amount, currency: item.currency })
 
     return res.json({ url: payUrl, mode: 'product', productId })
   } catch (err) {
@@ -308,7 +285,6 @@ router.post('/stripe/checkout', requireUser, checkoutAvailability, async (req, r
     cancelUrl: publicUrl(req.body.locale, paths.cancel),
   })
   await db.run('UPDATE payments SET external_id = ? WHERE id = ?', [session.id, paymentId])
-  if (item.kind === 'marketplace') await createMarketplaceOrder(db, { userId: req.userId, product: item.product, paymentId, provider: 'stripe', externalId: session.id, amount, currency: item.currency })
   res.json({ url: session.url, sessionId: session.id })
 })
 
@@ -325,7 +301,6 @@ router.post('/liqpay/create', requireUser, checkoutAvailability, async (req, res
      VALUES (?, ?, ?, ?, ?, ?, ?, 'liqpay', ?, 'pending', ?)`,
     [orderId, req.userId, req.userEmail, courseId, courseTitle, amount, item.currency, orderId, new Date().toISOString()]
   )
-  if (item.kind === 'marketplace') await createMarketplaceOrder(db, { userId: req.userId, product: item.product, paymentId: orderId, provider: 'liqpay', externalId: orderId, amount, currency: item.currency })
   const paths = checkoutPaths(item, 'liqpay')
   const payload = createPaymentPayload({
     amount,
@@ -337,7 +312,7 @@ router.post('/liqpay/create', requireUser, checkoutAvailability, async (req, res
   res.json(payload)
 })
 
-router.post('/demo', requireUser, async (req, res) => {
+router.post('/demo', requireUser, checkoutAvailability, async (req, res) => {
   if (process.env.NODE_ENV === 'production' || process.env.ENABLE_DEMO_PURCHASES !== 'true') {
     return res.status(404).json({ error: 'Not found' })
   }
@@ -345,9 +320,6 @@ router.post('/demo', requireUser, async (req, res) => {
   const { courseId, promoCode } = req.body
   if (!courseId) return res.status(400).json({ error: 'courseId required' })
   const item = await resolveCheckoutItem(db, courseId, req.userEmail)
-  if (item.kind === 'marketplace') {
-    return res.status(403).json({ error: 'Demo checkout is not available for Marketplace products' })
-  }
   const courseTitle = item.title
   let finalAmount = item.amount
   if (promoCode) {

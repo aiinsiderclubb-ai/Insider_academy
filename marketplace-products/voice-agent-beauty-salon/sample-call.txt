@@ -1,0 +1,18 @@
+SCENARIO: successful haircut booking
+
+Agent: Hello. This call may be recorded to process your booking. How can I help?
+Customer: I need a haircut with Anna tomorrow afternoon.
+Agent: Which timezone and what time range works best?
+Customer: Zurich, between 14:00 and 17:00.
+Expected tool: check_slot(service_id="haircut", date="tomorrow", timezone="Europe/Zurich")
+Tool result: 14:30 unavailable; 15:00 and 16:30 available.
+Agent: Anna is available at 15:00 or 16:30. Which slot should I book?
+Customer: 15:00.
+Agent: Please confirm your name and phone number for booking.
+Customer: Test Customer, +41 00 000 00 00.
+Agent: I will book a haircut with Anna tomorrow at 15:00 in Zurich. Confirm?
+Customer: Yes.
+Expected tool: create_booking(..., consent=true, idempotency_key=call_id:slot_id)
+Agent: Confirmed. You will receive a message with booking details.
+
+PASS: one booking, explicit confirmation, no sensitive data in summary.

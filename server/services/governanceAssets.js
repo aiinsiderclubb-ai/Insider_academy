@@ -35,7 +35,7 @@ export async function seedGovernanceAssets(db) {
     const body = fs.readFileSync(target)
     const key = `marketplace/${productId}/1.0.0/${fileName}`
     await db.run(
-      `INSERT INTO product_assets
+      `INSERT INTO commerce_assets
        (id, product_version_id, file_name, storage_key, storage_driver, mime_type, size_bytes, checksum, created_at)
        VALUES (?, ?, ?, ?, 'local', ?, ?, ?, ?)
        ON CONFLICT(id) DO NOTHING`,

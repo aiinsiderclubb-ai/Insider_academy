@@ -8,14 +8,16 @@ import {
   MARKETPLACE_BUNDLES,
   getMarketplaceCatalog,
   getMarketplaceProduct,
+  revokeMarketplaceEntitlements,
   trackMarketplaceEvent,
 } from '../services/marketplace.js'
 import { createDownloadTicket, verifyDownloadTicket } from '../services/signedDownload.js'
+import { LEGAL_ENTITY } from '../../src/data/legalEntity.js'
 
 const router = Router()
 
 function marketplaceEnabled() {
-  return process.env.FEATURE_MARKETPLACE_COMMERCE === 'true'
+  return process.env.FEATURE_MARKETPLACE_COMMERCE === 'true' && !LEGAL_ENTITY.draft
 }
 
 router.get('/catalog', optionalUser, async (_req, res) => {
@@ -77,7 +79,7 @@ router.post('/events', optionalUser, async (req, res) => {
 router.get('/me/entitlements', requireUser, async (req, res) => {
   const rows = await getDb().all(
     `SELECT e.*, p.slug, p.title, p.metadata
-     FROM entitlements e JOIN marketplace_products p ON p.id = e.product_id
+     FROM entitlements e JOIN commerce_products p ON p.id = e.product_id
      WHERE e.user_id = ? AND e.status = 'active'
      AND (e.expires_at IS NULL OR e.expires_at > ?) ORDER BY e.granted_at DESC`,
     [req.userId, new Date().toISOString()]
@@ -98,9 +100,9 @@ router.get('/me/downloads', requireUser, async (req, res) => {
     `SELECT e.id AS entitlement_id, e.product_id, e.license_tier, p.title,
        v.version, a.id AS asset_id, a.file_name, a.mime_type, a.size_bytes
      FROM entitlements e
-     JOIN marketplace_products p ON p.id = e.product_id
+     JOIN commerce_products p ON p.id = e.product_id
      JOIN product_versions v ON v.product_id = e.product_id AND v.status = 'published'
-     JOIN product_assets a ON a.product_version_id = v.id
+     JOIN commerce_assets a ON a.product_version_id = v.id
      WHERE e.user_id = ? AND e.status = 'active'
      AND (e.expires_at IS NULL OR e.expires_at > ?) ORDER BY e.granted_at DESC`,
     [req.userId, new Date().toISOString()]
@@ -122,7 +124,7 @@ router.get('/assets/:assetId/download', requireUser, async (req, res) => {
   const db = getDb()
   const row = await db.get(
     `SELECT a.*, e.id AS entitlement_id
-     FROM product_assets a
+     FROM commerce_assets a
      JOIN product_versions v ON v.id = a.product_version_id
      JOIN entitlements e ON e.product_id = v.product_id
      WHERE a.id = ? AND e.user_id = ? AND e.status = 'active'
@@ -154,7 +156,7 @@ router.get('/assets/:assetId/file', async (req, res) => {
   const ticket = verifyDownloadTicket(req.query.ticket)
   if (!ticket || ticket.assetId !== req.params.assetId) return res.status(403).json({ error: 'Expired or invalid download URL' })
   const row = await getDb().get(
-    `SELECT a.storage_key, a.file_name FROM product_assets a
+    `SELECT a.storage_key, a.file_name FROM commerce_assets a
      JOIN product_versions v ON v.id = a.product_version_id
      JOIN entitlements e ON e.product_id = v.product_id
      WHERE a.id = ? AND e.user_id = ? AND e.status = 'active'
@@ -220,7 +222,7 @@ router.post(
       ]
     )
     await db.run(
-      `INSERT INTO product_assets
+      `INSERT INTO commerce_assets
        (id, product_version_id, file_name, storage_key, storage_driver, mime_type, size_bytes, checksum, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -239,6 +241,23 @@ router.patch('/admin/reviews/:id', requireAdmin('admin', 'moderator'), async (re
   res.json({ ok: true })
 })
 
+router.post('/admin/payments/:paymentId/revoke', requireAdmin('admin'), async (req, res) => {
+  const db = getDb()
+  const payment = await db.get('SELECT * FROM payments WHERE id = ? LIMIT 1', [req.params.paymentId])
+  const context = payment && await db.get('SELECT * FROM checkout_contexts WHERE payment_id = ? LIMIT 1', [payment.id])
+  if (!payment || !context) return res.status(404).json({ error: 'Marketplace payment not found' })
+  if (!['completed', 'refunded'].includes(payment.status)) return res.status(409).json({ error: 'Payment has no active paid access' })
+  const revoked = await db.transaction(async (tx) => {
+    const count = await revokeMarketplaceEntitlements(tx, {
+      sourceId: payment.id,
+      reason: String(req.body.reason || 'admin_refund').slice(0, 120),
+    })
+    await tx.run("UPDATE payments SET status = 'refunded' WHERE id = ?", [payment.id])
+    return count
+  })
+  res.json({ ok: true, revoked })
+})
+
 router.get('/admin/analytics', requireAdmin('admin', 'editor', 'moderator'), async (_req, res) => {
   const db = getDb()
   const funnel = await db.all(
@@ -247,7 +266,7 @@ router.get('/admin/analytics', requireAdmin('admin', 'editor', 'moderator'), asy
   const creators = await db.all(
     `SELECT p.creator_id AS creatorId, COUNT(DISTINCT e.id) AS sales,
      COUNT(DISTINCT d.id) AS downloads
-     FROM marketplace_products p
+     FROM commerce_products p
      LEFT JOIN entitlements e ON e.product_id = p.id AND e.status = 'active'
      LEFT JOIN download_events d ON d.entitlement_id = e.id
      GROUP BY p.creator_id`

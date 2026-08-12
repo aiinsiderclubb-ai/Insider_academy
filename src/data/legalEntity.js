@@ -22,6 +22,17 @@ export const LEGAL_ENTITY = {
 
 export function legalRequisitesBlock(lang = 'ru') {
   const e = LEGAL_ENTITY
+  if (e.draft) {
+    return lang === 'en'
+      ? [
+          'Seller identification and bank details are being finalized. Live checkout remains disabled until they are published.',
+          `Pre-sale questions and claims: ${e.emailClaims}. Telegram: ${e.telegram}.`,
+        ]
+      : [
+          'Идентификационные и банковские реквизиты продавца уточняются. Боевой checkout остаётся отключённым до их публикации.',
+          `Вопросы до покупки и претензии: ${e.emailClaims}. Telegram: ${e.telegram}.`,
+        ]
+  }
   if (lang === 'en') {
     return [
       `Seller (draft): ${e.legalNameEn}.`,

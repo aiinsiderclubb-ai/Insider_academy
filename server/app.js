@@ -3,7 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import { initDatabase, getDb } from './db.js'
 import { ensureMarketplaceSchema } from './db/marketplaceSchema.js'
-import { backfillMarketplacePurchases, seedMarketplaceCatalog } from './services/marketplace.js'
+import { backfillMarketplacePurchases, enforceLegacyMarketplaceAllowlist, seedMarketplaceCatalog } from './services/marketplace.js'
 import { seedGovernanceAssets } from './services/governanceAssets.js'
 import { enforceGovernanceRetention } from './services/governanceRetention.js'
 import { seedIfEmpty } from './seed.js'
@@ -28,11 +28,16 @@ import promoRoutes from './routes/promo.js'
 import marketplaceRoutes from './routes/marketplace.js'
 import n8nRoutes from './routes/n8n.js'
 import governanceRoutes from './routes/governance.js'
+import { rateLimitMiddleware } from './middleware/rateLimit.js'
+import { isGoogleSheetsEnabled } from './services/googleSheets.js'
+import { seedVoiceAgentAssets } from './services/voiceAgentAssets.js'
 
 export async function createApp() {
   await initDatabase()
   await ensureMarketplaceSchema(getDb())
   await seedMarketplaceCatalog(getDb())
+  await enforceLegacyMarketplaceAllowlist(getDb())
+  await seedVoiceAgentAssets(getDb())
   await backfillMarketplacePurchases(getDb())
   await seedGovernanceAssets(getDb())
   await enforceGovernanceRetention(getDb())

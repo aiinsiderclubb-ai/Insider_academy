@@ -19,6 +19,8 @@ export const LICENSE_TIERS = {
   },
 }
 
+export const MARKETPLACE_SALE_ALLOWLIST = new Set(['mp-voice-beauty-salon'])
+
 export const MARKETPLACE_BUNDLES = [
   {
     id: 'vault-prompt',
@@ -124,7 +126,7 @@ export function quoteMarketplaceItem({ productId, licenseTier = 'personal' }) {
   const product = getMarketplaceProduct(productId)
   const bundle = getBundle(productId)
   if (!product && !bundle) throw Object.assign(new Error('Unknown or inactive marketplace product'), { status: 404 })
-  if (product?.releaseStatus === 'preview') {
+  if (!MARKETPLACE_SALE_ALLOWLIST.has(product?.id || '')) {
     throw Object.assign(new Error('Product is not released for purchase yet'), { status: 409 })
   }
   const basePrice = product?.priceEur ?? bundle.priceEur
@@ -148,7 +150,7 @@ export async function seedMarketplaceCatalog(db) {
   const now = new Date().toISOString()
   for (const product of MARKETPLACE_PRODUCTS) {
     await db.run(
-      `INSERT INTO marketplace_products
+      `INSERT INTO commerce_products
        (id, slug, title, category, creator_id, base_price_eur, active, metadata, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET slug = excluded.slug, title = excluded.title,
@@ -157,7 +159,7 @@ export async function seedMarketplaceCatalog(db) {
        metadata = excluded.metadata, updated_at = excluded.updated_at`,
       [
         product.id, product.slug, product.titleEn || product.titleRu, product.categoryId,
-        product.creatorId, product.priceEur, product.releaseStatus === 'preview' ? 0 : 1,
+        product.creatorId, product.priceEur, MARKETPLACE_SALE_ALLOWLIST.has(product.id) ? 1 : 0,
         JSON.stringify({
           productType: product.productType,
           titleRu: product.titleRu,
@@ -171,7 +173,7 @@ export async function seedMarketplaceCatalog(db) {
   for (const bundle of MARKETPLACE_BUNDLES) {
     await db.run(
       `INSERT INTO marketplace_bundles (id, slug, title, base_price_eur, active, metadata, created_at)
-       VALUES (?, ?, ?, ?, 1, ?, ?) ON CONFLICT(id) DO UPDATE SET title = excluded.title,
+       VALUES (?, ?, ?, ?, 0, ?, ?) ON CONFLICT(id) DO UPDATE SET title = excluded.title,
        base_price_eur = excluded.base_price_eur, metadata = excluded.metadata`,
       [bundle.id, bundle.slug, bundle.title, bundle.priceEur, JSON.stringify({ vertical: bundle.vertical }), now]
     )
@@ -182,6 +184,14 @@ export async function seedMarketplaceCatalog(db) {
       )
     }
   }
+}
+
+export async function enforceLegacyMarketplaceAllowlist(db) {
+  await db.run(
+    `UPDATE marketplace_products SET status = 'draft', published_at = NULL, updated_at = ?
+     WHERE id <> 'mp-voice-beauty-salon' AND status = 'published'`,
+    [new Date().toISOString()]
+  )
 }
 
 export async function grantMarketplaceEntitlement(db, {
@@ -210,6 +220,21 @@ export async function grantMarketplaceEntitlement(db, {
     granted.push(id)
   }
   return { granted, licenseTier, legalSnapshot: quote.legalSnapshot }
+}
+
+export async function revokeMarketplaceEntitlements(db, { sourceId, reason = 'payment_reversed' }) {
+  if (!sourceId) throw Object.assign(new Error('Verified payment source required'), { status: 400 })
+  const revokedAt = new Date().toISOString()
+  const result = await db.run(
+    `UPDATE entitlements SET status = 'revoked', expires_at = ?
+     WHERE source_id = ? AND status = 'active'`,
+    [revokedAt, sourceId]
+  )
+  await trackMarketplaceEvent(db, {
+    eventName: 'entitlement_revoked',
+    metadata: { sourceId, reason, revokedAt },
+  })
+  return Number(result?.changes ?? result?.rowCount ?? 0)
 }
 
 export async function trackMarketplaceEvent(db, { userId, productId, eventName, metadata = {} }) {
