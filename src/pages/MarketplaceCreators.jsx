@@ -49,9 +49,10 @@ export function MarketplaceCreators() {
               </h1>
               <p className={styles.lead}>{bio}</p>
               <p className={styles.creatorMeta}>
-                {creator.salesCount.toLocaleString()} {ru ? 'продаж' : 'sales'} ·{' '}
-                {products.length} {ru ? 'продуктов' : 'products'}
+                {products.length} {ru ? 'продуктов' : 'products'} · {ru ? 'внутренняя команда Academy' : 'Academy in-house team'}
               </p>
+              <p className={styles.creatorMeta}>{creator.operatorName} · {ru ? creator.roleRu : creator.roleEn}</p>
+              <ul>{(ru ? creator.proofRu : creator.proofEn).map((item) => <li key={item}>{item}</li>)}</ul>
             </div>
           </header>
           <div className={styles.creatorGrid}>
@@ -137,8 +138,7 @@ export function MarketplaceCreators() {
               </h3>
               <p className={styles.creatorBio}>{ru ? creator.bioRu : creator.bioEn}</p>
               <p className={styles.creatorMeta}>
-                {creator.productCount} {ru ? 'продуктов' : 'products'} ·{' '}
-                {creator.salesCount.toLocaleString()} {ru ? 'продаж' : 'sales'}
+                {getProductsByCreator(creator.id).length} {ru ? 'продуктов' : 'products'} · {creator.operatorName}
               </p>
               <Link to={`/marketplace/creators/${creator.slug}`} className={styles.link}>
                 {ru ? 'Смотреть магазин' : 'View store'}

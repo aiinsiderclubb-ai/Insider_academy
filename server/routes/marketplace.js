@@ -13,6 +13,7 @@ import {
 } from '../services/marketplace.js'
 import { createDownloadTicket, verifyDownloadTicket } from '../services/signedDownload.js'
 import { LEGAL_ENTITY } from '../../src/data/legalEntity.js'
+import { rateLimitMiddleware } from '../middleware/rateLimit.js'
 
 const router = Router()
 
@@ -74,6 +75,18 @@ router.post('/events', optionalUser, async (req, res) => {
     metadata: { source: String(req.body.source || 'web').slice(0, 50) },
   })
   res.status(202).json({ accepted: true })
+})
+
+router.post('/waitlist', rateLimitMiddleware({ windowMs: 60 * 60_000, max: 5, keyFn: (req) => `waitlist:${req.ip}` }), async (req, res) => {
+  const email = String(req.body.email || '').trim().toLowerCase()
+  const product = getMarketplaceProduct(req.body.productId)
+  if (!/^\S+@\S+\.\S+$/.test(email) || !product) return res.status(400).json({ error: 'Valid email and product required' })
+  await getDb().run(
+    `INSERT INTO marketplace_waitlist (id, email, product_id, locale, source, created_at)
+     VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(email, product_id) DO NOTHING`,
+    [`mpw-${crypto.randomUUID()}`, email, product.id, String(req.body.locale || 'ru').slice(0, 5), 'product_checkout', new Date().toISOString()]
+  )
+  res.status(201).json({ ok: true })
 })
 
 router.get('/me/entitlements', requireUser, async (req, res) => {

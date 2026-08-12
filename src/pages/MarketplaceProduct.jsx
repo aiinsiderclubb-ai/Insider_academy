@@ -19,6 +19,7 @@ import { UiIcon } from '../components/UiIcon'
 import { getMarketplaceCoverStyle } from '../utils/marketplaceCover'
 import styles from './MarketplaceProduct.module.css'
 import { api } from '../api/client'
+import { getDemoProofCases } from '../data/marketplace/proofCases'
 
 export function MarketplaceProduct() {
   const { productSlug } = useParams()
@@ -45,6 +46,7 @@ export function MarketplaceProduct() {
   const incomeMeta = AI_INCOME_COLLECTION.find((item) => item.productId === product.id)
   const isPreviewRelease = product.releaseStatus === 'preview'
   const reviews = marketplaceData?.reviews || []
+  const demoCases = getDemoProofCases(product.categoryId)
 
   useEffect(() => {
     let cancelled = false
@@ -134,6 +136,28 @@ export function MarketplaceProduct() {
               <section className={styles.block}>
                 <h2>{ru ? 'Обзор' : 'Overview'}</h2>
                 <p style={{ margin: 0, color: 'var(--text-muted)', lineHeight: 1.6 }}>{short}</p>
+              </section>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <section className={styles.block}>
+                <h2>{ru ? 'Демонстрационные кейсы' : 'Demonstration cases'}</h2>
+                <p>{ru ? 'Это тестовые сценарии продукта, не клиентские отзывы и не обещание результата.' : 'These are product test scenarios, not client testimonials or outcome promises.'}</p>
+                {demoCases.map((item) => <div className={styles.faqItem} key={item.id}><strong>{item.id} · {ru ? item.titleRu : item.evidence}</strong><p>{ru ? item.resultRu : item.evidence}</p></div>)}
+              </section>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <section className={styles.block}>
+                <h2>{ru ? 'Как устроен release' : 'Release structure'}</h2>
+                <div className={styles.faqItem}>
+                  <strong>{ru ? 'Версия' : 'Version'}: {product.version || '1.0.0-preview'}</strong>
+                  <p>{ru ? 'Статус preview означает: структура и демо готовы, покупка закрыта до публикации проверенных файлов.' : 'Preview means structure and demo are ready; checkout stays closed until verified files are published.'}</p>
+                </div>
+                <h3>{ru ? 'Тестируемые интеграции' : 'Integration targets'}</h3>
+                <ul className={styles.list}>{(product.testedIntegrations || []).map((item) => <li key={item}>{item}</li>)}</ul>
+                <h3>Changelog</h3>
+                <ul className={styles.list}>{((ru ? product.changelogRu : product.changelogEn) || []).map((item) => <li key={item}>{item}</li>)}</ul>
               </section>
             </ScrollReveal>
 
@@ -276,7 +300,7 @@ export function MarketplaceProduct() {
                   <span className={styles.creatorName}>{creator.name}</span>
                   {creator.verified && (
                     <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {ru ? 'Проверенный креатор' : 'Verified creator'}
+                      {ru ? 'Внутренняя команда Academy' : 'Academy in-house team'}
                     </span>
                   )}
                 </span>

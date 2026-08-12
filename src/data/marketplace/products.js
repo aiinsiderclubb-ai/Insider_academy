@@ -11,10 +11,97 @@ const FAQ_EN = [
   { q: 'Do I get updates?', a: 'Yes, lifetime updates for this product.' },
 ]
 
+const CATEGORY_CONTENT = {
+  'prompt-packs': {
+    files: ['JSON', 'PDF'],
+    ru: ['Промпты по сценариям', 'Переменные и примеры заполнения', 'Чеклист проверки результата', 'Коммерческая инструкция'],
+    en: ['Prompts grouped by scenario', 'Variables and filled examples', 'Output QA checklist', 'Commercial-use guide'],
+    integrations: ['ChatGPT', 'Claude', 'Gemini', 'Notion'],
+    sampleRu: 'РОЛЬ: эксперт по [задача].\nВХОД: [контекст], [аудитория], [ограничения].\nРЕЗУЛЬТАТ: 3 варианта + таблица рисков + следующий шаг.\nПРОВЕРКА: факты отделить от предположений; не выдумывать источники.',
+    sampleEn: 'ROLE: expert in [job].\nINPUT: [context], [audience], [constraints].\nOUTPUT: 3 options + risk table + next action.\nQA: separate facts from assumptions; never invent sources.',
+  },
+  'n8n-workflows': {
+    files: ['ZIP', 'JSON', 'PDF'],
+    ru: ['Импортируемый n8n workflow', 'Карта credentials без секретов', 'Error/retry ветки', 'Setup и rollback checklist'],
+    en: ['Importable n8n workflow', 'Credential map without secrets', 'Error and retry branches', 'Setup and rollback checklist'],
+    integrations: ['n8n', 'Webhook', 'HTTP API', 'Slack'],
+    sampleRu: 'Webhook → Validate input → Deduplicate → Main action → Retry (3x) → Dead-letter log → Human alert',
+    sampleEn: 'Webhook → Validate input → Deduplicate → Main action → Retry (3x) → Dead-letter log → Human alert',
+  },
+  'ai-agents': {
+    files: ['ZIP', 'JSON', 'PDF'],
+    ru: ['System prompt и guardrails', 'Tool schemas', 'Escalation и human handoff', 'Evaluation dataset'],
+    en: ['System prompt and guardrails', 'Tool schemas', 'Escalation and human handoff', 'Evaluation dataset'],
+    integrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n'],
+    sampleRu: 'INTENT → POLICY CHECK → TOOL CALL → RESULT VALIDATION → ANSWER / HUMAN HANDOFF\nЗапрещено: выполнять действие без подтверждения критических полей.',
+    sampleEn: 'INTENT → POLICY CHECK → TOOL CALL → RESULT VALIDATION → ANSWER / HUMAN HANDOFF\nForbidden: execute action before critical fields are confirmed.',
+  },
+  'ai-saas-kits': {
+    files: ['ZIP', 'JSON', 'PDF'],
+    ru: ['Архитектура MVP', 'API и webhook contracts', 'Auth/billing checklist', 'Deploy, monitoring и rollback'],
+    en: ['MVP architecture', 'API and webhook contracts', 'Auth and billing checklist', 'Deploy, monitoring and rollback'],
+    integrations: ['Postgres', 'Stripe', 'OpenAI', 'S3'],
+    sampleRu: 'USER → AUTH → API → AI JOB → VERIFIED OUTPUT → STORAGE\nОбязательно: rate limit, idempotency, audit log, revoke access.',
+    sampleEn: 'USER → AUTH → API → AI JOB → VERIFIED OUTPUT → STORAGE\nRequired: rate limit, idempotency, audit log, revoke access.',
+  },
+  'business-templates': {
+    files: ['ZIP', 'DOCX', 'PDF'],
+    ru: ['Клиентский документ', 'Заполненный пример', 'Discovery checklist', 'Scope и acceptance criteria'],
+    en: ['Client-facing document', 'Filled example', 'Discovery checklist', 'Scope and acceptance criteria'],
+    integrations: ['Google Docs', 'Notion', 'PDF'],
+    sampleRu: 'ЦЕЛЬ → ТЕКУЩИЙ ПРОЦЕСС → РИСК → SCOPE → KPI → ACCEPTANCE → HANDOFF',
+    sampleEn: 'GOAL → CURRENT PROCESS → RISK → SCOPE → KPI → ACCEPTANCE → HANDOFF',
+  },
+  'creator-resources': {
+    files: ['ZIP', 'CSV', 'PDF'],
+    ru: ['Контент-база', 'Фильтры по формату и цели', 'Рабочие примеры', 'План публикации и QA'],
+    en: ['Content database', 'Filters by format and goal', 'Working examples', 'Publishing plan and QA'],
+    integrations: ['Notion', 'Canva', 'Google Sheets'],
+    sampleRu: 'HOOK: [контраст] + [конкретный результат] + [открытая петля]\nBODY: проблема → механизм → пример → CTA.',
+    sampleEn: 'HOOK: [contrast] + [specific outcome] + [open loop]\nBODY: problem → mechanism → example → CTA.',
+  },
+  'mcp-skills': {
+    files: ['ZIP', 'JSON', 'MD'],
+    ru: ['MCP/Skill manifest', 'Tool schemas', 'Permission model', 'Setup и security tests'],
+    en: ['MCP/Skill manifest', 'Tool schemas', 'Permission model', 'Setup and security tests'],
+    integrations: ['Claude', 'MCP', 'OAuth', 'REST API'],
+    sampleRu: '{ "tool": "search_records", "input": { "query": "[term]" }, "policy": { "write": false, "pii": "redact" } }',
+    sampleEn: '{ "tool": "search_records", "input": { "query": "[term]" }, "policy": { "write": false, "pii": "redact" } }',
+  },
+  'voice-agents': {
+    files: ['ZIP', 'JSON', 'PDF'],
+    ru: ['Диалоговые states', 'Voice-provider configs', 'Tools и calendar schema', 'Test calls и handoff rules'],
+    en: ['Dialog states', 'Voice provider configs', 'Tools and calendar schema', 'Test calls and handoff rules'],
+    integrations: ['Vapi', 'Retell', 'ElevenLabs', 'Google Calendar'],
+    sampleRu: 'ПРИВЕТСТВИЕ → ЦЕЛЬ ЗВОНКА → ПРОВЕРКА СЛОТА → ПОДТВЕРЖДЕНИЕ → ЗАПИСЬ → SMS / HANDOFF',
+    sampleEn: 'GREETING → CALL GOAL → SLOT CHECK → CONFIRMATION → BOOKING → SMS / HANDOFF',
+  },
+}
+
+function enrichedContent(base) {
+  const content = CATEGORY_CONTENT[base.categoryId] || CATEGORY_CONTENT['ai-agents']
+  return {
+    version: '1.0.0-preview',
+    fileTypes: content.files,
+    includedRu: content.ru,
+    includedEn: content.en,
+    testedIntegrations: content.integrations,
+    changelogRu: ['Структура пакета зафиксирована', 'Добавлены security/QA checkpoints', 'Подготовлен preview-фрагмент'],
+    changelogEn: ['Package structure defined', 'Security and QA checkpoints added', 'Preview sample prepared'],
+    freePreview: {
+      type: base.categoryId === 'n8n-workflows' ? 'workflow' : 'prompt',
+      titleRu: `Демо-фрагмент: ${base.titleRu}`,
+      titleEn: `Demo sample: ${base.titleEn || base.titleRu}`,
+      contentRu: content.sampleRu,
+      contentEn: content.sampleEn,
+    },
+  }
+}
+
 function product(base) {
   const slug = base.slug
   return {
-    fileTypes: ['ZIP'],
+    ...enrichedContent(base),
     faqRu: FAQ_RU,
     faqEn: FAQ_EN,
     badges: [],

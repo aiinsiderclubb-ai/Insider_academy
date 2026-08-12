@@ -208,6 +208,7 @@ export const api = {
   postReview: (courseId, payload) => apiRequest(`/reviews/${courseId}`, { method: 'POST', body: payload }),
   marketplaceProducts: (type = 'marketplace') => apiRequest(`/marketplace/products?type=${encodeURIComponent(type)}`, { auth: false }),
   marketplaceProduct: (slug) => apiRequest(`/marketplace/products/${encodeURIComponent(slug)}`, { auth: false }),
+  marketplaceWaitlist: (payload) => apiRequest('/marketplace/waitlist', { method: 'POST', body: payload, auth: false }),
   claimMarketplaceProduct: (id) => apiRequest(`/marketplace/products/${encodeURIComponent(id)}/claim`, { method: 'POST' }),
   getMarketplaceDownloads: () => apiRequest('/marketplace/downloads'),
   getMarketplaceDownloadUrl: (assetId) => apiRequest(`/marketplace/downloads/${encodeURIComponent(assetId)}/url`, { method: 'POST' }),

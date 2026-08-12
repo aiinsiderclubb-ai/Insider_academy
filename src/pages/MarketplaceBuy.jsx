@@ -36,6 +36,18 @@ export function MarketplaceBuy() {
   const [licenseTier, setLicenseTier] = useState('personal')
   const [serverProduct, setServerProduct] = useState(null)
   const [commerceEnabled, setCommerceEnabled] = useState(false)
+  const [waitlistDone, setWaitlistDone] = useState(false)
+
+  const joinWaitlist = async (event) => {
+    event.preventDefault()
+    setError('')
+    try {
+      await api.marketplaceWaitlist({ email, productId: product.id, locale: lang })
+      setWaitlistDone(true)
+    } catch (err) {
+      setError(err.message || (ru ? 'Не удалось сохранить email' : 'Could not save email'))
+    }
+  }
 
   useEffect(() => {
     checkApiOnline().then(async (ok) => {
@@ -152,6 +164,13 @@ export function MarketplaceBuy() {
           <div className={buyStyles.purchasedCard}>
             <h2 className={buyStyles.purchasedTitle}>{ru ? 'Продукт ещё не выпущен' : 'Product is not released yet'}</h2>
             <p>{ru ? 'Оплата недоступна. Страница оставлена как preview.' : 'Checkout is unavailable. Page remains available as a preview.'}</p>
+            {waitlistDone ? <p>{ru ? 'Готово. Сообщим после публикации проверенной версии.' : 'Done. We will notify you after verified release is published.'}</p> : (
+              <form onSubmit={joinWaitlist} className={buyStyles.authFields}>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={buyStyles.input} placeholder="Email" required />
+                <button type="submit" className={buyStyles.submit}>{ru ? 'Сообщить о релизе' : 'Notify me on release'}</button>
+              </form>
+            )}
+            {error && <div className={buyStyles.error}>{error}</div>}
             <Link to={`/marketplace/${product.slug}`} className={buyStyles.submit}>{ru ? 'Назад к продукту' : 'Back to product'}</Link>
           </div>
         </div>

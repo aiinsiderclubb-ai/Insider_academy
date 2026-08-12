@@ -73,6 +73,15 @@ CREATE TABLE IF NOT EXISTS marketplace_events (
   metadata TEXT,
   created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS marketplace_waitlist (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  product_id TEXT NOT NULL,
+  locale TEXT,
+  source TEXT,
+  created_at TEXT NOT NULL,
+  UNIQUE(email, product_id)
+);
 CREATE TABLE IF NOT EXISTS checkout_contexts (
   payment_id TEXT PRIMARY KEY,
   product_id TEXT NOT NULL,
