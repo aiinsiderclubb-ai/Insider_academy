@@ -86,7 +86,7 @@ test.describe('Launch checklist (API)', () => {
       headers: { Authorization: `Bearer ${token}` },
       data: { courseId: 'ai-start' },
     })
-    expect(purchase.status()).toBe(404)
+    expect(purchase.status()).toBe(403)
   })
 
   test('admin login rejects weak password', async ({ request }) => {
