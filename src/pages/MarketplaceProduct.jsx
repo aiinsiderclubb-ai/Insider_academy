@@ -26,11 +26,33 @@ const INTEGRATION_LOGOS = {
   'google docs': { src: '/integrations/google-docs.svg', color: '#4285f4' },
   slack: { src: '/integrations/slack.svg', color: '#36c5f0' },
   stripe: { src: '/integrations/stripe.svg', color: '#635bff' },
+  openai: { src: '/integrations/openai.svg', color: '#74e3c2' },
+  chatgpt: { src: '/integrations/openai.svg', color: '#74e3c2' },
+  anthropic: { src: '/integrations/anthropic.svg', color: '#d9b99b' },
+  claude: { src: '/integrations/claude.svg', color: '#d97757' },
+  n8n: { src: '/integrations/n8n.svg', color: '#ea4b71' },
+  mcp: { src: '/integrations/mcp.svg', color: '#d7dcff' },
+  canva: { src: '/integrations/canva.svg', color: '#7d5cff' },
+  gemini: { src: '/integrations/gemini.svg', color: '#8ab4f8' },
+  'google calendar': { src: '/integrations/google-calendar.svg', color: '#4285f4' },
+  'google calendar-compatible api': { src: '/integrations/google-calendar.svg', color: '#4285f4' },
+  'google sheets': { src: '/integrations/google-sheets.svg', color: '#34a853' },
+  elevenlabs: { src: '/integrations/elevenlabs.svg', color: '#f5f5f5' },
+  'elevenlabs conversational ai': { src: '/integrations/elevenlabs.svg', color: '#f5f5f5' },
+  'http api': { icon: 'workflow', color: '#60a5fa' },
+  'rest api': { icon: 'workflow', color: '#60a5fa' },
+  webhook: { icon: 'zap', color: '#f59e0b' },
+  oauth: { icon: 'keyRound', color: '#a78bfa' },
+  pdf: { icon: 'fileText', color: '#ef4444' },
+  vapi: { icon: 'phone', color: '#8b5cf6' },
+  retell: { icon: 'mic', color: '#22d3ee' },
+  'retell ai': { icon: 'mic', color: '#22d3ee' },
 }
 
 function IntegrationMark({ name }) {
   const logo = INTEGRATION_LOGOS[name.toLowerCase()]
-  if (!logo) return <span className={styles.integrationFallback}>{name.slice(0, 2).toUpperCase()}</span>
+  if (logo?.icon) return <span className={styles.integrationFallback} style={{ color: logo.color }}><UiIcon name={logo.icon} size={17} tone="inherit" /></span>
+  if (!logo) return <span className={styles.integrationFallback}><UiIcon name="plug" size={17} tone="inherit" /></span>
   return <span className={styles.integrationLogo} style={{ '--logo': `url(${logo.src})`, '--logo-color': logo.color }} aria-hidden />
 }
 
@@ -252,8 +274,14 @@ export function MarketplaceProduct() {
 
               <article className={styles.flowCard}>
                 <h2>{ru ? 'Как работает' : 'How it works'}</h2>
-                <div className={styles.flow}>
-                  {install.map((item, index) => <div key={item}><span>{index + 1}</span><strong>{item}</strong></div>)}
+                <div className={styles.previewFlow}>
+                  <div><UiIcon name="sparkles" size={15} /><span><strong>{ru ? 'Новый лид' : 'New lead'}</strong><small>{ru ? 'Форма / Webhook' : 'Form / Webhook'}</small></span></div>
+                  <i aria-hidden>↓</i>
+                  <div><UiIcon name="shield-check" size={15} /><span><strong>{ru ? 'Квалификация' : 'Qualification'}</strong><small>AI / Score</small></span></div>
+                  <i aria-hidden>↓</i>
+                  <section><span><IntegrationMark name="Slack" /><strong>Slack</strong></span><span><UiIcon name="briefcase" size={15} /><strong>CRM</strong></span></section>
+                  <i aria-hidden>↓</i>
+                  <div><UiIcon name="mail" size={15} /><span><strong>{ru ? 'Прогрев' : 'Nurture'}</strong><small>Email / Sequence</small></span></div>
                 </div>
               </article>
 

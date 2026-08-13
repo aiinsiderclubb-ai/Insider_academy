@@ -59,7 +59,7 @@
 .productTabs button:focus-visible { outline:2px solid #a78bfa; outline-offset:-3px; }
 
 .proofPanel { width:calc(100% - 375px); min-height:330px; padding-top:14px; }
-.previewGrid { display:grid; grid-template-columns:1.15fr .92fr .92fr .64fr; gap:10px; }
+.previewGrid { display:grid; grid-template-columns:1.16fr .88fr 1.08fr .72fr; gap:10px; }
 .previewGrid article { min-width:0; min-height:310px; padding:14px; overflow:hidden; border:1px solid rgba(148,163,184,.17); border-radius:7px; background:rgba(12,16,36,.78); }
 .previewGrid h2 { margin:0 0 16px; color:var(--text-primary); font-size:.8rem; }
 .archiveRoot { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:6px; background:rgba(124,58,237,.12); font-size:.68rem; }
@@ -73,12 +73,18 @@
 .sampleDocument p { display:-webkit-box; margin:0; overflow:hidden; font-size:.64rem; line-height:1.55; white-space:pre-line; -webkit-box-orient:vertical; -webkit-line-clamp:10; }
 .sampleCard img { width:100%; height:242px; object-fit:cover; }
 .sampleEmpty { height:242px; display:grid; place-content:center; gap:12px; text-align:center; color:var(--text-muted); }
-.flow { display:grid; align-content:center; gap:12px; min-height:235px; }
-.flow div { position:relative; display:flex; align-items:center; gap:10px; padding:11px; border:1px solid rgba(139,92,246,.28); border-radius:7px; background:rgba(124,58,237,.08); font-size:.68rem; }
-.flow div:not(:last-child)::after { content:'↓'; position:absolute; bottom:-15px; left:50%; color:#8b5cf6; }
-.flow span { display:grid; width:23px; height:23px; place-items:center; border-radius:50%; background:#7c3aed; color:#fff; font:700 .59rem var(--font-mono); }
+.previewFlow { display:grid; align-content:center; justify-items:center; min-height:242px; padding:5px 10px 10px; background-image:radial-gradient(rgba(139,92,246,.13) 1px,transparent 1px); background-size:12px 12px; }
+.previewFlow > div { display:flex; width:min(185px,100%); align-items:center; gap:9px; padding:8px 10px; border:1px solid rgba(139,92,246,.34); border-radius:6px; background:rgba(13,18,39,.96); color:#a78bfa; }
+.previewFlow > div > span { display:grid; gap:2px; }
+.previewFlow strong { color:#f0eff7; font-size:.57rem; line-height:1.2; }
+.previewFlow small { color:#81899c; font-size:.47rem; }
+.previewFlow > i { height:13px; color:#6ee7b7; font-size:.63rem; font-style:normal; line-height:13px; }
+.previewFlow > section { display:grid; width:min(220px,100%); grid-template-columns:1fr 1fr; gap:7px; }
+.previewFlow > section > span { display:flex; min-width:0; align-items:center; justify-content:center; gap:6px; padding:7px 5px; border:1px solid rgba(148,163,184,.2); border-radius:5px; background:#10162c; }
+.previewFlow > section .integrationLogo { width:20px; height:20px; border-radius:5px; }
+.previewFlow > section .integrationLogo::before { width:12px; height:12px; }
 .integrationCard li { display:grid; grid-template-columns:26px 1fr auto; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid rgba(148,163,184,.09); font-size:.7rem; }
-.integrationCard li span { display:grid; width:25px; height:25px; place-items:center; border-radius:6px; background:rgba(124,58,237,.18); color:#c4b5fd; font-weight:800; }
+.integrationCard li > span { display:grid; width:25px; height:25px; place-items:center; border-radius:6px; background:rgba(124,58,237,.18); color:#c4b5fd; font-weight:800; }
 .integrationCard li b { color:#6ee7b7; }
 .integrationCard p { color:var(--text-muted); font-size:.74rem; }
 .insidePanel,.integrationsPanel,.changelogPanel { padding:26px; border:1px solid rgba(148,163,184,.17); border-radius:9px; background:linear-gradient(145deg,rgba(12,17,38,.97),rgba(7,11,27,.94)); box-shadow:inset 0 1px rgba(255,255,255,.018); }
