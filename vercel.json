@@ -1,10 +1,7 @@
 {
   "redirects": [
     { "source": "/", "destination": "/ru/", "permanent": true },
-    { "source": "/courses/:path*", "destination": "/ru/courses/:path*", "permanent": true },
     { "source": "/packs/:path*", "destination": "/ru/packs/:path*", "permanent": true },
-    { "source": "/marketplace/:path*", "destination": "/ru/marketplace/:path*", "permanent": true },
-    { "source": "/vault/:path*", "destination": "/ru/vault/:path*", "permanent": true },
     { "source": "/memberships/:path*", "destination": "/ru/memberships/:path*", "permanent": true },
     { "source": "/blog/:path*", "destination": "/ru/blog/:path*", "permanent": true },
     { "source": "/events/:path*", "destination": "/ru/events/:path*", "permanent": true },

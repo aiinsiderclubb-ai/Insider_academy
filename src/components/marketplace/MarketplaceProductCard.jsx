@@ -25,7 +25,7 @@ export function MarketplaceProductCard({
   const categoryLabel = category ? (ru ? category.titleRu : category.titleEn) : product.categoryId
   const finalPrice = getMarketplacePrice(product.priceEur, purchases)
   const hasDiscount = discountPercent > 0 && finalPrice < product.priceEur
-  const coverStyle = getMarketplaceCoverStyle(title || product.id)
+  const coverStyle = getMarketplaceCoverStyle(product)
 
   return (
     <article className={`${styles.card} ${featured ? styles.featured : ''}`}>

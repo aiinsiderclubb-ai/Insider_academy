@@ -108,7 +108,7 @@ export function MarketplaceProduct() {
 
         <div className={styles.layout}>
           <div>
-            <div className={styles.preview} style={getMarketplaceCoverStyle(title)}>
+            <div className={styles.preview} style={getMarketplaceCoverStyle(product)}>
               <span className={styles.previewIcon} aria-hidden>
                 <UiIcon name={category?.icon || 'sparkles'} size={40} tone="onAccent" />
               </span>

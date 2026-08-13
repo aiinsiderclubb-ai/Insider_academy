@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import { api, checkApiOnline } from '../api/client'
 import { getMarketplaceProduct } from '../data/marketplace/products'
+import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
 import buyStyles from './CourseBuy.module.css'
 import styles from './MarketplaceProduct.module.css'
 
@@ -185,11 +186,7 @@ export function MarketplaceBuy() {
     >
       <div className={buyStyles.container}>
         <header className={styles.preview} style={{ marginBottom: 24, aspectRatio: 'auto', minHeight: 140 }}>
-          {product.coverImage ? (
-            <img src={product.coverImage} alt="" className={styles.previewCover} />
-          ) : (
-            <span className={styles.previewIcon}>{product.coverIcon}</span>
-          )}
+          <img src={getMarketplaceCoverImage(product)} alt="" className={styles.previewCover} />
           <div className={styles.previewTint} aria-hidden />
           <div className={styles.previewOverlay} aria-hidden />
         </header>
