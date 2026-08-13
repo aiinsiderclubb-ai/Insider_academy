@@ -12,8 +12,6 @@ import {
   getMarketplacePrice,
   isMarketplaceProductIncludedForUser,
 } from '../data/marketplace/discounts'
-import { MarketplaceProductCard } from '../components/marketplace/MarketplaceProductCard'
-import { MarketplaceFreePreview } from '../components/MarketplaceFreePreview'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { UiIcon } from '../components/UiIcon'
 import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
@@ -230,9 +228,64 @@ export function MarketplaceProduct() {
             </div>
           )}
 
-          {activeTab === 'inside' && <div className={styles.tabList}><h2>{ru ? 'В комплекте' : 'Included'}</h2><ul className={styles.list}>{included.map((item) => <li key={item}>{item}</li>)}</ul><p>{ru ? 'Форматы: ' : 'Formats: '}{formats.join(', ') || '—'}</p></div>}
-          {activeTab === 'integrations' && <div className={styles.tabList}><h2>{ru ? 'Интеграции и требования' : 'Integrations and requirements'}</h2><ul className={styles.list}>{[...integrations, ...requirements].map((item) => <li key={item}>{item}</li>)}</ul></div>}
-          {activeTab === 'changelog' && <div className={styles.tabList}><h2>Changelog · {version}</h2><ul className={styles.list}>{changelog.map((item) => <li key={item}>{item}</li>)}</ul></div>}
+          {activeTab === 'inside' && (
+            <div className={styles.insidePanel}>
+              <header className={styles.panelHeader}>
+                <div><span>{ru ? 'Состав релиза' : 'Release inventory'}</span><h2>{ru ? 'Всё необходимое для запуска' : 'Everything required to launch'}</h2></div>
+                <div className={styles.formatRail}>{formats.map((item) => <span key={item}>{item}</span>)}</div>
+              </header>
+              <div className={styles.inventoryGrid}>
+                {included.map((item, index) => (
+                  <article key={item} className={styles.inventoryItem}>
+                    <span className={styles.fileIndex}>{String(index + 1).padStart(2, '0')}</span>
+                    <span className={styles.fileMark}>{formats[index % Math.max(formats.length, 1)] || 'FILE'}</span>
+                    <strong>{item}</strong>
+                    <small>{ru ? 'Готовый материал · включён в пакет' : 'Ready asset · included in package'}</small>
+                  </article>
+                ))}
+              </div>
+              <footer className={styles.packageFooter}>
+                <span><UiIcon name="package" size={17} />{product.slug}-{version}</span>
+                <strong>{included.length} {ru ? 'материалов' : 'assets'} · {formats.length} {ru ? 'форматов' : 'formats'}</strong>
+              </footer>
+            </div>
+          )}
+
+          {activeTab === 'integrations' && (
+            <div className={styles.integrationsPanel}>
+              <header className={styles.panelHeader}>
+                <div><span>{ru ? 'Совместимость' : 'Compatibility'}</span><h2>{ru ? 'Интеграции и требования' : 'Integrations and requirements'}</h2></div>
+                <span className={styles.verifiedLabel}><UiIcon name="shield-check" size={15} />{ru ? 'Проверяется перед релизом' : 'Verified before release'}</span>
+              </header>
+              <div className={styles.integrationTiles}>
+                {integrations.map((item, index) => (
+                  <article key={item}>
+                    <span className={styles.integrationGlyph} style={{ '--tile-hue': `${252 + (index * 23) % 90}` }}>{item.slice(0, 2).toUpperCase()}</span>
+                    <div><strong>{item}</strong><small>{ru ? 'Целевая интеграция' : 'Integration target'}</small></div>
+                    <b>✓</b>
+                  </article>
+                ))}
+              </div>
+              <div className={styles.requirementsStrip}>
+                <span>{ru ? 'Перед запуском понадобится' : 'Required before launch'}</span>
+                <div>{requirements.map((item) => <strong key={item}><UiIcon name="circle-check" size={14} />{item}</strong>)}</div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'changelog' && (
+            <div className={styles.changelogPanel}>
+              <header className={styles.panelHeader}>
+                <div><span>{ru ? 'История продукта' : 'Product history'}</span><h2>Changelog</h2></div>
+                <span className={`${styles.releaseStatus} ${isPreviewRelease ? styles.releaseStatusPreview : ''}`}>{isPreviewRelease ? (ru ? 'Preview' : 'Preview') : (ru ? 'Опубликован' : 'Published')}</span>
+              </header>
+              <div className={styles.releaseTimeline}>
+                <aside><strong>{version}</strong><span>{isPreviewRelease ? (ru ? 'Текущая подготовка' : 'Current preparation') : (ru ? 'Текущий релиз' : 'Current release')}</span></aside>
+                <ol>{changelog.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, '0')}</span><strong>{item}</strong></li>)}</ol>
+              </div>
+              <footer className={styles.releaseFooter}><UiIcon name="shield-check" size={17} /><span>{ru ? 'Каждая опубликованная версия сохраняет инструкции, changelog и границы совместимости.' : 'Every published version keeps setup guidance, changelog and compatibility boundaries.'}</span></footer>
+            </div>
+          )}
         </section>
 
         <div className={styles.lowerGrid}>
@@ -266,7 +319,10 @@ export function MarketplaceProduct() {
                     </article>
                   ))}
                   {reviews.length === 0 && (
-                    <p>{ru ? 'Пока нет подтверждённых отзывов.' : 'No verified reviews yet.'}</p>
+                    <div className={styles.reviewEmpty}>
+                      <span><UiIcon name="shield-check" size={22} /></span>
+                      <div><strong>{ru ? 'Только подтверждённые покупатели' : 'Verified customers only'}</strong><p>{isPreviewRelease ? (ru ? 'Отзывы откроются после публикации проверенного релиза.' : 'Reviews open after verified release is published.') : (ru ? 'Первый подтверждённый отзыв появится после покупки и проверки заказа.' : 'First verified review appears after purchase and order verification.')}</p></div>
+                    </div>
                   )}
                 </div>
               </section>
@@ -291,16 +347,25 @@ export function MarketplaceProduct() {
                 <section className={styles.block}>
                   <h2>{ru ? 'Похожие продукты' : 'Related products'}</h2>
                   <div className={styles.relatedGrid}>
-                    {related.map((p) => (
-                      <MarketplaceProductCard
-                        key={p.id}
-                        product={p}
-                        lang={lang}
-                        purchased={hasPurchased(p.id)}
-                        discountPercent={discountPercent}
-                        purchases={purchases}
-                      />
-                    ))}
+                    {related.map((p) => {
+                      const relatedTitle = ru ? p.titleRu : p.titleEn
+                      const relatedCategory = getMarketplaceCategory(p.categoryId)
+                      const relatedPrice = getMarketplacePrice(p.priceEur, purchases)
+                      return (
+                        <article key={p.id} className={styles.relatedCard}>
+                          <Link to={`/marketplace/${p.slug}`} className={styles.relatedCover}>
+                            <img src={getMarketplaceCoverImage(p)} alt="" />
+                            {p.badge && <ProductBadge type={p.badge} lang={lang} variant="inline" />}
+                          </Link>
+                          <div className={styles.relatedBody}>
+                            <span>{ru ? relatedCategory?.titleRu : relatedCategory?.titleEn}</span>
+                            <h3><Link to={`/marketplace/${p.slug}`}>{relatedTitle}</Link></h3>
+                            <p>{ru ? p.shortRu : p.shortEn}</p>
+                            <footer><strong>{relatedPrice}€</strong><Link to={p.releaseStatus === 'preview' ? `/marketplace/${p.slug}` : `/marketplace/${p.slug}/buy`}>{p.releaseStatus === 'preview' ? (ru ? 'Превью' : 'Preview') : (ru ? 'Открыть' : 'Open')}</Link></footer>
+                          </div>
+                        </article>
+                      )
+                    })}
                   </div>
                 </section>
               </ScrollReveal>
