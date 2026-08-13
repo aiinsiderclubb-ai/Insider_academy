@@ -6,6 +6,12 @@
       "runtimeExecutable": "/bin/bash",
       "runtimeArgs": ["-c", "export PATH=/Users/vladyslav.katash/.nvm/versions/node/v20.19.2/bin:$PATH && exec npm run dev"],
       "port": 5173
+    },
+    {
+      "name": "academy-web-only",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "export PATH=/Users/vladyslav.katash/.nvm/versions/node/v20.19.2/bin:$PATH && exec npm run dev:web -- --port 5188 --strictPort"],
+      "port": 5188
     }
   ]
 }

@@ -181,21 +181,25 @@ export function Home() {
       <ScrollReveal as="section" className={`${styles.statsStrip} ${styles.bandSurface} ${styles.stage}`}>
         <div className={styles.container}>
           <div className={styles.statsRow}>
-            <div className={styles.statItem}>
+            <div className={`${styles.statItem} ${styles.statViolet}`}>
+              <span className={styles.statIcon}><UiIcon name="bookOpen" tone="inherit" /></span>
               <CountUp value={SOCIAL_PROOF.courses} className={styles.statValue} />
               <span className={styles.statLabel}>{lang === 'ru' ? 'курсов' : 'courses'}</span>
             </div>
-            <div className={styles.statItem}>
+            <div className={`${styles.statItem} ${styles.statBlue}`}>
+              <span className={styles.statIcon}><UiIcon name="play" tone="inherit" /></span>
               <CountUp value={SOCIAL_PROOF.lessons} className={styles.statValue} />
               <span className={styles.statLabel}>{lang === 'ru' ? 'уроков' : 'lessons'}</span>
             </div>
-            <div className={styles.statItem}>
+            <div className={`${styles.statItem} ${styles.statMagenta}`}>
+              <span className={styles.statIcon}><UiIcon name="users" tone="inherit" /></span>
               <span className={styles.statValue}>{SOCIAL_PROOF.community}</span>
               <span className={styles.statLabel}>
                 {lang === 'ru' ? SOCIAL_PROOF.communityLabelRu : SOCIAL_PROOF.communityLabelEn}
               </span>
             </div>
-            <div className={styles.statItem}>
+            <div className={`${styles.statItem} ${styles.statEmber}`}>
+              <span className={styles.statIcon}><UiIcon name="award" tone="inherit" /></span>
               <span className={styles.statValue}>{lang === 'ru' ? '24ч' : '24h'}</span>
               <span className={styles.statLabel}>
                 {lang === 'ru' ? 'выдача сертификата после Pro-курса' : 'certificate issued after a Pro course'}
