@@ -136,7 +136,7 @@ export function Marketplace() {
     <div className={styles.wrap}>
       <div className={styles.container}>
         {activeTab === 'catalog' && (
-          <MarketplaceHero lang={lang} query={query} onQueryChange={setQuery} />
+          <MarketplaceHero lang={lang} products={MARKETPLACE_PRODUCTS} />
         )}
 
         <nav
