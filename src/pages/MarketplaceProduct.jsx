@@ -271,18 +271,51 @@ export function MarketplaceProduct() {
           {activeTab === 'inside' && (
             <div className={styles.insidePanel}>
               <header className={styles.panelHeader}>
-                <div><span>{ru ? 'Состав релиза' : 'Release inventory'}</span><h2>{ru ? 'Что лежит внутри — без повторения превью' : 'Inside the package — beyond the preview'}</h2></div>
+                <div><span>{ru ? 'Архитектура продукта' : 'Product architecture'}</span><h2>{ru ? 'Комплект как готовая рабочая система' : 'Package designed as a working system'}</h2></div>
                 <div className={styles.formatRail}>{formats.map((item) => <span key={item}>{item}</span>)}</div>
               </header>
-              <div className={styles.insideLayout}>
-                <section className={styles.inventoryGrid}>
-                  {included.map((item, index) => <article className={styles.inventoryItem} key={item}><span className={styles.fileIndex}>{String(index + 1).padStart(2, '0')}</span><span className={styles.fileMark}>{formats[index % Math.max(formats.length, 1)] || 'FILE'}</span><strong>{item}</strong><small>{ru ? 'Готовый материал · можно адаптировать' : 'Ready asset · editable for your use case'}</small></article>)}
+              <div className={styles.insideBlueprint}>
+                <section className={styles.systemMap}>
+                  <header className={styles.systemCore}>
+                    <span className={styles.coreIcon}><UiIcon name={category?.icon || 'package'} size={20} /></span>
+                    <div><small>{ru ? 'Система' : 'System'}</small><strong>{title}</strong></div>
+                    <span className={styles.coreState}><i />{isPreviewRelease ? 'PREVIEW' : 'READY'}</span>
+                  </header>
+
+                  <div className={styles.assetRail} style={{ '--asset-count': Math.min(included.length, 5) }}>
+                    {included.map((item, index) => (
+                      <article className={styles.assetNode} key={item}>
+                        <span className={styles.nodePort} aria-hidden />
+                        <header><span>{String(index + 1).padStart(2, '0')}</span><em>{formats[index % Math.max(formats.length, 1)] || 'FILE'}</em></header>
+                        <span className={styles.nodeIcon}><UiIcon name={index % 2 === 0 ? 'package' : 'fileText'} size={18} /></span>
+                        <strong>{item}</strong>
+                        <small>{ru ? 'Готово к адаптации' : 'Ready to customize'}</small>
+                      </article>
+                    ))}
+                  </div>
+
+                  <div className={styles.processLane}>
+                    {presentation.steps.map(([step, detail], index) => (
+                      <div className={styles.processStep} key={step}>
+                        <span>{index + 1}</span>
+                        <section><strong>{step}</strong><small>{detail}</small></section>
+                        {index < presentation.steps.length - 1 && <i aria-hidden>→</i>}
+                      </div>
+                    ))}
+                  </div>
+
+                  <footer className={styles.systemOutcome}>
+                    <span><UiIcon name="trendingUp" size={19} /></span>
+                    <div><small>{ru ? 'Выход системы' : 'System output'}</small><strong>{outcome}</strong></div>
+                  </footer>
                 </section>
-                <aside className={styles.usePlan}>
-                  <span>{ru ? 'Порядок внедрения' : 'Implementation order'}</span>
-                  <h3>{ru ? 'Из архива — в рабочий процесс' : 'From package to production'}</h3>
-                  <ol>{install.map((item, index) => <li key={item}><span>{index + 1}</span><strong>{item}</strong></li>)}</ol>
-                  <div><UiIcon name="users" size={17} /><p><strong>{ru ? 'Для кого' : 'Best for'}</strong>{presentation.audience}</p></div>
+
+                <aside className={styles.launchConsole}>
+                  <header><span><i />{ru ? 'Launch control' : 'Launch control'}</span><strong>{isPreviewRelease ? (ru ? 'Подготовка релиза' : 'Release preparation') : (ru ? 'Готово к внедрению' : 'Ready to deploy')}</strong></header>
+                  <dl><div><dt>{ru ? 'Модулей' : 'Modules'}</dt><dd>{included.length}</dd></div><div><dt>{ru ? 'Форматов' : 'Formats'}</dt><dd>{formats.length}</dd></div><div><dt>{ru ? 'Интеграций' : 'Integrations'}</dt><dd>{integrations.length}</dd></div></dl>
+                  <ol>{install.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, '0')}</span><strong>{item}</strong></li>)}</ol>
+                  {integrations.length > 0 && <div className={styles.consoleStack}><small>{ru ? 'Совместимый стек' : 'Compatible stack'}</small><div>{integrations.slice(0, 5).map((item) => <span key={item} title={item}><IntegrationMark name={item} /></span>)}</div></div>}
+                  <footer><UiIcon name="users" size={17} /><div><strong>{ru ? 'Для кого' : 'Best for'}</strong><p>{presentation.audience}</p></div></footer>
                 </aside>
               </div>
               <footer className={styles.packageFooter}>
