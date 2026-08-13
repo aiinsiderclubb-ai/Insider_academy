@@ -16,7 +16,6 @@ const LAUNCH_PRODUCT_COVERS = {
 }
 
 const RELATED_PRODUCT_COVERS = {
-  'ai-automation-agency-os': '/marketplace/sop-library-ai-agency.png',
   'zapier-to-n8n-migration-system': '/marketplace/content-automation-workflow.png',
   'real-estate-lead-to-viewing': '/marketplace/lead-generation-workflow.png',
   'ecommerce-support-retention-engine': '/marketplace/customer-support-agent.png',

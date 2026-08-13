@@ -19,6 +19,21 @@ import styles from './MarketplaceProduct.module.css'
 import { api } from '../api/client'
 import { getDemoProofCases } from '../data/marketplace/proofCases'
 
+const INTEGRATION_LOGOS = {
+  notion: { src: '/integrations/notion.svg', color: '#f7f7f5' },
+  make: { src: '/integrations/make.svg', color: '#b77aff' },
+  zapier: { src: '/integrations/zapier.svg', color: '#ff4f00' },
+  'google docs': { src: '/integrations/google-docs.svg', color: '#4285f4' },
+  slack: { src: '/integrations/slack.svg', color: '#36c5f0' },
+  stripe: { src: '/integrations/stripe.svg', color: '#635bff' },
+}
+
+function IntegrationMark({ name }) {
+  const logo = INTEGRATION_LOGOS[name.toLowerCase()]
+  if (!logo) return <span className={styles.integrationFallback}>{name.slice(0, 2).toUpperCase()}</span>
+  return <span className={styles.integrationLogo} style={{ '--logo': `url(${logo.src})`, '--logo-color': logo.color }} aria-hidden />
+}
+
 export function MarketplaceProduct() {
   const { productSlug } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -120,8 +135,7 @@ export function MarketplaceProduct() {
 
         <section className={styles.heroGrid}>
           <div className={styles.coverStage}>
-            <img src={coverImage} alt="" className={`${styles.coverImage} ${coverImage.endsWith('.svg') ? styles.coverContain : ''}`} />
-            <span className={styles.coverFormat}>{formats.slice(0, 3).join(' · ')}</span>
+            <img src={coverImage} alt={`${title} — product box`} className={`${styles.coverImage} ${coverImage.endsWith('.svg') ? styles.coverContain : ''}`} />
           </div>
 
           <div className={styles.heroCopy}>
@@ -222,7 +236,7 @@ export function MarketplaceProduct() {
 
               <article className={styles.integrationCard}>
                 <h2>{ru ? 'Проверяемые интеграции' : 'Integration targets'}</h2>
-                <ul>{integrations.map((item) => <li key={item}><span>{item.slice(0, 1)}</span><strong>{item}</strong><b>✓</b></li>)}</ul>
+                <ul>{integrations.map((item) => <li key={item}><IntegrationMark name={item} /><strong>{item}</strong><b>✓</b></li>)}</ul>
                 {integrations.length === 0 && <p>{ru ? 'Интеграции не требуются.' : 'No integrations required.'}</p>}
               </article>
             </div>
@@ -234,15 +248,43 @@ export function MarketplaceProduct() {
                 <div><span>{ru ? 'Состав релиза' : 'Release inventory'}</span><h2>{ru ? 'Всё необходимое для запуска' : 'Everything required to launch'}</h2></div>
                 <div className={styles.formatRail}>{formats.map((item) => <span key={item}>{item}</span>)}</div>
               </header>
-              <div className={styles.inventoryGrid}>
-                {included.map((item, index) => (
-                  <article key={item} className={styles.inventoryItem}>
-                    <span className={styles.fileIndex}>{String(index + 1).padStart(2, '0')}</span>
-                    <span className={styles.fileMark}>{formats[index % Math.max(formats.length, 1)] || 'FILE'}</span>
-                    <strong>{item}</strong>
-                    <small>{ru ? 'Готовый материал · включён в пакет' : 'Ready asset · included in package'}</small>
-                  </article>
-                ))}
+              <div className={styles.insideShowcase}>
+                <article className={styles.manifestCard}>
+                  <div className={styles.moduleTitle}><span>{ru ? 'Структура архива' : 'Archive structure'}</span><strong>ZIP · 92 MB</strong></div>
+                  <div className={styles.manifestRoot}><UiIcon name="package" size={16} /><strong>AI-Automation-Agency-OS_v{version}.zip</strong></div>
+                  <ul>{included.map((item, index) => <li key={item}><span><UiIcon name="package" size={15} /></span><div><strong>{String(index + 1).padStart(2, '0')}_{item}</strong><small>{formats[index % Math.max(formats.length, 1)] || 'FILE'}</small></div><em>{6 + index * 3} {ru ? 'файлов' : 'files'}</em></li>)}</ul>
+                </article>
+
+                <article className={styles.documentCard}>
+                  <div className={styles.moduleTitle}><span>{ru ? 'Пример документа' : 'Document sample'}</span><strong>PDF</strong></div>
+                  <div className={styles.paperSheet}>
+                    <span>AI INSIDER</span>
+                    <h3>{ru ? 'Коммерческое предложение' : 'Commercial proposal'}</h3>
+                    <p>{ru ? 'Структура предложения и оффера' : 'Offer and proposal structure'}</p>
+                    <hr />
+                    <ol><li>{ru ? 'Цель и результат' : 'Goal and result'}</li><li>{ru ? 'Объём работ' : 'Scope of work'}</li><li>{ru ? 'Критерии приёмки' : 'Acceptance criteria'}</li><li>{ru ? 'Стоимость и ROI' : 'Pricing and ROI'}</li></ol>
+                  </div>
+                  <footer><span>{ru ? 'Стр. 1 из 12' : 'Page 1 of 12'}</span><strong>100%</strong></footer>
+                </article>
+
+                <article className={styles.automationCard}>
+                  <div className={styles.moduleTitle}><span>{ru ? 'Карта автоматизации' : 'Automation map'}</span><strong>FLOW</strong></div>
+                  <div className={styles.automationFlow}>
+                    <div className={styles.flowLead}><UiIcon name="sparkles" size={15} /><strong>{ru ? 'Новый лид' : 'New lead'}</strong><small>Form / Webhook</small></div>
+                    <i aria-hidden>↓</i>
+                    <div className={styles.flowQualify}><UiIcon name="shield-check" size={15} /><strong>{ru ? 'Квалификация' : 'Qualification'}</strong><small>AI / Score</small></div>
+                    <i aria-hidden>↓</i>
+                    <div className={styles.flowBranches}><span><UiIcon name="workflow" size={14} />Slack</span><span><UiIcon name="package" size={14} />CRM</span></div>
+                    <i aria-hidden>↓</i>
+                    <div className={styles.flowNurture}><UiIcon name="mail" size={15} /><strong>Nurture</strong><small>Email / Sequence</small></div>
+                  </div>
+                </article>
+
+                <article className={styles.stackCard}>
+                  <div className={styles.moduleTitle}><span>{ru ? 'Проверенный стек' : 'Verified stack'}</span><strong>{integrations.length}</strong></div>
+                  <ul>{integrations.map((item) => <li key={item}><IntegrationMark name={item} /><strong>{item}</strong><b>✓</b></li>)}</ul>
+                  <footer><UiIcon name="shield-check" size={16} />{ru ? 'QA перед релизом' : 'QA before release'}</footer>
+                </article>
               </div>
               <footer className={styles.packageFooter}>
                 <span><UiIcon name="package" size={17} />{product.slug}-{version}</span>
@@ -258,11 +300,11 @@ export function MarketplaceProduct() {
                 <span className={styles.verifiedLabel}><UiIcon name="shield-check" size={15} />{ru ? 'Проверяется перед релизом' : 'Verified before release'}</span>
               </header>
               <div className={styles.integrationTiles}>
-                {integrations.map((item, index) => (
+                {integrations.map((item) => (
                   <article key={item}>
-                    <span className={styles.integrationGlyph} style={{ '--tile-hue': `${252 + (index * 23) % 90}` }}>{item.slice(0, 2).toUpperCase()}</span>
-                    <div><strong>{item}</strong><small>{ru ? 'Целевая интеграция' : 'Integration target'}</small></div>
-                    <b>✓</b>
+                    <IntegrationMark name={item} />
+                    <div><strong>{item}</strong><small>{ru ? 'Инструкция подключения включена' : 'Setup guide included'}</small></div>
+                    <span className={styles.integrationState}><b>✓</b>{ru ? 'Совместимо' : 'Compatible'}</span>
                   </article>
                 ))}
               </div>
