@@ -161,6 +161,8 @@ export function Layout({ children }) {
   const isAuthPage = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/onboarding'].includes(publicPath)
   const isLessonPage = /^\/courses\/[^/]+$/.test(publicPath) && searchParams.has('lesson')
   const isImmersive = isAdminPage || isAuthPage || isLessonPage
+  const isMarketplaceProductShowcase = /^\/marketplace\/[^/]+$/.test(publicPath)
+    && !publicPath.startsWith('/marketplace/creators')
   // Главная рисует собственный полноширинный канвас — убираем рамку паддингов main
   const isFullBleed = publicPath === '/'
 
@@ -303,7 +305,7 @@ export function Layout({ children }) {
   }
 
   return (
-    <div className={`${styles.wrapper} ${isImmersive ? styles.immersive : ''} ${isAdminPage ? styles.adminLayout : ''}`}>
+    <div className={`${styles.wrapper} ${isImmersive ? styles.immersive : ''} ${isAdminPage ? styles.adminLayout : ''} ${isMarketplaceProductShowcase ? styles.productShowcaseLayout : ''}`}>
       {!isImmersive && (
         <>
           <button
@@ -376,7 +378,7 @@ export function Layout({ children }) {
         <ApiStatusBanner />
         {!isImmersive && <InactivityBanner lang={lang} />}
         {!isImmersive && (
-          <header className={`${styles.header} ${headerScrolled ? styles.headerScrolled : ''}`}>
+          <header className={`${styles.header} ${headerScrolled ? styles.headerScrolled : ''} ${isMarketplaceProductShowcase ? styles.productShowcaseHeader : ''}`}>
             <span className={styles.headerGlowClip} aria-hidden>
               <span className={styles.headerGlow} />
             </span>
@@ -386,9 +388,9 @@ export function Layout({ children }) {
             <div className={styles.pageIdentity}>
               <span className={styles.pageIdentityEyebrow}>
                 <span className={styles.pageIdentityDot} aria-hidden />
-                {lang === 'ru' ? 'AI INSIDER / ОБУЧЕНИЕ' : 'AI INSIDER / LEARNING'}
+                {isMarketplaceProductShowcase ? 'AI INSIDER / MARKETPLACE' : (lang === 'ru' ? 'AI INSIDER / ОБУЧЕНИЕ' : 'AI INSIDER / LEARNING')}
               </span>
-              <strong className={styles.pageIdentityTitle}>{pageTitle}</strong>
+              {!isMarketplaceProductShowcase && <strong className={styles.pageIdentityTitle}>{pageTitle}</strong>}
             </div>
             <div className={styles.headerRight}>
               <div className={styles.langToggle} aria-label="Language">
@@ -475,7 +477,7 @@ export function Layout({ children }) {
         )}
 
         {!isAdminPage && <ScrollProgressBar />}
-        <main className={`${styles.main} ${isImmersive ? styles.mainImmersive : ''} ${isFullBleed ? styles.mainFullBleed : ''}`}>{children}</main>
+        <main className={`${styles.main} ${isImmersive ? styles.mainImmersive : ''} ${(isFullBleed || isMarketplaceProductShowcase) ? styles.mainFullBleed : ''}`}>{children}</main>
 
         {!isImmersive && (
           <footer className={styles.footer}>

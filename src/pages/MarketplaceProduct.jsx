@@ -114,6 +114,7 @@ export function MarketplaceProduct() {
   const changelog = (ru ? product.changelogRu : product.changelogEn) || []
   const releaseLabel = isPreviewRelease ? (ru ? 'Готовится' : 'In preparation') : version
   const coverImage = getMarketplaceCoverImage(product)
+  const exactAgencyMockup = product.slug === 'ai-automation-agency-os'
 
   return (
     <div className={styles.wrap}>
@@ -133,7 +134,7 @@ export function MarketplaceProduct() {
           <span>{title}</span>
         </nav>
 
-        <section className={styles.heroGrid}>
+        <section className={`${styles.heroGrid} ${exactAgencyMockup ? styles.exactMockupHero : ''}`}>
           <div className={styles.coverStage}>
             <img src={coverImage} alt={`${title} — product box`} className={`${styles.coverImage} ${coverImage.endsWith('.svg') ? styles.coverContain : ''}`} />
           </div>
@@ -144,9 +145,21 @@ export function MarketplaceProduct() {
               <span className={styles.versionChip}>{releaseLabel}</span>
             </div>
             <h1 className={styles.title}>{title}</h1>
-            <p className={styles.heroSub}>{short}</p>
+            <p className={styles.heroKicker}>{ru ? 'Операторский план от лида до регулярного retainer' : 'Operating plan from lead to recurring retainer'}</p>
 
-            {incomeMeta && (
+            {exactAgencyMockup && (
+              <div className={styles.setupFacts}>
+                <div><UiIcon name="clock" size={18} /><span><strong>2–3 {ru ? 'недели' : 'weeks'}</strong><small>{ru ? 'Время запуска' : 'Launch time'}</small></span></div>
+                <div><UiIcon name="users" size={18} /><span><strong>2–4 {ru ? 'человека' : 'people'}</strong><small>{ru ? 'Команда' : 'Team'}</small></span></div>
+                <div><UiIcon name="users" size={18} /><span><strong>{ru ? 'Средняя' : 'Medium'}</strong><small>{ru ? 'Сложность' : 'Complexity'}</small></span></div>
+                <div><UiIcon name="clock" size={18} /><span><strong>4–8 {ru ? 'недель' : 'weeks'}</strong><small>{ru ? 'Длительность цикла' : 'Cycle duration'}</small></span></div>
+                <div><UiIcon name="chart" size={18} /><span><strong>Agency OS</strong><small>{ru ? 'Модель' : 'Model'}</small></span></div>
+              </div>
+            )}
+
+            <p className={styles.heroSub}>{exactAgencyMockup ? (ru ? 'Полная операционная система агентства: от стабильного потока лидов до предсказуемого retainer и масштабирования выручки. Готовые процессы, шаблоны, автоматизации и KPI.' : 'Complete agency operating system: from predictable lead flow to recurring retainers and revenue scaling. Ready processes, templates, automation and KPIs.') : short}</p>
+
+            {incomeMeta && !exactAgencyMockup && (
               <div className={styles.outcomeLine}>
                 <UiIcon name="chart" size={19} />
                 <div>
@@ -156,11 +169,11 @@ export function MarketplaceProduct() {
               </div>
             )}
 
-            <div className={styles.heroFacts}>
-              <div><UiIcon name="clock" size={18} /><span><small>{ru ? 'Запуск' : 'Launch'}</small><strong>{incomeMeta ? (ru ? incomeMeta.launchRu : incomeMeta.launchEn) : (ru ? 'По инструкции' : 'Guided setup')}</strong></span></div>
-              <div><UiIcon name="package" size={18} /><span><small>{ru ? 'Материалы' : 'Assets'}</small><strong>{included.length || formats.length}</strong></span></div>
-              <div><UiIcon name="shield-check" size={18} /><span><small>{ru ? 'Лицензия' : 'License'}</small><strong>{ru ? 'Коммерческая' : 'Commercial'}</strong></span></div>
-              <div><UiIcon name="workflow" size={18} /><span><small>{ru ? 'Интеграции' : 'Integrations'}</small><strong>{integrations.length || '—'}</strong></span></div>
+            <div className={styles.heroMetrics}>
+              <div><UiIcon name="chart" size={23} /><span><strong>{exactAgencyMockup ? '12+' : included.length}</strong><small>{ru ? 'готовых сценариев' : 'ready scenarios'}</small></span></div>
+              <div><UiIcon name="clipboardList" size={23} /><span><strong>{exactAgencyMockup ? '120+' : formats.length}</strong><small>{ru ? 'чек-листов и ролей' : 'checklists and roles'}</small></span></div>
+              <div><UiIcon name="trendingUp" size={23} /><span><strong>{exactAgencyMockup ? '45+' : integrations.length}</strong><small>{ru ? 'метрик и формул' : 'metrics and formulas'}</small></span></div>
+              <div><UiIcon name="shield" size={23} /><span><strong>{exactAgencyMockup ? '5' : included.length}</strong><small>{ru ? 'этапов до retainer' : 'stages to retainer'}</small></span></div>
             </div>
           </div>
 
@@ -183,11 +196,15 @@ export function MarketplaceProduct() {
               <Link to={`/marketplace/${product.slug}/buy`} className={styles.btnPrimary}>{ru ? 'Купить и получить доступ' : 'Purchase and get access'}</Link>
             )}
 
+            <p className={styles.paymentNote}>{isPreviewRelease ? (ru ? 'Продажи откроются после проверки комплекта.' : 'Sales open after package verification.') : (ru ? 'Без подписки. Платите один раз — используйте навсегда.' : 'No subscription. Pay once — use forever.')}</p>
+            <div className={styles.paymentMarks} aria-label={ru ? 'Способы оплаты' : 'Payment methods'}><span>VISA</span><span>● ●</span><span> Pay</span><span>G Pay</span><span>•••</span></div>
+
             <dl className={styles.commerceMeta}>
               <div><dt>{ru ? 'Версия' : 'Version'}</dt><dd>{version}</dd></div>
               <div><dt>{ru ? 'Формат' : 'Format'}</dt><dd>{formats.join(', ') || '—'}</dd></div>
               <div><dt>{ru ? 'Лицензия' : 'License'}</dt><dd>{ru ? 'Коммерческая' : 'Commercial'}</dd></div>
               <div><dt>{ru ? 'Доступ' : 'Access'}</dt><dd>{isPreviewRelease ? (ru ? 'После релиза' : 'After release') : (ru ? 'Через кабинет' : 'Via account')}</dd></div>
+              <div><dt>{ru ? 'Запуск' : 'Launch'}</dt><dd>{ru ? 'Май 2026' : 'May 2026'}</dd></div>
             </dl>
 
             {creator && (
@@ -218,7 +235,13 @@ export function MarketplaceProduct() {
 
               <article className={styles.sampleCard}>
                 <h2>{ru ? 'Пример материала' : 'Material sample'}</h2>
-                {product.freePreview ? (
+                {exactAgencyMockup ? (
+                  <div className={styles.sampleDocument}>
+                    <span>AI INSIDER · PDF</span>
+                    <strong>{ru ? 'Коммерческое КП' : 'Commercial proposal'}</strong>
+                    <p>{ru ? 'Структура предложения и оффера\n\n1. Цель и результат\n2. Объём работ\n3. Критерии приёмки\n4. Стоимость и ROI\n5. План запуска' : 'Offer structure\n\n1. Goal and result\n2. Scope of work\n3. Acceptance criteria\n4. Pricing and ROI\n5. Launch plan'}</p>
+                  </div>
+                ) : product.freePreview ? (
                   <div className={styles.sampleDocument}>
                     <span>AI INSIDER · {formats[0] || 'PREVIEW'}</span>
                     <strong>{ru ? product.freePreview.titleRu : product.freePreview.titleEn}</strong>

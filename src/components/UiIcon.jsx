@@ -47,6 +47,12 @@ import Check from 'lucide-react/dist/esm/icons/check.mjs'
 import Home from 'lucide-react/dist/esm/icons/home.mjs'
 import KeyRound from 'lucide-react/dist/esm/icons/key-round.mjs'
 import Award from 'lucide-react/dist/esm/icons/award.mjs'
+import Clock from 'lucide-react/dist/esm/icons/clock.mjs'
+import Package from 'lucide-react/dist/esm/icons/package.mjs'
+import Workflow from 'lucide-react/dist/esm/icons/workflow.mjs'
+import ShieldCheck from 'lucide-react/dist/esm/icons/shield-check.mjs'
+import ChartNoAxesCombined from 'lucide-react/dist/esm/icons/chart-no-axes-combined.mjs'
+import CircleCheck from 'lucide-react/dist/esm/icons/circle-check.mjs'
 import styles from './UiIcon.module.css'
 
 /** @typedef {'box' | 'inline' | 'badge' | 'chip'} UiIconVariant */
@@ -102,6 +108,12 @@ export const ICON_MAP = {
   home: Home,
   keyRound: KeyRound,
   award: Award,
+  clock: Clock,
+  package: Package,
+  workflow: Workflow,
+  'shield-check': ShieldCheck,
+  chart: ChartNoAxesCombined,
+  'circle-check': CircleCheck,
 }
 
 const SIZE = {

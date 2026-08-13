@@ -230,6 +230,23 @@
   flex-direction: column;
 }
 
+.productShowcaseLayout { background:#050a18; }
+.productShowcaseHeader {
+  height:54px;
+  padding:0 36px;
+  background:rgba(4,9,22,.92);
+  border-bottom-color:rgba(109,125,165,.16);
+  backdrop-filter:blur(18px);
+}
+.productShowcaseHeader .pageIdentity { gap:0; }
+.productShowcaseHeader .pageIdentityEyebrow { color:#d7d9e5; font-size:.65rem; }
+.productShowcaseHeader .pageIdentityDot { background:#b57cff; box-shadow:0 0 10px rgba(181,124,255,.85); }
+.productShowcaseHeader .langToggle,
+.productShowcaseHeader .iconBtn,
+.productShowcaseHeader .headerLogin,
+.productShowcaseHeader .avatar { height:34px; border-radius:10px; }
+.productShowcaseHeader .iconBtn { width:38px; }
+
 .neuronBg {
   position: fixed;
   inset: 0;
