@@ -1,72 +1,58 @@
 .bar {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 54px;
+  grid-template-columns: auto minmax(150px, 0.55fr) minmax(150px, 0.55fr) minmax(260px, 1fr);
+  align-items: center;
+  min-height: 52px;
+  margin-bottom: 34px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg-surface) 93%, #090a14);
+}
+
+.barLabel {
+  padding: 0 18px;
+  color: #777681;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .chip {
+  min-height: 52px;
   display: flex;
-  min-height: 58px;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 0 17px;
-  border: 1px solid #292830;
-  border-radius: 16px;
+  border-left: 1px solid var(--border-subtle);
   color: #b7b4bd;
-  background: #121216;
-  font-size: 0.73rem;
-  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+  font-size: 0.7rem;
+  transition: color 160ms ease, background 160ms ease;
 }
 
-a.chip:hover {
-  transform: translateY(-2px);
-  border-color: #51476f;
-  background: #17151d;
+a.chip:hover { color: #f0edf7; background: rgba(139, 92, 246, 0.065); }
+.chipTier { color: #d8d2f1; }
+.chipLabel { display: inline-flex; align-items: center; gap: 7px; font-weight: 650; }
+.chipLabel svg { color: #746b88; }
+.chipValue { color: #aa96ff; font-family: var(--font-mono); font-size: 0.86rem; font-weight: 750; }
+.chipActive { color: #c9dbc9; background: rgba(91, 125, 95, 0.08); }
+.chipActive .chipValue { color: #9fbea2; }
+.chipMuted { justify-content: flex-start; color: #85828d; }
+.chipIcon { flex: 0 0 auto; color: #f59472; }
+
+@media (max-width: 1050px) {
+  .bar { grid-template-columns: auto repeat(2, minmax(130px, 1fr)); }
+  .chipMuted { grid-column: 1 / -1; min-height: 42px; border-top: 1px solid var(--border-subtle); border-left: 0; }
+  .chipActive { grid-column: 1 / -1; border-top: 1px solid var(--border-subtle); border-left: 0; }
 }
 
-.chipTier {
-  color: #d8d2f1;
-}
-
-.chipLabel {
-  font-weight: 650;
-}
-
-.chipValue {
-  color: #a995ff;
-  font-size: 0.96rem;
-  font-weight: 780;
-}
-
-.chipActive {
-  border-color: rgba(143, 174, 147, 0.34);
-  color: #c9dbc9;
-  background: rgba(91, 125, 95, 0.1);
-}
-
-.chipActive .chipValue {
-  color: #9fbea2;
-}
-
-.chipMuted {
-  justify-content: flex-start;
-  color: #75737d;
-}
-
-.chipIcon {
-  color: #f59472;
-}
-
-@media (max-width: 900px) {
-  .bar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 520px) {
-  .bar {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 620px) {
+  .bar { grid-template-columns: 1fr 1fr; }
+  .barLabel { grid-column: 1 / -1; padding: 12px 14px 8px; }
+  .chip { min-height: 46px; padding: 0 13px; }
+  .chipTier:first-of-type { border-left: 0; }
 }

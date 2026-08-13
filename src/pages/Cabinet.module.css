@@ -31,8 +31,8 @@
 }
 
 .container {
-  width: 100%;
-  max-width: 1440px;
+  width: min(var(--page-max, 1600px), calc(100% - (var(--page-gutter, 24px) * 2)));
+  max-width: none;
   margin: 0 auto;
 }
 

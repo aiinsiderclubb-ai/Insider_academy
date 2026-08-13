@@ -19,7 +19,7 @@
 .wrap :is(h1, h2, h3, button, input) { font-family: 'Onest', system-ui, sans-serif; }
 
 .container {
-  width: min(1180px, calc(100% - 48px));
+  width: min(var(--page-max, 1600px), calc(100% - (var(--page-gutter, 24px) * 2)));
   margin: 0 auto;
 }
 

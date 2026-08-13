@@ -23,9 +23,9 @@
 }
 
 .container {
-  width: min(100%, 1336px);
+  width: min(100%, var(--page-max, 1600px));
   margin: 0 auto;
-  padding: 0 clamp(20px, 4vw, 48px);
+  padding: 0 var(--page-gutter, 24px);
 }
 
 .catalogHero {

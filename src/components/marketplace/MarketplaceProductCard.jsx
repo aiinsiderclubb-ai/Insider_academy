@@ -4,7 +4,6 @@ import { getMarketplaceCategory } from '../../data/marketplace/categories'
 import { getMarketplacePrice } from '../../data/marketplace/discounts'
 import { getMarketplaceCoverStyle } from '../../utils/marketplaceCover'
 import { ProductBadge } from '../ProductBadge'
-import { UiIcon } from '../UiIcon'
 import styles from './MarketplaceProductCard.module.css'
 
 export function MarketplaceProductCard({
@@ -31,10 +30,6 @@ export function MarketplaceProductCard({
     <article className={`${styles.card} ${featured ? styles.featured : ''}`}>
       <div className={styles.cover} style={coverStyle}>
         <Link to={`/marketplace/${product.slug}`} className={styles.coverHit} aria-label={title} />
-
-        <span className={styles.coverIcon} aria-hidden>
-          <UiIcon name={category?.icon || 'sparkles'} size={32} tone="onAccent" />
-        </span>
 
         {product.badge && <ProductBadge type={product.badge} lang={lang} />}
 

@@ -1,21 +1,21 @@
 .wrap {
-  padding-bottom: 80px;
+  padding-bottom: 64px;
 }
 
 .container {
-  width: min(1200px, 100% - 32px);
+  width: min(var(--page-max, 1600px), calc(100% - (var(--page-gutter, 24px) * 2)));
   margin: 0 auto;
 }
 
 .incomeSection {
   position: relative;
-  margin-top: 8px;
-  padding: clamp(24px, 4vw, 42px);
+  margin-top: 4px;
+  padding: clamp(22px, 2.5vw, 34px);
   border: 1px solid color-mix(in srgb, var(--accent-hot) 28%, var(--border-subtle));
-  border-radius: 28px;
+  border-radius: 18px;
   background:
-    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-hot) 14%, transparent), transparent 34%),
-    radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 38%),
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-hot) 8%, transparent), transparent 30%),
+    radial-gradient(circle at 0% 100%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 34%),
     var(--bg-surface);
   overflow: hidden;
 }
@@ -25,7 +25,7 @@
   align-items: end;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .eyebrow {
@@ -43,19 +43,19 @@
   max-width: 800px;
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.55rem, 3vw, 2.45rem);
+  font-size: clamp(1.45rem, 2.2vw, 2.15rem);
   line-height: 1.12;
   letter-spacing: -0.035em;
 }
 
 .incomeCta {
   flex-shrink: 0;
-  min-height: 44px;
+  min-height: 38px;
   padding: 0 18px;
   display: inline-flex;
   align-items: center;
   border: 1px solid color-mix(in srgb, var(--accent-hot) 42%, transparent);
-  border-radius: var(--radius-pill);
+  border-radius: 10px;
   color: #fdba74;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -63,16 +63,16 @@
 
 .incomeGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .tabs {
   display: flex;
   gap: 8px;
-  margin: 24px 0 32px;
-  padding: 6px;
-  border-radius: 999px;
+  margin: 18px 0 14px;
+  padding: 4px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--bg-card);
   width: fit-content;
@@ -80,9 +80,9 @@
 }
 
 .tabBtn {
-  min-height: 44px;
-  padding: 0 22px;
-  border-radius: 999px;
+  min-height: 38px;
+  padding: 0 18px;
+  border-radius: 9px;
   border: none;
   background: transparent;
   color: var(--text-muted);
@@ -103,7 +103,7 @@
 }
 
 .tabsVaultFirst {
-  margin-top: 32px;
+  margin-top: 22px;
 }
 
 .toolbar {
@@ -113,9 +113,9 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin-bottom: 28px;
-  padding: 12px 14px;
-  border-radius: 14px;
+  margin-bottom: 20px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border-subtle));
   background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
   backdrop-filter: blur(14px);
@@ -217,7 +217,7 @@
 }
 
 .section {
-  margin-bottom: 48px;
+  margin-bottom: 38px;
 }
 
 .sectionHead {
@@ -225,7 +225,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .sectionTitle {
@@ -245,14 +245,14 @@
 .featuredRow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 14px;
 }
 
 .empty {
@@ -286,7 +286,7 @@
 
 @media (max-width: 900px) {
   .incomeGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .featuredRow {
     grid-template-columns: 1fr;
@@ -317,6 +317,14 @@
 }
 
 @media (max-width: 640px) {
+  .container {
+    width: min(100% - 24px, var(--page-max, 1600px));
+  }
+
+  .incomeGrid {
+    grid-template-columns: 1fr;
+  }
+
   .incomeSection {
     padding: 22px 16px;
     border-radius: 22px;

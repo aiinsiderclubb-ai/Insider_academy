@@ -20,9 +20,11 @@
   --accent-pink: #D946EF;
 
   /* ── Layout rhythm ── */
-  --container-max: 1280px;
-  --section-py: clamp(72px, 8vw, 120px);
-  --section-gap: 48px;
+  --container-max: 1600px;
+  --page-max: 1600px;
+  --page-gutter: clamp(16px, 2.2vw, 34px);
+  --section-py: clamp(56px, 6vw, 92px);
+  --section-gap: 40px;
 
   /* ── Typography ── */
   --font-display: 'Unbounded', system-ui, sans-serif;
@@ -40,8 +42,8 @@
   --tracking-heading: -0.048em;
   --tracking-label: 0.08em;
   --radius: 14px;
-  --radius-card: 24px;
-  --radius-button: 14px;
+  --radius-card: 16px;
+  --radius-button: 11px;
   --radius-pill: 999px;
   --ease-motion: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-fast: 150ms;
