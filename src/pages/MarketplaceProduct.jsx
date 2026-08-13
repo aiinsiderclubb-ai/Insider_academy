@@ -18,6 +18,18 @@ import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
 import styles from './MarketplaceProduct.module.css'
 import { api } from '../api/client'
 import { getDemoProofCases } from '../data/marketplace/proofCases'
+import { getMarketplacePresentation } from '../data/marketplace/presentation'
+
+const HERO_ART = {
+  'prompt-packs': '/marketplace/hero-art/prompt-packs.webp',
+  'n8n-workflows': '/marketplace/hero-art/n8n-workflows.webp',
+  'ai-agents': '/marketplace/hero-art/ai-agents.webp',
+  'business-templates': '/marketplace/hero-art/business-templates.webp',
+  'saas-kits': '/marketplace/hero-art/ai-saas-kits.webp',
+  'creator-resources': '/marketplace/hero-art/creator-resources.webp',
+  'mcp-skills': '/marketplace/hero-art/mcp-skills.webp',
+  'voice-agents': '/marketplace/hero-art/voice-agents.webp',
+}
 
 const INTEGRATION_LOGOS = {
   notion: { src: '/integrations/notion.svg', color: '#f7f7f5' },
@@ -83,6 +95,7 @@ export function MarketplaceProduct() {
   const isPreviewRelease = product.releaseStatus === 'preview'
   const reviews = marketplaceData?.reviews || []
   const demoCases = getDemoProofCases(product.categoryId)
+  const presentation = getMarketplacePresentation(product, ru)
 
   useEffect(() => {
     let cancelled = false
@@ -137,6 +150,8 @@ export function MarketplaceProduct() {
   const releaseLabel = isPreviewRelease ? (ru ? 'Готовится' : 'In preparation') : version
   const coverImage = getMarketplaceCoverImage(product)
   const exactAgencyMockup = product.slug === 'ai-automation-agency-os'
+  const heroArtwork = exactAgencyMockup ? '/marketplace/hero-art/agency-os.webp' : HERO_ART[product.categoryId] || coverImage
+  const outcome = incomeMeta ? (ru ? incomeMeta.outcomeRu : incomeMeta.outcomeEn) : short
 
   return (
     <div className={styles.wrap}>
@@ -156,9 +171,11 @@ export function MarketplaceProduct() {
           <span>{title}</span>
         </nav>
 
-        <section className={`${styles.heroGrid} ${exactAgencyMockup ? styles.exactMockupHero : ''}`}>
+        <section className={styles.heroGrid}>
           <div className={styles.coverStage}>
-            <img src={coverImage} alt={`${title} — product box`} className={`${styles.coverImage} ${coverImage.endsWith('.svg') ? styles.coverContain : ''}`} />
+            <div className={styles.coverOrbit} aria-hidden />
+            <img src={heroArtwork} alt={`${title} — product artwork`} className={styles.coverImage} />
+            {!exactAgencyMockup && <div className={styles.coverIdentity}><span>{ru ? category?.titleRu : category?.titleEn}</span><strong>{title}</strong></div>}
           </div>
 
           <div className={styles.heroCopy}>
@@ -166,36 +183,14 @@ export function MarketplaceProduct() {
               {product.badge && <ProductBadge type={product.badge} lang={lang} variant="inline" />}
               <span className={styles.versionChip}>{releaseLabel}</span>
             </div>
+            <p className={styles.categoryEyebrow}>{ru ? category?.titleRu : category?.titleEn}</p>
             <h1 className={styles.title}>{title}</h1>
-            <p className={styles.heroKicker}>{ru ? 'Операторский план от лида до регулярного retainer' : 'Operating plan from lead to recurring retainer'}</p>
-
-            {exactAgencyMockup && (
-              <div className={styles.setupFacts}>
-                <div><UiIcon name="clock" size={18} /><span><strong>2–3 {ru ? 'недели' : 'weeks'}</strong><small>{ru ? 'Время запуска' : 'Launch time'}</small></span></div>
-                <div><UiIcon name="users" size={18} /><span><strong>2–4 {ru ? 'человека' : 'people'}</strong><small>{ru ? 'Команда' : 'Team'}</small></span></div>
-                <div><UiIcon name="users" size={18} /><span><strong>{ru ? 'Средняя' : 'Medium'}</strong><small>{ru ? 'Сложность' : 'Complexity'}</small></span></div>
-                <div><UiIcon name="clock" size={18} /><span><strong>4–8 {ru ? 'недель' : 'weeks'}</strong><small>{ru ? 'Длительность цикла' : 'Cycle duration'}</small></span></div>
-                <div><UiIcon name="chart" size={18} /><span><strong>Agency OS</strong><small>{ru ? 'Модель' : 'Model'}</small></span></div>
-              </div>
-            )}
-
-            <p className={styles.heroSub}>{exactAgencyMockup ? (ru ? 'Полная операционная система агентства: от стабильного потока лидов до предсказуемого retainer и масштабирования выручки. Готовые процессы, шаблоны, автоматизации и KPI.' : 'Complete agency operating system: from predictable lead flow to recurring retainers and revenue scaling. Ready processes, templates, automation and KPIs.') : short}</p>
-
-            {incomeMeta && !exactAgencyMockup && (
-              <div className={styles.outcomeLine}>
-                <UiIcon name="chart" size={19} />
-                <div>
-                  <span>{ru ? 'Результат продукта' : 'Product outcome'}</span>
-                  <strong>{ru ? incomeMeta.outcomeRu : incomeMeta.outcomeEn}</strong>
-                </div>
-              </div>
-            )}
-
-            <div className={styles.heroMetrics}>
-              <div><UiIcon name="chart" size={23} /><span><strong>{exactAgencyMockup ? '12+' : included.length}</strong><small>{ru ? 'готовых сценариев' : 'ready scenarios'}</small></span></div>
-              <div><UiIcon name="clipboardList" size={23} /><span><strong>{exactAgencyMockup ? '120+' : formats.length}</strong><small>{ru ? 'чек-листов и ролей' : 'checklists and roles'}</small></span></div>
-              <div><UiIcon name="trendingUp" size={23} /><span><strong>{exactAgencyMockup ? '45+' : integrations.length}</strong><small>{ru ? 'метрик и формул' : 'metrics and formulas'}</small></span></div>
-              <div><UiIcon name="shield" size={23} /><span><strong>{exactAgencyMockup ? '5' : included.length}</strong><small>{ru ? 'этапов до retainer' : 'stages to retainer'}</small></span></div>
+            <p className={styles.heroKicker}>{presentation.kicker}</p>
+            <p className={styles.heroSub}>{outcome}</p>
+            <div className={styles.heroEssentials}>
+              <span><strong>{included.length}</strong>{ru ? ' материалов' : ' assets'}</span>
+              <span><strong>{formats.length}</strong>{ru ? ' формата' : ' formats'}</span>
+              <span><strong>{integrations.length}</strong>{ru ? ' интеграций' : ' integrations'}</span>
             </div>
           </div>
 
@@ -225,8 +220,6 @@ export function MarketplaceProduct() {
               <div><dt>{ru ? 'Версия' : 'Version'}</dt><dd>{version}</dd></div>
               <div><dt>{ru ? 'Формат' : 'Format'}</dt><dd>{formats.join(', ') || '—'}</dd></div>
               <div><dt>{ru ? 'Лицензия' : 'License'}</dt><dd>{ru ? 'Коммерческая' : 'Commercial'}</dd></div>
-              <div><dt>{ru ? 'Доступ' : 'Access'}</dt><dd>{isPreviewRelease ? (ru ? 'После релиза' : 'After release') : (ru ? 'Через кабинет' : 'Via account')}</dd></div>
-              <div><dt>{ru ? 'Запуск' : 'Launch'}</dt><dd>{ru ? 'Май 2026' : 'May 2026'}</dd></div>
             </dl>
 
             {creator && (
@@ -249,21 +242,9 @@ export function MarketplaceProduct() {
         <section className={styles.proofPanel} role="tabpanel">
           {activeTab === 'preview' && (
             <div className={styles.previewGrid}>
-              <article className={styles.archiveCard}>
-                <h2>{ru ? 'Структура пакета' : 'Package structure'}</h2>
-                <div className={styles.archiveRoot}><span>📦</span><strong>{product.slug}-{version}.{formats.includes('ZIP') ? 'zip' : 'pack'}</strong></div>
-                <ul>{included.map((item, index) => <li key={item}><span>📁</span><strong>{String(index + 1).padStart(2, '0')}_{item}</strong><small>{formats[index % Math.max(formats.length, 1)] || 'FILE'}</small></li>)}</ul>
-              </article>
-
               <article className={styles.sampleCard}>
-                <h2>{ru ? 'Пример материала' : 'Material sample'}</h2>
-                {exactAgencyMockup ? (
-                  <div className={styles.sampleDocument}>
-                    <span>AI INSIDER · PDF</span>
-                    <strong>{ru ? 'Коммерческое КП' : 'Commercial proposal'}</strong>
-                    <p>{ru ? 'Структура предложения и оффера\n\n1. Цель и результат\n2. Объём работ\n3. Критерии приёмки\n4. Стоимость и ROI\n5. План запуска' : 'Offer structure\n\n1. Goal and result\n2. Scope of work\n3. Acceptance criteria\n4. Pricing and ROI\n5. Launch plan'}</p>
-                  </div>
-                ) : product.freePreview ? (
+                <header><span>{ru ? 'Фрагмент продукта' : 'Product fragment'}</span><h2>{ru ? 'Посмотрите до покупки' : 'Inspect before purchase'}</h2></header>
+                {product.freePreview ? (
                   <div className={styles.sampleDocument}>
                     <span>AI INSIDER · {formats[0] || 'PREVIEW'}</span>
                     <strong>{ru ? product.freePreview.titleRu : product.freePreview.titleEn}</strong>
@@ -273,22 +254,16 @@ export function MarketplaceProduct() {
               </article>
 
               <article className={styles.flowCard}>
-                <h2>{ru ? 'Как работает' : 'How it works'}</h2>
-                <div className={styles.previewFlow}>
-                  <div><UiIcon name="sparkles" size={15} /><span><strong>{ru ? 'Новый лид' : 'New lead'}</strong><small>{ru ? 'Форма / Webhook' : 'Form / Webhook'}</small></span></div>
-                  <i aria-hidden>↓</i>
-                  <div><UiIcon name="shield-check" size={15} /><span><strong>{ru ? 'Квалификация' : 'Qualification'}</strong><small>AI / Score</small></span></div>
-                  <i aria-hidden>↓</i>
-                  <section><span><IntegrationMark name="Slack" /><strong>Slack</strong></span><span><UiIcon name="briefcase" size={15} /><strong>CRM</strong></span></section>
-                  <i aria-hidden>↓</i>
-                  <div><UiIcon name="mail" size={15} /><span><strong>{ru ? 'Прогрев' : 'Nurture'}</strong><small>Email / Sequence</small></span></div>
+                <header><span>{ru ? 'Рабочий сценарий' : 'Working scenario'}</span><h2>{ru ? 'От входа до результата' : 'From input to result'}</h2></header>
+                <div className={styles.scenarioFlow}>
+                  {presentation.steps.map(([step, detail], index) => <div key={step}><span>{String(index + 1).padStart(2, '0')}</span><section><strong>{step}</strong><small>{detail}</small></section></div>)}
                 </div>
               </article>
 
-              <article className={styles.integrationCard}>
-                <h2>{ru ? 'Проверяемые интеграции' : 'Integration targets'}</h2>
-                <ul>{integrations.map((item) => <li key={item}><IntegrationMark name={item} /><strong>{item}</strong><b>✓</b></li>)}</ul>
-                {integrations.length === 0 && <p>{ru ? 'Интеграции не требуются.' : 'No integrations required.'}</p>}
+              <article className={styles.acceptanceCard}>
+                <header><span>{ru ? 'Что получите' : 'What you get'}</span><h2>{ru ? 'Проверяемый результат' : 'Verifiable output'}</h2></header>
+                <ul>{included.slice(0, 4).map((item) => <li key={item}><UiIcon name="circle-check" size={15} /><strong>{item}</strong></li>)}</ul>
+                <footer><UiIcon name="shield-check" size={16} /><span>{ru ? 'Границы, setup и QA входят в комплект' : 'Boundaries, setup and QA included'}</span></footer>
               </article>
             </div>
           )}
@@ -296,46 +271,19 @@ export function MarketplaceProduct() {
           {activeTab === 'inside' && (
             <div className={styles.insidePanel}>
               <header className={styles.panelHeader}>
-                <div><span>{ru ? 'Состав релиза' : 'Release inventory'}</span><h2>{ru ? 'Всё необходимое для запуска' : 'Everything required to launch'}</h2></div>
+                <div><span>{ru ? 'Состав релиза' : 'Release inventory'}</span><h2>{ru ? 'Что лежит внутри — без повторения превью' : 'Inside the package — beyond the preview'}</h2></div>
                 <div className={styles.formatRail}>{formats.map((item) => <span key={item}>{item}</span>)}</div>
               </header>
-              <div className={styles.insideShowcase}>
-                <article className={styles.manifestCard}>
-                  <div className={styles.moduleTitle}><span>{ru ? 'Структура архива' : 'Archive structure'}</span><strong>ZIP · 92 MB</strong></div>
-                  <div className={styles.manifestRoot}><UiIcon name="package" size={16} /><strong>AI-Automation-Agency-OS_v{version}.zip</strong></div>
-                  <ul>{included.map((item, index) => <li key={item}><span><UiIcon name="package" size={15} /></span><div><strong>{String(index + 1).padStart(2, '0')}_{item}</strong><small>{formats[index % Math.max(formats.length, 1)] || 'FILE'}</small></div><em>{6 + index * 3} {ru ? 'файлов' : 'files'}</em></li>)}</ul>
-                </article>
-
-                <article className={styles.documentCard}>
-                  <div className={styles.moduleTitle}><span>{ru ? 'Пример документа' : 'Document sample'}</span><strong>PDF</strong></div>
-                  <div className={styles.paperSheet}>
-                    <span>AI INSIDER</span>
-                    <h3>{ru ? 'Коммерческое предложение' : 'Commercial proposal'}</h3>
-                    <p>{ru ? 'Структура предложения и оффера' : 'Offer and proposal structure'}</p>
-                    <hr />
-                    <ol><li>{ru ? 'Цель и результат' : 'Goal and result'}</li><li>{ru ? 'Объём работ' : 'Scope of work'}</li><li>{ru ? 'Критерии приёмки' : 'Acceptance criteria'}</li><li>{ru ? 'Стоимость и ROI' : 'Pricing and ROI'}</li></ol>
-                  </div>
-                  <footer><span>{ru ? 'Стр. 1 из 12' : 'Page 1 of 12'}</span><strong>100%</strong></footer>
-                </article>
-
-                <article className={styles.automationCard}>
-                  <div className={styles.moduleTitle}><span>{ru ? 'Карта автоматизации' : 'Automation map'}</span><strong>FLOW</strong></div>
-                  <div className={styles.automationFlow}>
-                    <div className={styles.flowLead}><UiIcon name="sparkles" size={15} /><strong>{ru ? 'Новый лид' : 'New lead'}</strong><small>Form / Webhook</small></div>
-                    <i aria-hidden>↓</i>
-                    <div className={styles.flowQualify}><UiIcon name="shield-check" size={15} /><strong>{ru ? 'Квалификация' : 'Qualification'}</strong><small>AI / Score</small></div>
-                    <i aria-hidden>↓</i>
-                    <div className={styles.flowBranches}><span><UiIcon name="workflow" size={14} />Slack</span><span><UiIcon name="package" size={14} />CRM</span></div>
-                    <i aria-hidden>↓</i>
-                    <div className={styles.flowNurture}><UiIcon name="mail" size={15} /><strong>Nurture</strong><small>Email / Sequence</small></div>
-                  </div>
-                </article>
-
-                <article className={styles.stackCard}>
-                  <div className={styles.moduleTitle}><span>{ru ? 'Проверенный стек' : 'Verified stack'}</span><strong>{integrations.length}</strong></div>
-                  <ul>{integrations.map((item) => <li key={item}><IntegrationMark name={item} /><strong>{item}</strong><b>✓</b></li>)}</ul>
-                  <footer><UiIcon name="shield-check" size={16} />{ru ? 'QA перед релизом' : 'QA before release'}</footer>
-                </article>
+              <div className={styles.insideLayout}>
+                <section className={styles.inventoryGrid}>
+                  {included.map((item, index) => <article className={styles.inventoryItem} key={item}><span className={styles.fileIndex}>{String(index + 1).padStart(2, '0')}</span><span className={styles.fileMark}>{formats[index % Math.max(formats.length, 1)] || 'FILE'}</span><strong>{item}</strong><small>{ru ? 'Готовый материал · можно адаптировать' : 'Ready asset · editable for your use case'}</small></article>)}
+                </section>
+                <aside className={styles.usePlan}>
+                  <span>{ru ? 'Порядок внедрения' : 'Implementation order'}</span>
+                  <h3>{ru ? 'Из архива — в рабочий процесс' : 'From package to production'}</h3>
+                  <ol>{install.map((item, index) => <li key={item}><span>{index + 1}</span><strong>{item}</strong></li>)}</ol>
+                  <div><UiIcon name="users" size={17} /><p><strong>{ru ? 'Для кого' : 'Best for'}</strong>{presentation.audience}</p></div>
+                </aside>
               </div>
               <footer className={styles.packageFooter}>
                 <span><UiIcon name="package" size={17} />{product.slug}-{version}</span>
@@ -384,9 +332,10 @@ export function MarketplaceProduct() {
         <div className={styles.lowerGrid}>
           <div>
             <ScrollReveal>
-              <section className={styles.block}>
-                <h2>{ru ? 'Обзор' : 'Overview'}</h2>
-                <p>{short}</p>
+              <section className={`${styles.block} ${styles.overviewBlock}`}>
+                <div><span>{ru ? 'О продукте' : 'About the product'}</span><h2>{ru ? 'Коротко: задача, результат, применение' : 'Purpose, outcome and usage'}</h2></div>
+                <div className={styles.overviewCopy}><p>{short}</p><p>{outcome}</p></div>
+                <aside><UiIcon name="users" size={19} /><div><strong>{ru ? 'Кому подходит' : 'Best for'}</strong><p>{presentation.audience}</p></div></aside>
               </section>
             </ScrollReveal>
 

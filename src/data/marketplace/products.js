@@ -36,7 +36,7 @@ const CATEGORY_CONTENT = {
     sampleRu: 'INTENT → POLICY CHECK → TOOL CALL → RESULT VALIDATION → ANSWER / HUMAN HANDOFF\nЗапрещено: выполнять действие без подтверждения критических полей.',
     sampleEn: 'INTENT → POLICY CHECK → TOOL CALL → RESULT VALIDATION → ANSWER / HUMAN HANDOFF\nForbidden: execute action before critical fields are confirmed.',
   },
-  'ai-saas-kits': {
+  'saas-kits': {
     files: ['ZIP', 'JSON', 'PDF'],
     ru: ['Архитектура MVP', 'API и webhook contracts', 'Auth/billing checklist', 'Deploy, monitoring и rollback'],
     en: ['MVP architecture', 'API and webhook contracts', 'Auth and billing checklist', 'Deploy, monitoring and rollback'],
@@ -110,7 +110,6 @@ function product(base) {
     recommendsForCourses: [],
     screenshots: [],
     videoPreview: null,
-    freePreview: null,
     coverImage: base.coverImage ?? null,
     ...base,
     badge: base.badge === 'hit' ? null : base.badge,
