@@ -16,7 +16,7 @@ import { MarketplaceProductCard } from '../components/marketplace/MarketplacePro
 import { MarketplaceFreePreview } from '../components/MarketplaceFreePreview'
 import { ScrollReveal } from '../components/ScrollReveal'
 import { UiIcon } from '../components/UiIcon'
-import { getMarketplaceCoverStyle } from '../utils/marketplaceCover'
+import { getMarketplaceCoverImage } from '../utils/marketplaceCover'
 import styles from './MarketplaceProduct.module.css'
 import { api } from '../api/client'
 import { getDemoProofCases } from '../data/marketplace/proofCases'
@@ -28,6 +28,7 @@ export function MarketplaceProduct() {
   const { hasPurchased, purchases } = useAuth()
   const ru = lang === 'ru'
   const [marketplaceData, setMarketplaceData] = useState(null)
+  const [activeTab, setActiveTab] = useState('preview')
 
   const product = getMarketplaceProduct(productSlug)
   if (!product) return <Navigate to="/marketplace" replace />
@@ -88,6 +89,19 @@ export function MarketplaceProduct() {
     : ['Purchase the product', 'Open Account → Marketplace', 'Download ZIP and follow the PDF guide']
   const install = ru ? installRu : installEn
 
+  const tabs = [
+    { id: 'preview', label: ru ? 'Превью' : 'Preview', icon: 'shield-check' },
+    { id: 'inside', label: ru ? 'Что внутри' : 'What is inside', icon: 'package' },
+    { id: 'integrations', label: ru ? 'Интеграции' : 'Integrations', icon: 'workflow' },
+    { id: 'changelog', label: 'Changelog', icon: 'clock' },
+  ]
+  const version = product.version || '1.0.0-preview'
+  const formats = product.fileTypes || []
+  const integrations = product.testedIntegrations || []
+  const changelog = (ru ? product.changelogRu : product.changelogEn) || []
+  const releaseLabel = isPreviewRelease ? (ru ? 'Готовится' : 'In preparation') : version
+  const coverImage = getMarketplaceCoverImage(product)
+
   return (
     <div className={styles.wrap}>
       <div
@@ -106,97 +120,135 @@ export function MarketplaceProduct() {
           <span>{title}</span>
         </nav>
 
-        <div className={styles.layout}>
-          <div>
-            <div className={styles.preview} style={getMarketplaceCoverStyle(product)}>
-              <span className={styles.previewIcon} aria-hidden>
-                <UiIcon name={category?.icon || 'sparkles'} size={40} tone="onAccent" />
-              </span>
-            </div>
+        <section className={styles.heroGrid}>
+          <div className={styles.coverStage}>
+            <img src={coverImage} alt="" className={`${styles.coverImage} ${coverImage.endsWith('.svg') ? styles.coverContain : ''}`} />
+            <span className={styles.coverFormat}>{formats.slice(0, 3).join(' · ')}</span>
+          </div>
 
-            {product.screenshots?.length > 0 && (
-              <div className={styles.shots}>
-                {product.screenshots.map((src) => (
-                  <img key={src} src={src} alt="" className={styles.shot} loading="lazy" />
-                ))}
+          <div className={styles.heroCopy}>
+            <div className={styles.heroBadgeRow}>
+              {product.badge && <ProductBadge type={product.badge} lang={lang} variant="inline" />}
+              <span className={styles.versionChip}>{releaseLabel}</span>
+            </div>
+            <h1 className={styles.title}>{title}</h1>
+            <p className={styles.heroSub}>{short}</p>
+
+            {incomeMeta && (
+              <div className={styles.outcomeLine}>
+                <UiIcon name="chart" size={19} />
+                <div>
+                  <span>{ru ? 'Результат продукта' : 'Product outcome'}</span>
+                  <strong>{ru ? incomeMeta.outcomeRu : incomeMeta.outcomeEn}</strong>
+                </div>
               </div>
             )}
 
-            {!purchased && product.freePreview && (
-              <ScrollReveal>
-                <MarketplaceFreePreview
-                  preview={product.freePreview}
-                  lang={lang}
-                  productTitle={title}
-                />
-              </ScrollReveal>
+            <div className={styles.heroFacts}>
+              <div><UiIcon name="clock" size={18} /><span><small>{ru ? 'Запуск' : 'Launch'}</small><strong>{incomeMeta ? (ru ? incomeMeta.launchRu : incomeMeta.launchEn) : (ru ? 'По инструкции' : 'Guided setup')}</strong></span></div>
+              <div><UiIcon name="package" size={18} /><span><small>{ru ? 'Материалы' : 'Assets'}</small><strong>{included.length || formats.length}</strong></span></div>
+              <div><UiIcon name="shield-check" size={18} /><span><small>{ru ? 'Лицензия' : 'License'}</small><strong>{ru ? 'Коммерческая' : 'Commercial'}</strong></span></div>
+              <div><UiIcon name="workflow" size={18} /><span><small>{ru ? 'Интеграции' : 'Integrations'}</small><strong>{integrations.length || '—'}</strong></span></div>
+            </div>
+          </div>
+
+          <aside className={styles.sidebar}>
+            <div className={styles.priceRow}>
+              <span className={styles.price}>{finalPrice}€</span>
+              {discountPercent > 0 && finalPrice < product.priceEur && <span className={styles.oldPrice}>{product.priceEur}€</span>}
+            </div>
+            <ul className={styles.purchaseProof}>
+              <li>{isPreviewRelease ? (ru ? 'Checkout закрыт до проверенного релиза' : 'Checkout closed until verified release') : (ru ? 'Доступ после подтверждённой оплаты' : 'Access after verified payment')}</li>
+              <li>{ru ? 'Без скрытых платежей' : 'No hidden fees'}</li>
+              <li>{ru ? 'Коммерческая лицензия включена' : 'Commercial license included'}</li>
+            </ul>
+
+            {isPreviewRelease ? (
+              <span className={`${styles.btnPrimary} ${styles.releasePending}`}>{ru ? 'Готовим проверенный релиз' : 'Verified release in progress'}</span>
+            ) : purchased ? (
+              <Link to="/cabinet#marketplace" className={styles.btnPrimary}>{ru ? 'Скачать продукт' : 'Download product'}</Link>
+            ) : (
+              <Link to={`/marketplace/${product.slug}/buy`} className={styles.btnPrimary}>{ru ? 'Купить и получить доступ' : 'Purchase and get access'}</Link>
             )}
 
+            <dl className={styles.commerceMeta}>
+              <div><dt>{ru ? 'Версия' : 'Version'}</dt><dd>{version}</dd></div>
+              <div><dt>{ru ? 'Формат' : 'Format'}</dt><dd>{formats.join(', ') || '—'}</dd></div>
+              <div><dt>{ru ? 'Лицензия' : 'License'}</dt><dd>{ru ? 'Коммерческая' : 'Commercial'}</dd></div>
+              <div><dt>{ru ? 'Доступ' : 'Access'}</dt><dd>{isPreviewRelease ? (ru ? 'После релиза' : 'After release') : (ru ? 'Через кабинет' : 'Via account')}</dd></div>
+            </dl>
+
+            {creator && (
+              <Link to={`/marketplace/creators/${creator.slug}`} className={styles.creator}>
+                <span className={styles.creatorAvatar} style={{ background: creator.avatarGradient }} aria-hidden />
+                <span><span className={styles.creatorName}>{creator.name}</span><small>{creator.verified ? (ru ? 'Внутренняя команда Academy' : 'Academy in-house team') : (ru ? 'Автор продукта' : 'Product creator')}</small></span>
+              </Link>
+            )}
+          </aside>
+        </section>
+
+        <div className={styles.productTabs} role="tablist" aria-label={ru ? 'Материалы продукта' : 'Product materials'}>
+          {tabs.map((tab) => (
+            <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} className={activeTab === tab.id ? styles.tabActive : ''} onClick={() => setActiveTab(tab.id)}>
+              <UiIcon name={tab.icon} size={17} />{tab.label}
+            </button>
+          ))}
+        </div>
+
+        <section className={styles.proofPanel} role="tabpanel">
+          {activeTab === 'preview' && (
+            <div className={styles.previewGrid}>
+              <article className={styles.archiveCard}>
+                <h2>{ru ? 'Структура пакета' : 'Package structure'}</h2>
+                <div className={styles.archiveRoot}><span>📦</span><strong>{product.slug}-{version}.{formats.includes('ZIP') ? 'zip' : 'pack'}</strong></div>
+                <ul>{included.map((item, index) => <li key={item}><span>📁</span><strong>{String(index + 1).padStart(2, '0')}_{item}</strong><small>{formats[index % Math.max(formats.length, 1)] || 'FILE'}</small></li>)}</ul>
+              </article>
+
+              <article className={styles.sampleCard}>
+                <h2>{ru ? 'Пример материала' : 'Material sample'}</h2>
+                {product.freePreview ? (
+                  <div className={styles.sampleDocument}>
+                    <span>AI INSIDER · {formats[0] || 'PREVIEW'}</span>
+                    <strong>{ru ? product.freePreview.titleRu : product.freePreview.titleEn}</strong>
+                    <p>{ru ? product.freePreview.contentRu : product.freePreview.contentEn}</p>
+                  </div>
+                ) : product.screenshots?.[0] ? <img src={product.screenshots[0]} alt="" /> : <div className={styles.sampleEmpty}><UiIcon name={category?.icon || 'sparkles'} size={38} /><span>{ru ? 'Preview включён в релиз' : 'Preview included in release'}</span></div>}
+              </article>
+
+              <article className={styles.flowCard}>
+                <h2>{ru ? 'Как работает' : 'How it works'}</h2>
+                <div className={styles.flow}>
+                  {install.map((item, index) => <div key={item}><span>{index + 1}</span><strong>{item}</strong></div>)}
+                </div>
+              </article>
+
+              <article className={styles.integrationCard}>
+                <h2>{ru ? 'Проверяемые интеграции' : 'Integration targets'}</h2>
+                <ul>{integrations.map((item) => <li key={item}><span>{item.slice(0, 1)}</span><strong>{item}</strong><b>✓</b></li>)}</ul>
+                {integrations.length === 0 && <p>{ru ? 'Интеграции не требуются.' : 'No integrations required.'}</p>}
+              </article>
+            </div>
+          )}
+
+          {activeTab === 'inside' && <div className={styles.tabList}><h2>{ru ? 'В комплекте' : 'Included'}</h2><ul className={styles.list}>{included.map((item) => <li key={item}>{item}</li>)}</ul><p>{ru ? 'Форматы: ' : 'Formats: '}{formats.join(', ') || '—'}</p></div>}
+          {activeTab === 'integrations' && <div className={styles.tabList}><h2>{ru ? 'Интеграции и требования' : 'Integrations and requirements'}</h2><ul className={styles.list}>{[...integrations, ...requirements].map((item) => <li key={item}>{item}</li>)}</ul></div>}
+          {activeTab === 'changelog' && <div className={styles.tabList}><h2>Changelog · {version}</h2><ul className={styles.list}>{changelog.map((item) => <li key={item}>{item}</li>)}</ul></div>}
+        </section>
+
+        <div className={styles.lowerGrid}>
+          <div>
             <ScrollReveal>
               <section className={styles.block}>
                 <h2>{ru ? 'Обзор' : 'Overview'}</h2>
-                <p style={{ margin: 0, color: 'var(--text-muted)', lineHeight: 1.6 }}>{short}</p>
+                <p>{short}</p>
               </section>
             </ScrollReveal>
 
             <ScrollReveal>
               <section className={styles.block}>
                 <h2>{ru ? 'Демонстрационные кейсы' : 'Demonstration cases'}</h2>
-                <p>{ru ? 'Это тестовые сценарии продукта, не клиентские отзывы и не обещание результата.' : 'These are product test scenarios, not client testimonials or outcome promises.'}</p>
+                <p>{ru ? 'Тестовые сценарии продукта — не клиентские отзывы и не обещание результата.' : 'Product test scenarios—not customer testimonials or outcome promises.'}</p>
                 {demoCases.map((item) => <div className={styles.faqItem} key={item.id}><strong>{item.id} · {ru ? item.titleRu : item.evidence}</strong><p>{ru ? item.resultRu : item.evidence}</p></div>)}
-              </section>
-            </ScrollReveal>
-
-            <ScrollReveal>
-              <section className={styles.block}>
-                <h2>{ru ? 'Как устроен release' : 'Release structure'}</h2>
-                <div className={styles.faqItem}>
-                  <strong>{ru ? 'Версия' : 'Version'}: {product.version || '1.0.0-preview'}</strong>
-                  <p>{ru ? 'Статус preview означает: структура и демо готовы, покупка закрыта до публикации проверенных файлов.' : 'Preview means structure and demo are ready; checkout stays closed until verified files are published.'}</p>
-                </div>
-                <h3>{ru ? 'Тестируемые интеграции' : 'Integration targets'}</h3>
-                <ul className={styles.list}>{(product.testedIntegrations || []).map((item) => <li key={item}>{item}</li>)}</ul>
-                <h3>Changelog</h3>
-                <ul className={styles.list}>{((ru ? product.changelogRu : product.changelogEn) || []).map((item) => <li key={item}>{item}</li>)}</ul>
-              </section>
-            </ScrollReveal>
-
-            <ScrollReveal>
-              <section className={styles.block}>
-                <h2>{ru ? 'Что входит' : 'What\'s included'}</h2>
-                <ul className={styles.list}>
-                  {included.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-                <p style={{ margin: '12px 0 0', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                  {ru ? 'Форматы: ' : 'Formats: '}
-                  {(product.fileTypes || []).join(', ') || (ru ? 'уточняются' : 'to be confirmed')}
-                </p>
-              </section>
-            </ScrollReveal>
-
-            <ScrollReveal>
-              <section className={styles.block}>
-                <h2>{ru ? 'Требования' : 'Requirements'}</h2>
-                <ul className={styles.list}>
-                  {requirements.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </section>
-            </ScrollReveal>
-
-            <ScrollReveal>
-              <section className={styles.block}>
-                <h2>{ru ? 'Установка' : 'Installation'}</h2>
-                <ul className={styles.list}>
-                  {install.map((item, i) => (
-                    <li key={item}>
-                      {i + 1}. {item}
-                    </li>
-                  ))}
-                </ul>
               </section>
             </ScrollReveal>
 
@@ -254,88 +306,6 @@ export function MarketplaceProduct() {
               </ScrollReveal>
             )}
           </div>
-
-          <aside className={styles.sidebar}>
-            <h1 className={styles.title}>{title}</h1>
-            <div className={styles.meta}>
-              {marketplaceData?.product?.reviewCount > 0 ? (
-                <>
-                  <span className={styles.reviewStars}>★ {marketplaceData.product.rating}</span>
-                  <span>({marketplaceData.product.reviewCount})</span>
-                </>
-              ) : product.badge ? (
-                <ProductBadge type={product.badge} lang={lang} variant="inline" />
-              ) : null}
-            </div>
-            {incomeMeta && (
-              <div className={styles.outcomePanel}>
-                <span>{ru ? 'Что вы сможете продавать' : 'What you can sell'}</span>
-                <strong>{ru ? incomeMeta.outcomeRu : incomeMeta.outcomeEn}</strong>
-                <div>
-                  <small>{ru ? 'Запуск' : 'Launch'} · {ru ? incomeMeta.launchRu : incomeMeta.launchEn}</small>
-                  <small>{ru ? incomeMeta.serviceRu : incomeMeta.serviceEn}</small>
-                </div>
-              </div>
-            )}
-            <div>
-              <span className={styles.price}>{finalPrice}€</span>
-              {discountPercent > 0 && finalPrice < product.priceEur && (
-                <span className={styles.oldPrice}>{product.priceEur}€</span>
-              )}
-            </div>
-            {discountPercent > 0 && (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--accent-orange)', margin: '8px 0 0' }}>
-                {ru ? `Скидка подписки −${discountPercent}%` : `Membership discount −${discountPercent}%`}
-              </p>
-            )}
-
-            {creator && (
-              <Link to={`/marketplace/creators/${creator.slug}`} className={styles.creator}>
-                <span
-                  className={styles.creatorAvatar}
-                  style={{ background: creator.avatarGradient }}
-                  aria-hidden
-                />
-                <span>
-                  <span className={styles.creatorName}>{creator.name}</span>
-                  {creator.verified && (
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {ru ? 'Внутренняя команда Academy' : 'Academy in-house team'}
-                    </span>
-                  )}
-                </span>
-              </Link>
-            )}
-
-            {isPreviewRelease ? (
-              <>
-                <span className={`${styles.btnPrimary} ${styles.releasePending}`}>
-                  {ru ? 'Готовим проверенный релиз' : 'Verified release in progress'}
-                </span>
-                <Link to="/marketplace#catalog" className={styles.btnSecondary}>
-                  {ru ? 'Посмотреть доступные системы' : 'Browse available systems'}
-                </Link>
-              </>
-            ) : purchased ? (
-              <>
-                <Link to="/cabinet#marketplace" className={styles.btnPrimary}>
-                  {ru ? 'Скачать →' : 'Download →'}
-                </Link>
-                <Link to={`/marketplace/${product.slug}`} className={styles.btnSecondary}>
-                  {ru ? 'Уже куплено' : 'Already owned'}
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link to={`/marketplace/${product.slug}/buy`} className={styles.btnPrimary}>
-                  {ru ? 'Купить' : 'Purchase'}
-                </Link>
-                <Link to={`/marketplace/${product.slug}`} className={styles.btnSecondary}>
-                  {ru ? 'Превью описания' : 'Preview details'}
-                </Link>
-              </>
-            )}
-          </aside>
         </div>
       </div>
     </div>
