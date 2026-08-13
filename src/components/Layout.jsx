@@ -536,6 +536,10 @@ export function Layout({ children }) {
               </nav>
             </div>
 
+            <div className={styles.footerWordmark} aria-hidden="true">
+              <span>AI INSIDER</span>{' '}<span>ACADEMY</span>
+            </div>
+
             <div className={styles.footerMeta}>
               <span>{t('footer.copyright')}</span>
               <span className={styles.footerVer}>v{SITE_VERSION}</span>
