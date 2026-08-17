@@ -481,7 +481,6 @@ export function Layout({ children }) {
 
         {!isImmersive && (
           <footer className={styles.footer}>
-            <div className={styles.footerGlow} aria-hidden />
             <div className={styles.footerTop}>
               <div className={styles.footerBrandCol}>
                 <div className={styles.footerBrand}>
@@ -536,8 +535,15 @@ export function Layout({ children }) {
               </nav>
             </div>
 
-            <div className={styles.footerWordmark} aria-hidden="true">
-              <span>AI INSIDER</span>{' '}<span>ACADEMY</span>
+            <div className={styles.footerHorizon} aria-hidden="true">
+              <div className={styles.footerHorizonMeta}>
+                <span>AI systems school</span>
+                <span>Education · Products · Community</span>
+              </div>
+              <div className={styles.footerWordmark}>
+                <span className={styles.footerWordmarkLead}>AI INSIDER</span>
+                <span className={styles.footerWordmarkTail}>ACADEMY</span>
+              </div>
             </div>
 
             <div className={styles.footerMeta}>
