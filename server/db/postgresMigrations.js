@@ -20,6 +20,7 @@ export async function runPostgresMigrations(pool) {
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub TEXT',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_sub TEXT',
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS locale TEXT DEFAULT 'ru'",
     'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS personal_id TEXT',
     'ALTER TABLE reviews ADD COLUMN IF NOT EXISTS contact_email TEXT',
     "ALTER TABLE reviews ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'",
@@ -75,6 +76,11 @@ export async function runPostgresMigrations(pool) {
       send_after TEXT NOT NULL,
       sent_at TEXT,
       error TEXT,
+      created_at TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS email_unsubscribes (
+      email TEXT PRIMARY KEY,
+      scope TEXT NOT NULL DEFAULT 'marketing',
       created_at TEXT NOT NULL
     )`,
     `CREATE TABLE IF NOT EXISTS creator_payouts (

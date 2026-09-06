@@ -60,6 +60,12 @@ export async function grantCourseAccess({
       source: provider,
     }).catch(() => {})
     granted = true
+    const { notifyUserEmail } = await import('./email.js')
+    notifyUserEmail(mail, 'access_granted', {
+      courseTitle: title,
+      courseId: cid,
+      courseSlug: cid,
+    }).catch(() => {})
   }
 
   return { ok: true, userId: user.id, email: mail, granted, userCreated, alreadyHadAccess: !granted }

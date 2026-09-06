@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { timingSafeEqual } from 'node:crypto'
 import { getDb, parseJson } from '../db.js'
 import { requireAdmin, signAdminToken } from '../middleware/auth.js'
-import { sendEmail, sendHomeworkFeedbackEmail } from '../services/email.js'
+import { sendHomeworkFeedbackEmail, sendTemplateEmail } from '../services/email.js'
 import { config, isEmailEnabled } from '../config.js'
 import { getFileUrl } from '../services/storage.js'
 import { nowIso } from '../db/time.js'
@@ -26,7 +26,7 @@ import {
 import adminOpsRoutes from './adminOps.js'
 import adminGiveawaysRoutes from './adminGiveaways.js'
 import adminMarketplaceRoutes from './adminMarketplace.js'
-import { queueEmail } from '../services/emailQueue.js'
+import adminEmailRoutes from './adminEmail.js'
 import { logAudit } from '../services/auditLog.js'
 import { deleteUserAccount } from '../services/deleteUser.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
@@ -94,12 +94,7 @@ router.post('/test-email', requireAdmin('admin'), async (req, res) => {
     return res.status(400).json({ error: 'Valid email required', errorRu: 'Укажите email для теста' })
   }
   try {
-    await sendEmail({
-      to,
-      subject: 'Тест почты — AI Insider Academy',
-      html: `<p>Почта Academy работает.</p><p>Отправитель: ${config.email.from}</p><p>Время: ${new Date().toISOString()}</p>`,
-      text: `Почта Academy работает. Отправитель: ${config.email.from}`,
-    })
+    await sendTemplateEmail(to, 'test_email', { locale: 'ru', sentAt: new Date().toISOString() })
     res.json({ ok: true, to })
   } catch (err) {
     console.error('[admin/test-email]', err.message)
@@ -114,6 +109,7 @@ router.use(requireAdmin('admin', 'editor', 'moderator'))
 router.use(adminMarketplaceRoutes)
 router.use(adminOpsRoutes)
 router.use(adminGiveawaysRoutes)
+router.use(adminEmailRoutes)
 
 router.get('/dashboard', async (req, res) => {
   const db = getDb()
@@ -323,7 +319,12 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), prelaunchBlock
       ...nextLesson,
     })
     sendHomeworkFeedbackEmail({
-      email: row.email, courseTitle: row.course_title, lessonTitle: row.lesson_title, status, comment: adminComment,
+      email: row.email,
+      courseTitle: row.course_title,
+      lessonTitle: row.lesson_title,
+      status,
+      comment: adminComment,
+      name: row.name,
     }).catch(() => {})
     const u = await db.get('SELECT personal_id FROM users WHERE email = ?', [row.email])
     sheetsTrack.trackHomeworkEvent({
@@ -340,13 +341,6 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), prelaunchBlock
     }).catch(() => {})
   }
   const updatedHw = await db.get('SELECT * FROM homework WHERE id = ?', [req.params.id])
-  if (status === 'accepted' && updatedHw?.email) {
-    queueEmail({
-      to: updatedHw.email,
-      template: 'hw_reviewed',
-      payload: { name: updatedHw.name, courseTitle: updatedHw.course_title },
-    }).catch(() => {})
-  }
   await logAudit({
     actorEmail: `admin:${req.adminRole}`,
     action: 'homework.update',
@@ -693,6 +687,8 @@ router.post('/certificates', requireAdmin('admin', 'moderator'), prelaunchBlocke
     score,
     action: 'выдан админом',
   }).catch(() => {})
+  const { notifyUserEmail } = await import('../services/email.js')
+  notifyUserEmail(email, 'certificate_ready', { courseTitle, courseId }).catch(() => {})
   res.json({ ok: true, id })
 })
 

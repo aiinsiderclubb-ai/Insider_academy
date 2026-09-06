@@ -1,24 +1,16 @@
-import { getDb } from '../db.js'
-import { nowIso } from '../db/time.js'
 import crypto from 'crypto'
+import { getDb, parseJson } from '../db.js'
+import { nowIso } from '../db/time.js'
 import { sendEmail } from './email.js'
-import { config, isEmailEnabled } from '../config.js'
+import { isEmailEnabled } from '../config.js'
+import { MARKETING_TEMPLATES, normalizeLocale } from './emailCopy.js'
+import { renderEmail } from './emailRender.js'
+import { isUnsubscribed } from './emailUnsub.js'
 
-const academyBase = () => config.appUrl.replace(/\/$/, '')
+const DAY = 86400000
 
-const TEMPLATES = {
-  welcome_1: {
-    subject: 'Добро пожаловать в AI Insider Academy',
-    body: (name) => `Здравствуйте${name ? `, ${name}` : ''}!\n\nСпасибо за регистрацию. Начните с бесплатного курса AI Starter Week: ${academyBase()}/courses/ai-start\n\n— AI Insider Academy`,
-  },
-  hw_reviewed: {
-    subject: 'Домашнее задание проверено',
-    body: (name, courseTitle) => `Здравствуйте${name ? `, ${name}` : ''}!\n\nВаше ДЗ по курсу «${courseTitle || 'курс'}» проверено. Зайдите в личный кабинет за результатом.\n\n— AI Insider Academy`,
-  },
-  inactive_3d: {
-    subject: 'Мы скучаем — продолжите обучение',
-    body: (name) => `Здравствуйте${name ? `, ${name}` : ''}!\n\nВы не заходили в Academy 3 дня. Продолжите с того места, где остановились: ${academyBase()}/cabinet\n\n— AI Insider Academy`,
-  },
+function later(ms) {
+  return new Date(Date.now() + ms).toISOString()
 }
 
 export async function queueEmail({ to, template, payload = {}, sendAfter = null }) {
@@ -27,13 +19,44 @@ export async function queueEmail({ to, template, payload = {}, sendAfter = null 
   await db.run(
     `INSERT INTO email_queue (id, email, template, payload, status, send_after, created_at)
      VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
-    [id, to, template, JSON.stringify(payload), sendAfter || nowIso(), nowIso()]
+    [id, String(to).trim().toLowerCase(), template, JSON.stringify(payload), sendAfter || nowIso(), nowIso()]
   )
   return id
 }
 
+async function resolveSkip(row, payload) {
+  const email = row.email
+  if (MARKETING_TEMPLATES.has(row.template) && await isUnsubscribed(email)) {
+    return 'unsubscribed'
+  }
+
+  const db = getDb()
+  const user = await db.get(
+    'SELECT id, last_login_at, last_activity_date FROM users WHERE email = ?',
+    [email]
+  )
+
+  if (row.template === 'welcome_2') {
+    if (user?.last_login_at || user?.last_activity_date) return 'already_active'
+    if (user?.id) {
+      const progress = await db.get('SELECT user_id FROM progress WHERE user_id = ? LIMIT 1', [user.id])
+      if (progress) return 'already_active'
+    }
+  }
+
+  if (row.template === 'welcome_3' && user?.id) {
+    const purchase = await db.get('SELECT id FROM purchases WHERE user_id = ? LIMIT 1', [user.id])
+    if (purchase) return 'already_purchased'
+  }
+
+  if ((row.template === 'inactive_3d' || row.template === 'inactive_7d' || row.template === 'inactive_14d') && user?.last_login_at) {
+    if (user.last_login_at > row.created_at) return 'returned'
+  }
+
+  return payload.skipReason || null
+}
+
 export async function processEmailQueue(limit = 20) {
-  if (!isEmailEnabled()) return { processed: 0, reason: 'smtp_disabled' }
   const db = getDb()
   const rows = await db.all(
     `SELECT * FROM email_queue WHERE status = 'pending' AND send_after <= ?
@@ -41,18 +64,32 @@ export async function processEmailQueue(limit = 20) {
     [nowIso(), limit]
   )
   let sent = 0
+  let skipped = 0
   for (const row of rows) {
-    const tpl = TEMPLATES[row.template]
-    if (!tpl) {
-      await db.run("UPDATE email_queue SET status = 'failed' WHERE id = ?", [row.id])
-      continue
-    }
-    const payload = JSON.parse(row.payload || '{}')
+    const payload = parseJson(row.payload, {})
     try {
+      const reason = await resolveSkip(row, payload)
+      if (reason) {
+        await db.run(
+          "UPDATE email_queue SET status = 'skipped', error = ? WHERE id = ?",
+          [reason, row.id]
+        )
+        skipped += 1
+        continue
+      }
+      if (!isEmailEnabled()) continue
+      const rendered = renderEmail(row.template, {
+        ...payload,
+        to: row.email,
+        email: row.email,
+        locale: payload.locale,
+      })
       await sendEmail({
         to: row.email,
-        subject: tpl.subject,
-        text: typeof tpl.body === 'function' ? tpl.body(payload.name, payload.courseTitle) : tpl.body,
+        subject: rendered.subject,
+        html: rendered.html,
+        text: rendered.text,
+        headers: rendered.headers,
       })
       await db.run("UPDATE email_queue SET status = 'sent', sent_at = ? WHERE id = ?", [nowIso(), row.id])
       sent += 1
@@ -60,30 +97,91 @@ export async function processEmailQueue(limit = 20) {
       await db.run("UPDATE email_queue SET status = 'failed', error = ? WHERE id = ?", [err.message, row.id])
     }
   }
-  return { processed: sent }
+  return { processed: sent, skipped, reason: isEmailEnabled() ? undefined : 'smtp_disabled' }
 }
 
-export async function scheduleWelcomeSeries(email, name) {
-  await queueEmail({ to: email, template: 'welcome_1', payload: { name } })
+export async function scheduleWelcomeSeries(email, name, locale = 'ru') {
+  const mail = String(email || '').trim().toLowerCase()
+  if (!mail) return []
+  const db = getDb()
+  const existing = await db.get(
+    `SELECT id FROM email_queue
+     WHERE email = ? AND template IN ('welcome_1', 'welcome_2', 'welcome_3')
+       AND status IN ('pending', 'sent')
+     LIMIT 1`,
+    [mail]
+  )
+  if (existing) return []
+
+  const loc = normalizeLocale(locale)
+  const payload = { name, locale: loc }
+  return Promise.all([
+    queueEmail({ to: mail, template: 'welcome_1', payload }),
+    queueEmail({ to: mail, template: 'welcome_2', payload, sendAfter: later(2 * DAY) }),
+    queueEmail({ to: mail, template: 'welcome_3', payload, sendAfter: later(5 * DAY) }),
+  ])
+}
+
+async function lessonHint(userId) {
+  const db = getDb()
+  const rows = await db.all(
+    'SELECT course_id, data, updated_at FROM progress WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
+    [userId]
+  )
+  const row = rows[0]
+  if (!row) return {}
+  const data = parseJson(row.data, {})
+  const watched = Array.isArray(data.watched) ? data.watched : []
+  const nextIndex = watched.length
+  const course = await db.get('SELECT data FROM courses WHERE id = ?', [row.course_id])
+  const parsed = parseJson(course?.data, {})
+  const lesson = parsed.lessons?.[nextIndex] || parsed.lessons?.[0]
+  const slug = parsed.slug || row.course_id
+  return {
+    courseTitle: parsed.title || row.course_id,
+    lessonTitle: lesson?.title || '',
+    lessonPath: `/learn/${slug}`,
+  }
 }
 
 export async function processInactiveUsers() {
   const db = getDb()
-  const cutoff = new Date(Date.now() - 3 * 86400000).toISOString()
+  const cutoff3 = new Date(Date.now() - 3 * DAY).toISOString()
+  const cutoff7 = new Date(Date.now() - 7 * DAY).toISOString()
+  const cutoff14 = new Date(Date.now() - 14 * DAY).toISOString()
   const users = await db.all(
-    `SELECT id, email, name, last_login_at FROM users
-     WHERE last_login_at IS NOT NULL AND last_login_at < ? LIMIT 30`,
-    [cutoff]
+    `SELECT id, email, name, locale, last_login_at FROM users
+     WHERE last_login_at IS NOT NULL AND last_login_at < ?
+     LIMIT 40`,
+    [cutoff3]
   )
   let queued = 0
-  for (const u of users) {
+  for (const user of users) {
+    if (await isUnsubscribed(user.email)) continue
+    const template = user.last_login_at < cutoff14
+      ? 'inactive_14d'
+      : user.last_login_at < cutoff7
+        ? 'inactive_7d'
+        : 'inactive_3d'
+    const windowStart = template === 'inactive_14d' ? cutoff14 : template === 'inactive_7d' ? cutoff7 : cutoff3
     const sent = await db.get(
-      "SELECT id FROM email_queue WHERE email = ? AND template = 'inactive_3d' AND created_at > ?",
-      [u.email, cutoff]
+      'SELECT id FROM email_queue WHERE email = ? AND template = ? AND created_at > ?',
+      [user.email, template, windowStart]
     )
     if (sent) continue
-    await queueEmail({ to: u.email, template: 'inactive_3d', payload: { name: u.name } })
+    const hint = await lessonHint(user.id)
+    await queueEmail({
+      to: user.email,
+      template,
+      payload: {
+        name: user.name,
+        locale: normalizeLocale(user.locale),
+        ...hint,
+      },
+    })
     queued += 1
   }
   return { queued }
 }
+
+export { later }

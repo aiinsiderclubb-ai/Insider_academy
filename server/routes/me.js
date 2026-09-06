@@ -324,7 +324,7 @@ router.patch('/email', async (req, res) => {
   const token = signUserToken(user)
   const payload = { token, user: await mapUserResponse(db, user), verificationSent: false }
   try {
-    const verification = await issueEmailVerificationCode(email, user?.name || email)
+    const verification = await issueEmailVerificationCode(email, user?.name || email, '/onboarding', user?.locale)
     payload.verificationSent = true
     if (verification.devCode) payload.devCode = verification.devCode
   } catch (err) {

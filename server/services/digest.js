@@ -1,6 +1,6 @@
 import { getDb } from '../db.js'
 import { config, isEmailEnabled } from '../config.js'
-import { sendEmail } from './email.js'
+import { sendTemplateEmail } from './email.js'
 
 const DIGEST_KEY = 'admin_digest_last'
 
@@ -27,19 +27,17 @@ export async function sendAdminDailyDigest() {
     return
   }
 
-  const adminUrl = `${config.appUrl}/admin`
   const lines = [
-    pendingHw > 0 ? `📝 Домашних заданий на проверке: ${pendingHw}` : null,
-    pendingCerts > 0 ? `🎓 Сертификатов ожидает выдачи: ${pendingCerts}` : null,
-    newRegs > 0 ? `👤 Новых регистраций сегодня: ${newRegs}` : null,
-    newPurchases > 0 ? `💳 Покупок сегодня: ${newPurchases}` : null,
+    pendingHw > 0 ? `Домашних заданий на проверке: ${pendingHw}` : null,
+    pendingCerts > 0 ? `Сертификатов ожидает выдачи: ${pendingCerts}` : null,
+    newRegs > 0 ? `Новых регистраций сегодня: ${newRegs}` : null,
+    newPurchases > 0 ? `Покупок сегодня: ${newPurchases}` : null,
   ].filter(Boolean)
 
-  await sendEmail({
-    to: adminEmail,
-    subject: `AI Insider Admin — ${pendingHw} ДЗ на проверке`,
-    html: `<p>Ежедневный дайджест админ-панели:</p><ul>${lines.map((l) => `<li>${l}</li>`).join('')}</ul><p><a href="${adminUrl}">Открыть админ-панель</a></p>`,
-    text: lines.join('\n') + `\n\n${adminUrl}`,
+  await sendTemplateEmail(adminEmail, 'admin_digest', {
+    locale: 'ru',
+    lines,
+    pendingHw,
   })
 
   await db.run(

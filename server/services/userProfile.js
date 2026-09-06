@@ -60,5 +60,5 @@ export async function syncUserRecords(db, oldEmail, updates = {}) {
 }
 
 export function userSelectFields() {
-  return 'id, personal_id, email, name, email_verified, telegram_chat_id, telegram_username, avatar_url, profile_updated_at, password_changed_at, token_version, last_login_at, created_at'
+  return 'id, personal_id, email, name, email_verified, telegram_chat_id, telegram_username, avatar_url, profile_updated_at, password_changed_at, token_version, last_login_at, created_at, locale'
 }

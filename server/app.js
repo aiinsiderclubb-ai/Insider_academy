@@ -28,6 +28,7 @@ import promoRoutes from './routes/promo.js'
 import marketplaceRoutes from './routes/marketplace.js'
 import n8nRoutes from './routes/n8n.js'
 import governanceRoutes from './routes/governance.js'
+import emailPublicRoutes from './routes/emailPublic.js'
 import { rateLimitMiddleware } from './middleware/rateLimit.js'
 import { isGoogleSheetsEnabled } from './services/googleSheets.js'
 import { seedVoiceAgentAssets } from './services/voiceAgentAssets.js'
@@ -176,6 +177,7 @@ export async function createApp() {
   app.use('/api/marketplace', marketplaceRoutes)
   app.use('/api/n8n', n8nRoutes)
   app.use('/api/governance', governanceRoutes)
+  app.use('/api/email', emailPublicRoutes)
   app.use('/api', publicRoutes)
 
   app.use((err, _req, res, _next) => {

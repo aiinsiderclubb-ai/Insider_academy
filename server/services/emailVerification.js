@@ -15,7 +15,7 @@ export function normalizeVerificationReturnPath(value) {
   return path
 }
 
-export async function issueEmailVerificationCode(email, name = '', returnTo = '/onboarding') {
+export async function issueEmailVerificationCode(email, name = '', returnTo = '/onboarding', locale = 'ru') {
   const db = getDb()
   const code = generateVerificationCode()
   const expires = new Date(Date.now() + CODE_TTL_MS).toISOString()
@@ -29,7 +29,7 @@ export async function issueEmailVerificationCode(email, name = '', returnTo = '/
     [`et-${Date.now()}`, email, code, 'verify_code', expires]
   )
 
-  await sendVerificationCodeEmail(email, code, name, normalizeVerificationReturnPath(returnTo))
+  await sendVerificationCodeEmail(email, code, name, normalizeVerificationReturnPath(returnTo), locale)
 
   const result = { expiresAt: expires }
   if (process.env.NODE_ENV !== 'production' && !isEmailEnabled()) result.devCode = code

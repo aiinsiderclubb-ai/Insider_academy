@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS users (
   token_version INTEGER DEFAULT 0,
   personal_id TEXT UNIQUE,
   team_id INTEGER,
+  locale TEXT DEFAULT 'ru',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -434,6 +435,12 @@ function migrateColumns(db) {
   if (!cols.includes('auth_provider')) add('ALTER TABLE users ADD COLUMN auth_provider TEXT')
   if (!cols.includes('google_sub')) add('ALTER TABLE users ADD COLUMN google_sub TEXT')
   if (!cols.includes('apple_sub')) add('ALTER TABLE users ADD COLUMN apple_sub TEXT')
+  if (!cols.includes('locale')) add("ALTER TABLE users ADD COLUMN locale TEXT DEFAULT 'ru'")
+  add(`CREATE TABLE IF NOT EXISTS email_unsubscribes (
+    email TEXT PRIMARY KEY,
+    scope TEXT NOT NULL DEFAULT 'marketing',
+    created_at TEXT NOT NULL
+  )`)
 
   const regCols = db.prepare('PRAGMA table_info(registrations)').all().map((c) => c.name)
   if (!regCols.includes('personal_id')) add('ALTER TABLE registrations ADD COLUMN personal_id TEXT')
@@ -496,6 +503,11 @@ CREATE TABLE IF NOT EXISTS email_queue (
   send_after TEXT NOT NULL,
   sent_at TEXT,
   error TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS email_unsubscribes (
+  email TEXT PRIMARY KEY COLLATE NOCASE,
+  scope TEXT NOT NULL DEFAULT 'marketing',
   created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS creator_payouts (

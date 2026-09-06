@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import { getDb } from '../db.js'
 import { signUserToken } from '../middleware/auth.js'
 import { sendPasswordResetEmail } from '../services/email.js'
+import { normalizeLocale } from '../services/emailCopy.js'
 import { issueEmailVerificationCode, verifyEmailCode } from '../services/emailVerification.js'
 import { config, isEmailEnabled, isGoogleOAuthEnabled, isAppleOAuthEnabled } from '../config.js'
 import { createUserNotification } from '../services/notifications.js'
@@ -44,17 +45,18 @@ function isUniqueViolation(err) {
   return err?.code === '23505' || /UNIQUE constraint failed/i.test(String(err?.message || ''))
 }
 
-async function insertUser(db, email, hash, name) {
+async function insertUser(db, email, hash, name, locale = 'ru') {
+  const loc = normalizeLocale(locale)
   if (db.driver === 'postgres') {
     const inserted = await db.get(
-      'INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?) RETURNING id',
-      [email, hash, name]
+      'INSERT INTO users (email, password_hash, name, locale) VALUES (?, ?, ?, ?) RETURNING id',
+      [email, hash, name, loc]
     )
     return inserted?.id
   }
   const result = await db.run(
-    'INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)',
-    [email, hash, name]
+    'INSERT INTO users (email, password_hash, name, locale) VALUES (?, ?, ?, ?)',
+    [email, hash, name, loc]
   )
   return result?.lastInsertRowid || null
 }
@@ -234,6 +236,7 @@ router.post('/register', asyncHandler(async (req, res) => {
   const email = normalizeEmail(req.body.email)
   const password = String(req.body.password || '')
   const name = String(req.body.name || email).trim()
+  const locale = normalizeLocale(req.body.locale)
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Invalid email' })
@@ -249,7 +252,7 @@ router.post('/register', asyncHandler(async (req, res) => {
   const hash = bcrypt.hashSync(password, 10)
   let userId
   try {
-    userId = await insertUser(db, email, hash, name)
+    userId = await insertUser(db, email, hash, name, locale)
   } catch (err) {
     if (isUniqueViolation(err)) {
       return res.status(409).json({ error: 'User already exists' })
@@ -276,7 +279,7 @@ router.post('/register', asyncHandler(async (req, res) => {
 
   let verification = {}
   try {
-    verification = await issueEmailVerificationCode(email, name, req.body.returnTo)
+    verification = await issueEmailVerificationCode(email, name, req.body.returnTo, locale)
   } catch (err) {
     console.warn('[auth/register] verification email:', err.message)
     if (!isEmailEnabled()) {
@@ -382,7 +385,7 @@ router.post('/verify-email-code', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: result.error, errorRu: result.errorRu })
   }
   const userRow = await db.get(
-    'SELECT id, email, name, email_verified, personal_id, token_version FROM users WHERE email = ?',
+    'SELECT id, email, name, email_verified, personal_id, token_version, locale FROM users WHERE email = ?',
     [email]
   )
   if (!userRow) return res.status(404).json({ error: 'User not found', errorRu: 'Пользователь не найден' })
@@ -396,7 +399,7 @@ router.post('/verify-email-code', asyncHandler(async (req, res) => {
     tokenVersion: userRow.token_version,
   }
   const { scheduleWelcomeSeries } = await import('../services/emailQueue.js')
-  scheduleWelcomeSeries(email, userRow.name).catch(() => {})
+  scheduleWelcomeSeries(email, userRow.name, userRow.locale).catch(() => {})
   res.json({ ok: true, token: signUserToken(user), user })
 }))
 
@@ -406,7 +409,7 @@ router.post('/resend-verification-code', asyncHandler(async (req, res) => {
   if (!email || !email.includes('@')) {
     return res.status(400).json({ error: 'Valid email required', errorRu: 'Введите корректный email' })
   }
-  const user = await db.get('SELECT id, name, email_verified FROM users WHERE email = ?', [email])
+  const user = await db.get('SELECT id, name, email_verified, locale FROM users WHERE email = ?', [email])
   if (!user) {
     return res.json({ ok: true, message: 'If the account exists, a code was sent.' })
   }
@@ -414,7 +417,7 @@ router.post('/resend-verification-code', asyncHandler(async (req, res) => {
     return res.json({ ok: true, alreadyVerified: true, messageRu: 'Email уже подтверждён' })
   }
   try {
-    const verification = await issueEmailVerificationCode(email, user.name, req.body.returnTo)
+    const verification = await issueEmailVerificationCode(email, user.name, req.body.returnTo, user.locale)
     res.json({
       ok: true,
       messageRu: 'Новый код отправлен на почту',
@@ -436,7 +439,7 @@ router.post('/forgot-password', forgotPasswordRateLimit, asyncHandler(async (req
   if (!email || !email.includes('@')) {
     return res.status(400).json({ error: 'Valid email required', errorRu: 'Введите корректный email' })
   }
-  const user = await db.get('SELECT id FROM users WHERE email = ?', [email])
+  const user = await db.get('SELECT id, name, locale FROM users WHERE email = ?', [email])
   if (!user) return res.json({ ok: true, message: 'If the account exists, reset instructions were sent.' })
   const token = createToken()
   const expiresAt = new Date(Date.now() + 3600000).toISOString()
@@ -457,7 +460,7 @@ router.post('/forgot-password', forgotPasswordRateLimit, asyncHandler(async (req
   }
 
   try {
-    await sendPasswordResetEmail(email, token)
+    await sendPasswordResetEmail(email, token, { name: user.name, locale: user.locale })
     payload.emailDelivery = 'sent'
   } catch (err) {
     console.warn('[auth/forgot-password] email failed:', err.message)

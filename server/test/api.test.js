@@ -35,7 +35,7 @@ test('SQLite schema creates all required tables', async () => {
     'users', 'purchases', 'progress', 'courses', 'blog_posts', 'calendar_events',
     'registrations', 'purchase_log', 'certificates', 'homework', 'notifications',
     'referrals', 'referral_discounts', 'analytics', 'webhook_events', 'admin_seen',
-    'email_tokens', 'payments', 'reviews', 'teams', 'team_members',
+    'email_tokens', 'email_queue', 'email_unsubscribes', 'payments', 'reviews', 'teams', 'team_members',
     'user_achievements', 'lesson_reminders', 'accelerator_applications',
     'giveaway_entries', 'giveaway_bonus_actions', 'giveaway_results',
     'marketplace_products', 'product_assets', 'marketplace_orders',
