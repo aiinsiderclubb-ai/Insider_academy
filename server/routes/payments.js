@@ -46,12 +46,12 @@ async function resolveCheckoutItem(db, courseId, email) {
 
 function checkoutPaths(item, provider) {
   if (item.kind === 'vault') return {
-    success: `/marketplace/${item.slug}?tab=vault&paid=1&provider=${provider}`,
-    cancel: `/marketplace/${item.slug}/buy?tab=vault&cancel=1`,
+    success: `/store/${item.slug}?tab=vault&paid=1&provider=${provider}`,
+    cancel: `/store/${item.slug}/buy?cancel=1`,
   }
   return {
-    success: `/courses/${item.slug}?paid=1&provider=${provider}`,
-    cancel: `/courses/${item.slug}/buy?cancel=1`,
+    success: `/learn/${item.slug}?paid=1&provider=${provider}`,
+    cancel: `/learn/${item.slug}/buy?cancel=1`,
   }
 }
 
