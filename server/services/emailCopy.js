@@ -104,6 +104,7 @@ const packs = {
       title: 'Курс доступен',
       leadLive: 'Оплата прошла. Можно открывать первый урок.',
       leadPrelaunch: 'Доступ записан. Уроки откроются, когда снимем предзапуск.',
+      sameEmail: 'Зайдите в Academy под той же почтой, с которой оплачивали.',
       cta: 'Открыть курс',
     },
     certificate: {
@@ -199,6 +200,7 @@ const packs = {
       title: 'Курс доступний',
       leadLive: 'Оплата пройшла. Можна відкривати перший урок.',
       leadPrelaunch: 'Доступ записано. Уроки відкриються, коли знімемо передзапуск.',
+      sameEmail: 'Увійдіть в Academy під тією ж поштою, з якої оплачували.',
       cta: 'Відкрити курс',
     },
     certificate: {
@@ -294,6 +296,7 @@ const packs = {
       title: 'Course unlocked',
       leadLive: 'Payment went through. You can open the first lesson.',
       leadPrelaunch: 'Access is recorded. Lessons open when we leave prelaunch.',
+      sameEmail: 'Sign in to Academy with the same email you paid with.',
       cta: 'Open the course',
     },
     certificate: {

@@ -93,6 +93,36 @@ export async function createUserNotification(db, payload) {
   return id
 }
 
+export async function notifyCourseAccessOpened(db, { email, courseId, courseTitle }) {
+  const mail = String(email || '').trim().toLowerCase()
+  if (!mail || !courseId) return
+
+  const slug = (await getCourseSlug(db, courseId)) || courseId
+  const title = String(courseTitle || courseId)
+  const sameEmail = 'Зайдите в Academy под той же почтой, с которой оплачивали.'
+
+  const { notifyUserEmail } = await import('./email.js')
+  notifyUserEmail(mail, 'access_granted', {
+    courseTitle: title,
+    courseId,
+    courseSlug: slug,
+  }).catch(() => {})
+
+  try {
+    await createUserNotification(db, {
+      email: mail,
+      type: 'purchase',
+      courseId,
+      courseSlug: slug,
+      courseTitle: title,
+      targetPath: `/learn/${slug}`,
+      message: sameEmail,
+    })
+  } catch (err) {
+    console.warn('[notifyCourseAccessOpened]', err.message)
+  }
+}
+
 function mapNotificationToTelegram(payload) {
   if (payload.type === 'homework_feedback') {
     if (payload.status === 'accepted') return 'homework_accepted'
@@ -107,5 +137,6 @@ function mapNotificationToTelegram(payload) {
   if (payload.type === 'application_status') return null
   if (payload.type === 'password_changed') return 'course_news'
   if (payload.type === 'certificate_added') return 'course_news'
+  if (payload.type === 'purchase' || payload.type === 'access_granted') return 'purchase'
   return null
 }

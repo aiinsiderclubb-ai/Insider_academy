@@ -73,6 +73,12 @@ export function getInlineKeyboard(type, data = {}, appUrl) {
     return { inline_keyboard: rows }
   }
 
+  if (type === 'purchase') {
+    rows.push([{ text: '🔑 Войти в Academy', url: link(base, '/login') }])
+    rows.push([{ text: '📚 Открыть курс', url: link(base, data.targetPath || '/learn') }])
+    return { inline_keyboard: rows }
+  }
+
   const openPath = data.targetPath || data.nextTargetPath || '/cabinet'
   rows.push([{ text: '📚 Открыть в Academy', url: link(base, openPath) }])
 
@@ -268,14 +274,15 @@ function formatReviewRejected(data, base) {
 }
 
 function formatPurchase(data, base) {
+  const hint = data.message || 'Зайдите в Academy под той же почтой, с которой оплачивали.'
   return [
     `${ICONS.purchase} <b>Доступ к курсу открыт!</b>`,
     '',
     section('📚 Курс', data.courseTitle || data.productTitle || 'Курс Academy'),
     '',
-    blockquote('Материалы уже доступны в личном кабинете. Приятного обучения!'),
+    blockquote(hint),
     '',
-    `<a href="${link(base, data.targetPath || '/cabinet')}">Открыть личный кабинет</a>`,
+    `<a href="${link(base, data.targetPath || '/learn')}">Открыть курс в Academy</a>`,
   ].join('\n')
 }
 

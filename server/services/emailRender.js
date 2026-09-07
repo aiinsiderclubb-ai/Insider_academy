@@ -138,8 +138,8 @@ export function renderEmail(template, payload = {}) {
     title = copy.access.title
     preheader = prelaunch ? copy.access.leadPrelaunch : copy.access.leadLive
     cta = copy.access.cta
-    bodyHtml = `${paragraph(copy.greeting(name))}${paragraph(preheader)}<p style="${META}">${escapeHtml(courseTitle)}</p>${primaryButton(href, cta)}`
-    text = textBlock([copy.greeting(name), preheader, courseTitle, href])
+    bodyHtml = `${paragraph(copy.greeting(name))}${paragraph(preheader)}${paragraph(copy.access.sameEmail)}<p style="${META}">${escapeHtml(courseTitle)}</p>${primaryButton(href, cta)}`
+    text = textBlock([copy.greeting(name), preheader, copy.access.sameEmail, courseTitle, href])
   } else if (template === 'certificate_ready') {
     href = sitePath(locale, '/app')
     subject = copy.certificate.subject(courseTitle)

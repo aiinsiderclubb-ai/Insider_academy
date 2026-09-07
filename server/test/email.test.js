@@ -63,6 +63,33 @@ test('email templates render kit, locales and unsubscribe', async () => {
     assert.equal(rendered.marketing, true)
   }
 
+  const accessRu = renderEmail('access_granted', {
+    to: 'ada@example.com',
+    name: 'Ada',
+    locale: 'ru',
+    courseTitle: 'AI Productivity Master',
+    courseSlug: 'ai-productivity-master',
+  })
+  assert.match(accessRu.html, /той же почтой/)
+  assert.match(accessRu.text, /той же почтой/)
+  assert.match(accessRu.html, /\/learn\/ai-productivity-master/)
+
+  const accessEn = renderEmail('access_granted', {
+    to: 'ada@example.com',
+    locale: 'en',
+    courseTitle: 'AI Productivity Master',
+    courseSlug: 'ai-productivity-master',
+  })
+  assert.match(accessEn.html, /same email you paid with/)
+
+  const accessUk = renderEmail('access_granted', {
+    to: 'ada@example.com',
+    locale: 'ukr',
+    courseTitle: 'AI Productivity Master',
+    courseSlug: 'ai-productivity-master',
+  })
+  assert.match(accessUk.html, /тією ж поштою/)
+
   assert.throws(() => renderEmail('nope', { to: 'a@b.c' }))
 })
 

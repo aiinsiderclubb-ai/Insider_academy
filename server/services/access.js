@@ -91,12 +91,12 @@ export async function grantAccess({
       amount,
       source: provider || 'webhook',
     }).catch(() => {})
-    const { notifyUserEmail } = await import('./email.js')
-    notifyUserEmail(email || u?.email, 'access_granted', {
-      courseTitle: courseTitle || courseId,
+    const { notifyCourseAccessOpened } = await import('./notifications.js')
+    await notifyCourseAccessOpened(db, {
+      email: email || u?.email,
       courseId,
-      courseSlug: courseId,
-    }).catch(() => {})
+      courseTitle: courseTitle || courseId,
+    })
   }
 
   if (externalId) {
