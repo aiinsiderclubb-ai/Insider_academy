@@ -2,7 +2,7 @@ import { Router } from 'express'
 import crypto from 'node:crypto'
 import { getDb } from '../db.js'
 import { requireUser, optionalUser } from '../middleware/auth.js'
-import { getServerGiveaway, SERVER_GIVEAWAYS } from '../data/giveaways.js'
+import { getServerGiveaway, isGiveawayOpen, publicGiveawayStatus, SERVER_GIVEAWAYS } from '../data/giveaways.js'
 import { checkChannelMembership } from '../services/telegramChannel.js'
 import { nowIso } from '../db/time.js'
 import { rateLimitMiddleware } from '../middleware/rateLimit.js'
@@ -118,7 +118,7 @@ async function buildGiveawayState(db, slug, userId) {
 
   return {
     slug,
-    status: meta.status,
+    status: publicGiveawayStatus(meta),
     endsAt: meta.endsAt,
     participantCount: await getParticipantCount(db, slug),
     entered: Boolean(entry),
@@ -191,7 +191,7 @@ router.post('/:slug/enter', requireUser, enterLimit, async (req, res) => {
   if (!meta || meta.status !== 'active') {
     return res.status(404).json({ error: 'Giveaway not found or not active' })
   }
-  if (meta.endsAt && new Date(meta.endsAt).getTime() < Date.now()) {
+  if (!isGiveawayOpen(meta)) {
     return res.status(400).json({ error: 'Giveaway ended', errorRu: 'Розыгрыш завершён' })
   }
 
@@ -249,7 +249,7 @@ router.post('/:slug/share', requireUser, shareLimit, async (req, res) => {
   if (!meta || meta.status !== 'active') {
     return res.status(404).json({ error: 'Giveaway not found or not active' })
   }
-  if (meta.endsAt && new Date(meta.endsAt).getTime() < Date.now()) {
+  if (!isGiveawayOpen(meta)) {
     return res.status(400).json({ error: 'Giveaway ended', errorRu: 'Розыгрыш завершён' })
   }
   const db = getDb()

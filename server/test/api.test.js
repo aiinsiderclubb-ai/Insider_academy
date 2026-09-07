@@ -177,6 +177,14 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   assert.equal(reminder.status, 423)
   assert.equal((await reminder.json()).code, 'PRELAUNCH_MODE')
 
+  const { SERVER_GIVEAWAYS } = await import('../data/giveaways.js')
+  const originalEndsAt = SERVER_GIVEAWAYS['claude-pro'].endsAt
+  SERVER_GIVEAWAYS['claude-pro'].endsAt = new Date(Date.now() + 86_400_000).toISOString()
+  t.after(() => { SERVER_GIVEAWAYS['claude-pro'].endsAt = originalEndsAt })
+
+  const openState = await fetch(`${base}/api/giveaways/claude-pro`).then((r) => r.json())
+  assert.equal(openState.status, 'active')
+
   for (let i = 0; i < 11; i += 1) {
     const response = await fetch(`${base}/api/giveaways/claude-pro/verify-telegram`, {
       method: 'POST', headers: userHeaders,
@@ -207,10 +215,9 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   })
   assert.equal(duplicateShare.status, 200)
   assert.equal((await duplicateShare.json()).alreadyRecorded, true)
-  const { SERVER_GIVEAWAYS } = await import('../data/giveaways.js')
-  const originalEndsAt = SERVER_GIVEAWAYS['claude-pro'].endsAt
   SERVER_GIVEAWAYS['claude-pro'].endsAt = '2020-01-01T00:00:00Z'
-  t.after(() => { SERVER_GIVEAWAYS['claude-pro'].endsAt = originalEndsAt })
+  const closedState = await fetch(`${base}/api/giveaways/claude-pro`).then((r) => r.json())
+  assert.equal(closedState.status, 'finished')
 
   const draw = await fetch(`${base}/api/admin/giveaways/claude-pro/draw`, { method: 'POST', headers: adminHeaders })
   assert.equal(draw.status, 201)
