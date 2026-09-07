@@ -17,7 +17,7 @@ const notifyBotUsername = (
 ).replace(/^@/, '')
 export const TELEGRAM_NOTIFY_BOT = import.meta.env.VITE_TELEGRAM_NOTIFY_BOT_URL
   || (notifyBotUsername ? `https://t.me/${notifyBotUsername}` : '')
-export const CONTACT_EMAIL = 'hello@aiinsider.com'
+export const CONTACT_EMAIL = 'info@myinsideracademy.com'
 
 export const PLATFORM_BRIDGE = {
   ru: {

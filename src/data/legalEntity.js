@@ -1,23 +1,23 @@
 /**
  * Юридические реквизиты продавца AI Insider Academy.
- * DRAFT — замените значениями из регистрационных документов перед подключением платежей.
+ * DRAFT — замените TODO полями из регистрационных документов перед открытием продаж.
  */
 export const LEGAL_ENTITY = {
   draft: true,
-  legalName: 'TODO: Полное наименование юрлица / ФОП',
-  legalNameEn: 'TODO: Full legal entity name',
-  registrationCountry: 'TODO: страна регистрации (например, Україна / Estonia / …)',
-  registrationNumber: 'TODO: ЕГРПОУ / реєстраційний номер / Company ID',
-  taxId: 'TODO: ІПН / VAT / Tax ID',
-  address: 'TODO: юридический адрес (улица, город, индекс, страна)',
-  emailClaims: 'hello@aiinsider.com',
-  emailPrivacy: 'hello@aiinsider.com',
+  legalName: 'TODO: Полное юридическое имя (например, Vladyslav Katash / GmbH / ФОП)',
+  legalNameEn: 'TODO: Full legal name',
+  registrationCountry: 'TODO: страна регистрации',
+  registrationNumber: 'TODO: Handelsregister / ЄДРПОУ / Company ID',
+  taxId: 'TODO: USt-IdNr / Steuernummer / ІПН',
+  address: 'TODO: улица, индекс, город, страна',
+  emailClaims: 'info@myinsideracademy.com',
+  emailPrivacy: 'info@myinsideracademy.com',
   telegram: '@vladyslavarcher',
-  bankName: 'TODO: название банка',
+  bankName: 'TODO: банк',
   iban: 'TODO: IBAN',
   bic: 'TODO: SWIFT/BIC',
-  governingLaw: 'TODO: применимое право и суд (юрисдикция)',
-  updatedAt: '2026-07-11',
+  governingLaw: 'TODO: применимое право и суд',
+  updatedAt: '2026-09-07',
 }
 
 export function legalRequisitesBlock(lang = 'ru') {
@@ -26,7 +26,7 @@ export function legalRequisitesBlock(lang = 'ru') {
     return lang === 'en'
       ? [
           'Seller identification and bank details are being finalized. Live checkout remains disabled until they are published.',
-          `Pre-sale questions and claims: ${e.emailClaims}. Telegram: ${e.telegram}.`,
+          `Claims and privacy: ${e.emailClaims}. Telegram: ${e.telegram}.`,
         ]
       : [
           'Идентификационные и банковские реквизиты продавца уточняются. Боевой checkout остаётся отключённым до их публикации.',
@@ -35,22 +35,20 @@ export function legalRequisitesBlock(lang = 'ru') {
   }
   if (lang === 'en') {
     return [
-      `Seller (draft): ${e.legalNameEn}.`,
+      `Seller: ${e.legalNameEn}.`,
       `Registration: ${e.registrationCountry}, ID ${e.registrationNumber}, Tax ${e.taxId}.`,
       `Address: ${e.address}.`,
       `Claims: ${e.emailClaims}. Privacy: ${e.emailPrivacy}. Telegram: ${e.telegram}.`,
       `Bank: ${e.bankName}. IBAN: ${e.iban}. BIC: ${e.bic}.`,
       `Governing law: ${e.governingLaw}.`,
-      'Status: DRAFT — replace TODO fields with final lawyer-approved details before accepting live payments.',
     ]
   }
   return [
-    `Продавец (черновик): ${e.legalName}.`,
+    `Продавец: ${e.legalName}.`,
     `Регистрация: ${e.registrationCountry}, номер ${e.registrationNumber}, налог ${e.taxId}.`,
     `Адрес: ${e.address}.`,
     `Претензии: ${e.emailClaims}. Персональные данные: ${e.emailPrivacy}. Telegram: ${e.telegram}.`,
     `Банк: ${e.bankName}. IBAN: ${e.iban}. BIC: ${e.bic}.`,
     `Применимое право: ${e.governingLaw}.`,
-    'Статус: DRAFT — замените поля TODO финальными реквизитами до приёма боевых платежей.',
   ]
 }

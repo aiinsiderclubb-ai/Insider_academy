@@ -70,7 +70,7 @@ const SECTIONS = [
     id: 'contact',
     title: '8. Контакты',
     paragraphs: [
-      'Вопросы по розыгрышам: hello@aiinsider.com, Telegram @vladyslavarcher, канал AI Insider.',
+      'Вопросы по розыгрышам: info@myinsideracademy.com, Telegram @vladyslavarcher, канал AI Insider.',
       ...requisites,
     ],
   },

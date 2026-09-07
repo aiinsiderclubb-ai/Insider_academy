@@ -114,8 +114,8 @@ export const COURSE_FAQ = [
   {
     q: 'Как связаться с менеджером?',
     qEn: 'How do I contact the manager?',
-    a: `Telegram: @vladyslavarcher · Сообщество: ${TELEGRAM_COMMUNITY} · Email: hello@aiinsider.com`,
-    aEn: `Telegram: @vladyslavarcher · Community: ${TELEGRAM_COMMUNITY} · Email: hello@aiinsider.com`,
+    a: `Telegram: @vladyslavarcher · Сообщество: ${TELEGRAM_COMMUNITY} · Email: info@myinsideracademy.com`,
+    aEn: `Telegram: @vladyslavarcher · Community: ${TELEGRAM_COMMUNITY} · Email: info@myinsideracademy.com`,
   },
 ]
 
