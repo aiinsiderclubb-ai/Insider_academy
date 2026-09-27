@@ -24,6 +24,7 @@ import teamsRoutes from './routes/teams.js'
 import telegramRoutes from './routes/telegram.js'
 import giveawaysRoutes from './routes/giveaways.js'
 import forumRoutes, { forumAdminRouter } from './routes/forum.js'
+import { trustWebProxyClientIp } from './middleware/clientIp.js'
 import filesRoutes from './routes/files.js'
 import promoRoutes from './routes/promo.js'
 import marketplaceRoutes from './routes/marketplace.js'
@@ -102,6 +103,10 @@ export async function createApp() {
     },
     credentials: true,
   }))
+
+  // Before every limiter: they all key by req.ip, and this is what makes it
+  // the visitor's address instead of the web front end's.
+  app.use(trustWebProxyClientIp)
 
   app.use('/api', rateLimitMiddleware({
     windowMs: 60_000,
