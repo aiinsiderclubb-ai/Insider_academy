@@ -23,6 +23,7 @@ import applicationsRoutes from './routes/applications.js'
 import teamsRoutes from './routes/teams.js'
 import telegramRoutes from './routes/telegram.js'
 import giveawaysRoutes from './routes/giveaways.js'
+import forumRoutes, { forumAdminRouter } from './routes/forum.js'
 import filesRoutes from './routes/files.js'
 import promoRoutes from './routes/promo.js'
 import marketplaceRoutes from './routes/marketplace.js'
@@ -165,6 +166,8 @@ export async function createApp() {
   app.use('/api/courses', coursesRoutes)
   app.use('/api/me', meRoutes)
   app.use('/api/payments', paymentsRoutes)
+  // Before /api/admin: that router would otherwise receive /forum/* first.
+  app.use('/api/admin/forum', forumAdminRouter)
   app.use('/api/admin', adminRoutes)
   app.use('/api/chat', chatRoutes)
   app.use('/api/reviews', reviewsRoutes)
@@ -172,6 +175,7 @@ export async function createApp() {
   app.use('/api/teams', teamsRoutes)
   app.use('/api/telegram', telegramRoutes)
   app.use('/api/giveaways', giveawaysRoutes)
+  app.use('/api/forum', forumRoutes)
   app.use('/api/files', filesRoutes)
   app.use('/api/promo', promoRoutes)
   app.use('/api/marketplace', marketplaceRoutes)

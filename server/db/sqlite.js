@@ -374,6 +374,44 @@ CREATE TABLE IF NOT EXISTS audit_log (
   meta TEXT,
   created_at TEXT NOT NULL
 );
+
+-- Community forum. Timestamps are ISO strings written by the app (nowIso), so
+-- ordering and comparison behave the same on SQLite and Postgres. Nothing is
+-- deleted by moderation: is_hidden keeps the record for the audit trail.
+CREATE TABLE IF NOT EXISTS forum_topics (
+  id TEXT PRIMARY KEY,
+  slug TEXT NOT NULL UNIQUE,
+  user_id INTEGER NOT NULL,
+  category TEXT NOT NULL,
+  course_id TEXT,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  is_pinned INTEGER NOT NULL DEFAULT 0,
+  is_locked INTEGER NOT NULL DEFAULT 0,
+  is_hidden INTEGER NOT NULL DEFAULT 0,
+  solved_post_id TEXT,
+  views INTEGER NOT NULL DEFAULT 0,
+  reply_count INTEGER NOT NULL DEFAULT 0,
+  last_activity_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS forum_topics_feed_idx ON forum_topics(is_hidden, is_pinned, last_activity_at);
+CREATE INDEX IF NOT EXISTS forum_topics_category_idx ON forum_topics(category);
+
+CREATE TABLE IF NOT EXISTS forum_posts (
+  id TEXT PRIMARY KEY,
+  topic_id TEXT NOT NULL,
+  user_id INTEGER NOT NULL,
+  body TEXT NOT NULL,
+  is_hidden INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (topic_id) REFERENCES forum_topics(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS forum_posts_topic_idx ON forum_posts(topic_id, created_at);
 `
 
 export function createSqliteDb() {
