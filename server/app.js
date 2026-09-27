@@ -25,6 +25,7 @@ import telegramRoutes from './routes/telegram.js'
 import giveawaysRoutes from './routes/giveaways.js'
 import forumRoutes, { forumAdminRouter } from './routes/forum.js'
 import { trustWebProxyClientIp } from './middleware/clientIp.js'
+import adminMembershipRoutes from './routes/adminMemberships.js'
 import filesRoutes from './routes/files.js'
 import promoRoutes from './routes/promo.js'
 import marketplaceRoutes from './routes/marketplace.js'
@@ -173,6 +174,7 @@ export async function createApp() {
   app.use('/api/payments', paymentsRoutes)
   // Before /api/admin: that router would otherwise receive /forum/* first.
   app.use('/api/admin/forum', forumAdminRouter)
+  app.use('/api/admin/memberships', adminMembershipRoutes)
   app.use('/api/admin', adminRoutes)
   app.use('/api/chat', chatRoutes)
   app.use('/api/reviews', reviewsRoutes)

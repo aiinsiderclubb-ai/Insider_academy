@@ -3,6 +3,7 @@ import { getDb } from '../db.js'
 import { constructWebhookEvent } from '../services/stripe.js'
 import { verifyCallback } from '../services/liqpay.js'
 import { verifyTributeSignature } from '../services/tribute.js'
+import { TRIBUTE_EVENTS, applyTributeSubscriptionEvent } from '../services/memberships.js'
 import { logWebhookEvent } from '../services/access.js'
 import { reconcilePaidPayment } from '../services/paymentFulfillment.js'
 import { config } from '../config.js'
@@ -160,6 +161,26 @@ export async function handleTributeWebhook(req, res) {
   const payload = event.payload || event.data || {}
 
   try {
+    // Club / Pro. Handled apart from one-off purchases: a subscription has no
+    // payment row to reconcile against, only a Telegram id and an expiry.
+    if (TRIBUTE_EVENTS[name]) {
+      const result = await applyTributeSubscriptionEvent(db, TRIBUTE_EVENTS[name], payload)
+      await logWebhookEvent({
+        provider: 'tribute',
+        eventName: name,
+        status: result.status,
+        payload: {
+          reason: result.reason,
+          tier: result.tier,
+          subscriptionId: payload.subscription_id ?? null,
+          linked: result.linked,
+          expiresAt: result.expiresAt,
+        },
+      })
+      // 2xx either way: an unmapped subscription is not an error to retry.
+      return res.status(result.status === 'ok' ? 200 : 202).json({ ok: true, ...result })
+    }
+
     let payment = null
     const shopEvents = ['shopOrderPaymentReceived', 'shopOrderChargeSuccess']
     const digitalEvents = ['new_digital_product', 'newDigitalProduct', 'digital_product_purchase']

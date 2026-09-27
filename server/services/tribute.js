@@ -16,12 +16,30 @@ async function tributeRequest(path, { method = 'GET', body } = {}) {
       'Content-Type': 'application/json',
     },
     body: body != null ? JSON.stringify(body) : undefined,
+    // Tribute not answering must not hang a webhook or an admin request.
+    signal: AbortSignal.timeout(15_000),
   })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
     throw new Error(data.message || data.error || `Tribute API error ${res.status}`)
   }
   return data
+}
+
+/** The account's subscriptions, each with its billing periods. */
+export async function listTributeSubscriptions() {
+  const data = await tributeRequest('/subscriptions')
+  return Array.isArray(data?.result) ? data.result : []
+}
+
+/**
+ * Everyone subscribed to one subscription, with their Telegram id, status
+ * (active | pre_cancelled | cancelled) and expiry. This is how subscribers who
+ * paid before the site listened for webhooks are brought in.
+ */
+export async function listTributeSubscribers(subscriptionId) {
+  const data = await tributeRequest(`/subscribers?subscriptionID=${encodeURIComponent(subscriptionId)}`)
+  return Array.isArray(data) ? data : Array.isArray(data?.result) ? data.result : []
 }
 
 /** Создать заказ в Tribute Shop — возвращает paymentUrl для браузера */

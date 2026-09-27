@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { nowIso } from '../db/time.js'
+import { resolveMembership } from './memberships.js'
 
 /**
  * Sections of the community forum. Fixed in code rather than in the database:
@@ -64,6 +65,14 @@ export async function isCommunityMember(db, userId) {
     } catch (err) {
       console.warn('[forum] membership source unavailable:', err.message)
     }
+  }
+  // A Club / Pro subscriber has bought something too — a subscription lives in
+  // its own table, keyed by Telegram, so it is asked separately.
+  try {
+    const user = await db.get('SELECT id, telegram_chat_id FROM users WHERE id = ?', [userId])
+    if (await resolveMembership(db, user)) return true
+  } catch (err) {
+    console.warn('[forum] membership source unavailable:', err.message)
   }
   return false
 }

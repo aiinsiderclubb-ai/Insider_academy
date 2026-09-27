@@ -1,3 +1,4 @@
+import { resolveMembership } from './memberships.js'
 import { nowIso } from '../db/time.js'
 
 export async function mapUserResponse(db, user) {
@@ -14,8 +15,18 @@ export async function mapUserResponse(db, user) {
       }
     }
   }
+  const membership = await resolveMembership(db, user).catch((err) => {
+    // A membership lookup failing must not take the whole profile down.
+    console.warn('[membership] lookup failed:', err.message)
+    return null
+  })
   return {
     id: user.id,
+    // The web client has always read the tier from `role` ("club" / "pro");
+    // until memberships existed it was never set, so every subscriber looked
+    // like a free account.
+    role: membership?.tier ?? null,
+    membership,
     personalId: user.personal_id || null,
     email: user.email,
     name: user.name,

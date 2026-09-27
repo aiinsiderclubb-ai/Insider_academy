@@ -88,6 +88,26 @@ export const config = {
         return {}
       }
     })(),
+    /**
+     * JSON map Tribute subscription id -> membership tier, e.g.
+     * {"12345":"club","67890":"pro"}. A subscription missing from the map is
+     * ignored: the same Tribute account may sell subscriptions to unrelated
+     * channels, and those must never grant a tier here. Entries naming any
+     * tier other than club or pro are dropped rather than trusted.
+     */
+    subscriptionMap: (() => {
+      try {
+        const raw = process.env.TRIBUTE_SUBSCRIPTION_MAP ? JSON.parse(process.env.TRIBUTE_SUBSCRIPTION_MAP) : {}
+        return Object.fromEntries(
+          Object.entries(raw)
+            .map(([id, tier]) => [String(id).trim(), String(tier).trim().toLowerCase()])
+            .filter(([id, tier]) => id && (tier === 'club' || tier === 'pro'))
+        )
+      } catch {
+        console.warn('[config] TRIBUTE_SUBSCRIPTION_MAP is not valid JSON — no subscription grants a tier')
+        return {}
+      }
+    })(),
   },
 }
 

@@ -412,6 +412,30 @@ CREATE TABLE IF NOT EXISTS forum_posts (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS forum_posts_topic_idx ON forum_posts(topic_id, created_at);
+
+-- Club / Pro memberships. Tribute identifies a buyer only by Telegram, so a
+-- row is keyed by telegram_user_id and may exist before any site account is
+-- linked to that Telegram; it is matched at read time by the user's linked
+-- Telegram as well as by user_id. Access lasts until expires_at whatever the
+-- status: a cancelled subscription still runs out the period that was paid.
+CREATE TABLE IF NOT EXISTS memberships (
+  id TEXT PRIMARY KEY,
+  provider TEXT NOT NULL,
+  provider_subscription_id TEXT NOT NULL,
+  telegram_user_id TEXT,
+  user_id INTEGER,
+  tier TEXT NOT NULL,
+  period TEXT,
+  status TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  cancel_reason TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE(provider, provider_subscription_id, telegram_user_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS memberships_telegram_idx ON memberships(telegram_user_id, expires_at);
+CREATE INDEX IF NOT EXISTS memberships_user_idx ON memberships(user_id, expires_at);
 `
 
 export function createSqliteDb() {
