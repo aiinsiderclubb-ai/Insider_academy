@@ -12,11 +12,17 @@ const chatRateLimit = rateLimitMiddleware({
 })
 
 router.post('/', requireUser, chatRateLimit, async (req, res) => {
+  // A `system` turn from the browser is dropped, not obeyed: honouring it let
+  // any caller replace the assistant's instructions with their own. The site
+  // uses /api/assistant now; this stays for older clients.
   const messages = Array.isArray(req.body.messages)
-    ? req.body.messages.slice(-12).map((message) => ({
-      role: ['user', 'assistant', 'system'].includes(message?.role) ? message.role : 'user',
-      content: String(message?.content || '').slice(0, 4_000),
-    }))
+    ? req.body.messages
+      .filter((message) => message?.role !== 'system')
+      .slice(-12)
+      .map((message) => ({
+        role: message?.role === 'assistant' ? 'assistant' : 'user',
+        content: String(message?.content || '').slice(0, 4_000),
+      }))
     : []
   const result = await chatCompletion(messages)
   res.json(result)

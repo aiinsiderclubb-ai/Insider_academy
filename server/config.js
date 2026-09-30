@@ -51,6 +51,21 @@ export const config = {
   openai: {
     apiKey: process.env.OPENAI_API_KEY || '',
     model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    /** Overridable so tests can stand up a local stand-in for the API. */
+    baseUrl: (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, ''),
+  },
+  assistant: {
+    /**
+     * Guests share the budget with nobody but each other, so they get less —
+     * and a cap on all guest messages per day, so a scraper walking through
+     * addresses cannot run up the OpenAI bill. Counted in memory: a restart
+     * resets them, which errs towards answering.
+     */
+    guestPerWindow: Number(process.env.ASSISTANT_GUEST_PER_15M) || 12,
+    guestPerDay: Number(process.env.ASSISTANT_GUEST_PER_DAY) || 40,
+    guestTotalPerDay: Number(process.env.ASSISTANT_GUEST_TOTAL_PER_DAY) || 1500,
+    userPerWindow: Number(process.env.ASSISTANT_USER_PER_15M) || 40,
+    userPerDay: Number(process.env.ASSISTANT_USER_PER_DAY) || 200,
   },
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN || '',

@@ -18,6 +18,7 @@ import paymentsRoutes from './routes/payments.js'
 import webhooksRoutes, { handleStripeWebhook, handleTributeWebhook } from './routes/webhooks.js'
 import { marketplaceWebhookAllowed } from './middleware/prelaunch.js'
 import chatRoutes from './routes/chat.js'
+import assistantRoutes from './routes/assistant.js'
 import reviewsRoutes from './routes/reviews.js'
 import applicationsRoutes from './routes/applications.js'
 import teamsRoutes from './routes/teams.js'
@@ -175,6 +176,7 @@ export async function createApp() {
   app.use('/api/admin/forum', forumAdminRouter)
   app.use('/api/admin', adminRoutes)
   app.use('/api/chat', chatRoutes)
+  app.use('/api/assistant', assistantRoutes)
   app.use('/api/reviews', reviewsRoutes)
   app.use('/api/applications', applicationsRoutes)
   app.use('/api/teams', teamsRoutes)
