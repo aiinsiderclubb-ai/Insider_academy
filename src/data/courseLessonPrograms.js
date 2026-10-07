@@ -12,6 +12,7 @@ import {
 } from './productStructure.js'
 
 const SHORT = { ru: '10–20 мин', en: '10–20 min' }
+const MEDIUM = { ru: '20+ мин', en: '20+ min' }
 const PRO = { ru: '30–45 мин', en: '30–45 min' }
 const PRO_MASTER = { ru: '25–40 мин', en: '25–40 min' }
 const LONG = { ru: '40–50 мин', en: '40–50 min' }
@@ -30,8 +31,13 @@ function programFromTitles(titles, duration = PRO, countSuffix = '') {
   }
 }
 
-function lesson(num, titleRu, titleEn, descRu, descEn) {
-  return { num, titleRu, titleEn, descRu, descEn }
+/**
+ * `videoUrl` is optional and is what the player loads: a full URL, or an object
+ * key in the R2 bucket (`first-automation-n8n/fn1.mp4`) that the web app turns
+ * into a signed, expiring link when a learner opens the lesson.
+ */
+function lesson(num, titleRu, titleEn, descRu, descEn, videoUrl = '') {
+  return { num, titleRu, titleEn, descRu, descEn, ...(videoUrl ? { videoUrl } : {}) }
 }
 
 function shortDescFromVideo(v) {
@@ -79,14 +85,33 @@ export const LESSON_PROGRAMS = {
   },
   'ai-for-productivity': programFromTitles(FREE_PRODUCTIVITY_LESSONS, SHORT, '10–20 мин'),
   'first-automation-n8n': {
-    duration: SHORT,
-    countLabel: { ru: '5 уроков (10–20 минут)', en: '5 lessons (10–20 min)' },
+    duration: MEDIUM,
+    countLabel: { ru: '3 урока (20+ минут)', en: '3 lessons (20+ min)' },
     lessons: [
-      lesson(1, 'Что такое автоматизация', 'What automation is', 'Логика работы автоматизаций.', 'How automations work.'),
-      lesson(2, 'Интерфейс n8n', 'n8n interface', 'Создание первого workflow.', 'Building your first workflow.'),
-      lesson(3, 'Telegram + AI', 'Telegram + AI', 'Создаем первого Telegram-бота.', 'Building your first Telegram bot.'),
-      lesson(4, 'AI Agent в n8n', 'AI Agent in n8n', 'Подключаем ChatGPT к автоматизации.', 'Connecting ChatGPT to your automation.'),
-      lesson(5, 'Финальный проект', 'Capstone project', 'Создаем полноценную автоматизацию.', 'Building a complete automation.'),
+      lesson(
+        1,
+        'Какой процесс автоматизировать первым',
+        'Which process to automate first',
+        'Как выбрать подходящую задачу, посчитать потерю времени и понять, где автоматизация реально даст пользу.',
+        'How to pick the right task, count the time it costs you and see where automation actually pays off.',
+        'first-automation-n8n/fn1.mp4',
+      ),
+      lesson(
+        2,
+        'Собираем первую AI-автоматизацию',
+        'Building your first AI automation',
+        'Форма → n8n → AI → Google Sheets → Telegram, плюс проверка данных, намеренная ошибка и базовая отладка.',
+        'Form → n8n → AI → Google Sheets → Telegram, plus data validation, a deliberate error and basic debugging.',
+        'first-automation-n8n/fn2.mp4',
+      ),
+      lesson(
+        3,
+        'От первой автоматизации к реальному проекту',
+        'From first automation to a real project',
+        'Как превратить учебный workflow в бизнес-систему: первые клиенты, demo, выход на decision makers и что нужно для production.',
+        'Turning the training workflow into a business system: first clients, demos, reaching decision makers and what production needs.',
+        'first-automation-n8n/fn3.mp4',
+      ),
     ],
   },
   'ai-productivity-master': programFromTitles(PRODUCTIVITY_MASTER_LESSONS, PRO_MASTER, '25–40 мин'),
@@ -408,7 +433,7 @@ export function buildCatalogLessons(courseId) {
     descriptionEn: entry.descEn,
     duration: program.duration.ru,
     durationEn: program.duration.en,
-    videoUrl: '',
+    videoUrl: entry.videoUrl || '',
   }))
 }
 

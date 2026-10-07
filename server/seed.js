@@ -12,7 +12,7 @@ import { ensurePersonalId } from './services/personalId.js'
 import { SEED_REVIEWS } from '../src/data/seedReviews.js'
 
 /** Keep in sync with src/data/catalogVersion.js */
-const CATALOG_VERSION = 18
+const CATALOG_VERSION = 21
 
 async function getCatalogVersion(db) {
   const row = await db.get('SELECT value FROM analytics WHERE key = ?', ['catalog_version'])

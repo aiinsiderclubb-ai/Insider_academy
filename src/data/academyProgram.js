@@ -135,7 +135,7 @@ const rawAcademyCourses = [
     category: 'Автоматизация',
     categoryEn: 'Automation',
     image: IMAGES.firstAutomation,
-    tools: ['n8n', 'ChatGPT API', 'Google Sheets'],
+    tools: ['n8n', 'ChatGPT API', 'Google Sheets', 'Telegram'],
     skills: ['Workflow basics', 'Triggers & actions', 'AI node integration'],
     audience: ['No-code новички', 'Ops-менеджеры', 'Владельцы малого бизнеса'],
     audienceEn: ['No-code beginners', 'Ops managers', 'Small business owners'],
