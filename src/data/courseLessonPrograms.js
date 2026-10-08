@@ -8,11 +8,9 @@ import {
   AUTOMATION_ENGINEER_LESSONS,
   AGENT_ENGINEER_LESSONS,
   BUSINESS_BUILDER_LESSONS,
-  FREE_PRODUCTIVITY_LESSONS,
 } from './productStructure.js'
 
 const SHORT = { ru: '10–20 мин', en: '10–20 min' }
-const MEDIUM = { ru: '20+ мин', en: '20+ min' }
 const PRO = { ru: '30–45 мин', en: '30–45 min' }
 const PRO_MASTER = { ru: '25–40 мин', en: '25–40 min' }
 const LONG = { ru: '40–50 мин', en: '40–50 min' }
@@ -35,9 +33,21 @@ function programFromTitles(titles, duration = PRO, countSuffix = '') {
  * `videoUrl` is optional and is what the player loads: a full URL, or an object
  * key in the R2 bucket (`first-automation-n8n/fn1.mp4`) that the web app turns
  * into a signed, expiring link when a learner opens the lesson.
+ *
+ * `duration` is optional too: a recorded lesson states its own length instead of
+ * borrowing the range written for the whole program before anything was filmed.
  */
-function lesson(num, titleRu, titleEn, descRu, descEn, videoUrl = '') {
-  return { num, titleRu, titleEn, descRu, descEn, ...(videoUrl ? { videoUrl } : {}) }
+function lesson(num, titleRu, titleEn, descRu, descEn, videoUrl = '', duration = null) {
+  return {
+    num, titleRu, titleEn, descRu, descEn,
+    ...(videoUrl ? { videoUrl } : {}),
+    ...(duration ? { duration } : {}),
+  }
+}
+
+/** The real running time of a recorded lesson, rounded to the minute. */
+function minutes(n) {
+  return { ru: `${n} мин`, en: `${n} min` }
 }
 
 function shortDescFromVideo(v) {
@@ -83,10 +93,42 @@ export const LESSON_PROGRAMS = {
       lesson(7, 'План развития AI-специалиста', 'AI specialist development plan', 'Построение личной дорожной карты обучения.', 'Building your personal learning roadmap.'),
     ],
   },
-  'ai-for-productivity': programFromTitles(FREE_PRODUCTIVITY_LESSONS, SHORT, '10–20 мин'),
+  'ai-for-productivity': {
+    duration: { ru: '13–21 мин', en: '13–21 min' },
+    countLabel: { ru: '3 урока (13–21 минута)', en: '3 lessons (13–21 min)' },
+    lessons: [
+      lesson(
+        1,
+        'Что отдать AI первым: почта, документы, встречи',
+        'What to hand to AI first: email, documents, meetings',
+        'Где в рабочем дне теряется время и с каких трёх типов задач стоит начинать, чтобы AI забирал рутину, а не добавлял новую.',
+        'Where the working day loses time, and the three kinds of task to start with so that AI takes routine away instead of adding more.',
+        'ai-for-productivity/ap1.mp4',
+        minutes(13),
+      ),
+      lesson(
+        2,
+        'Три рабочих сценария: письмо, документ, встреча',
+        'Three working scenarios: an email, a document, a meeting',
+        'Контекст → задача → формат: разбираем длинное письмо и готовим ответ, вытаскиваем нужное из документа и сравниваем версии, превращаем заметки встречи в протокол и follow-up.',
+        'Context → task → format: unpack a long email and draft the reply, pull what matters out of a document and compare versions, turn meeting notes into minutes and a follow-up.',
+        'ai-for-productivity/ap2.mp4',
+        minutes(21),
+      ),
+      lesson(
+        3,
+        'Как посчитать и показать результат',
+        'How to measure the result and show it',
+        'Время «до» и «после», таблица на неделю и слова, которыми об экономии говорят с руководителем и клиентом. И когда AI в задаче не нужен.',
+        'Time before and after, a one-week table, and the words for telling a manager or a client what you saved. And when a task does not need AI at all.',
+        'ai-for-productivity/ap3.mp4',
+        minutes(14),
+      ),
+    ],
+  },
   'first-automation-n8n': {
-    duration: MEDIUM,
-    countLabel: { ru: '3 урока (20+ минут)', en: '3 lessons (20+ min)' },
+    duration: { ru: '13–24 мин', en: '13–24 min' },
+    countLabel: { ru: '3 урока (13–24 минуты)', en: '3 lessons (13–24 min)' },
     lessons: [
       lesson(
         1,
@@ -95,6 +137,7 @@ export const LESSON_PROGRAMS = {
         'Как выбрать подходящую задачу, посчитать потерю времени и понять, где автоматизация реально даст пользу.',
         'How to pick the right task, count the time it costs you and see where automation actually pays off.',
         'first-automation-n8n/fn1.mp4',
+        minutes(13),
       ),
       lesson(
         2,
@@ -103,6 +146,7 @@ export const LESSON_PROGRAMS = {
         'Форма → n8n → AI → Google Sheets → Telegram, плюс проверка данных, намеренная ошибка и базовая отладка.',
         'Form → n8n → AI → Google Sheets → Telegram, plus data validation, a deliberate error and basic debugging.',
         'first-automation-n8n/fn2.mp4',
+        minutes(24),
       ),
       lesson(
         3,
@@ -111,6 +155,7 @@ export const LESSON_PROGRAMS = {
         'Как превратить учебный workflow в бизнес-систему: первые клиенты, demo, выход на decision makers и что нужно для production.',
         'Turning the training workflow into a business system: first clients, demos, reaching decision makers and what production needs.',
         'first-automation-n8n/fn3.mp4',
+        minutes(21),
       ),
     ],
   },
@@ -431,8 +476,8 @@ export function buildCatalogLessons(courseId) {
     titleEn: `Lesson ${entry.num}. ${entry.titleEn}`,
     description: entry.descRu,
     descriptionEn: entry.descEn,
-    duration: program.duration.ru,
-    durationEn: program.duration.en,
+    duration: (entry.duration || program.duration).ru,
+    durationEn: (entry.duration || program.duration).en,
     videoUrl: entry.videoUrl || '',
   }))
 }

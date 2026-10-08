@@ -62,10 +62,10 @@ export const COURSE_PROFILES = {
   }),
 
   'ai-for-productivity': p({
-    short: '4 урока: AI для задач, документов, обучения и личного productivity-стека.',
-    shortEn: '4 lessons: AI for tasks, documents, learning and your personal productivity stack.',
-    idea: 'AI for Productivity — короткий бесплатный курс о том, как встроить AI в ежедневную рутину: письма, документы, саммари, планирование и персональные workflow без кода.',
-    ideaEn: 'AI for Productivity is a free mini-course on embedding AI into daily work: email, docs, summaries, planning and personal workflows — no coding.',
+    short: 'Минус 3 часа в неделю: 3 урока о том, как отдать AI почту, документы и встречи.',
+    shortEn: 'Minus 3 hours a week: 3 lessons on handing email, documents and meetings to AI.',
+    idea: 'AI for Productivity — бесплатный мини-курс «Минус 3 часа в неделю». Без кода и сложных систем: три рабочих сценария для почты, документов и встреч, готовые промпты и способ посчитать, сколько времени вы себе вернули.',
+    ideaEn: 'AI for Productivity is the free mini-course \"Minus 3 hours a week\". No code and no complex systems: three working scenarios for email, documents and meetings, ready prompts, and a way to count the time you got back.',
     audience: [
       'Офисных сотрудников и менеджеров',
       'Фрилансеров с высокой нагрузкой',
@@ -81,21 +81,21 @@ export const COURSE_PROFILES = {
       'Anyone who wants to save 1–2 hours daily',
     ],
     outcomes: [
-      'Настроит AI как личного помощника',
-      'Автоматизирует рутинные задачи',
-      'Будет быстро создавать документы и письма',
-      'Ускорит обучение новым навыкам',
-      'Соберёт личную AI-систему продуктивности',
+      'Найдёт в своём рабочем дне задачи, которые стоит отдать AI первыми',
+      'Научится ставить задачу по схеме: контекст → задача → формат',
+      'Будет разбирать длинные письма и готовить ответы в два этапа',
+      'Сможет вытащить из документа нужное и превратить встречу в протокол и follow-up',
+      'Посчитает свою экономию времени и покажет её руководителю или клиенту',
     ],
     outcomesEn: [
-      'Set up AI as a personal assistant',
-      'Automate routine tasks',
-      'Create documents and emails faster',
-      'Learn new skills faster with AI',
-      'Build a personal AI productivity system',
+      'Find the tasks in your working day worth handing to AI first',
+      'Brief AI with context → task → format',
+      'Unpack long emails and draft replies in two steps',
+      'Pull what matters out of a document and turn a meeting into minutes and a follow-up',
+      'Count the time you saved and show it to a manager or a client',
     ],
-    final: 'Personal productivity stack с 3 рабочими AI-workflow.',
-    finalEn: 'Personal productivity stack with 3 working AI workflows.',
+    final: 'Три готовых сценария под вашу работу, файл промптов и ваша цифра экономии за неделю.',
+    finalEn: 'Three scenarios fitted to your work, a prompt file and your own number for a week of time saved.',
   }),
 
   'first-automation-n8n': p({
