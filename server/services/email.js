@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer'
 import { config, isEmailEnabled } from '../config.js'
 import { normalizeLocale } from './emailCopy.js'
-import { renderEmail } from './emailRender.js'
+import { renderTemplate } from './emailPurchase.js'
 
 let transporter = null
 
@@ -43,7 +43,7 @@ export async function sendEmail({ to, subject, html, text, headers }) {
 }
 
 export async function sendTemplateEmail(to, template, payload = {}) {
-  const rendered = renderEmail(template, { ...payload, to, email: to })
+  const rendered = renderTemplate(template, { ...payload, to, email: to })
   return sendEmail({
     to,
     subject: rendered.subject,

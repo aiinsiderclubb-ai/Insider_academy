@@ -4,7 +4,7 @@ import { nowIso } from '../db/time.js'
 import { sendEmail } from './email.js'
 import { isEmailEnabled } from '../config.js'
 import { MARKETING_TEMPLATES, normalizeLocale } from './emailCopy.js'
-import { renderEmail } from './emailRender.js'
+import { renderTemplate } from './emailPurchase.js'
 import { isUnsubscribed } from './emailUnsub.js'
 
 const DAY = 86400000
@@ -78,7 +78,7 @@ export async function processEmailQueue(limit = 20) {
         continue
       }
       if (!isEmailEnabled()) continue
-      const rendered = renderEmail(row.template, {
+      const rendered = renderTemplate(row.template, {
         ...payload,
         to: row.email,
         email: row.email,

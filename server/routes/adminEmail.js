@@ -3,7 +3,7 @@ import { getDb } from '../db.js'
 import { requireAdmin } from '../middleware/auth.js'
 import { isEmailEnabled } from '../config.js'
 import { TEMPLATE_CATALOG } from '../services/emailCopy.js'
-import { renderEmail } from '../services/emailRender.js'
+import { renderTemplate } from '../services/emailPurchase.js'
 import { sendTemplateEmail } from '../services/email.js'
 
 const router = Router()
@@ -39,7 +39,7 @@ router.get('/email/preview', requireAdmin('admin', 'editor', 'moderator'), (req,
   const template = String(req.query.template || 'welcome_1')
   const locale = String(req.query.locale || 'ru')
   try {
-    const rendered = renderEmail(template, {
+    const rendered = renderTemplate(template, {
       to: 'preview@myinsideracademy.com',
       name: 'Vlad',
       locale,

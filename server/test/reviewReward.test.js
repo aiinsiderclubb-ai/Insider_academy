@@ -16,7 +16,7 @@ const {
   issueReviewReward, reviewRewardCode, rememberPromoForPayment, consumePromoForPayment,
   REVIEW_REWARD_PERCENT, REVIEW_REWARD_DAYS,
 } = await import('../services/reviewReward.js')
-const { renderEmail } = await import('../services/emailRender.js')
+const { renderTemplate: renderEmail } = await import('../services/emailPurchase.js')
 
 const db = await initDatabase()
 test.after(() => fs.rmSync(dbPath, { force: true }))
