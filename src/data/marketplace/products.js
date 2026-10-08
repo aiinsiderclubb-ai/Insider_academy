@@ -906,8 +906,11 @@ If urgent and no slots — hand off to admin (tool: handoff_human).`,
     productType: 'agent-pack',
     titleRu: 'Claude Skills Library',
     titleEn: 'Claude Skills Library',
-    shortRu: 'Библиотека готовых Skills под бизнес-задачи: отчёты, лидогенерация, контент. Работает поверх твоих MCP.',
-    shortEn: 'Ready Skills for business tasks: reports, lead gen, content. Works on top of your MCP stack.',
+    shortRu: '11 скиллов для Claude Code, Cowork и Codex: оффер, аутрич, разбор звонка, предложение, контент, аудит страницы, проверка n8n, отчёт клиенту. Девять из них проверяют свою работу скриптами.',
+    shortEn: '11 skills for Claude Code, Cowork and Codex: offer, outreach, call debrief, proposal, content, page audit, n8n review, client report. Nine check their own work with scripts. Files are in Russian.',
+    fileTypes: ['ZIP', 'MD', 'PY'],
+    includedRu: ['11 скиллов в формате Agent Skills', '9 скриптов на Python без зависимостей', 'Плагин: установка двумя командами', 'Справочные материалы и шаблоны внутри скиллов', 'Каталог с примерами запросов', 'Инструкция для Claude Code, Cowork и Codex'],
+    includedEn: ['11 skills in the Agent Skills format', '9 dependency-free Python scripts', 'A plugin that installs with two commands', 'Reference material and templates inside the skills', 'Catalogue with example requests', 'Install guide for Claude Code, Cowork and Codex'],
     priceEur: 39,
     coverGradient: 'linear-gradient(135deg, #d97757, #8b5cf6)',
     coverIcon: '🧠',
@@ -919,25 +922,28 @@ If urgent and no slots — hand off to admin (tool: handoff_human).`,
     creatorId: 'creator-insider',
     badge: 'trend-2026',
     badges: ['trending', 'new'],
-    fileTypes: ['ZIP', 'JSON'],
-    includedRu: ['Skills: отчёты, лиды, контент', 'Шаблоны под Claude', 'Связка с MCP-серверами'],
-    includedEn: ['Skills: reports, leads, content', 'Claude templates', 'MCP integration notes'],
     freePreview: {
       type: 'prompt',
-      titleRu: 'Бесплатный Skill: weekly report',
-      titleEn: 'Free Skill: weekly report',
-      contentRu: `Skill: weekly-ops-report
-Когда пользователь просит «недельный отчёт»:
-1) Собери метрики из CRM (MCP) за 7 дней
-2) Выдели 3 инсайта и 1 риск
-3) Дай 3 действия на следующую неделю
-Формат: TL;DR → цифры → инсайты → план`,
-      contentEn: `Skill: weekly-ops-report
-When user asks for a weekly report:
-1) Pull CRM metrics (MCP) for last 7 days
-2) Extract 3 insights and 1 risk
-3) Propose 3 actions for next week
-Format: TL;DR → numbers → insights → plan`,
+      titleRu: 'Фрагмент скилла: отчёт клиенту',
+      titleEn: 'Skill excerpt: client report',
+      contentRu: `Скилл: weekly-client-report
+
+1. Посчитай изменения скриптом:
+   python3 scripts/metrics_delta.py metrics.csv
+2. Выбери два-три показателя, важных читателю.
+3. Объясни причины — только названные пользователем.
+   Не знаешь причину — напиши «причина не установлена».
+4. Напиши отчёт на одну страницу. Плохие новости — в начале.
+5. Сверь каждое число в тексте с таблицей скрипта.`,
+      contentEn: `Skill: weekly-client-report
+
+1. Compute the changes with the script:
+   python3 scripts/metrics_delta.py metrics.csv
+2. Pick the two or three metrics the reader cares about.
+3. Explain causes — only those the user named.
+   Unknown cause: write "cause not established".
+4. Write a one-page report. Bad news goes first.
+5. Check every number in the text against the script's table.`,
     },
     recommendsForCourses: ['ai-agent-engineer', 'ai-content-creator'],
     relatedIds: ['mp-mcp-starter-business', 'mp-prompt-chatgpt-vault'],
