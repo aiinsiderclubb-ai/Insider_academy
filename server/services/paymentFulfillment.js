@@ -2,6 +2,23 @@ import { getDb } from '../db.js'
 import { grantAccess } from './access.js'
 import { fulfillMarketplaceOrder, getMarketplaceProduct } from './marketplaceCatalog.js'
 import { grantMarketplaceEntitlement } from './marketplace.js'
+import { sendPurchaseThanks } from './purchaseThanks.js'
+import { consumePromoForPayment } from './reviewReward.js'
+
+/**
+ * What happens once, when money has actually arrived: the promo the checkout
+ * was priced with is spent, and the buyer gets the thank-you. Neither may undo
+ * a fulfilled order, so both are best-effort and the email is not awaited.
+ */
+async function afterFirstSettlement(payment, { itemId, marketplace }) {
+  await consumePromoForPayment(payment.id).catch((err) => console.warn('[promo] not consumed:', err.message))
+  sendPurchaseThanks({
+    email: payment.email,
+    itemId,
+    itemTitle: payment.course_title,
+    marketplace,
+  })
+}
 
 function sameMoney(left, right) {
   return Math.abs(Number(left) - Number(right)) < 0.01
@@ -42,6 +59,7 @@ export async function reconcilePaidPayment({ payment, provider, externalId, user
     }
     if (!db.transaction) throw Object.assign(new Error('Marketplace fulfillment requires database transactions'), { status: 503 })
     const result = await db.transaction(execute)
+    await afterFirstSettlement(payment, { itemId: productId, marketplace: true })
     return { ok: true, idempotent: payment.status === 'completed', userId, courseId: productId, marketplace: true, entitlements: result.granted }
   }
   const product = await getMarketplaceProduct(db, productId, { includeUnpublished: true })
@@ -57,10 +75,11 @@ export async function reconcilePaidPayment({ payment, provider, externalId, user
     })
     if (!result.handled) throw Object.assign(new Error('Marketplace order not found'), { status: 409 })
     await db.run("UPDATE payments SET status = 'completed', completed_at = ? WHERE id = ? AND status = 'pending'", [new Date().toISOString(), payment.id])
+    if (!result.idempotent) await afterFirstSettlement(payment, { itemId: productId, marketplace: true })
     return { ok: true, idempotent: result.idempotent, userId, courseId: productId, marketplace: true }
   }
 
-  return grantAccess({
+  const granted = await grantAccess({
     userId,
     email: payment.email,
     courseId: productId,
@@ -69,4 +88,7 @@ export async function reconcilePaidPayment({ payment, provider, externalId, user
     provider,
     externalId,
   })
+  // A completed payment returned early above, so reaching here with a grant is the first settlement.
+  if (granted?.ok) await afterFirstSettlement(payment, { itemId: productId, marketplace: false })
+  return granted
 }

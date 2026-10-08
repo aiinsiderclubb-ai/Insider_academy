@@ -51,6 +51,47 @@ export function otpBlock(code) {
   `
 }
 
+/**
+ * The offer inside a transactional email: one bordered card with its own
+ * button, set apart from the message it rides in so the receipt still reads
+ * as a receipt.
+ */
+export function offerCard({ kicker, title, text, note = '', href, cta }) {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0 8px">
+      <tr>
+        <td style="background:#fff7ed;border:1px solid #fed7aa;border-radius:18px;padding:22px 22px 24px">
+          <p style="margin:0 0 10px;font:700 11px/1 system-ui,sans-serif;letter-spacing:0.14em;text-transform:uppercase;color:${COLORS.orange}">${escapeHtml(kicker)}</p>
+          <p style="margin:0 0 8px;font:800 19px/1.3 system-ui,-apple-system,sans-serif;color:${COLORS.ink}">${escapeHtml(title)}</p>
+          <p style="margin:0 0 6px;font:15px/1.6 system-ui,-apple-system,sans-serif;color:${COLORS.body}">${escapeHtml(text)}</p>
+          ${note ? `<p style="margin:0;font:13px/1.5 system-ui,sans-serif;color:${COLORS.muted}">${escapeHtml(note)}</p>` : ''}
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin:18px 0 0">
+            <tr>
+              <td align="left" bgcolor="${COLORS.orange}" style="border-radius:999px;background:${COLORS.orange}">
+                <a href="${escapeHtml(href)}" style="display:inline-block;padding:13px 24px;border-radius:999px;font:700 14px/1 system-ui,-apple-system,sans-serif;text-decoration:none;color:#ffffff">${escapeHtml(cta)}</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `
+}
+
+/** A promo code, set large enough to copy by eye. Letters and digits, so no wide spacing. */
+export function promoBlock(code, label) {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0">
+      <tr>
+        <td align="center" style="background:${COLORS.codeBg};border:1px dashed ${COLORS.violet};border-radius:18px;padding:24px 16px">
+          <p style="margin:0 0 10px;font:700 11px/1 system-ui,sans-serif;letter-spacing:0.16em;text-transform:uppercase;color:${COLORS.violet}">${escapeHtml(label)}</p>
+          <p style="margin:0;font:800 28px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:3px;color:${COLORS.ink}">${escapeHtml(code)}</p>
+        </td>
+      </tr>
+    </table>
+  `
+}
+
 export function featureCard(title, subtitle = '') {
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 8px">

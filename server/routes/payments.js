@@ -197,12 +197,32 @@ router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, 
   }
 
   const db = getDb()
-  const { courseId, slug, locale } = req.body
+  const { courseId, slug, locale, promoCode } = req.body
   if (!courseId) return res.status(400).json({ error: 'courseId required' })
   const item = await resolveCheckoutItem(db, courseId, req.userEmail)
   const courseTitle = item.title
-  const amount = item.amount
+  let amount = item.amount
   const paths = checkoutPaths(item, 'tribute')
+
+  // A promo changes what is charged, which only a Shop order can do: a fixed
+  // Tribute product has its price set on Tribute's side. Rather than take the
+  // full amount from someone who was shown a discount, the checkout stops.
+  let appliedPromo = null
+  if (promoCode) {
+    const { validatePromoCode } = await import('../services/promoCodes.js')
+    const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: amount })
+    if (!promo.valid) {
+      return res.status(400).json({ error: promo.error, errorRu: 'Промокод не подошёл.' })
+    }
+    if (!config.tribute.shopId) {
+      return res.status(409).json({
+        error: 'Promo codes need Tribute Shop checkout (TRIBUTE_SHOP_ID)',
+        errorRu: 'Промокод пока нельзя применить к онлайн-оплате. Напишите менеджеру — применим скидку вручную.',
+      })
+    }
+    amount = promo.finalEur
+    appliedPromo = promo.code
+  }
 
   const paymentId = `trib-${Date.now()}`
   const successUrl = publicUrl(locale, paths.success)
@@ -230,6 +250,10 @@ router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, 
          VALUES (?, ?, ?, ?, ?, ?, ?, 'tribute', ?, 'pending', ?)`,
         [paymentId, req.userId, req.userEmail, courseId, courseTitle, amount, item.currency, order.uuid, new Date().toISOString()]
       )
+      if (appliedPromo) {
+        const { rememberPromoForPayment } = await import('../services/reviewReward.js')
+        await rememberPromoForPayment(db, paymentId, appliedPromo)
+      }
 
       return res.json({
         url: order.paymentUrl || order.webappPaymentUrl,

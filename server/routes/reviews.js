@@ -6,6 +6,8 @@ import { rateLimitMiddleware } from '../middleware/rateLimit.js'
 import * as sheetsTrack from '../services/sheetsTrack.js'
 import { courses } from '../../src/data/courses.js'
 import { SEED_REVIEWS, isApprovedSeedReview } from '../../src/data/seedReviews.js'
+import { notifyUserEmail } from '../services/email.js'
+import { issueReviewReward } from '../services/reviewReward.js'
 
 const router = Router()
 
@@ -115,14 +117,19 @@ router.post(
   const email = (contactEmail || req.userEmail || '').trim().toLowerCase()
   if (!email || !email.includes('@')) return res.status(400).json({ error: 'Valid contact email required' })
 
+  // A review comes from someone who bought the thing: a course purchase, or
+  // an active entitlement to a store product.
   const owned = await db.get(
     'SELECT id FROM purchases WHERE user_id = ? AND course_id = ?',
+    [req.userId, courseId]
+  ) || await db.get(
+    "SELECT id FROM asset_entitlements WHERE user_id = ? AND product_id = ? AND status = 'active'",
     [req.userId, courseId]
   )
   if (!owned) {
     return res.status(403).json({
-      error: 'Review requires purchasing this course',
-      errorRu: 'Отзыв могут оставить только те, кто купил этот курс',
+      error: 'Review requires purchasing this item',
+      errorRu: 'Отзыв могут оставить только те, кто это купил',
     })
   }
 
@@ -148,9 +155,25 @@ router.post(
     reviewId: id,
   }).catch(() => {})
 
+  // The discount is for leaving a review, whatever it says: it is issued on
+  // submission, before moderation, and does not look at the rating.
+  let reward = null
+  try {
+    reward = await issueReviewReward(db, { userId: req.userId, itemId: courseId })
+    if (reward.created) {
+      notifyUserEmail(req.userEmail, 'review_reward', {
+        code: reward.code,
+        validUntil: reward.validUntil,
+      }).catch(() => {})
+    }
+  } catch (err) {
+    console.warn('[reviews] reward not issued:', err.message)
+  }
+
   res.status(201).json({
     id,
     message: 'Review submitted for moderation',
+    reward: reward ? { code: reward.code, validUntil: reward.validUntil, percent: 10 } : null,
   })
   }
 )

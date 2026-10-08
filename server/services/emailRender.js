@@ -1,6 +1,6 @@
 import { config, isPrelaunchMode } from '../config.js'
 import { copyFor, MARKETING_TEMPLATES, normalizeLocale } from './emailCopy.js'
-import { emailLayout, escapeHtml, featureCard, otpBlock, primaryButton } from './emailTemplates.js'
+import { emailLayout, escapeHtml, featureCard, offerCard, otpBlock, primaryButton, promoBlock } from './emailTemplates.js'
 import { unsubscribeUrl } from './emailUnsub.js'
 
 const P = 'margin:0 0 14px;font:16px/1.6 system-ui,-apple-system,sans-serif;color:#3d3850'
@@ -54,6 +54,8 @@ export function renderEmail(template, payload = {}) {
   let text = ''
   let href = sitePath(locale, '/app')
   let cta = copy.openSite
+  // "Ignore this if you did not ask for it" suits a login code, not a receipt.
+  let footerNote
 
   if (template === 'verify_code') {
     const code = String(payload.code || '')
@@ -140,6 +142,48 @@ export function renderEmail(template, payload = {}) {
     cta = copy.access.cta
     bodyHtml = `${paragraph(copy.greeting(name))}${paragraph(preheader)}${paragraph(copy.access.sameEmail)}<p style="${META}">${escapeHtml(courseTitle)}</p>${primaryButton(href, cta)}`
     text = textBlock([copy.greeting(name), preheader, copy.access.sameEmail, courseTitle, href])
+  } else if (template === 'purchase_thanks') {
+    const item = String(payload.itemTitle || courseTitle)
+    const slug = String(payload.itemSlug || payload.itemId || '')
+    const isProduct = payload.itemKind === 'product'
+    href = slug ? sitePath(locale, isProduct ? `/store/${slug}` : `/learn/${slug}`) : sitePath(locale, '/app')
+    const reviewHref = sitePath(locale, `/review?item=${encodeURIComponent(payload.itemId || slug)}`)
+    subject = copy.purchase.subject(item)
+    footerNote = copy.purchase.footer
+    title = copy.purchase.title
+    preheader = copy.purchase.offer
+    cta = copy.purchase.cta
+    bodyHtml = `${paragraph(copy.greeting(name))}${paragraph(copy.purchase.lead)}${featureCard(item, copy.purchase.sameEmail)}${primaryButton(href, cta)}${offerCard({
+      kicker: copy.purchase.offerKicker,
+      title: copy.purchase.offerTitle,
+      text: copy.purchase.offer,
+      note: copy.purchase.offerHonest,
+      href: reviewHref,
+      cta: copy.purchase.offerCta,
+    })}`
+    text = textBlock([
+      copy.greeting(name),
+      copy.purchase.lead,
+      item,
+      href,
+      `${copy.purchase.offerKicker}. ${copy.purchase.offer} ${copy.purchase.offerHonest}`,
+      reviewHref,
+    ])
+  } else if (template === 'review_reward') {
+    const code = String(payload.code || '')
+    const until = payload.validUntil ? new Date(payload.validUntil) : null
+    const dateLocale = locale === 'en' ? 'en-GB' : locale === 'ukr' ? 'uk-UA' : 'ru-RU'
+    const untilText = until && !Number.isNaN(until.getTime())
+      ? copy.reviewReward.until(until.toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' }))
+      : ''
+    href = sitePath(locale, '/learn')
+    subject = copy.reviewReward.subject
+    footerNote = copy.purchase.footer
+    title = copy.reviewReward.title
+    preheader = copy.reviewReward.lead
+    cta = copy.reviewReward.cta
+    bodyHtml = `${paragraph(copy.greeting(name))}${paragraph(copy.reviewReward.lead)}${promoBlock(code, copy.reviewReward.codeLabel)}${untilText ? `<p style="${META}">${escapeHtml(untilText)}</p>` : ''}<p style="${META}">${escapeHtml(copy.reviewReward.how)}</p>${primaryButton(href, cta)}`
+    text = textBlock([copy.greeting(name), copy.reviewReward.lead, code, untilText, copy.reviewReward.how, href])
   } else if (template === 'certificate_ready') {
     href = sitePath(locale, '/app')
     subject = copy.certificate.subject(courseTitle)
@@ -178,6 +222,7 @@ export function renderEmail(template, payload = {}) {
     locale,
     to,
     marketing,
+    footerNote,
   })
 
   const headers = marketing && to

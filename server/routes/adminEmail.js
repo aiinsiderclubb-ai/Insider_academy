@@ -43,7 +43,7 @@ router.get('/email/preview', requireAdmin('admin', 'editor', 'moderator'), (req,
       to: 'preview@myinsideracademy.com',
       name: 'Vlad',
       locale,
-      code: '482193',
+      code: template === 'review_reward' ? 'THANKS-4F2A9C1E' : '482193',
       token: 'preview-token',
       courseTitle: 'AI Agent Engineer',
       lessonTitle: 'Первый агент',
@@ -52,6 +52,11 @@ router.get('/email/preview', requireAdmin('admin', 'editor', 'moderator'), (req,
       courseSlug: 'ai-agent-engineer',
       lines: ['Домашних заданий на проверке: 3', 'Новых регистраций сегодня: 2'],
       pendingHw: 3,
+      itemTitle: 'AI Agent Engineer',
+      itemSlug: 'ai-agent-engineer',
+      itemId: 'ai-agent-engineer',
+      itemKind: 'course',
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       sentAt: new Date().toISOString(),
     })
     res.json({ ok: true, template, ...rendered })
@@ -77,7 +82,6 @@ router.post('/email/test', requireAdmin('admin'), async (req, res) => {
     await sendTemplateEmail(to, template, {
       name: req.body.name || 'Vlad',
       locale,
-      code: '482193',
       token: 'preview-token',
       courseTitle: 'AI Agent Engineer',
       lessonTitle: 'Первый агент',
@@ -86,6 +90,12 @@ router.post('/email/test', requireAdmin('admin'), async (req, res) => {
       courseSlug: 'ai-agent-engineer',
       lines: ['Это тестовый дайджест из Studio.'],
       pendingHw: 1,
+      itemTitle: 'AI Agent Engineer',
+      itemSlug: 'ai-agent-engineer',
+      itemId: 'ai-agent-engineer',
+      itemKind: 'course',
+      code: template === 'review_reward' ? 'THANKS-4F2A9C1E' : '482193',
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     })
     res.json({ ok: true, to, template })
   } catch (err) {
