@@ -761,10 +761,13 @@ No fluff, max 80 words.`,
     productType: 'agent-pack',
     titleRu: 'Voice Agent Kit: Beauty Salon',
     titleEn: 'Voice Agent Kit: Beauty Salon',
-    shortRu: 'Голосовой агент записи для салона: сценарии диалогов, интеграция с календарём, шаблоны Vapi/Retell/ElevenLabs, инструкция запуска за 1 день.',
-    shortEn: 'Voice booking agent for salons: dialog flows, calendar integration, Vapi/Retell/ElevenLabs templates, 1-day launch guide.',
+    shortRu: 'Набор для запуска голосового администратора салона красоты: проверенный бэкенд записи на n8n и Google Календаре, промпт, конфигурации Vapi, Retell и ElevenLabs, 30 тестовых звонков и комплект для продажи клиенту.',
+    shortEn: 'A kit for launching a voice receptionist for a beauty salon: a tested booking backend on n8n and Google Calendar, the prompt, Vapi, Retell and ElevenLabs configurations, 30 test calls and a client sales kit. Files are in Russian.',
+    version: '2.0.0',
+    fileTypes: ['ZIP', 'MD', 'JSON', 'CSV'],
+    includedRu: ['Воркфлоу n8n: запись, перенос, отмена, обратный звонок', 'Системный промпт на русском и английском', 'Конфигурации Vapi, Retell и ElevenLabs', '30 тестовых звонков и оценочный лист запуска', '9 инструкций: от настройки до эксплуатации', 'Комплект продаж: калькулятор, цены, объём работ, отчёт'],
+    includedEn: ['n8n workflows: book, move, cancel, callback', 'System prompt in Russian and English', 'Vapi, Retell and ElevenLabs configurations', '30 test calls and a launch scorecard', '9 guides, from setup to operations', 'Sales kit: calculator, pricing, scope, report'],
     priceEur: 79,
-    version: '1.1.0',
     coverGradient: 'linear-gradient(135deg, #14b8a6, #a855f7)',
     coverIcon: '💇',
 
@@ -775,30 +778,25 @@ No fluff, max 80 words.`,
     creatorId: 'creator-agent-studio',
     badge: 'trend-2026',
     badges: ['trending', 'new'],
-    fileTypes: ['ZIP', 'JSON', 'PDF', 'CSV', 'MD'],
-    includedRu: ['3 шаблона: Vapi / Retell / ElevenLabs', '2 workflow для записи и итогов звонка', '12 acceptance-тестов и launch scorecard', '5 инструкций: запуск, безопасность, эксплуатация, rollback, handoff', 'Sales pack: бриф, scope и ROI-калькулятор'],
-    includedEn: ['3 provider templates: Vapi / Retell / ElevenLabs', '2 booking and call-summary workflows', '12 acceptance tests and launch scorecard', '5 guides: launch, security, operations, rollback and handoff', 'Sales pack: discovery brief, scope and ROI calculator'],
     testedIntegrations: ['Vapi', 'Retell AI', 'ElevenLabs Conversational AI', 'n8n', 'Google Calendar-compatible API'],
     changelogRu: ['v1.1.0: provider-конфиги, workflow, privacy runbook, тестовый набор и sales pack', 'v1.0.0: базовый booking flow и rollback checklist'],
     changelogEn: ['v1.1.0: provider configs, workflows, privacy runbook, test suite and sales pack', 'v1.0.0: core booking flow and rollback checklist'],
     freePreview: {
       type: 'prompt',
-      titleRu: 'Бесплатный фрагмент: приветствие салона',
-      titleEn: 'Free sample: salon greeting',
-      contentRu: `Ты — голосовой ассистент салона красоты. Цель: записать клиента на услугу.
-Правила:
-1) Уточни услугу, мастера и удобное время.
-2) Проверь слот в календаре (tool: check_slot).
-3) Подтверди запись коротко и тепло.
-4) Если слот занят — предложи 2 альтернативы.
-Тон: дружелюбный, без канцелярита, максимум 2 предложения за реплику.`,
-      contentEn: `You are a beauty salon voice assistant. Goal: book the client.
-Rules:
-1) Confirm service, stylist and preferred time.
-2) Check calendar slot (tool: check_slot).
-3) Confirm booking briefly and warmly.
-4) If busy — offer 2 alternatives.
-Tone: friendly, no jargon, max 2 sentences per turn.`,
+      titleRu: 'Фрагмент промпта: чего агент не делает',
+      titleEn: 'Prompt excerpt: what the agent never does',
+      contentRu: `Не обещаешь результат окрашивания или процедуры:
+«получится ли такой цвет» решает мастер.
+Не даёшь медицинских советов: аллергия, беременность —
+«это обсудит мастер, при необходимости посоветуйтесь с врачом».
+Не называешь свободное время по памяти:
+только из ответа инструмента check_availability.`,
+      contentEn: `Never promise the result of colouring or a treatment:
+the stylist decides whether a shade is achievable.
+Never give medical advice: allergies, pregnancy —
+the stylist will discuss it; consult a doctor if needed.
+Never state a free time from memory:
+only from the check_availability tool result.`,
     },
     recommendsForCourses: ['ai-agent-engineer'],
     relatedIds: ['mp-voice-clinic-services', 'mp-agent-booking'],
@@ -810,8 +808,12 @@ Tone: friendly, no jargon, max 2 sentences per turn.`,
     productType: 'agent-pack',
     titleRu: 'Voice Agent Kit: Clinic & Services',
     titleEn: 'Voice Agent Kit: Clinic & Services',
-    shortRu: 'Запись на приём голосом: квалификация, напоминания, перенос записи. Шаблоны под Vapi и Retell.',
-    shortEn: 'Voice appointment booking: qualification, reminders, rescheduling. Vapi and Retell templates.',
+    shortRu: 'Набор для запуска голосового администратора клиники: проверенный бэкенд записи на n8n и Google Календаре, промпт, конфигурации Vapi, Retell и ElevenLabs, 30 тестовых звонков и комплект для продажи клиенту.',
+    shortEn: 'A kit for launching a voice receptionist for a clinic: a tested booking backend on n8n and Google Calendar, the prompt, Vapi, Retell and ElevenLabs configurations, 30 test calls and a client sales kit. Files are in Russian.',
+    version: '2.0.0',
+    fileTypes: ['ZIP', 'MD', 'JSON', 'CSV'],
+    includedRu: ['Воркфлоу n8n: запись, перенос, отмена, обратный звонок', 'Системный промпт на русском и английском', 'Конфигурации Vapi, Retell и ElevenLabs', '30 тестовых звонков и оценочный лист запуска', '9 инструкций: от настройки до эксплуатации', 'Комплект продаж: калькулятор, цены, объём работ, отчёт'],
+    includedEn: ['n8n workflows: book, move, cancel, callback', 'System prompt in Russian and English', 'Vapi, Retell and ElevenLabs configurations', '30 test calls and a launch scorecard', '9 guides, from setup to operations', 'Sales kit: calculator, pricing, scope, report'],
     priceEur: 79,
     coverGradient: 'linear-gradient(135deg, #06b6d4, #6366f1)',
     coverIcon: '🏥',
@@ -823,26 +825,101 @@ Tone: friendly, no jargon, max 2 sentences per turn.`,
     creatorId: 'creator-agent-studio',
     badge: 'trend-2026',
     badges: ['trending', 'new'],
-    fileTypes: ['ZIP', 'JSON', 'PDF'],
-    includedRu: ['Сценарии записи на приём', 'Квалификация и напоминания', 'Перенос записи', 'Шаблоны Vapi и Retell'],
-    includedEn: ['Appointment booking flows', 'Qualification and reminders', 'Rescheduling logic', 'Vapi and Retell templates'],
     freePreview: {
       type: 'prompt',
-      titleRu: 'Бесплатный фрагмент: квалификация пациента',
-      titleEn: 'Free sample: patient qualification',
-      contentRu: `Перед записью уточни:
-- Новый или повторный визит?
-- Симптом / цель визита (1 фраза)
-- Срочность: сегодня / на этой неделе / планово
-Если срочно и нет слота — эскалируй на администратора (tool: handoff_human).`,
-      contentEn: `Before booking ask:
-- New or returning patient?
-- Visit goal in one sentence
-- Urgency: today / this week / planned
-If urgent and no slots — hand off to admin (tool: handoff_human).`,
+      titleRu: 'Фрагмент промпта: неотложные состояния',
+      titleEn: 'Prompt excerpt: emergencies',
+      contentRu: `Боль в груди, затруднённое дыхание, признаки инсульта,
+сильное кровотечение — сразу скажи:
+«Это может быть опасно. Немедленно позвоните
+в экстренную службу».
+Не продолжай запись, пока человек не подтвердит,
+что помощь вызвана. Диагнозов и советов не давай.`,
+      contentEn: `Chest pain, trouble breathing, signs of a stroke,
+heavy bleeding — say at once:
+This may be dangerous. Call emergency services immediately.
+Do not continue booking until the person confirms
+help has been called. Give no diagnosis or advice.`,
     },
     recommendsForCourses: ['ai-agent-engineer'],
     relatedIds: ['mp-voice-beauty-salon', 'mp-agent-booking'],
+  }),
+  product({
+    id: 'mp-voice-auto-service',
+    slug: 'voice-agent-kit-auto-service',
+    categoryId: 'voice-agents',
+    productType: 'agent-pack',
+    titleRu: 'Voice Agent Kit: Auto Service',
+    titleEn: 'Voice Agent Kit: Auto Service',
+    shortRu: 'Набор для запуска голосового администратора автосервиса: проверенный бэкенд записи на n8n и Google Календаре, промпт, конфигурации Vapi, Retell и ElevenLabs, 30 тестовых звонков и комплект для продажи клиенту.',
+    shortEn: 'A kit for launching a voice receptionist for an auto repair shop: a tested booking backend on n8n and Google Calendar, the prompt, Vapi, Retell and ElevenLabs configurations, 30 test calls and a client sales kit. Files are in Russian.',
+    version: '2.0.0',
+    fileTypes: ['ZIP', 'MD', 'JSON', 'CSV'],
+    includedRu: ['Воркфлоу n8n: запись, перенос, отмена, обратный звонок', 'Системный промпт на русском и английском', 'Конфигурации Vapi, Retell и ElevenLabs', '30 тестовых звонков и оценочный лист запуска', '9 инструкций: от настройки до эксплуатации', 'Комплект продаж: калькулятор, цены, объём работ, отчёт'],
+    includedEn: ['n8n workflows: book, move, cancel, callback', 'System prompt in Russian and English', 'Vapi, Retell and ElevenLabs configurations', '30 test calls and a launch scorecard', '9 guides, from setup to operations', 'Sales kit: calculator, pricing, scope, report'],
+    priceEur: 79,
+    coverGradient: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+    coverIcon: '🔧',
+    creatorId: 'creator-agent-studio',
+    badge: 'trend-2026',
+    badges: ['trending', 'new'],
+    freePreview: {
+      type: 'prompt',
+      titleRu: 'Фрагмент промпта: опасная неисправность',
+      titleEn: 'Prompt excerpt: an unsafe fault',
+      contentRu: `Не говоришь, можно ли ездить с неисправностью.
+Тормоза, руль, перегрев, запах топлива,
+лампа давления масла — отвечай:
+«С такой неисправностью ехать небезопасно,
+лучше вызвать эвакуатор».
+Диагноз по описанию не ставишь: записываешь на диагностику.`,
+      contentEn: `Never say whether the car is safe to drive with a fault.
+Brakes, steering, overheating, fuel smell,
+oil pressure light — answer:
+It is not safe to drive with that; better call a tow truck.
+Never diagnose from a description: book a diagnostic.`,
+    },
+    recommendsForCourses: ['ai-agent-engineer'],
+    relatedIds: ['mp-voice-beauty-salon', 'mp-voice-clinic-services'],
+  }),
+  product({
+    id: 'mp-voice-real-estate',
+    slug: 'voice-agent-kit-real-estate',
+    categoryId: 'voice-agents',
+    productType: 'agent-pack',
+    titleRu: 'Voice Agent Kit: Real Estate',
+    titleEn: 'Voice Agent Kit: Real Estate',
+    shortRu: 'Набор для запуска голосового администратора агентства недвижимости: проверенный бэкенд записи на n8n и Google Календаре, промпт, конфигурации Vapi, Retell и ElevenLabs, 30 тестовых звонков и комплект для продажи клиенту.',
+    shortEn: 'A kit for launching a voice receptionist for a real estate agency: a tested booking backend on n8n and Google Calendar, the prompt, Vapi, Retell and ElevenLabs configurations, 30 test calls and a client sales kit. Files are in Russian.',
+    version: '2.0.0',
+    fileTypes: ['ZIP', 'MD', 'JSON', 'CSV'],
+    includedRu: ['Воркфлоу n8n: запись, перенос, отмена, обратный звонок', 'Системный промпт на русском и английском', 'Конфигурации Vapi, Retell и ElevenLabs', '30 тестовых звонков и оценочный лист запуска', '9 инструкций: от настройки до эксплуатации', 'Комплект продаж: калькулятор, цены, объём работ, отчёт'],
+    includedEn: ['n8n workflows: book, move, cancel, callback', 'System prompt in Russian and English', 'Vapi, Retell and ElevenLabs configurations', '30 test calls and a launch scorecard', '9 guides, from setup to operations', 'Sales kit: calculator, pricing, scope, report'],
+    priceEur: 79,
+    coverGradient: 'linear-gradient(135deg, #10b981, #3b82f6)',
+    coverIcon: '🏠',
+    creatorId: 'creator-agent-studio',
+    badge: 'trend-2026',
+    badges: ['trending', 'new'],
+    freePreview: {
+      type: 'prompt',
+      titleRu: 'Фрагмент промпта: что обсуждает только агент',
+      titleEn: 'Prompt excerpt: what only the agent discusses',
+      contentRu: `Не обсуждаешь торг и не говоришь, уступит ли собственник.
+Не подтверждаешь, что объект свободен:
+«Актуальность подтвердит агент перед просмотром».
+Не называешь точный адрес до подтверждённого просмотра.
+Не учитываешь национальность, семейное положение
+и другие личные признаки и не передаёшь такие условия.`,
+      contentEn: `Never negotiate or say whether the owner will come down.
+Never confirm a property is still available:
+the agent will confirm it before the viewing.
+Never give the exact address before a confirmed viewing.
+Never act on nationality, marital status or other
+personal characteristics, or relay such conditions.`,
+    },
+    recommendsForCourses: ['ai-agent-engineer'],
+    relatedIds: ['mp-voice-beauty-salon', 'mp-voice-clinic-services'],
   }),
   product({
     id: 'mp-mcp-starter-business',

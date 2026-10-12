@@ -156,7 +156,7 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   assert.deepEqual(stats.chart, [])
 
   const marketplace = await fetch(`${base}/api/marketplace/catalog`).then((r) => r.json())
-  assert.equal(marketplace.products.length, 41)
+  assert.equal(marketplace.products.length, 43)
   assert.equal(marketplace.enabled, false)
   assert.ok(marketplace.products.every((product) => product.reviewCount === 0 && product.rating === null))
 
