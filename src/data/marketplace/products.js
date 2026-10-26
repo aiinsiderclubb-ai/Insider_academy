@@ -404,8 +404,12 @@ Otherwise a draft goes to the team in Telegram:
     productType: 'automation-pack',
     titleRu: 'Content Automation',
     titleEn: 'Content Automation',
-    shortRu: 'Генерация и публикация контента по расписанию.',
-    shortEn: 'Scheduled content generation and publishing.',
+    shortRu: 'Контент-план в Google Таблице, который ведёт себя сам: каждую неделю темы под ваши рубрики, черновики в голосе бренда под формат каждого канала, одобрение кнопками в Telegram и публикация по расписанию в Telegram-канал, WordPress или через вебхук (Make, Zapier, Buffer). Без дублей и публикаций задним числом. Проверено в n8n 2.44.',
+    shortEn: 'A content plan in Google Sheets that runs itself: weekly topics for your content pillars, drafts in your brand voice for each channel\'s format, approval with Telegram buttons, and scheduled publishing to a Telegram channel, WordPress or any webhook (Make, Zapier, Buffer). No duplicates, no late posts. Tested in n8n 2.44. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['5 воркфлоу n8n: план недели, черновики, одобрение, публикация, оповещение о сбоях', 'Темы на неделю по рубрикам и расписанию слотов', 'Черновики в голосе бренда, без выдуманных фактов', 'Кнопки «Опубликовать / Переписать / Пропустить» в Telegram', 'Telegram-канал, WordPress и вебхук для LinkedIn, Instagram и других', 'Шаблон контент-плана, пример Config и 4 инструкции'],
+    includedEn: ['5 n8n workflows: weekly plan, drafts, approvals, publisher, error alerts', 'Weekly topics by content pillar and slot schedule', 'Drafts in your brand voice, no invented facts', 'Publish / Rewrite / Skip buttons in Telegram', 'Telegram channel, WordPress, and a webhook for LinkedIn, Instagram and more', 'Content plan template, sample Config and 4 guides'],
     priceEur: 39,
     rating: 4.6,
     reviewCount: 92,
@@ -415,6 +419,31 @@ Otherwise a draft goes to the team in Telegram:
     creatorId: 'creator-n8n-lab',
     recommendsForCourses: ['ai-content-creator'],
     relatedIds: ['mp-creator-reels-pack'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: путь одной публикации',
+      titleEn: 'Sample: the path of one post',
+      contentRu: `idea          — тема в таблице
+  ↓ за 48 ч до публикации
+draft_ready   — черновик в Telegram:
+                [Опубликовать] [Переписать] [Пропустить]
+  ↓ одобрено
+approved      — ждёт своего времени
+  ↓ время наступило
+publishing    — отмечено до отправки, дубля не будет
+  ↓
+published     — ссылка в таблице и в чате`,
+      contentEn: `idea          — a topic in the sheet
+  ↓ 48 h before publishing
+draft_ready   — draft in Telegram:
+                [Publish] [Rewrite] [Skip]
+  ↓ approved
+approved      — waits for its time
+  ↓ time has come
+publishing    — marked before sending, no duplicates
+  ↓
+published     — link in the sheet and the chat`,
+    },
   }),
   product({
     id: 'mp-workflow-crm',
