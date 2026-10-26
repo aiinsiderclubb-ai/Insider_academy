@@ -452,8 +452,12 @@ published     — link in the sheet and the chat`,
     productType: 'automation-pack',
     titleRu: 'CRM Automation Kit',
     titleEn: 'CRM Automation Kit',
-    shortRu: 'Синхронизация лидов, сделок и напоминаний.',
-    shortEn: 'Sync leads, deals and reminders.',
+    shortRu: 'Лёгкая CRM на n8n, Google Таблице и Telegram: заявки из Tilda, сайта, Make и других наборов в одну таблицу без дублей, распределение по менеджерам, этапы сделки кнопками в Telegram, напоминания о следующем шаге, тревога по брошенным заявкам и недельный отчёт по воронке. Без AI и без платной CRM. Проверено в n8n 2.44.',
+    shortEn: 'A light CRM on n8n, Google Sheets and Telegram: leads from Tilda, your site, Make and other kits land in one sheet without duplicates, are shared fairly between managers, move through stages with Telegram buttons, and come with next-step reminders, alerts for untouched leads and a weekly pipeline report. No AI, no paid CRM. Tested in n8n 2.44. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['5 воркфлоу n8n: приём заявок, Telegram, напоминания, отчёт, оповещение о сбоях', 'Один адрес для всех источников, дедупликация по телефону и почте', 'Распределение по нагрузке, повторный клиент — тому же менеджеру', 'Этапы кнопками, заметки, суммы и напоминания ответом в Telegram', 'Эскалация брошенных заявок и отчёт по воронке и менеджерам', 'Подключение Tilda, формы сайта, Make, памятка менеджеру'],
+    includedEn: ['5 n8n workflows: intake, Telegram, reminders, report, error alerts', 'One address for every source, de-duplicated by phone and email', 'Load-based assignment, a returning client goes to the same manager', 'Stage buttons, notes, amounts and reminders by reply in Telegram', 'Alerts for untouched leads and a pipeline report by manager', 'Tilda, site form and Make setup, a one-page manager guide'],
     priceEur: 99,
     rating: 4.9,
     reviewCount: 67,
@@ -464,6 +468,33 @@ published     — link in the sheet and the chat`,
     badges: ['new'],
     recommendsForCourses: ['ai-automation-engineer', 'ai-business-builder'],
     relatedIds: ['mp-workflow-lead-gen'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: карточка сделки в Telegram',
+      titleEn: 'Sample: a deal card in Telegram',
+      contentRu: `Новая сделка D261026-3
+Имя: Ирина
+Телефон: +380671234567
+Запрос: Нужен сайт для студии
+Сумма: 3000
+Источник: tilda
+Этап: Новая · Олег
+Следующий шаг: Позвонить клиенту — 2026-10-26 10:30
+[Связались] [Встреча] [КП]
+[Выиграна] [Проиграна] [Завтра]
+Ответ: «напомнить: завтра 15:00 перезвонить»`,
+      contentEn: `New deal D261026-3
+Name: Iryna
+Phone: +380671234567
+Request: A website for a studio
+Amount: 3000
+Source: tilda
+Stage: New · Oleh
+Next step: Call the client — 2026-10-26 10:30
+[Contacted] [Meeting] [Proposal]
+[Won] [Lost] [Tomorrow]
+Reply: "remind: tomorrow 15:00 call back"`,
+    },
   }),
   product({
     id: 'mp-agent-support',
