@@ -328,8 +328,12 @@ No fluff, max 80 words.`,
     productType: 'automation-pack',
     titleRu: 'AI Support Automation',
     titleEn: 'AI Support Automation',
-    shortRu: 'Тикеты, FAQ и эскалация в n8n + AI.',
-    shortEn: 'Tickets, FAQ and AI escalation in n8n.',
+    shortRu: 'Поддержка с сайта, из Telegram и почты в одной Google Таблице: модель отвечает на типовые вопросы строго по вашему FAQ, остальное приходит команде в Telegram с черновиком и кнопкой «Отправить». Напоминания и утренняя сводка. Проверено в n8n 2.44.',
+    shortEn: 'Support from your site, Telegram and email in one Google Sheet: the model answers routine questions strictly from your FAQ, everything else reaches the team in Telegram with a draft and a Send button. Reminders and a morning digest. Tested in n8n 2.44. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD'],
+    includedRu: ['4 воркфлоу n8n: входящие, напоминания, сводка, оповещение о сбоях', 'Сайт, Telegram и почта в одной очереди', 'Ответы только по FAQ из Google Таблицы', 'Черновики или автоответ с семью условиями', 'Кнопки «Отправить» и ответы команде прямо из Telegram', 'Форма для сайта, стартовый FAQ и 6 инструкций'],
+    includedEn: ['4 n8n workflows: inbox, reminders, digest, error alerts', 'Site, Telegram and email in one queue', 'Answers only from an FAQ in Google Sheets', 'Drafts, or auto-replies behind seven conditions', 'Send buttons and team replies right from Telegram', 'Site widget, starter FAQ and 6 guides'],
     priceEur: 59,
     rating: 4.7,
     reviewCount: 134,
@@ -338,6 +342,33 @@ No fluff, max 80 words.`,
     coverIcon: '🎧',
     creatorId: 'creator-n8n-lab',
     relatedIds: ['mp-agent-support'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: когда бот отвечает сам',
+      titleEn: 'Sample: when the bot answers on its own',
+      contentRu: `Автоответ — только если выполнено всё:
+  1. в FAQ есть ответ
+  2. уверенность модели ≥ 0.8
+  3. категория из разрешённых
+  4. клиент не недоволен
+  5. обращение не срочное
+  6. нет тем «возврат», «компенсация», «суд»…
+  7. нет вложений
+Иначе — черновик команде в Telegram:
+  [Отправить]  [Ответим сами]
+  и причина: «клиент недоволен; тема «верните»»`,
+      contentEn: `Auto-reply only when all hold:
+  1. the FAQ has the answer
+  2. model confidence ≥ 0.8
+  3. an allowed category
+  4. the customer is not upset
+  5. not urgent
+  6. no refund, compensation or legal topics
+  7. no attachments
+Otherwise a draft goes to the team in Telegram:
+  [Send]  [We will answer]
+  with the reason it was held`,
+    },
   }),
   product({
     id: 'mp-workflow-content',
