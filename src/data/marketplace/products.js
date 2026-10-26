@@ -1264,21 +1264,44 @@ personal characteristics, or relay such conditions.`,
     slug: 'zapier-to-n8n-migration-system',
     categoryId: 'n8n-workflows',
     productType: 'workflow-system',
-    releaseStatus: 'preview',
     titleRu: 'Zapier → n8n Migration System',
     titleEn: 'Zapier → n8n Migration System',
-    shortRu: 'Методика и workflow для переноса клиентов с Zapier/Make на n8n: аудит, карта миграции, тесты и monitoring.',
-    shortEn: 'A client-ready system for moving Zapier/Make workflows to n8n: audit, migration map, tests and monitoring.',
+    shortRu: 'Система для фрилансеров и агентств, которые переносят клиентов с Zapier и Make на n8n: методика из 7 этапов, Python-инструмент аудита (читает экспорт Make и Zapier → опись, карта сервисов и доступов, волны и оценка в часах и деньгах), сверка параллельного прогона и монитор n8n как воркфлоу, шаблоны предложения, ТЗ, пакетов и поддержки. Проверено в n8n 2.44.',
+    shortEn: 'A system for freelancers and agencies moving clients from Zapier and Make to n8n: a 7-stage method, a Python audit tool (reads Make and Zapier exports → inventory, app and access map, waves and an estimate in hours and money), a parallel-run check and an n8n monitor as workflows, plus proposal, SOW, package and support templates. Tested in n8n 2.44. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV', 'PY'],
+    includedRu: ['Методика переноса: 7 этапов от звонка до поддержки', 'Инструмент аудита на Python: опись, карта сервисов, волны, оценка', 'Таблица соответствий ~100 сервисов и модулей Zapier/Make → n8n', 'Воркфлоу сверки параллельного прогона и монитор n8n', 'Коммерческое предложение, ТЗ, пакеты, договор поддержки', 'Чек-лист доступов, runbook переключения и отката'],
+    includedEn: ['Migration method: 7 stages from first call to support', 'Python audit tool: inventory, app map, waves, estimate', 'A map of ~100 Zapier/Make apps and modules → n8n', 'Parallel-run check and n8n monitor workflows', 'Proposal, SOW, packages, support agreement', 'Access checklist, cutover and rollback runbook'],
     priceEur: 89,
     coverGradient: 'linear-gradient(135deg, #7c3aed 0%, #fb923c 100%)',
     creatorId: 'creator-automation-lab',
     badge: 'trend-2026',
     badges: ['new', 'trending'],
-    fileTypes: ['ZIP', 'JSON', 'PDF', 'XLSX'],
-    includedRu: ['Migration audit', 'Карта зависимостей', 'n8n workflow templates', 'QA checklist', 'Maintenance offer'],
-    includedEn: ['Migration audit', 'Dependency map', 'n8n workflow templates', 'QA checklist', 'Maintenance offer'],
     recommendsForCourses: ['ai-automation-engineer', 'first-automation-n8n'],
     relatedIds: ['mp-workflow-crm', 'mp-biz-agent-audit'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: что выдаёт аудит',
+      titleEn: 'Sample: what the audit gives you',
+      contentRu: `$ python3 migration_audit.py экспорт-клиента --rate 50
+8 автоматизаций, 57.5 ч, 2 875 EUR
+
+| Волна | Автоматизация        | Сложность | Часы |
+| 1     | Оплата Stripe → счёт | простая   | 4    |
+| 2     | Typeform → Pipedrive | средняя   | 4.5  |
+| 3     | Заказы Shopify       | сложная   | 10.5 |
+Риски: Email by Zapier, Storage, Make Data store
+Доступы: Google Sheets, Slack, HubSpot, Stripe…`,
+      contentEn: `$ python3 migration_audit.py client-export --rate 50
+8 automations, 57.5 h, 2,875 EUR
+
+| Wave | Automation              | Complexity | Hours |
+| 1    | Stripe payment → invoice | simple     | 4     |
+| 2    | Typeform → Pipedrive     | medium     | 4.5   |
+| 3    | Shopify orders           | complex    | 10.5  |
+Risks: Email by Zapier, Storage, Make Data store
+Access: Google Sheets, Slack, HubSpot, Stripe…`,
+    },
   }),
   product({
     id: 'mp-income-real-estate',
