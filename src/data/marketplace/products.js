@@ -308,8 +308,12 @@ No fluff, max 80 words.`,
     productType: 'automation-pack',
     titleRu: 'WhatsApp Sales Bot',
     titleEn: 'WhatsApp Sales Bot',
-    shortRu: 'Автоответы, квалификация и передача менеджеру.',
-    shortEn: 'Auto-replies, qualification and handoff.',
+    shortRu: 'Консультант в WhatsApp Business через официальный Cloud API: отвечает по вашему каталогу из Google Таблицы, по ходу разговора узнаёт потребность, бюджет и срок, горячего клиента передаёт менеджерам в Telegram — они отвечают клиенту прямо оттуда. Проверка подписи Meta, отписка, одно напоминание в окне 24 часа, утренний отчёт. Проверено в n8n 2.44.',
+    shortEn: 'A WhatsApp Business consultant on the official Cloud API: answers from your catalog in Google Sheets, learns need, budget and timing along the way, and hands a ready client to managers in Telegram, who reply to the client right from there. Meta signature check, opt-out, one follow-up inside the 24-hour window, a morning report. Tested in n8n 2.44. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD'],
+    includedRu: ['5 воркфлоу n8n: бот, ответы менеджеров, напоминание, отчёт, оповещение о сбоях', 'Официальный WhatsApp Cloud API и проверка подписи Meta', 'Цены только из вашего каталога, кнопки быстрого ответа', 'Квалификация: потребность, бюджет, срок — в карточке клиента', 'Менеджеры отвечают из Telegram, кнопки «Беру» и «Вернуть боту»', 'Подключение Meta по шагам, шаблоны таблиц и скрипт проверки'],
+    includedEn: ['5 n8n workflows: bot, manager replies, follow-up, report, error alerts', 'Official WhatsApp Cloud API with Meta signature check', 'Prices only from your catalog, quick-reply buttons', 'Qualification: need, budget, timing on the client card', 'Managers reply from Telegram, Take and Back-to-bot buttons', 'Step-by-step Meta setup, sheet templates and a test script'],
     priceEur: 79,
     rating: 4.8,
     reviewCount: 178,
@@ -320,6 +324,29 @@ No fluff, max 80 words.`,
     badges: ['top-selling'],
     recommendsForCourses: ['ai-automation-engineer'],
     relatedIds: ['mp-workflow-lead-gen', 'mp-agent-sales'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: передача горячего клиента',
+      titleEn: 'Sample: handing over a ready client',
+      contentRu: `Горячий клиент в WhatsApp
+Клиент: Ира, +380501112233
+Причина: клиент готов к следующему шагу
+Сообщение: Квартира 60 м², бюджет 9000, начать в ноябре
+Что нужно: ремонт 60 м²
+Бюджет: 9000 €
+Когда: ноябрь
+Ответить: ответом на это сообщение — текст уйдёт клиенту в WhatsApp.
+[Беру]  [Вернуть боту]`,
+      contentEn: `Hot client in WhatsApp
+Client: Ira, +380501112233
+Reason: ready for the next step
+Message: 60 m² flat, budget 9000, start in November
+Need: 60 m² renovation
+Budget: €9,000
+When: November
+Reply to this message and the text goes to the client in WhatsApp.
+[Take]  [Back to bot]`,
+    },
   }),
   product({
     id: 'mp-workflow-support',
