@@ -256,8 +256,12 @@ No fluff, max 80 words.`,
     productType: 'automation-pack',
     titleRu: 'Lead Generation Workflow',
     titleEn: 'Lead Generation Workflow',
-    shortRu: 'Сбор лидов из форм, соцсетей и CRM.',
-    shortEn: 'Capture leads from forms, social and CRM.',
+    shortRu: 'Заявки со всех форм в одну Google Таблицу: проверка, дубли и спам, оценка моделью, сообщение менеджеру в Telegram, напоминания о заявках без ответа и утренний отчёт. Четыре воркфлоу, проверенные в n8n 2.44.',
+    shortEn: 'Leads from every form into one Google Sheet: validation, duplicates and spam, AI scoring, a Telegram alert to the manager, reminders for unanswered leads and a morning report. Four workflows tested in n8n 2.44. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD'],
+    includedRu: ['4 воркфлоу n8n: приём, напоминания, отчёт, оповещение о сбоях', 'Tilda, WordPress, Webflow, Google Forms и своя форма', 'Оценка заявок моделью и запасные правила', 'Дубли, двойные клики и спам отсеиваются', 'Готовая HTML-форма и скрипт для Google Forms', '6 инструкций и проверочные запросы'],
+    includedEn: ['4 n8n workflows: intake, reminders, report, error alerts', 'Tilda, WordPress, Webflow, Google Forms and your own form', 'AI lead scoring with rule-based fallback', 'Duplicates, double clicks and spam filtered out', 'Ready HTML form and a Google Forms script', '6 guides and test requests'],
     priceEur: 49,
     rating: 4.9,
     reviewCount: 224,
@@ -267,29 +271,32 @@ No fluff, max 80 words.`,
     creatorId: 'creator-n8n-lab',
     badges: ['top-selling', 'trending'],
     badge: 'hit',
-    fileTypes: ['ZIP', 'JSON'],
-    includedRu: ['n8n workflow JSON', 'Setup guide PDF', 'CRM mapping'],
-    includedEn: ['n8n workflow JSON', 'Setup guide PDF', 'CRM mapping'],
     freePreview: {
       type: 'workflow',
-      titleRu: 'Бесплатный фрагмент: логика lead capture',
-      titleEn: 'Free sample: lead capture logic',
-      contentRu: `Webhook (form)
-  → IF email valid
-    → Enrich (Clearbit / Apollo)
-    → CRM: create/update lead
-    → Slack #leads notify
-    → IF score >= hot → assign owner
-  ELSE
-    → Reply “invalid email”`,
-      contentEn: `Webhook (form)
-  → IF email valid
-    → Enrich (Clearbit / Apollo)
-    → CRM: create/update lead
-    → Slack #leads notify
-    → IF score >= hot → assign owner
-  ELSE
-    → Reply “invalid email”`,
+      titleRu: 'Фрагмент: как идёт заявка',
+      titleEn: 'Sample: how a lead flows',
+      contentRu: `Форма → Lead Intake
+  неверный токен → 403
+  нет телефона и почты → 422
+  ответ форме «Спасибо» — сразу
+  тот же человек за 30 дней → обновить его строку
+  двойной клик → пропустить
+  спам → статус spam, никому не писать
+  модель: оценка 1–5, кратко, что уточнить
+    не ответила → оценка по правилам
+  таблица недоступна → вся заявка в Telegram
+  оценка ≥ 4 → горячий чат`,
+      contentEn: `Form → Lead Intake
+  wrong token → 403
+  no phone or email → 422
+  answer the form at once
+  same person within 30 days → update their row
+  double click → skip
+  spam → status spam, notify nobody
+  model: score 1–5, summary, what to ask
+    no answer → score by rules
+  sheet down → whole lead to Telegram
+  score ≥ 4 → hot chat`,
     },
     recommendsForCourses: ['ai-automation-engineer', 'first-automation-n8n'],
     relatedIds: ['mp-workflow-crm', 'mp-workflow-whatsapp'],
