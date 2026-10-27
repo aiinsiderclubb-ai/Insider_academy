@@ -2,8 +2,8 @@
 
 export const VAULT_DETAILS = {
   'vault-prompt': {
-    heroRu: 'Библиотека из 1000+ проверенных промптов',
-    heroEn: 'A library of 1000+ proven prompts',
+    heroRu: 'Библиотека из 270 проверенных промптов',
+    heroEn: 'A library of 270 tested prompts',
     outcomesRu: [
       'Быстрее писать тексты и письма',
       'Готовые маркетинговые и SEO-запросы',

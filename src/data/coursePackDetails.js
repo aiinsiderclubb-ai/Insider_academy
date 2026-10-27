@@ -21,10 +21,10 @@ export const COURSE_PACK_DETAILS = {
     ],
     outcomesEn: ['Save time with AI', 'Custom prompts', 'Content pipeline: copy, video, images'],
     faqRu: [
-      { q: 'Что в бонусах?', a: 'Prompt Library (500+), контент-план на 90 дней, 100 идей Reels и Shorts.' },
+      { q: 'Что в бонусах?', a: 'ChatGPT Prompt Vault (80 промптов), контент-календарь на 365 дней, 40 шаблонов Reels и 40 шаблонов Shorts.' },
     ],
     faqEn: [
-      { q: 'What bonuses are included?', a: 'Prompt Library (500+), 90-day content plan, 100 Reels and Shorts ideas.' },
+      { q: 'What bonuses are included?', a: 'ChatGPT Prompt Vault (80 prompts), a 365-day content calendar, 40 Reels and 40 Shorts templates.' },
     ],
   },
   'ai-freelancer-pack': {
@@ -37,13 +37,14 @@ export const COURSE_PACK_DETAILS = {
     forWhoRu: ['Фрилансеры', 'Автоматизаторы', 'Агентства на старте'],
     forWhoEn: ['Freelancers', 'Automation specialists', 'Early-stage agencies'],
     outcomesRu: [
-      '10 готовых n8n workflow',
-      'Шаблоны proposal и onboarding',
-      'CRM template',
+      '2 готовые системы n8n: заявки и CRM',
+      'Шаблоны предложения и онбординга',
+      'CRM на Google Таблице и Telegram',
     ],
-    outcomesEn: ['10 n8n workflows', 'Proposal and onboarding templates', 'CRM template'],
-    faqRu: [
-      { q: 'Входит ли Agent Engineer?', a: 'Нет — он в Business Pack или Pro подписке.' },
+    outcomesEn: [
+      '2 ready n8n systems: leads and CRM',
+      'Proposal and onboarding templates',
+      'A CRM on Google Sheets and Telegram',
     ],
     faqEn: [
       { q: 'Is Agent Engineer included?', a: 'No — it is in the Business Pack or Pro subscription.' },
@@ -59,13 +60,14 @@ export const COURSE_PACK_DETAILS = {
     forWhoRu: ['Агентства', 'Предприниматели', 'Технические специалисты'],
     forWhoEn: ['Agencies', 'Entrepreneurs', 'Technical specialists'],
     outcomesRu: [
-      '25 n8n workflow',
-      '10 AI Agent Templates',
-      'Sales и outreach scripts',
+      '5 систем n8n — 23 воркфлоу',
+      'Claude Skills Library — 11 скиллов',
+      'Скрипты продаж и outreach',
     ],
-    outcomesEn: ['25 n8n workflows', '10 AI agent templates', 'Sales and outreach scripts'],
-    faqRu: [
-      { q: 'Почему нет Business Builder?', a: 'Он входит в Pro подписку или покупается отдельно за 79€.' },
+    outcomesEn: [
+      '5 n8n systems — 23 workflows',
+      'Claude Skills Library — 11 skills',
+      'Sales and outreach scripts',
     ],
     faqEn: [
       { q: 'Why no Business Builder?', a: 'It is included in Pro or sold separately for €79.' },
