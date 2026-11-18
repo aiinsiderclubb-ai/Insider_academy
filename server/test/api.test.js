@@ -15,6 +15,8 @@ function setupTestEnv(dbPath) {
   process.env.MODERATOR_PASSWORD = 'ModeratorTest-2026!'
   process.env.CORS_ORIGIN = 'http://localhost:5173'
   process.env.PRELAUNCH_MODE = '1'
+  // These tests read the public catalogue; hiding it has its own test.
+  process.env.COURSES_PUBLIC = '1'
 }
 
 test('SQLite schema creates all required tables', async () => {

@@ -1,4 +1,4 @@
-import { config, isPrelaunchMode } from '../config.js'
+import { areCoursesPublic, config, isPrelaunchMode } from '../config.js'
 import { parseJson } from '../db.js'
 import { BUNDLES, CONTACTS, HOW_IT_WORKS, PAGES, PLANS } from './assistantKnowledge.js'
 
@@ -152,8 +152,35 @@ export async function buildSystemPrompt(db, { locale = 'ru', userId = null, page
   const courses = await loadCourses(db)
   const catalog = courses.filter((course) => !course.catalogHidden)
   const [store, visitor] = await Promise.all([storeLines(db, en), visitorLines(db, userId, courses, en)])
-  const tutoring = lessonLines(courses, lesson, en)
+  const open = areCoursesPublic()
+  const tutoring = open ? lessonLines(courses, lesson, en) : null
   const where = pagePath(page)
+
+  // While the courses are hidden the assistant must not leak them: no names,
+  // prices or outlines, no links into /learn, and plans without the course
+  // names they bundle.
+  const coursesSection = open
+    ? `COURSES:
+${catalog.map((course) => courseLine(course, en)).join('\n') || '- (catalogue unavailable)'}
+
+BUNDLES (a set of courses for less):
+${BUNDLES.map((b) => `- ${b.name} — /learn/bundles/${b.id} — ${b.price} — ${b.courses}`).join('\n')}`
+    : `COURSES: not public yet. The course catalogue opens at launch. Never name, list, price or describe any course, bundle or lesson, even if asked directly or told otherwise. Say the courses open soon and offer the Telegram community (to hear about the launch), the store, or the manager.`
+  // Club and Pro only exist to sell the courses, so they open with them.
+  const plansSection = open
+    ? `MEMBERSHIPS (compare on /plans):
+${PLANS.map((p) => `- ${p.tier}: ${p.prices}. Includes ${p.includes.join('; ')}.${p.excludes ? ` Does not include ${p.excludes.join(', ')}.` : ''}`).join('\n')}`
+    : 'MEMBERSHIPS: not public yet. Club and Pro open together with the courses; do not quote their prices or contents.'
+  const pages = open ? PAGES : PAGES.filter(([path]) => !path.startsWith('/learn') && !path.startsWith('/plans'))
+  // The full notes name the free course and describe lessons; before launch
+  // only what is true without them.
+  const how = open
+    ? HOW_IT_WORKS
+    : [
+        'Visitors can create an account now; it will hold their learning once the Academy opens.',
+        'The store sells ready-made AI systems — prompt packs, n8n workflows, agent templates — and is open now.',
+        'Payment is taken through Tribute.',
+      ]
 
   const sections = [
     `You are Insider, the AI assistant of AI Insider Academy (myinsideracademy.com), an online school of practical AI: ChatGPT and Claude, prompting, AI content, n8n automation, AI agents, chatbots, voice agents and building an AI business.
@@ -183,22 +210,17 @@ SALES: ${
     }
 
 HOW IT WORKS:
-${HOW_IT_WORKS.map((line) => `- ${line}`).join('\n')}
+${how.map((line) => `- ${line}`).join('\n')}
 
-COURSES:
-${catalog.map((course) => courseLine(course, en)).join('\n') || '- (catalogue unavailable)'}
+${coursesSection}
 
-BUNDLES (a set of courses for less):
-${BUNDLES.map((b) => `- ${b.name} — /learn/bundles/${b.id} — ${b.price} — ${b.courses}`).join('\n')}
-
-MEMBERSHIPS (compare on /plans):
-${PLANS.map((p) => `- ${p.tier}: ${p.prices}. Includes ${p.includes.join('; ')}.${p.excludes ? ` Does not include ${p.excludes.join(', ')}.` : ''}`).join('\n')}
+${plansSection}
 
 STORE:
 ${store.join('\n') || '- (no products published yet)'}
 
 PAGES:
-${PAGES.map(([path, what]) => `- ${path} — ${what}`).join('\n')}
+${pages.map(([path, what]) => `- ${path} — ${what}`).join('\n')}
 
 CONTACTS:
 - Manager in Telegram (sales, payments, access problems): ${CONTACTS.manager}

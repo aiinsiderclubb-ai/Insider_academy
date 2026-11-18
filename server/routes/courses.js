@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { getDb, parseJson } from '../db.js'
-import { optionalUser } from '../middleware/auth.js'
-import { isPrelaunchMode } from '../config.js'
+import { optionalUser, verifyAdminToken } from '../middleware/auth.js'
+import { areCoursesPublic, isPrelaunchMode } from '../config.js'
 
 const router = Router()
 
@@ -44,7 +44,20 @@ async function getPurchasedIds(req) {
   return new Set(rows.map((r) => r.course_id))
 }
 
+/** Studio previews the catalogue while it is hidden from everyone else. */
+function isAdminRequest(req) {
+  const header = req.headers.authorization || ''
+  if (!header.startsWith('Bearer ')) return false
+  try {
+    verifyAdminToken(header.slice(7))
+    return true
+  } catch {
+    return false
+  }
+}
+
 router.get('/', optionalUser, async (req, res) => {
+  if (!areCoursesPublic() && !isAdminRequest(req)) return res.json([])
   const db = getDb()
   const rows = await db.all('SELECT data FROM courses ORDER BY id')
   const purchased = await getPurchasedIds(req)
@@ -56,6 +69,7 @@ router.get('/', optionalUser, async (req, res) => {
 })
 
 router.get('/:id', optionalUser, async (req, res) => {
+  if (!areCoursesPublic() && !isAdminRequest(req)) return res.status(404).json({ error: 'Course not found' })
   const row = await getDb().get('SELECT data FROM courses WHERE id = ?', [req.params.id])
   if (!row) return res.status(404).json({ error: 'Course not found' })
   const purchased = await getPurchasedIds(req)

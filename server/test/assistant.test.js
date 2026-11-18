@@ -18,6 +18,9 @@ process.env.CORS_ORIGIN = 'http://localhost:5173'
 process.env.PRELAUNCH_MODE = '1'
 process.env.OPENAI_API_KEY = 'sk-test-not-a-real-key'
 process.env.ASSISTANT_GUEST_PER_15M = '3'
+// Most of this file is about grounding in the catalogue, so it is opened here;
+// the hidden case is tested on its own below.
+process.env.COURSES_PUBLIC = '1'
 
 const json = { 'Content-Type': 'application/json' }
 
@@ -195,6 +198,23 @@ test('assistant: streams grounded answers and keeps its instructions to itself',
   assert.equal(failed.status, 200)
   assert.deepEqual(readEvents(await failed.text()), [{ type: 'error', code: 'upstream' }])
 
+  // ---- a hidden catalogue is empty for everyone but Studio ----
+  config.coursesPublic = false
+  try {
+    assert.deepEqual(await fetch(`${base}/api/courses`).then((r) => r.json()), [])
+    assert.deepEqual(await fetch(`${base}/api/courses`, { headers: olena }).then((r) => r.json()), [], 'buyers too')
+    assert.equal((await fetch(`${base}/api/courses/${COURSE.id}`)).status, 404)
+    const adminLogin = await fetch(`${base}/api/admin/login`, {
+      method: 'POST', headers: json, body: JSON.stringify({ password: 'AdminTest-2026-Only!' }),
+    }).then((r) => r.json())
+    const studio = { Authorization: `Bearer ${adminLogin.token}` }
+    const preview = await fetch(`${base}/api/courses`, { headers: studio }).then((r) => r.json())
+    assert.ok(preview.some((course) => course.id === COURSE.id), 'Studio still previews the catalogue')
+    assert.equal((await fetch(`${base}/api/courses/${COURSE.id}`, { headers: studio })).status, 200)
+  } finally {
+    config.coursesPublic = true
+  }
+
   // ---- no key, no assistant ----
   const key = config.openai.apiKey
   config.openai.apiKey = ''
@@ -224,4 +244,28 @@ test('assistant: history is trimmed to budget and must end with the visitor', as
   assert.equal(pagePath('/ru/store/tools#top'), '/store/tools')
   assert.equal(pagePath('https://evil.example/'), null)
   assert.equal(pagePath('/learn/<script>'), null)
+})
+
+test('assistant and catalogue: courses stay hidden until COURSES_PUBLIC=1', async () => {
+  const { getDb } = await import('../db/index.js')
+  const { config } = await import('../config.js')
+  const { buildSystemPrompt } = await import('../services/assistant.js')
+  const db = getDb()
+  const before = config.coursesPublic
+  try {
+    config.coursesPublic = false
+    const hidden = await buildSystemPrompt(db, { locale: 'ru', lesson: { courseId: COURSE.id, lessonId: 'l2' } })
+    assert.match(hidden, /COURSES: not public yet/)
+    assert.doesNotMatch(hidden, /n8n с нуля|n8n from zero|Webhooks|Вебхуки/, 'no course name or lesson leaks')
+    assert.doesNotMatch(hidden, /(?<!\w)\/learn\b/, 'no links into the hidden catalogue')
+    assert.doesNotMatch(hidden, /AI Productivity Master|Starter Week/, 'plans and notes do not name courses either')
+    assert.doesNotMatch(hidden, /TUTORING/)
+    assert.doesNotMatch(hidden, /€59|€99|\/plans/, 'nor the plans that sell them')
+
+    config.coursesPublic = true
+    const open = await buildSystemPrompt(db, { locale: 'ru' })
+    assert.match(open, /n8n с нуля — \/learn\/n8n-basics/)
+  } finally {
+    config.coursesPublic = before
+  }
 })
