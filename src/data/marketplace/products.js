@@ -529,85 +529,264 @@ Guard Out — after the model:
   product({
     id: 'mp-agent-sales',
     slug: 'sales-agent-template',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'agent-pack',
     titleRu: 'Sales Agent',
     titleEn: 'Sales Agent',
-    shortRu: 'Квалификация лидов и follow-up 24/7.',
-    shortEn: 'Lead qualification and 24/7 follow-up.',
+    shortRu: 'AI-консультант по продажам для n8n: продаёт в чате на сайте и в Telegram по вашему каталогу, квалифицирует (задача, бюджет, сроки, кто решает) с баллами в коде, отвечает на возражения только одобренными формулировками, даёт ссылку на оплату, КП или звонок. Follow-up замолчавшим с тихими часами и стоп-листом. OpenAI или Claude. Проверено в n8n 2.48.',
+    shortEn: 'An AI sales assistant for n8n: sells in your site chat and Telegram from your catalog, qualifies (need, budget, timeline, decision maker) with code-computed scores, answers objections only with approved wording, sends a payment link, a quote request or a call link. Follow-ups to silent leads with quiet hours and a stop list. OpenAI or Claude. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['Агент n8n с памятью и 6 инструментами: каталог, одобренные ответы, лид, оплата или КП, звонок, передача менеджеру', 'Квалификация с баллами 0–100 в коде и карточкой горячего лида в чат продаж', 'Follow-up по расписанию: 3 касания, тихие часы, стоп-лист, Telegram или email', 'Запреты: выдуманные скидки, гарантии, ложная срочность — ответ заменяется', 'Системная инструкция, схемы инструментов OpenAI и Anthropic, защита и журнал', 'Демо-каталог, 10 одобренных ответов, 21 eval-случай со скриптом, чат-виджет, 8 инструкций'],
+    includedEn: ['n8n agent with memory and 6 tools: catalog, approved answers, lead, payment or quote, call, handoff', 'Qualification with 0–100 scores in code and a hot-lead card in the sales chat', 'Scheduled follow-ups: 3 touches, quiet hours, stop list, Telegram or email', 'Guards: invented discounts, guarantees and fake urgency are replaced', 'System prompt, OpenAI and Anthropic tool schemas, guards and a log', 'Demo catalog, 10 approved answers, 21 eval cases with a runner, chat widget, 8 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Google Sheets', 'Telegram'],
+    changelogRu: ['1.0.0 — первый выпуск: агент, 6 инструментов, follow-up, 21 eval-случай'],
+    changelogEn: ['1.0.0 — first release: agent, 6 tools, follow-ups, 21 eval cases'],
     priceEur: 99,
     coverGradient: 'linear-gradient(135deg, #f97316, #a855f7)',
     coverIcon: '🎯',
     creatorId: 'creator-agent-studio',
     recommendsForCourses: ['ai-agent-engineer', 'ai-business-builder'],
     relatedIds: ['mp-workflow-whatsapp', 'mp-agent-lead-qual'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: как агент считает лид',
+      titleEn: 'Sample: how the agent scores a lead',
+      contentRu: `Клиент: Нужна CRM на 5 человек, бюджет около 2 тыс €, хотим в этом месяце, решаю я
+Агент → save_lead
+  need      «CRM на 5 человек»        25
+  budget    «около 2 тыс €» = 2000    25
+  timeline  «в этом месяце»           25
+  authority «решаю я»                 25
+  = 100 → горячий
+Чат продаж: 🔥 Горячий лид: 100/100
+Агент → search_catalog → CRM Старт, 49 EUR, оплата онлайн
+Агент → send_offer(payment) → ссылка ровно из таблицы
+
+Follow-up: через 24 ч / 72 ч / 7 дней тишины, не ночью, не в выходные, «стоп» — навсегда`,
+      contentEn: `Customer: We need a CRM for 5 people, budget about €2k, this month, I decide
+Agent → save_lead
+  need      "CRM for 5 people"   25
+  budget    "about €2k" = 2000   25
+  timeline  "this month"         25
+  authority "I decide"           25
+  = 100 → hot
+Sales chat: 🔥 Hot lead: 100/100
+Agent → search_catalog → CRM Start, 49 EUR, pay online
+Agent → send_offer(payment) → the link exactly as in the sheet
+
+Follow-ups: after 24 h / 72 h / 7 days of silence, not at night or weekends, "stop" is final`,
+    },
   }),
   product({
     id: 'mp-agent-lead-qual',
     slug: 'lead-qualification-agent',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'agent-pack',
     titleRu: 'Lead Qualification Agent',
     titleEn: 'Lead Qualification Agent',
-    shortRu: 'Скоринг и маршрутизация лидов.',
-    shortEn: 'Lead scoring and routing.',
+    shortRu: 'AI-агент квалификации заявок для n8n: принимает лиды с любых форм, находит дубли, изучает сайт компании, ставит баллы 0–100 по вашей рубрике с причинами (суждения — модель, расчёт — код), отсеивает соискателей и спам, распределяет менеджерам по кругу и присылает карточку в Telegram. OpenAI или Claude. Проверено в n8n 2.48.',
+    shortEn: 'An AI lead-qualification agent for n8n: takes leads from any form, finds duplicates, reads the company website, scores 0–100 against your rubric with reasons (judgment by the model, maths in code), filters job seekers and spam, routes round-robin to owners and sends a Telegram card. OpenAI or Claude. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['Воркфлоу n8n: приём с любых форм, дубли, агент, рубрика, маршрутизация, CRM, уведомления', 'Агент изучает сайт лида (только его домен) и сдаёт оценку значениями из списков', 'Рубрика баллов в Config с причиной у каждого балла, сегменты и распределение по кругу', 'Отсев соискателей, студентов, спама, конкурентов; уточняющее письмо лиду по желанию', 'Инструкция модели, схемы инструментов OpenAI и Anthropic, HTML-форма', '16 тестовых заявок со скриптом прогона, 8 инструкций'],
+    includedEn: ['n8n workflow: intake from any form, duplicates, agent, rubric, routing, CRM, notifications', 'The agent reads the lead\'s website (its own domain only) and submits a listed-values assessment', 'Scoring rubric in Config with a reason per point, segments and round-robin routing', 'Filters job seekers, students, spam, competitors; optional clarifying email to the lead', 'Model prompt, OpenAI and Anthropic tool schemas, HTML form', '16 test leads with a runner, 8 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Google Sheets', 'Telegram'],
+    changelogRu: ['1.0.0 — первый выпуск: приём, дубли, изучение сайта, рубрика, маршрутизация, 16 eval-случаев'],
+    changelogEn: ['1.0.0 — first release: intake, duplicates, website research, rubric, routing, 16 eval cases'],
     priceEur: 69,
     coverGradient: 'linear-gradient(135deg, #22c55e, #6366f1)',
     coverIcon: '⚡',
     creatorId: 'creator-agent-studio',
     relatedIds: ['mp-agent-sales', 'mp-workflow-lead-gen'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: карточка лида менеджеру',
+      titleEn: 'Sample: the lead card an owner gets',
+      contentRu: `🔥 Ольга · Northwind Trading — 85/100
+olga@northwind.example · +380671112233
+
+Суть: оптовая компания на 80 человек, 12 менеджеров теряют заявки между Excel и почтой; запуск до конца месяца.
+
+Баллы:
++30 Подходит под идеального клиента: high
++20 Ясный запрос и намерение купить: high
++15 Размер компании: 51-200
++10 Сроки: now
+±0 Бюджет из формы: не указан
++5 Корпоративная почта: northwind.example
++5 Оставил телефон: есть
+
+Спросить на звонке:
+• Какую CRM используете сейчас?
+• Кто, кроме вас, участвует в выборе?
+
+L-M3K9Q · google · по кругу в сегменте smb`,
+      contentEn: `🔥 Olga · Northwind Trading — 85/100
+olga@northwind.example · +380671112233
+
+Summary: an 80-person wholesaler, 12 sales reps losing leads between Excel and email; launch by month end.
+
+Score:
++30 Fits the ideal customer: high
++20 Clear request and intent: high
++15 Company size: 51-200
++10 Timeline: now
+±0 Budget from the form: not given
++5 Corporate email: northwind.example
++5 Left a phone: yes
+
+Ask on the call:
+• Which CRM do you use now?
+• Who else is part of the decision?
+
+L-M3K9Q · google · round-robin in segment smb`,
+    },
   }),
   product({
     id: 'mp-agent-booking',
     slug: 'appointment-booking-agent',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'agent-pack',
     titleRu: 'Appointment Booking Agent',
     titleEn: 'Appointment Booking Agent',
-    shortRu: 'Запись на звонки через чат и календарь.',
-    shortEn: 'Book calls via chat and calendar.',
+    shortRu: 'AI-агент записи для n8n: записывает клиентов на звонки и встречи в Google Календарь из чата на сайте и в Telegram. Только реально свободное время с буферами и часовыми поясами, запись только после «да» клиента, код для переноса и отмены, приглашение в календарь, напоминания. OpenAI или Claude. Проверено в n8n 2.48.',
+    shortEn: 'An AI booking agent for n8n: books calls and meetings into Google Calendar from your site chat and Telegram. Only truly free time with buffers and time zones, a booking only after the customer says yes, a code to reschedule or cancel, calendar invites, reminders. OpenAI or Claude. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD'],
+    includedRu: ['Агент n8n с памятью и 7 инструментами: услуги, свободное время, запись, поиск, перенос, отмена, передача человеку', 'Свободное время считает код: рабочие часы, сетка, буфер, выходные, часовые пояса', 'Запись, перенос и отмена — только после «да» клиента, без двойных записей', 'Код записи, приглашение в календарь, ссылка Meet, напоминания в Telegram и на email', 'Системная инструкция, схемы инструментов OpenAI и Anthropic, защита и журнал', '20 eval-случаев со скриптом прогона, чат-виджет, 8 инструкций'],
+    includedEn: ['n8n agent with memory and 7 tools: services, free time, booking, lookup, reschedule, cancel, human handoff', 'Free time computed in code: hours, grid, buffers, days off, time zones', 'Booking, rescheduling and cancelling only after the customer says yes, no double bookings', 'Booking code, calendar invite, Meet link, reminders in Telegram and by email', 'System prompt, OpenAI and Anthropic tool schemas, guards and a log', '20 eval cases with a runner, chat widget, 8 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Google Calendar', 'Google Sheets', 'Telegram'],
+    changelogRu: ['1.0.0 — первый выпуск: агент, 7 инструментов, напоминания, 20 eval-случаев'],
+    changelogEn: ['1.0.0 — first release: agent, 7 tools, reminders, 20 eval cases'],
     priceEur: 89,
     coverGradient: 'linear-gradient(135deg, #06b6d4, #a855f7)',
     coverIcon: '📅',
     creatorId: 'creator-agent-studio',
     badges: ['new'],
     relatedIds: ['mp-agent-sales'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: почему агент не запишет «на словах»',
+      titleEn: 'Sample: why the agent cannot book on a whim',
+      contentRu: `Клиент: Запишите на консультацию в четверг в 10
+Агент → book_appointment
+Plan: последнее сообщение — не «да» → not_confirmed
+Агент: Консультация, 60 минут, четверг 21 ноября, 10:00 (Киев), Анна, anna@example.com. Подтверждаете?
+Клиент: Да
+Plan: «да» ✓  Decide: 10:00 свободно? буфер 15 мин? в рабочих часах? ✓
+Событие в календаре · приглашение на email · код K7QM2X
+Команде: 🗓 Новая запись
+Напоминания: за 24 ч и за 2 ч`,
+      contentEn: `Customer: Book me a consultation on Thursday at 10
+Agent → book_appointment
+Plan: the last message is not a yes → not_confirmed
+Agent: Consultation, 60 min, Thursday 21 Nov, 10:00 (Kyiv), Anna, anna@example.com. Confirm?
+Customer: Yes
+Plan: yes ✓  Decide: 10:00 free? 15-min buffer? within hours? ✓
+Calendar event · email invite · code K7QM2X
+Team: 🗓 New booking
+Reminders: 24 h and 2 h before`,
+    },
   }),
   product({
     id: 'mp-agent-research',
     slug: 'ai-research-agent',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'agent-pack',
     titleRu: 'AI Research Agent',
     titleEn: 'AI Research Agent',
-    shortRu: 'Сбор данных, отчёты и саммари.',
-    shortEn: 'Data gathering, reports and summaries.',
+    shortRu: 'Исследовательский AI-агент для n8n: по заданию из Telegram или API ищет в интернете (Tavily), читает страницы и сдаёт отчёт в Markdown со ссылкой на источник у каждого утверждения. Бюджет поисков на задание, правила источников, проверка ссылок, отказ на досье и слежку. OpenAI или Claude. Проверено в n8n 2.48.',
+    shortEn: 'A research AI agent for n8n: takes a brief from Telegram or an API, searches the web (Tavily), reads pages and delivers a Markdown report with a source on every claim. Per-job search budget, source rules, citation checks, refusals for dossiers and surveillance. OpenAI or Claude. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD'],
+    includedRu: ['Агент n8n: план, поиск, чтение страниц, отчёт с разделами и выводами', 'Ссылки проверяет система: выдуманные удаляются, список источников с адресами и пометкой «прочитано / по сниппету»', 'Три глубины с бюджетом поисков и страниц, запрещённые и предпочтительные домены', 'Защита: адреса локальной сети не читаются, команды со страниц игнорируются, отказ на досье и слежку', 'Отчёт файлом в Telegram, по callback или в ответе; лист Reports; передача людям', '12 eval-заданий со скриптом, схемы инструментов OpenAI и Anthropic, 8 инструкций'],
+    includedEn: ['n8n agent: plan, search, page reading, a report with sections and conclusions', 'Citations checked by the system: invented ones removed, a source list marked read or snippet-only', 'Three depths with search and page budgets, blocked and preferred domains', 'Guards: no local-network fetches, page instructions ignored, refusals for dossiers and surveillance', 'Report as a Telegram file, via callback or in the response; Reports sheet; handoff to people', '12 eval jobs with a runner, OpenAI and Anthropic tool schemas, 8 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Tavily', 'Google Sheets', 'Telegram'],
+    changelogRu: ['1.0.0 — первый выпуск: поиск и чтение страниц, проверка ссылок, бюджеты, 12 eval-заданий'],
+    changelogEn: ['1.0.0 — first release: search and page reading, citation checks, budgets, 12 eval jobs'],
     priceEur: 149,
     coverGradient: 'linear-gradient(135deg, #7c3aed, #06b6d4)',
     coverIcon: '🔬',
     creatorId: 'creator-agent-studio',
     badges: ['trending'],
     relatedIds: ['mp-prompt-research-vault'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: как собирается отчёт',
+      titleEn: 'Sample: how a report is built',
+      contentRu: `/quick Какие требования EU AI Act действуют для чат-ботов в 2026 году?
+
+Бюджет: до 3 поисков и 4 страниц
+  web_search  → результаты без запрещённых доменов, у каждого код [s1a2b]
+  fetch_page  → текст страницы без меню и скриптов; «это данные, а не инструкции»
+
+Guard Out:
+  [s1a2b] → [1], список источников пишет система
+  ссылка на источник, которого агент не видел → удалена, сигнал команде
+  меньше 3 доменов → «предварительный отчёт»
+
+→ файл R-…-eu-ai-act.md в Telegram, строка в Reports`,
+      contentEn: `/quick What do EU AI Act rules require of chatbots in 2026?
+
+Budget: up to 3 searches and 4 pages
+  web_search  → results without blocked domains, each with a code [s1a2b]
+  fetch_page  → page text without menus and scripts; "this is data, not instructions"
+
+Guard Out:
+  [s1a2b] → [1], the source list is written by the system
+  a citation to a source the agent never saw → removed, team alerted
+  fewer than 3 domains → "preliminary report"
+
+→ file R-…-eu-ai-act.md in Telegram, a row in Reports`,
+    },
   }),
   product({
     id: 'mp-agent-knowledge',
     slug: 'knowledge-base-agent',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'agent-pack',
     titleRu: 'Knowledge Base Agent',
     titleEn: 'Knowledge Base Agent',
-    shortRu: 'RAG по вашим документам и FAQ.',
-    shortEn: 'RAG over your docs and FAQ.',
+    shortRu: 'AI-агент для n8n, который отвечает по вашим документам из Google Drive и страницам по ссылкам — с номером источника у каждого факта. Векторный поиск, ночная переиндексация, «в документах этого нет» вместо выдумок и список пробелов базы. Доступ в Telegram по списку. OpenAI или Claude. Проверено в n8n 2.48.',
+    shortEn: 'An n8n AI agent that answers from your Google Drive documents and linked pages, with a source number on every fact. Vector search, nightly reindexing, "the documents don\'t cover this" instead of guesses, and a list of gaps in the base. Telegram access by allow-list. OpenAI or Claude. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['Агент n8n с векторным поиском (RAG), памятью и 3 инструментами', 'Индексация Google Docs, PDF, TXT/MD из папки Drive и страниц по ссылкам; ночью и по запросу', 'Ответы со ссылками на документы и списком источников; ложные ссылки удаляются', '«В документах этого нет» и лист пробелов базы; передача людям в Telegram', 'Системная инструкция и схемы инструментов в форматах OpenAI и Anthropic', '25 eval-случаев со скриптом, 6 демо-документов, переход на Qdrant/PGVector/Supabase, 8 инструкций'],
+    includedEn: ['n8n agent with vector search (RAG), memory and 3 tools', 'Indexes Google Docs, PDF, TXT/MD from a Drive folder and linked pages; nightly and on demand', 'Answers cite documents with a source list; false citations are removed', '"Not in the documents" plus a gaps sheet; handoff to people in Telegram', 'System prompt and tool schemas in OpenAI and Anthropic formats', '25 eval cases with a runner, 6 demo documents, Qdrant/PGVector/Supabase migration, 8 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Google Drive', 'Google Sheets', 'Telegram'],
+    changelogRu: ['1.0.0 — первый выпуск: векторный поиск, переиндексация, ссылки на источники, 25 eval-случаев'],
+    changelogEn: ['1.0.0 — first release: vector search, reindexing, source citations, 25 eval cases'],
     priceEur: 129,
     coverGradient: 'linear-gradient(135deg, #8b5cf6, #22c55e)',
     coverIcon: '📚',
     creatorId: 'creator-agent-studio',
     relatedIds: ['mp-agent-support'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: ответ со ссылками',
+      titleEn: 'Sample: an answer with sources',
+      contentRu: `Вопрос: Как оформить отпуск?
+
+Ответ: Заявление подаётся в HR-портале не позднее чем за 14 дней до начала [1]. Перенос согласует руководитель, новое заявление — за 7 дней [1].
+
+Источники:
+1. Регламент отпусков — https://drive.google.com/…
+
+— Ссылку на документ, которого поиск не находил, система удаляет.
+— Нет близких фрагментов → «В документах этого нет», вопрос — в лист Gaps.
+— Ночью индекс пересобирается; если папка не читается, старый индекс остаётся.`,
+      contentEn: `Question: How do I book a vacation?
+
+Answer: File the request in the HR portal at least 14 days ahead [1]. Moving it needs your manager's approval and a new request 7 days ahead [1].
+
+Sources:
+1. Vacation policy — https://drive.google.com/…
+
+— A citation to a document the search never returned is removed.
+— No close passages → "The documents don't cover this", and the question goes to the Gaps sheet.
+— The index is rebuilt nightly; if the folder can't be read, the old index stays.`,
+    },
   }),
   product({
     id: 'mp-biz-agency-proposal',
@@ -1014,58 +1193,70 @@ personal characteristics, or relay such conditions.`,
   product({
     id: 'mp-mcp-starter-business',
     slug: 'mcp-starter-pack-business',
-    availability: 'coming_soon',
     categoryId: 'mcp-skills',
     productType: 'agent-pack',
     titleRu: 'MCP Starter Pack for Business',
     titleEn: 'MCP Starter Pack for Business',
-    shortRu: 'Готовые конфиги MCP-серверов: CRM, Postgres, Slack, GitHub. Подключи AI-агента к своим системам за вечер.',
-    shortEn: 'Ready MCP server configs: CRM, Postgres, Slack, GitHub. Connect your AI agent to your stack in one evening.',
+    shortRu: 'Подключение AI-агента к HubSpot, Postgres, Slack и GitHub через поддерживаемые MCP-серверы — без архивных пакетов. Готовые конфиги для Claude Code, Claude Desktop, Cursor и n8n, режим «только чтение» для базы и GitHub, проверка конфигов на токены и устаревшие серверы. Postgres проверен на настоящей базе и в n8n 2.48.',
+    shortEn: 'Connect an AI agent to HubSpot, Postgres, Slack and GitHub through maintained MCP servers — no archived packages. Ready configs for Claude Code, Claude Desktop, Cursor and n8n, read-only mode for the database and GitHub, and a check that flags tokens and outdated servers in your configs. Postgres tested on a real database and in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'TOML'],
+    includedRu: ['Конфиги для Claude Code, Claude Desktop, Cursor и воркфлоу n8n', 'HubSpot и Slack — официальные серверы с OAuth, GitHub — официальный, только чтение', 'Postgres через DBHub: режим «только чтение» и SQL роли без права записи', 'Скрипт проверки конфигов: архивные серверы, токены в файлах, http без шифрования', '24 рабочих запроса к агенту', '7 инструкций: по системе, n8n и чек-лист безопасности'],
+    includedEn: ['Configs for Claude Code, Claude Desktop, Cursor and an n8n workflow', 'HubSpot and Slack via their official OAuth servers, GitHub official and read-only', 'Postgres through DBHub: read-only mode plus a SQL role with no write rights', 'Config checker: archived servers, tokens in files, plain-http endpoints', '24 working prompts for the agent', '7 guides: one per system, n8n and a security checklist'],
+    testedIntegrations: ['Claude Code', 'Claude Desktop', 'Cursor', 'n8n', 'HubSpot', 'Postgres', 'Slack', 'GitHub'],
+    changelogRu: ['1.0.0 — первый выпуск: четыре системы, четыре клиента, проверка конфигов'],
+    changelogEn: ['1.0.0 — first release: four systems, four clients, config checker'],
     priceEur: 49,
     coverGradient: 'linear-gradient(135deg, #818cf8, #6366f1)',
     coverIcon: '🔌',
-
-    screenshots: [
-      '/marketplace/mcp-starter-pack-business-shot-1.svg',
-      '/marketplace/mcp-starter-pack-business-shot-2.svg',
-    ],
     creatorId: 'creator-agent-studio',
     badge: 'trend-2026',
     badges: ['trending', 'new'],
-    fileTypes: ['ZIP', 'JSON', 'MD'],
-    includedRu: ['Конфиги MCP: CRM, Postgres, Slack, GitHub', 'Инструкция подключения', 'Примеры запросов агента'],
-    includedEn: ['MCP configs: CRM, Postgres, Slack, GitHub', 'Setup guide', 'Sample agent prompts'],
+    recommendsForCourses: ['ai-agent-engineer'],
+    relatedIds: ['mp-mcp-claude-skills', 'mp-agent-knowledge'],
     freePreview: {
       type: 'workflow',
-      titleRu: 'Бесплатный фрагмент: mcp.json (Slack)',
-      titleEn: 'Free sample: mcp.json (Slack)',
+      titleRu: 'Фрагмент: .mcp.json для Claude Code',
+      titleEn: 'Sample: .mcp.json for Claude Code',
       contentRu: `{
   "mcpServers": {
-    "slack": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/readonly",
+      "headers": { "Authorization": "Bearer \${GITHUB_PAT}" }
+    },
+    "postgres": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-slack"],
-      "env": {
-        "SLACK_BOT_TOKEN": "xoxb-YOUR_TOKEN",
-        "SLACK_TEAM_ID": "T01234567"
-      }
+      "args": ["-y", "@bytebase/dbhub@2", "--config", "\${DBHUB_CONFIG}"]
+    },
+    "slack": {
+      "type": "http",
+      "url": "https://mcp.slack.com/mcp",
+      "oauth": { "clientId": "…", "callbackPort": 3119 }
     }
   }
 }`,
       contentEn: `{
   "mcpServers": {
-    "slack": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/readonly",
+      "headers": { "Authorization": "Bearer \${GITHUB_PAT}" }
+    },
+    "postgres": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-slack"],
-      "env": {
-        "SLACK_BOT_TOKEN": "xoxb-YOUR_TOKEN",
-        "SLACK_TEAM_ID": "T01234567"
-      }
+      "args": ["-y", "@bytebase/dbhub@2", "--config", "\${DBHUB_CONFIG}"]
+    },
+    "slack": {
+      "type": "http",
+      "url": "https://mcp.slack.com/mcp",
+      "oauth": { "clientId": "…", "callbackPort": 3119 }
     }
   }
 }`,
     },
-    recommendsForCourses: ['ai-agent-engineer'],
-    relatedIds: ['mp-mcp-claude-skills', 'mp-agent-knowledge'],
   }),
   product({
     id: 'mp-mcp-claude-skills',
@@ -1119,46 +1310,54 @@ personal characteristics, or relay such conditions.`,
   product({
     id: 'mp-agent-multi-ops',
     slug: 'multi-agent-ops-team',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'agent-pack',
     titleRu: 'Multi-Agent Ops Team',
     titleEn: 'Multi-Agent Ops Team',
-    shortRu: 'Команда из 4 агентов с оркестратором: триаж почты, лиды, саппорт, отчёты. Схема, конфиги, инструкция.',
-    shortEn: 'Team of 4 agents with orchestrator: email triage, leads, support, reports. Diagram, configs, setup guide.',
+    shortRu: 'Команда AI-агентов для n8n: оркестратор и четыре агента — разбор почты, лиды, поддержка, отчёты. Сайт, Telegram, почта и утренний отчёт; у каждого агента свои инструкции, инструменты и дневной лимит, каждое действие — в журнале. OpenAI или Claude. Проверено в n8n 2.48.',
+    shortEn: 'An AI agent team for n8n: an orchestrator and four agents — email triage, leads, support, reports. Site, Telegram, email and a morning report; each agent has its own prompt, tools and daily budget, every action is logged. OpenAI or Claude. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV', 'SVG'],
+    includedRu: ['Оркестратор и 4 агента на нативных узлах n8n AI Agent Tool', 'Почта: категория, срочность, черновик ответа; лиды: балл по видимым правилам', 'Ежедневный отчёт в Telegram: цифры считает код, не модель', 'Лимит шагов и дневной бюджет у каждого агента, доступ по каналам', 'Трасса «какой агент — какая задача» в журнале, передача человеку', 'Два файла (OpenAI и Claude), схема, 5 инструкций агентов, 16 eval-случаев, 8 руководств'],
+    includedEn: ['Orchestrator and 4 agents on native n8n AI Agent Tool nodes', 'Email: category, urgency, draft reply; leads: score by visible rules', 'Daily report in Telegram: numbers computed by code, not the model', 'Step limit and daily budget per agent, access by channel', 'Agent-by-agent trace in the log, handoff to a person', 'Two files (OpenAI and Claude), diagram, 5 agent prompts, 16 eval cases, 8 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Google Sheets', 'Telegram', 'IMAP'],
+    changelogRu: ['1.0.0 — первый выпуск: оркестратор, 4 агента, лимиты, трасса, утренний отчёт, 16 eval-случаев'],
+    changelogEn: ['1.0.0 — first release: orchestrator, 4 agents, budgets, trace, morning report, 16 eval cases'],
     priceEur: 129,
     coverGradient: 'linear-gradient(135deg, #6366f1, #22c55e)',
     coverIcon: '👥',
-
-    screenshots: [
-      '/marketplace/multi-agent-ops-team-shot-1.svg',
-      '/marketplace/multi-agent-ops-team-shot-2.svg',
-    ],
     creatorId: 'creator-agent-studio',
     badge: 'trend-2026',
     badges: ['trending', 'new'],
-    fileTypes: ['ZIP', 'JSON', 'PDF'],
-    includedRu: ['4 агента + оркестратор', 'Триаж почты, лиды, саппорт, отчёты', 'Схема и конфиги', 'Инструкция внедрения'],
-    includedEn: ['4 agents + orchestrator', 'Email triage, leads, support, reports', 'Architecture diagram and configs', 'Deployment guide'],
-    freePreview: {
-      type: 'workflow',
-      titleRu: 'Бесплатный фрагмент: роутинг оркестратора',
-      titleEn: 'Free sample: orchestrator routing',
-      contentRu: `orchestrator.route(message):
-  if intent == "lead"     → agent.sales.qualify(message)
-  if intent == "support"  → agent.support.answer(message)
-  if intent == "report"   → agent.analyst.summarize(period)
-  if intent == "email"    → agent.inbox.triage(thread)
-  else                    → ask_clarifying_question()`,
-      contentEn: `orchestrator.route(message):
-  if intent == "lead"     → agent.sales.qualify(message)
-  if intent == "support"  → agent.support.answer(message)
-  if intent == "report"   → agent.analyst.summarize(period)
-  if intent == "email"    → agent.inbox.triage(thread)
-  else                    → ask_clarifying_question()`,
-    },
     recommendsForCourses: ['ai-agent-engineer', 'ai-automation-engineer'],
     relatedIds: ['mp-agent-support', 'mp-agent-sales', 'mp-workflow-lead-gen'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: кто что делает',
+      titleEn: 'Sample: who does what',
+      contentRu: `Канал        → кого можно звать
+сайт, Telegram → leads_agent, support_agent
+почта        → email_triage_agent → leads_agent
+команда      → все четыре
+09:00        → reports_agent → отчёт в Telegram
+
+Лимит на сутки: почта 300 · лиды 300 · поддержка 500 · отчёты 20
+Исчерпан → агент получает заглушку и не работает
+
+Журнал: leads_agent ← «клиника, бот, 3000 €, сейчас»
+        → L-7Q2 · 100/100 · 🔥 в чат команды`,
+      contentEn: `Channel        → who may be called
+site, Telegram → leads_agent, support_agent
+email          → email_triage_agent → leads_agent
+team           → all four
+09:00          → reports_agent → report to Telegram
+
+Daily budget: email 300 · leads 300 · support 500 · reports 20
+Spent → the agent gets a stub prompt and does nothing
+
+Log: leads_agent ← "clinic, bot, €3000, now"
+     → L-7Q2 · 100/100 · 🔥 to the team chat`,
+    },
   }),
   product({
     id: 'mp-biz-agent-audit',
@@ -1273,68 +1472,163 @@ Access: Google Sheets, Slack, HubSpot, Stripe…`,
   product({
     id: 'mp-income-real-estate',
     slug: 'real-estate-lead-to-viewing',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'vertical-system',
-    releaseStatus: 'preview',
     titleRu: 'Real Estate Lead → Viewing',
     titleEn: 'Real Estate Lead → Viewing',
-    shortRu: 'Вертикальная система для агентств недвижимости: квалификация лида, подбор объекта, follow-up и запись на просмотр.',
-    shortEn: 'Vertical system for real estate teams: lead qualification, property matching, follow-up and viewing booking.',
+    shortRu: 'AI-агент для агентства недвижимости в n8n: квалифицирует клиента, подбирает объекты только из вашей базы и объясняет выбор, записывает на просмотр в Google Календарь нужного риелтора после явного «да». Карточки лидов с баллом, follow-up, спецификация KPI-дашборда. OpenAI или Claude. Проверено в n8n 2.48.',
+    shortEn: 'An AI agent for a real estate agency in n8n: qualifies the client, matches listings only from your base and explains why, books a viewing in the right realtor\'s Google Calendar after an explicit yes. Lead cards with scores, follow-up, KPI dashboard spec. OpenAI or Claude. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['Агент квалификации: бюджет, район, комнаты, сроки, ипотека — балл по правилам', 'Назначение риелтора по району и типу сделки, сигнал о горячем лиде', 'Подбор из листа объектов с причинами; выдуманный объект не уйдёт клиенту', 'Запись на просмотр в календарь риелтора: окна с зазором, только после «да», без дублей', 'Follow-up: напоминания клиентам, список звонков и просмотров на завтра', 'KPI-дашборд: формулы Google Таблиц и Looker Studio; 16 eval-случаев, 9 руководств'],
+    includedEn: ['Qualification agent: budget, area, rooms, timing, mortgage — rule-based score', 'Realtor routing by area and deal type, hot lead alert', 'Listing matching with reasons; an invented listing never reaches the client', 'Viewing booking in the realtor\'s calendar: buffered slots, only after a yes, no duplicates', 'Follow-up: client reminders, call list and tomorrow\'s viewings', 'KPI dashboard: Google Sheets formulas and Looker Studio; 16 eval cases, 9 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Google Sheets', 'Google Calendar', 'Telegram'],
+    changelogRu: ['1.0.0 — первый выпуск: квалификация, подбор, запись на просмотр, follow-up, KPI-дашборд'],
+    changelogEn: ['1.0.0 — first release: qualification, matching, viewing booking, follow-up, KPI dashboard'],
     priceEur: 149,
     coverGradient: 'linear-gradient(135deg, #4c1d95 0%, #f97316 100%)',
     creatorId: 'creator-agent-studio',
     badge: 'trend-2026',
     badges: ['new', 'trending'],
-    fileTypes: ['ZIP', 'JSON', 'PDF'],
-    includedRu: ['Lead qualification agent', 'CRM routing', 'Property matching prompts', 'Viewing booking workflow', 'KPI dashboard spec'],
-    includedEn: ['Lead qualification agent', 'CRM routing', 'Property matching prompts', 'Viewing booking workflow', 'KPI dashboard spec'],
     recommendsForCourses: ['ai-agent-engineer', 'ai-business-builder'],
     relatedIds: ['mp-agent-lead-qual', 'mp-agent-booking', 'mp-workflow-crm'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: подбор и запись',
+      titleEn: 'Sample: matching and booking',
+      contentRu: `search_listings(buy, Печерский, 2 комн., до 150 000 $)
+  KV-101 · 148 000 USD
+    ✓ в бюджете · ✓ комнат: 2 · ✓ район: Печерский
+  KV-107 — продан, не показывается
+  KV-102 — 215 000, дороже бюджета больше чем на 10%
+
+check_viewing_slots(KV-101, пятница)
+  у Марии встреча 10:00–12:00 + зазор 30 мин → 12:30, 13:30, 14:30
+
+«Давайте в 12:30»   → не записываю: это выбор, не «да»
+«Да, записывайте»   → событие в календаре Марии, 📅 ей в Telegram
+«Да, записывайте»   → та же запись, без дубля`,
+      contentEn: `search_listings(buy, Pechersk, 2 rooms, up to $150,000)
+  KV-101 · 148,000 USD
+    ✓ in budget · ✓ rooms: 2 · ✓ area: Pechersk
+  KV-107 — sold, not shown
+  KV-102 — 215,000, more than 10% over budget
+
+check_viewing_slots(KV-101, Friday)
+  Maria has a meeting 10:00–12:00 + 30 min buffer → 12:30, 13:30, 14:30
+
+"Let's do 12:30"   → not booked: a choice, not a yes
+"Yes, book it"     → event in Maria's calendar, 📅 to her Telegram
+"Yes, book it"     → same booking, no duplicate`,
+    },
   }),
   product({
     id: 'mp-income-ecommerce-retention',
     slug: 'ecommerce-support-retention-engine',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'vertical-system',
-    releaseStatus: 'preview',
     titleRu: 'E-commerce Support & Retention Engine',
     titleEn: 'E-commerce Support & Retention Engine',
-    shortRu: 'AI-система для магазина: ответы по заказам, возвраты, abandoned cart, review requests и повторные продажи.',
-    shortEn: 'AI commerce system for order support, returns, abandoned carts, review requests and repeat sales.',
+    shortRu: 'Система для интернет-магазина на n8n: AI-ассистент отвечает о заказах только владельцу и проверяет возвраты по вашим правилам (деньги не возвращает — заявку решает менеджер), плюс письма о брошенных корзинах по согласию и просьбы об отзывах. Shopify, WooCommerce или Google Таблица. OpenAI или Claude. Проверено в n8n 2.48.',
+    shortEn: 'An n8n system for online stores: an AI assistant answers about orders only to their owners and checks returns against your rules (it never refunds — a manager decides), plus consent-based abandoned-cart emails and review requests. Shopify, WooCommerce or Google Sheets. OpenAI or Claude. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['Ассистент магазина: статус заказа владельцу, правила магазина, передача человеку', 'Возвраты по правилам из Config: срок, распродажа, невозвратные товары, брак — менеджеру; заявки в таблицу и Telegram', 'Брошенные корзины: 2 письма по согласию, тихие часы, отписка по подписанной ссылке', 'Просьбы об отзывах после доставки, один раз на заказ', 'Shopify Admin GraphQL, WooCommerce REST или Google Таблица; вебхук событий корзины', 'Плейбук удержания, 30 eval-случаев со скриптом, демо-данные, чат-виджет, 8 инструкций'],
+    includedEn: ['Store assistant: order status for the owner, store policies, handoff to a person', 'Returns by rules in Config: window, final sale, non-returnable items, defects to a manager; requests to Sheets and Telegram', 'Abandoned carts: 2 consent-based emails, quiet hours, signed unsubscribe links', 'Review requests after delivery, once per order', 'Shopify Admin GraphQL, WooCommerce REST or Google Sheets; cart-event webhook', 'Retention playbook, 30 eval cases with a runner, demo data, chat widget, 8 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Shopify', 'WooCommerce', 'Google Sheets', 'Telegram', 'SMTP'],
+    changelogRu: ['1.0.0 — первый выпуск: ассистент, возвраты по правилам, брошенные корзины, отзывы, плейбук'],
+    changelogEn: ['1.0.0 — first release: assistant, rule-based returns, abandoned carts, reviews, playbook'],
     priceEur: 139,
     coverGradient: 'linear-gradient(135deg, #581c87 0%, #ea580c 100%)',
     creatorId: 'creator-agent-studio',
     badge: 'trend-2026',
     badges: ['new', 'trending'],
-    fileTypes: ['ZIP', 'JSON', 'PDF'],
-    includedRu: ['Order support agent', 'Return triage', 'Cart recovery workflow', 'Review automation', 'Retention playbook'],
-    includedEn: ['Order support agent', 'Return triage', 'Cart recovery workflow', 'Review automation', 'Retention playbook'],
     recommendsForCourses: ['ai-agent-engineer', 'ai-automation-engineer'],
     relatedIds: ['mp-agent-support', 'mp-agent-sales', 'mp-workflow-support'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: кто решает о возврате',
+      titleEn: 'Sample: who decides on a return',
+      contentRu: `check_return — решает код, не модель:
+  чужой email          → ничего не сообщаем
+  заказ отменён        → не подходит
+  брак, не тот товар   → менеджеру, даже после срока
+  > 14 дней с доставки → не подходит
+  финальная распродажа → не подходит
+  был в использовании  → не подходит
+  заказ > 10 000       → менеджеру
+  иначе                → подходит, до 2026-12-03
+
+create_return_request — проверяет заново:
+  заявка R-… в Returns + сообщение команде
+  «Деньги автоматически не возвращаются»`,
+      contentEn: `check_return — code decides, not the model:
+  someone else's email → tell nothing
+  order cancelled      → not eligible
+  defect, wrong item   → to a manager, even after the window
+  > 14 days delivered  → not eligible
+  final sale           → not eligible
+  used                 → not eligible
+  order > 10,000       → to a manager
+  otherwise            → eligible until 2026-12-03
+
+create_return_request — checks again:
+  request R-… in Returns + team message
+  "Money is never refunded automatically"`,
+    },
   }),
   product({
     id: 'mp-income-revenue-recovery',
     slug: 'revenue-recovery-agent',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'agent-pack',
-    releaseStatus: 'preview',
     titleRu: 'Revenue Recovery Agent',
     titleEn: 'Revenue Recovery Agent',
-    shortRu: 'Агент для поиска просроченных счетов, персонального follow-up и эскалации менеджеру без потери отношений с клиентом.',
-    shortEn: 'Agent for overdue invoice detection, personalized follow-up and safe escalation to an account manager.',
+    shortRu: 'AI-агент дебиторки для n8n: каждое утро находит просроченные счета, оценивает риск правилами и моделью и готовит вежливое напоминание с нарастающим тоном. Письмо уходит только по кнопке «Отправить» в Telegram, без угроз и с повторной проверкой оплаты. Команды /paid, /promise, /dispute, отчёт по понедельникам. Проверено в n8n 2.48.',
+    shortEn: 'An n8n accounts-receivable agent: every morning it finds overdue invoices, scores risk with rules and a model, and drafts a polite reminder with escalating tone. Nothing is sent until you press Send in Telegram — no threats, payment re-checked first. /paid, /promise, /dispute commands and a Monday report. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['Ежедневный мониторинг просроченных счетов из Google Таблицы', 'Последовательность из 4 писем: дружеское → деловое → настойчивое → последнее', 'Риск по правилам и по оценке модели — с причинами; модель может только повысить', 'Одобрение в Telegram: Отправить, Изменить, Пропустить; повторная проверка оплаты', 'Стоп-правила и команды: оплачен, обещание, спор, пауза', 'Отчёт по понедельникам, 20 eval-случаев со скриптом, источники: Stripe, QuickBooks, Xero, 7 инструкций'],
+    includedEn: ['Daily monitoring of overdue invoices from Google Sheets', 'A 4-letter sequence: friendly → firm → escalating → final', 'Risk from rules and from the model, with reasons; the model can only raise it', 'Approval in Telegram: Send, Edit, Skip; payment re-checked before sending', 'Stop rules and commands: paid, promise, dispute, pause', 'Monday report, 20 eval cases with a runner, sources: Stripe, QuickBooks, Xero, 7 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Google Sheets', 'Telegram', 'SMTP'],
+    changelogRu: ['1.0.0 — первый выпуск: мониторинг, риск, черновики с проверкой, одобрение в Telegram, отчёт'],
+    changelogEn: ['1.0.0 — first release: monitoring, risk, checked drafts, Telegram approval, report'],
     priceEur: 99,
     coverGradient: 'linear-gradient(135deg, #6d28d9 0%, #f59e0b 100%)',
     creatorId: 'creator-automation-lab',
     badge: 'trend-2026',
     badges: ['new'],
-    fileTypes: ['ZIP', 'JSON', 'PDF'],
-    includedRu: ['Invoice monitor', 'Follow-up sequences', 'Risk classification', 'Human approval step', 'Recovery report'],
-    includedEn: ['Invoice monitor', 'Follow-up sequences', 'Risk classification', 'Human approval step', 'Recovery report'],
     recommendsForCourses: ['ai-automation-engineer', 'ai-business-builder'],
     relatedIds: ['mp-workflow-crm', 'mp-agent-sales'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: что не уйдёт клиенту',
+      titleEn: 'Sample: what never reaches the client',
+      contentRu: `Черновик модели заменяется шаблоном, если в нём:
+  нет номера счёта или точной суммы
+  суд, иск, коллекторы, пени, штрафы
+  «вы игнорируете», «вы нарушили»
+  скидка, рассрочка, ссылка
+
+Письмо не уходит, даже после «Отправить», если:
+  счёт оплачен, оспорен, на паузе
+  клиент обещал оплатить к будущей дате
+
+Риск: правила (просрочка, сумма, история, обещания)
+  + модель (заметки менеджера) — только вверх`,
+      contentEn: `The model's draft is replaced by a template if it:
+  lacks the invoice number or the exact amount
+  mentions court, lawsuits, collectors, penalties
+  says "you ignore", "you breached"
+  offers a discount, instalments or a link
+
+Nothing is sent, even after Send, if:
+  the invoice is paid, disputed or paused
+  the client promised to pay by a future date
+
+Risk: rules (age, amount, history, promises)
+  + model (manager's notes) — upwards only`,
+    },
   }),
   product({
     id: 'mp-income-content-service',
@@ -1356,6 +1650,364 @@ Access: Google Sheets, Slack, HubSpot, Stripe…`,
     badges: ['new'],
     recommendsForCourses: ['ai-content-creator', 'ai-business-builder'],
     relatedIds: ['mp-workflow-content', 'mp-creator-reels-pack', 'mp-creator-calendar'],
+  }),
+  product({
+    id: 'mp-mcp-telegram',
+    slug: 'mcp-telegram-inbox',
+    categoryId: 'mcp-skills',
+    productType: 'agent-pack',
+    titleRu: 'MCP: Telegram Inbox',
+    titleEn: 'MCP: Telegram Inbox',
+    shortRu: 'MCP-сервер: агент читает рабочий Telegram-чат и заводит лиды в CRM только с контактом, который есть в сообщении. Жалобы, возвраты и срочное — менеджеру. Без дублей и с лимитом. Claude, Cursor, n8n. Проверено в n8n 2.48.',
+    shortEn: 'An MCP server: the agent reads a work Telegram chat and opens CRM leads only with a contact that is actually in the message. Complaints, refunds and urgent requests go to a manager. No duplicates, with a rate limit. Claude, Cursor, n8n. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'PY', 'JSON', 'MD'],
+    includedRu: ['MCP-сервер на Python без пакетов: 5 инструментов, stdio и HTTP', 'Конфиги для Claude Code, Claude Desktop, Cursor и воркфлоу n8n каждые 15 минут', 'Правила эскалации и как их настраивать', 'Запрос агенту и тестовые сообщения'],
+    includedEn: ['Dependency-free Python MCP server: 5 tools, stdio and HTTP', 'Configs for Claude Code, Claude Desktop, Cursor and an n8n workflow every 15 minutes', 'Escalation rules and how to tune them', 'Agent request and test messages'],
+    testedIntegrations: ['Telegram', 'n8n', 'Claude', 'Cursor', 'MCP', 'Webhook'],
+    changelogRu: ['1.0.0 — первый выпуск'],
+    changelogEn: ['1.0.0 — first release'],
+    priceEur: 39,
+    licenses: [
+      {
+        id: 'personal',
+        priceEur: 39,
+        rights: 'personal',
+        clientLimit: 1,
+      },
+    ],
+    coverGradient: 'linear-gradient(135deg, #38bdf8, #6366f1)',
+    coverIcon: '✉️',
+    creatorId: 'creator-agent-studio',
+    badge: 'new',
+    badges: ['new'],
+    recommendsForCourses: ['ai-agent-engineer'],
+    relatedIds: ['mp-mcp-starter-business'],
+    outcomeRu: 'Ни один клиент из рабочего чата не теряется, а спорное сразу у менеджера.',
+    outcomeEn: 'No client from the work chat gets lost, and anything contentious goes straight to a manager.',
+    setupTime: '30–40 минут',
+    priceModel: 'Настройка 300–800€',
+    faqRu: [
+      {
+        q: 'Нужен ли свой бот?',
+        a: 'Да, токен бота кладётся в переменную окружения. В файле его нет.',
+      },
+    ],
+    faqEn: [
+      {
+        q: 'Do I need my own bot?',
+        a: 'Yes. The bot token goes in an environment variable. It is not in the file.',
+      },
+    ],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: что сервер не доверяет модели',
+      titleEn: 'Sample: what the server does not leave to the model',
+      contentRu: `create_lead(message_ids, phone, need)
+  ✓ сообщения есть в хранилище — id не придумать
+  ✓ телефон или email есть в тексте этих сообщений
+  ✓ по этим сообщениям лида ещё нет
+  ✓ не больше 5 лидов за 10 минут
+  ✓ CRM ответила успехом — иначе сообщение остаётся new
+
+escalation_hints: «жалоба или возврат», «срочно», «крупный клиент»
+  → escalate: менеджеру, с пересказом и ссылкой, один раз`,
+      contentEn: `create_lead(message_ids, phone, need)
+  ✓ the messages exist in storage — ids cannot be invented
+  ✓ the phone or email is in the text of those messages
+  ✓ no lead exists for them yet
+  ✓ at most 5 leads per 10 minutes
+  ✓ the CRM answered success — otherwise the message stays new
+
+escalation_hints: "complaint or refund", "urgent", "large client"
+  → escalate: to a manager, with a summary and a link, once`,
+    },
+  }),
+  product({
+    id: 'mp-mcp-notion',
+    slug: 'mcp-notion-workspace',
+    categoryId: 'mcp-skills',
+    productType: 'agent-pack',
+    titleRu: 'MCP: Notion Workspace',
+    titleEn: 'MCP: Notion Workspace',
+    shortRu: 'MCP-сервер: агент ищет ответы только в разрешённых базах Notion и пишет строку только в одну таблицу — в разрешённые колонки, с проверкой вариантов и без дублей. Ничего не удаляет и не меняет. Claude, Cursor, n8n.',
+    shortEn: 'An MCP server: the agent searches only the Notion databases you allow and writes a row to one agreed table — allowed columns only, options checked, no duplicates. It deletes and edits nothing. Claude, Cursor, n8n. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'PY', 'JSON', 'MD'],
+    includedRu: ['MCP-сервер на Python без пакетов, API Notion 2026-03-11', 'Конфиг: базы знаний и одна таблица для записи', 'Шаблон списка разрешённых баз', '14 проверочных вопросов', 'Конфиги для Claude Code, Claude Desktop, Cursor; подключение к n8n'],
+    includedEn: ['Dependency-free Python MCP server, Notion API 2026-03-11', 'Config: knowledge bases and one table to write to', 'Allowed-databases register template', '14 test questions', 'Configs for Claude Code, Claude Desktop, Cursor; n8n setup'],
+    testedIntegrations: ['Notion', 'MCP', 'Claude', 'Cursor', 'n8n'],
+    changelogRu: ['1.0.0 — первый выпуск'],
+    changelogEn: ['1.0.0 — first release'],
+    priceEur: 39,
+    licenses: [
+      {
+        id: 'personal',
+        priceEur: 39,
+        rights: 'personal',
+        clientLimit: 1,
+      },
+    ],
+    coverGradient: 'linear-gradient(135deg, #818cf8, #0f172a)',
+    coverIcon: '📓',
+    creatorId: 'creator-agent-studio',
+    badge: 'new',
+    badges: ['new'],
+    recommendsForCourses: ['ai-agent-engineer'],
+    relatedIds: ['mp-mcp-claude-skills'],
+    outcomeRu: 'Ответы агента только из вашей базы, запись — только туда, куда договорились.',
+    outcomeEn: 'The agent answers from your workspace only and writes only where agreed.',
+    setupTime: 'около часа',
+    priceModel: 'Настройка 400–900€',
+    faqRu: [
+      {
+        q: 'Агент видит весь Notion?',
+        a: 'Нет. В инструкции перечислены только те базы, которые вы открыли.',
+      },
+    ],
+    faqEn: [
+      {
+        q: 'Can the agent see all of Notion?',
+        a: 'No. The guide lists only the databases you open.',
+      },
+    ],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: что разрешено агенту',
+      titleEn: 'Sample: what the agent may do',
+      contentRu: `search_knowledge  → только базы из knowledge, found=false вместо догадок
+read_page         → только статьи из этих баз
+describe_target   → колонки таблицы, варианты Select
+append_row        → одна таблица:
+   ✓ только колонки из настроек
+   ✓ Select — только существующий вариант
+   ✓ Статус = «Новая» ставит сервер
+   ✓ без дублей по колонке «Название»
+
+Нет инструментов: изменить, удалить, искать по всему Notion`,
+      contentEn: `search_knowledge  → only the allowed bases, found=false instead of guessing
+read_page         → only articles from those bases
+describe_target   → table columns, Select options
+append_row        → one table:
+   ✓ configured columns only
+   ✓ Select — existing options only
+   ✓ Status = "New" is set by the server
+   ✓ no duplicates by the Name column
+
+No tools to edit, delete or search all of Notion`,
+    },
+  }),
+  product({
+    id: 'mp-mcp-calendar',
+    slug: 'mcp-google-calendar',
+    categoryId: 'mcp-skills',
+    productType: 'agent-pack',
+    titleRu: 'MCP: Google Calendar',
+    titleEn: 'MCP: Google Calendar',
+    shortRu: 'MCP-сервер: свободные слоты с учётом рабочих часов и перерывов, а событие — только после явного «да» клиента на конкретный вопрос. Повторная проверка слота перед записью, без дублей, без удаления. Claude, Cursor, n8n.',
+    shortEn: 'An MCP server: free slots that respect working hours and buffers, and an event only after the client\'s explicit yes to a specific question. The slot is re-checked before writing, no duplicates, no deletes. Claude, Cursor, n8n. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'PY', 'JSON', 'MD'],
+    includedRu: ['MCP-сервер на Python без пакетов: слоты, подготовка, подтверждение', 'Скрипт получения доступа к календарю через браузер', 'Правило подтверждения: что считается «да»', 'Тестовый диалог на 15 шагов', 'Конфиги для Claude Code, Claude Desktop, Cursor; подключение к n8n'],
+    includedEn: ['Dependency-free Python MCP server: slots, proposal, confirmation', 'Browser script to grant calendar access', 'Confirmation rule: what counts as a yes', '15-step test dialogue', 'Configs for Claude Code, Claude Desktop, Cursor; n8n setup'],
+    testedIntegrations: ['Google Calendar', 'MCP', 'Claude', 'Cursor', 'n8n'],
+    changelogRu: ['1.0.0 — первый выпуск'],
+    changelogEn: ['1.0.0 — first release'],
+    priceEur: 39,
+    licenses: [
+      {
+        id: 'personal',
+        priceEur: 39,
+        rights: 'personal',
+        clientLimit: 1,
+      },
+    ],
+    coverGradient: 'linear-gradient(135deg, #34d399, #6366f1)',
+    coverIcon: '📅',
+    creatorId: 'creator-agent-studio',
+    badge: 'new',
+    badges: ['new'],
+    recommendsForCourses: ['ai-agent-engineer'],
+    relatedIds: ['mp-agent-booking'],
+    outcomeRu: 'Запись в календарь без двойных слотов и без сюрпризов.',
+    outcomeEn: 'Calendar booking without double slots or surprises.',
+    setupTime: 'около часа',
+    priceModel: 'Настройка 300–700€',
+    faqRu: [
+      {
+        q: 'Агент сам ставит встречи?',
+        a: 'Только после фразы подтверждения. Черновик без «да» в календарь не пишется.',
+      },
+    ],
+    faqEn: [
+      {
+        q: 'Does the agent book on its own?',
+        a: 'Only after a confirmation. A draft without a yes is not written to the calendar.',
+      },
+    ],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: запись в два шага',
+      titleEn: 'Sample: booking in two steps',
+      contentRu: `propose_event(чт 11:00, Анна, anna@example.com)
+  → календарь не меняется
+  → «Записываю: «Встреча: Анна», чт 27.11 11:00–11:30 (Europe/Kyiv),
+     приглашение придёт на anna@example.com. Подтверждаете?»
+
+confirm_event(id, «Да, записывайте»)   → событие + приглашение
+confirm_event(id, «Да, но лучше в 12») → отказ, ничего не записано
+confirm_event(id, «Да») второй раз     → «уже создано», без дубля
+слот заняли, пока клиент думал        → отказ, предложить другое`,
+      contentEn: `propose_event(Thu 11:00, Anna, anna@example.com)
+  → the calendar is not touched
+  → "Booking: 'Meeting: Anna', Thu 27.11 11:00–11:30 (Europe/Kyiv),
+     invite to anna@example.com. Confirm?"
+
+confirm_event(id, "Yes, go ahead")      → event + invite
+confirm_event(id, "Yes, but 12 is better") → refused, nothing written
+confirm_event(id, "Yes") again         → "already created", no duplicate
+slot taken while the client was thinking → refused, offer another`,
+    },
+  }),
+  product({
+    id: 'mp-voice-restaurant',
+    slug: 'voice-agent-kit-restaurant',
+    categoryId: 'voice-agents',
+    productType: 'voice-kit',
+    titleRu: 'Voice Agent Kit: Ресторан',
+    titleEn: 'Voice Agent Kit: Restaurant',
+    shortRu: 'Голосовой администратор ресторана для Vapi, Retell или ElevenLabs: бронирует столы в Google Календаре с учётом числа гостей и зоны, переносит и отменяет брони, банкеты и большие компании передаёт менеджеру. О скидках не говорит. Бэкенд n8n проверен в n8n 2.48.',
+    shortEn: 'A voice host for restaurants on Vapi, Retell or ElevenLabs: books tables in Google Calendar by party size and area, moves and cancels bookings, passes banquets and large parties to the manager. Never talks discounts. n8n backend tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['Бэкенд бронирования в n8n: стол по числу гостей, время по вместимости, без двойных броней', 'Сценарий звонка: системный промпт на русском и английском', 'Карта интентов: шесть инструментов и коды ответов', 'Фразы передачи человеку на трёх языках', 'Конфигурации Vapi, Retell и ElevenLabs', '30 тестовых звонков и комплект для продажи'],
+    includedEn: ['n8n booking backend: table by party size, time by capacity, no double bookings', 'Call script: system prompt in Russian and English', 'Intent map: six tools and their result codes', 'Handoff lines in three languages', 'Vapi, Retell and ElevenLabs configs', '30 test calls and a sales kit'],
+    testedIntegrations: ['Vapi', 'Retell', 'ElevenLabs', 'n8n', 'Google Calendar', 'Telegram'],
+    changelogRu: ['1.0.0 — первый выпуск: брони по числу гостей и зонам, 16 тестов бэкенда, запуск в n8n 2.48'],
+    changelogEn: ['1.0.0 — first release: bookings by party size and area, 16 backend tests, run in n8n 2.48'],
+    priceEur: 79,
+    licenses: [
+      {
+        id: 'personal',
+        priceEur: 79,
+        rights: 'personal',
+        clientLimit: 1,
+      },
+    ],
+    coverGradient: 'linear-gradient(135deg, #14b8a6, #f59e0b)',
+    coverIcon: '🍽',
+    creatorId: 'creator-agent-studio',
+    badge: 'new',
+    badges: ['new'],
+    recommendsForCourses: ['voice-agents'],
+    relatedIds: ['mp-voice-beauty-salon'],
+    outcomeRu: 'Администратор не снимает трубку на каждую бронь.',
+    outcomeEn: 'The host does not pick up every booking call.',
+    setupTime: '1 день',
+    priceModel: 'Setup + retainer',
+    faqRu: [
+      {
+        q: 'Можно поставить на свой номер?',
+        a: 'Да. В комплекте сценарий и интенты, номер подключаете вы.',
+      },
+    ],
+    faqEn: [
+      {
+        q: 'Can I use my own number?',
+        a: 'Yes. The kit has the script and intents. You connect the number.',
+      },
+    ],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: как выбирается стол',
+      titleEn: 'Sample: how a table is chosen',
+      contentRu: `гостей: 4, пятница, 19:00
+  держим стол: до 2 гостей — 90 мин, до 4 — 120, до 8 — 150
+  подходят: мест ≥ 4, «не меньше 5 гостей» — мимо
+  по порядку: стол на четверых → у камина → терраса
+  свободен 19:00–21:00 + 15 мин на уборку → бронь
+
+гостей: 12 → party_too_large → менеджеру
+«дадите скидку на день рождения?» → не обсуждаем, к брони`,
+      contentEn: `guests: 4, Friday, 19:00
+  table held: up to 2 guests — 90 min, up to 4 — 120, up to 8 — 150
+  fits: seats ≥ 4, "5 guests minimum" — skipped
+  in order: table for four → by the fireplace → terrace
+  free 19:00–21:00 + 15 min to reset → booked
+
+guests: 12 → party_too_large → to the manager
+"a birthday discount?" → not discussed, back to the booking`,
+    },
+  }),
+  product({
+    id: 'mp-voice-delivery',
+    slug: 'voice-agent-kit-delivery',
+    categoryId: 'voice-agents',
+    productType: 'voice-kit',
+    titleRu: 'Voice Agent Kit: Доставка',
+    titleEn: 'Voice Agent Kit: Delivery',
+    shortRu: 'Голосовой помощник службы доставки для Vapi, Retell или ElevenLabs: накануне сам звонит клиентам, подтверждает адрес и интервал, исправляет адрес и переносит доставку на свободный интервал в Google Таблице заказов. Состав заказа не меняет — это, отмену и оплату передаёт оператору. Проверено в n8n 2.48.',
+    shortEn: 'A voice assistant for delivery services on Vapi, Retell or ElevenLabs: calls customers the day before, confirms address and window, corrects the address and moves the delivery to a free window in a Google Sheet of orders. Never changes the order itself — that, cancellations and payment go to an operator. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['Бэкенд заказов в n8n: подтверждение, адрес в зоне доставки, интервалы с вместимостью', 'Исходящие звонки накануне через Vapi или Retell, не больше двух попыток', 'Сценарий звонка для входящих и исходящих: промпт на русском и английском', 'Интенты: адрес, интервал, оператор; стоп-фразы на изменение состава', 'Конфигурации Vapi, Retell и ElevenLabs, шаблон таблицы заказов', '30 тестовых звонков и комплект для продажи'],
+    includedEn: ['n8n order backend: confirmation, address within the delivery area, windows with capacity', 'Day-before outbound calls via Vapi or Retell, at most two attempts', 'Call script for inbound and outbound: prompt in Russian and English', 'Intents: address, window, operator; stop phrases for order changes', 'Vapi, Retell and ElevenLabs configs, order sheet template', '30 test calls and a sales kit'],
+    testedIntegrations: ['Vapi', 'Retell', 'ElevenLabs', 'n8n', 'Google Sheets', 'Telegram'],
+    changelogRu: ['1.0.0 — первый выпуск: подтверждение, адрес, интервалы, исходящие звонки; 18 тестов, запуск в n8n 2.48'],
+    changelogEn: ['1.0.0 — first release: confirmation, address, windows, outbound calls; 18 tests, run in n8n 2.48'],
+    priceEur: 79,
+    licenses: [
+      {
+        id: 'personal',
+        priceEur: 79,
+        rights: 'personal',
+        clientLimit: 1,
+      },
+    ],
+    coverGradient: 'linear-gradient(135deg, #22c55e, #14b8a6)',
+    coverIcon: '📦',
+    creatorId: 'creator-agent-studio',
+    badge: 'new',
+    badges: ['new'],
+    recommendsForCourses: ['voice-agents'],
+    relatedIds: ['mp-voice-clinic'],
+    outcomeRu: 'Курьер не едет по старому адресу.',
+    outcomeEn: 'The courier does not drive to the old address.',
+    setupTime: '1 день',
+    priceModel: 'Setup + retainer',
+    faqRu: [
+      {
+        q: 'Можно отменить заказ голосом?',
+        a: 'Нет. Отмена и изменение состава уходят оператору.',
+      },
+    ],
+    faqEn: [
+      {
+        q: 'Can a caller cancel by voice?',
+        a: 'No. Cancellation and item changes go to an operator.',
+      },
+    ],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: что агент может и чего не может',
+      titleEn: 'Sample: what the agent can and cannot do',
+      contentRu: `find_order       → только заказы номера, с которого звонят
+confirm_delivery → «да» → confirmed = да, строка в history
+update_address   → город из зоны; заказ у курьера — только домофон
+check_windows    → интервалы с местом, не позже чем за 3 ч
+change_window    → заполненный интервал — отказ, старый сохранён
+request_callback → состав, отмена, оплата, жалоба — оператору
+
+«добавьте ещё пачку» → такого инструмента нет → оператору`,
+      contentEn: `find_order       → only orders of the calling number
+confirm_delivery → "yes" → confirmed = yes, a line in history
+update_address   → a city in the area; with the courier — intercom only
+check_windows    → windows with room, no later than 3 h before
+change_window    → a full window is refused, the old one kept
+request_callback → items, cancellation, payment, complaint — to an operator
+
+"add another pack" → no such tool → to an operator`,
+    },
   }),
 ]
 
