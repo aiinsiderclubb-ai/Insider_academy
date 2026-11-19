@@ -469,20 +469,62 @@ Reply: "remind: tomorrow 15:00 call back"`,
   product({
     id: 'mp-agent-support',
     slug: 'customer-support-agent',
-    availability: 'coming_soon',
     categoryId: 'ai-agents',
     productType: 'agent-pack',
     titleRu: 'Customer Support Agent',
     titleEn: 'Customer Support Agent',
-    shortRu: 'Шаблон RAG-агента для поддержки клиентов.',
-    shortEn: 'RAG support agent template.',
+    shortRu: 'AI-агент поддержки для n8n: отвечает на сайте и в Telegram строго по вашей базе знаний, показывает статус заказа только владельцу, создаёт обращения и передаёт диалог человеку. Защита на входе и выходе, 30 eval-случаев со скриптом проверки. OpenAI или Claude. Проверено в n8n 2.48.',
+    shortEn: 'An AI support agent for n8n: answers on your site and in Telegram strictly from your knowledge base, shows an order\'s status only to its owner, opens tickets and hands the chat to a person. Input and output guards, 30 eval cases with a runner. OpenAI or Claude. Tested in n8n 2.48. Files are in Russian.',
+    version: '1.0.0',
+    fileTypes: ['ZIP', 'JSON', 'MD', 'CSV'],
+    includedRu: ['Агент n8n с памятью и 4 инструментами: база знаний, заказ, обращение, передача человеку', 'Системная инструкция с правилами и запретами', 'Схемы инструментов в форматах OpenAI и Anthropic', 'Защита: токен, лимиты, вырезание номеров карт, запрещённые обещания, утечка инструкции', 'Передача человеку в Telegram с пересказом диалога', '30 eval-случаев и скрипт прогона, демо-база на 20 статей, чат-виджет, 8 инструкций'],
+    includedEn: ['n8n agent with memory and 4 tools: knowledge base, order, ticket, human handoff', 'System prompt with rules and limits', 'Tool schemas in OpenAI and Anthropic formats', 'Guards: token, rate limits, card-number removal, forbidden promises, prompt leaks', 'Handoff to a person in Telegram with a summary', '30 eval cases and a runner, 20-article demo base, chat widget, 8 guides'],
+    testedIntegrations: ['OpenAI', 'Anthropic', 'Webhook', 'n8n', 'Google Sheets', 'Telegram'],
+    changelogRu: ['1.0.0 — первый выпуск: агент, 4 инструмента, защита на входе и выходе, 30 eval-случаев'],
+    changelogEn: ['1.0.0 — first release: agent, 4 tools, input and output guards, 30 eval cases'],
     priceEur: 79,
     coverGradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
     coverIcon: '🤖',
     creatorId: 'creator-agent-studio',
-    badges: ['top-selling'],
     recommendsForCourses: ['ai-agent-engineer'],
     relatedIds: ['mp-workflow-support', 'mp-agent-knowledge'],
+    freePreview: {
+      type: 'workflow',
+      titleRu: 'Фрагмент: кто отвечает клиенту',
+      titleEn: 'Sample: who answers the customer',
+      contentRu: `Guard In — до модели:
+  нет токена → 401
+  номер карты → «[номер карты удалён]»
+  «позовите менеджера» → человеку, без модели
+  20 сообщений за 10 минут → пауза
+
+AI Agent — инструменты:
+  search_knowledge  → только по вашим статьям
+  get_order_status  → только при совпадении email
+  create_ticket     → номер обращения клиенту
+  handoff_to_human  → пересказ в чат команды
+
+Guard Out — после модели:
+  «вернём деньги», «дадим скидку» → заменить, сигнал команде
+  утечка инструкции → отказ
+  пустой ответ → человеку`,
+      contentEn: `Guard In — before the model:
+  no token → 401
+  card number → "[card number removed]"
+  "get me a manager" → to a person, no model
+  20 messages in 10 minutes → pause
+
+AI Agent — tools:
+  search_knowledge  → only your articles
+  get_order_status  → only when the email matches
+  create_ticket     → ticket number to the customer
+  handoff_to_human  → summary to the team chat
+
+Guard Out — after the model:
+  "we'll refund you", "we'll give a discount" → replaced, team alerted
+  prompt leak → refusal
+  empty answer → to a person`,
+    },
   }),
   product({
     id: 'mp-agent-sales',
