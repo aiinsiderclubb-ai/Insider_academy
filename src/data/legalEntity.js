@@ -1,5 +1,5 @@
 /**
- * Реквизиты продавца AI Insider Academy: частное лицо, продажи через Paddle.com
+ * Реквизиты продавца AI Insider Academy: частное лицо, продажи через Gumroad
  * (Merchant of Record). Регистрационный и налоговый номера пусты, пока их нет.
  */
 export const LEGAL_ENTITY = {
@@ -19,7 +19,7 @@ export const LEGAL_ENTITY = {
   bic: '',
   governingLaw: 'Право Государства Катар',
   governingLawEn: 'Laws of the State of Qatar',
-  merchantOfRecord: 'Paddle.com Market Limited',
+  merchantOfRecord: 'Gumroad, Inc.',
   updatedAt: '2026-11-22',
 }
 

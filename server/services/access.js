@@ -41,7 +41,7 @@ export async function grantAccess({
 
   const marketplaceItem = getMarketplaceProduct(courseId) || getBundle(courseId)
   if (marketplaceItem) {
-    if (!['stripe', 'tribute', 'liqpay', 'paddle', 'admin'].includes(provider) || !externalId || !resolvedUserId) {
+    if (!['stripe', 'tribute', 'liqpay', 'paddle', 'gumroad', 'admin'].includes(provider) || !externalId || !resolvedUserId) {
       return { ok: false, reason: 'unverified marketplace grant' }
     }
     const result = await grantMarketplaceEntitlement(db, {

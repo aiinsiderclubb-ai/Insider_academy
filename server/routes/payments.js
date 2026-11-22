@@ -1,10 +1,11 @@
 import { Router } from 'express'
 import { getDb } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
-import { config, isStripeEnabled, isLiqPayEnabled, isTributeEnabled, isPaddleEnabled, isPrelaunchMode } from '../config.js'
+import { config, isStripeEnabled, isLiqPayEnabled, isTributeEnabled, isPaddleEnabled, isGumroadEnabled, isPrelaunchMode } from '../config.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { createCheckoutSession } from '../services/stripe.js'
 import { createPaddleTransaction } from '../services/paddle.js'
+import { createGumroadCheckout } from '../services/gumroad.js'
 import { bestPrice } from '../services/rewards.js'
 import { createPaymentPayload } from '../services/liqpay.js'
 import {
@@ -289,6 +290,100 @@ router.post('/paddle/marketplace', requireUser, requireMarketplaceCommerce, asyn
     })
   } catch (err) {
     console.error('[paddle marketplace]', err.message)
+    res.status(err.status || 400).json({ error: err.message })
+  }
+})
+
+/* -------------------------------- Gumroad --------------------------------- */
+
+router.get('/gumroad/status', (_req, res) => {
+  if (isPrelaunchMode()) return res.json({ enabled: false, prelaunch: true })
+  res.json({ enabled: isGumroadEnabled() })
+})
+
+async function rememberGumroadCode(db, paymentId, code) {
+  if (!code) return
+  await db.run(
+    'INSERT INTO analytics (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+    [`gumroad-code:${paymentId}`, code]
+  )
+}
+
+/** Courses, vaults and packs: a link to Gumroad's checkout at our price. */
+router.post('/gumroad/checkout', requireUser, checkoutAvailability, async (req, res) => {
+  if (!isGumroadEnabled()) return res.status(503).json({ error: 'Gumroad not configured' })
+  const db = getDb()
+  const { courseId, promoCode, referralCode } = req.body
+  if (!courseId) return res.status(400).json({ error: 'courseId required' })
+  try {
+    const item = await resolveCheckoutItem(db, courseId, req.userEmail)
+    const price = await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: courseId, amountEur: item.amount, promoCode, referralCode })
+    if (promoCode && price.promoError && price.kind !== 'promo') {
+      return res.status(400).json({ error: price.promoError, errorRu: 'Промокод не подошёл.' })
+    }
+    const amount = price.finalEur
+    const appliedPromo = price.kind === 'promo' ? price.code : null
+    if (!(amount > 0)) return res.status(400).json({ error: 'Nothing to pay' })
+    const paymentId = `gr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    await db.run(
+      `INSERT INTO payments (id, user_id, email, course_id, course_title, amount, currency, provider, external_id, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, 'EUR', 'gumroad', ?, 'pending', ?)`,
+      [paymentId, req.userId, req.userEmail, courseId, item.title, amount, paymentId, new Date().toISOString()]
+    )
+    if (appliedPromo) {
+      const { rememberPromoForPayment } = await import('../services/reviewReward.js')
+      await rememberPromoForPayment(db, paymentId, appliedPromo)
+    }
+    const checkout = await createGumroadCheckout({ paymentId, itemId: courseId, listEur: item.amount, amountEur: amount, email: req.userEmail })
+    await rememberGumroadCode(db, paymentId, checkout.offerCode)
+    res.json({
+      checkoutUrl: checkout.url,
+      paymentId,
+      amount,
+      baseAmount: price.baseEur,
+      discount: price.kind ? { kind: price.kind, eur: price.discountEur, percent: price.percent ?? null } : null,
+      currency: 'EUR',
+      promo: appliedPromo,
+      successUrl: publicUrl(req.body.locale, checkoutPaths(item, 'gumroad').success),
+    })
+  } catch (err) {
+    console.error('[gumroad checkout]', err.message)
+    res.status(err.status || 502).json({ error: err.message })
+  }
+})
+
+/** Store products: the license is a variant of the Gumroad product. */
+router.post('/gumroad/marketplace', requireUser, requireMarketplaceCommerce, async (req, res) => {
+  if (!isGumroadEnabled()) return res.status(503).json({ error: 'Gumroad not configured' })
+  try {
+    const listed = quoteMarketplaceItem(req.body)
+    const db = getDb()
+    const { promoCode, referralCode } = req.body
+    const price = await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: listed.productId, amountEur: listed.amountEur, promoCode, referralCode })
+    if (promoCode && price.promoError && price.kind !== 'promo') {
+      return res.status(400).json({ error: price.promoError, errorRu: 'Промокод не подошёл.' })
+    }
+    const quote = { ...listed, amountEur: price.finalEur }
+    const paymentId = await createMarketplacePayment(db, { provider: 'gumroad', req, quote })
+    await db.run('UPDATE payments SET external_id = ? WHERE id = ?', [paymentId, paymentId])
+    if (price.kind === 'promo') {
+      const { rememberPromoForPayment } = await import('../services/reviewReward.js')
+      await rememberPromoForPayment(db, paymentId, price.code)
+    }
+    const checkout = await createGumroadCheckout({
+      paymentId, itemId: quote.productId, listEur: listed.amountEur, amountEur: quote.amountEur, licenseTier: quote.licenseTier, email: req.userEmail,
+    })
+    await rememberGumroadCode(db, paymentId, checkout.offerCode)
+    res.json({
+      checkoutUrl: checkout.url,
+      paymentId,
+      quote,
+      baseAmount: price.baseEur,
+      discount: price.kind ? { kind: price.kind, eur: price.discountEur, percent: price.percent ?? null } : null,
+      successUrl: publicUrl(req.body.locale, '/app/library?paid=1&provider=gumroad'),
+    })
+  } catch (err) {
+    console.error('[gumroad marketplace]', err.message)
     res.status(err.status || 400).json({ error: err.message })
   }
 })

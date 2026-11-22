@@ -46,6 +46,12 @@ export const config = {
     apiKey: process.env.PADDLE_API_KEY || '',
     webhookSecret: process.env.PADDLE_WEBHOOK_SECRET || '',
   },
+  gumroad: {
+    /** Settings → Advanced → Applications → Generate access token. */
+    accessToken: process.env.GUMROAD_ACCESS_TOKEN || '',
+    /** Settings → Advanced → Sign pings. */
+    pingSecret: process.env.GUMROAD_PING_SECRET || '',
+  },
   liqpay: {
     publicKey: process.env.LIQPAY_PUBLIC_KEY || '',
     privateKey: process.env.LIQPAY_PRIVATE_KEY || '',
@@ -120,6 +126,10 @@ export const config = {
 
 export function isStripeEnabled() {
   return Boolean(config.stripe.secretKey)
+}
+
+export function isGumroadEnabled() {
+  return Boolean(config.gumroad.accessToken)
 }
 
 export function isPaddleEnabled() {

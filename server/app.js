@@ -15,7 +15,7 @@ import meRoutes from './routes/me.js'
 import adminRoutes from './routes/admin.js'
 import publicRoutes from './routes/public.js'
 import paymentsRoutes from './routes/payments.js'
-import webhooksRoutes, { handleStripeWebhook, handleTributeWebhook, handlePaddleWebhook } from './routes/webhooks.js'
+import webhooksRoutes, { handleStripeWebhook, handleTributeWebhook, handlePaddleWebhook, handleGumroadPing } from './routes/webhooks.js'
 import { marketplaceWebhookAllowed } from './middleware/prelaunch.js'
 import chatRoutes from './routes/chat.js'
 import assistantRoutes from './routes/assistant.js'
@@ -126,6 +126,7 @@ export async function createApp() {
   app.post('/api/webhooks/stripe', marketplaceWebhookAllowed, express.raw({ type: 'application/json' }), handleStripeWebhook)
   app.post('/api/webhooks/tribute', marketplaceWebhookAllowed, express.raw({ type: 'application/json' }), handleTributeWebhook)
   app.post('/api/webhooks/paddle', express.raw({ type: 'application/json' }), handlePaddleWebhook)
+  app.post('/api/webhooks/gumroad', express.raw({ type: () => true, limit: '1mb' }), handleGumroadPing)
 
   app.use(express.json({ limit: '2mb' }))
   app.use(express.urlencoded({ extended: true }))
