@@ -3,7 +3,7 @@ import { timingSafeEqual } from 'node:crypto'
 import { getDb, parseJson } from '../db.js'
 import { requireAdmin, signAdminToken } from '../middleware/auth.js'
 import { sendHomeworkFeedbackEmail, sendTemplateEmail } from '../services/email.js'
-import { config, isEmailEnabled } from '../config.js'
+import { config, isEmailEnabled, isPaddleEnabled } from '../config.js'
 import { getFileUrl } from '../services/storage.js'
 import { nowIso } from '../db/time.js'
 import { mapApplication } from './applications.js'
@@ -27,6 +27,7 @@ import adminOpsRoutes from './adminOps.js'
 import adminGiveawaysRoutes from './adminGiveaways.js'
 import adminMarketplaceRoutes from './adminMarketplace.js'
 import adminEmailRoutes from './adminEmail.js'
+import adminStudioRoutes, { paddleWebhookUrl } from './adminStudio.js'
 import { logAudit } from '../services/auditLog.js'
 import { deleteUserAccount } from '../services/deleteUser.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
@@ -110,6 +111,7 @@ router.use(adminMarketplaceRoutes)
 router.use(adminOpsRoutes)
 router.use(adminGiveawaysRoutes)
 router.use(adminEmailRoutes)
+router.use(adminStudioRoutes)
 
 router.get('/dashboard', async (req, res) => {
   const db = getDb()
@@ -162,6 +164,9 @@ router.get('/dashboard', async (req, res) => {
       payload.webhookLog = []
     }
     payload.settings = {
+      paddleEnabled: isPaddleEnabled(),
+      paddleEnvironment: config.paddle.env,
+      paddleWebhookUrl: paddleWebhookUrl(),
       tributeWebhookUrl: getTributeWebhookUrl(),
       tributeEnabled: Boolean(config.tribute.apiKey),
     }

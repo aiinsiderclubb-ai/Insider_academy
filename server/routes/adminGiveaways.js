@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import crypto from 'node:crypto'
 import { getDb } from '../db.js'
+import { requireAdmin } from '../middleware/auth.js'
 import { getServerGiveaway } from '../data/giveaways.js'
 import { nowIso } from '../db/time.js'
 import { logAudit } from '../services/auditLog.js'
@@ -86,7 +87,7 @@ router.get('/giveaways/:slug/result', async (req, res) => {
   res.json({ result: await getResult(getDb(), req.params.slug) })
 })
 
-router.post('/giveaways/:slug/draw', async (req, res) => {
+router.post('/giveaways/:slug/draw', requireAdmin('admin'), async (req, res) => {
   const meta = getServerGiveaway(req.params.slug)
   if (!meta) return res.status(404).json({ error: 'Giveaway not found' })
   if (!meta.endsAt || new Date(meta.endsAt).getTime() > Date.now()) {
@@ -153,7 +154,7 @@ router.post('/giveaways/:slug/draw', async (req, res) => {
   res.status(201).json({ ok: true, result: await getResult(db, req.params.slug) })
 })
 
-router.post('/giveaways/:slug/publish', async (req, res) => {
+router.post('/giveaways/:slug/publish', requireAdmin('admin'), async (req, res) => {
   const db = getDb()
   const existing = await getResult(db, req.params.slug)
   if (!existing) return res.status(409).json({ error: 'Draw result does not exist' })

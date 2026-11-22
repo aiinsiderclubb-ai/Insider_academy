@@ -9,42 +9,68 @@ import { broadcastTelegram } from '../services/telegramNotify.js'
 
 const router = Router()
 
+/** Codes the shop issues itself (rewards); kept apart from campaign codes in the Studio. */
+const REWARD_PREFIX = /^(FRIEND|NEXT|THANKS)-/
+
 router.get('/promo-codes', requireAdmin('admin'), async (_req, res) => {
   const rows = await getDb().all('SELECT * FROM promo_codes ORDER BY created_at DESC')
   res.json(rows.map(mapPromo))
 })
 
+function promoInput(body, { partial = false } = {}) {
+  const out = {}
+  const errors = []
+  const has = (key) => Object.prototype.hasOwnProperty.call(body, key)
+  if (!partial || has('discountPercent') || has('discountEur')) {
+    const percent = body.discountPercent === '' || body.discountPercent == null ? null : Number(body.discountPercent)
+    const eur = body.discountEur === '' || body.discountEur == null ? null : Number(body.discountEur)
+    if ((percent == null) === (eur == null)) errors.push('Give either discountPercent or discountEur')
+    if (percent != null && !(Number.isInteger(percent) && percent >= 1 && percent <= 100)) errors.push('discountPercent must be 1–100')
+    if (eur != null && !(Number.isFinite(eur) && eur > 0)) errors.push('discountEur must be above 0')
+    out.discount_percent = percent
+    out.discount_eur = eur
+  }
+  if (!partial || has('maxUses')) {
+    const max = body.maxUses === '' || body.maxUses == null ? null : Number(body.maxUses)
+    if (max != null && !(Number.isInteger(max) && max >= 1)) errors.push('maxUses must be a whole number from 1')
+    out.max_uses = max
+  }
+  for (const [key, column] of [['validFrom', 'valid_from'], ['validUntil', 'valid_until']]) {
+    if (!partial || has(key)) {
+      const value = body[key] ? new Date(body[key]) : null
+      if (value && Number.isNaN(value.getTime())) errors.push(`${key} is not a date`)
+      out[column] = value ? value.toISOString() : null
+    }
+  }
+  if (out.valid_from && out.valid_until && out.valid_from > out.valid_until) errors.push('validFrom is after validUntil')
+  if (!partial || has('courseIds')) {
+    const ids = Array.isArray(body.courseIds) ? body.courseIds.map(String).map((x) => x.trim()).filter(Boolean) : []
+    out.course_ids = ids.length ? JSON.stringify([...new Set(ids)]) : null
+  }
+  if (has('active')) out.active = body.active ? 1 : 0
+  return { out, errors }
+}
+
 router.post('/promo-codes', requireAdmin('admin'), async (req, res) => {
   const db = getDb()
   const code = String(req.body.code || '').trim().toUpperCase()
-  if (!code) return res.status(400).json({ error: 'code required' })
-  const courseIds = req.body.courseIds?.length ? JSON.stringify(req.body.courseIds) : null
+  if (!/^[A-Z0-9-]{3,32}$/.test(code)) {
+    return res.status(400).json({ error: 'Code: 3–32 letters, digits or dashes', errorRu: 'Код: 3–32 символа — латинские буквы, цифры, дефис' })
+  }
+  if (REWARD_PREFIX.test(code)) {
+    return res.status(400).json({ error: 'FRIEND-, NEXT- and THANKS- are reserved for reward codes', errorRu: 'Префиксы FRIEND-, NEXT- и THANKS- заняты кодами наград' })
+  }
+  const { out, errors } = promoInput(req.body || {})
+  if (errors.length) return res.status(400).json({ error: errors.join('; '), errorRu: 'Проверьте поля: нужна скидка в % или в €, лимит — целое число, даты — корректные' })
+  const exists = await db.get('SELECT code FROM promo_codes WHERE UPPER(code) = ?', [code])
+  if (exists) return res.status(409).json({ error: 'Code exists', errorRu: 'Такой код уже есть' })
   await db.run(
     `INSERT INTO promo_codes (code, discount_percent, discount_eur, course_ids, max_uses, valid_from, valid_until, active, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      code,
-      req.body.discountPercent ?? null,
-      req.body.discountEur ?? null,
-      courseIds,
-      req.body.maxUses ?? null,
-      req.body.validFrom ?? null,
-      req.body.validUntil ?? null,
-      req.body.active === false ? 0 : 1,
-      nowIso(),
-    ]
+    [code, out.discount_percent, out.discount_eur, out.course_ids, out.max_uses, out.valid_from, out.valid_until, req.body.active === false ? 0 : 1, nowIso()]
   )
-  await logAudit({
-    actorEmail: `admin:${req.adminRole}`,
-    action: 'promo.create',
-    targetType: 'promo',
-    targetId: code,
-  })
-  const discount = req.body.discountPercent
-    ? `${req.body.discountPercent}%`
-    : req.body.discountEur
-      ? `€${req.body.discountEur}`
-      : ''
+  await logAudit({ actorEmail: `admin:${req.adminRole}`, action: 'promo.create', targetType: 'promo', targetId: code, meta: { ...out } })
+  const discount = out.discount_percent ? `${out.discount_percent}%` : `€${out.discount_eur}`
   broadcastTelegram('promo_new', { code, discount }, { prefKey: 'promo' }).catch(() => {})
   res.status(201).json({ ok: true, code })
 })
@@ -70,24 +96,16 @@ router.patch('/promo-codes/:code', requireAdmin('admin'), async (req, res) => {
   const code = String(req.params.code || '').toUpperCase()
   const row = await db.get('SELECT code FROM promo_codes WHERE UPPER(code) = ?', [code])
   if (!row) return res.status(404).json({ error: 'Not found' })
-  await db.run(
-    `UPDATE promo_codes SET
-      discount_percent = COALESCE(?, discount_percent),
-      discount_eur = COALESCE(?, discount_eur),
-      max_uses = COALESCE(?, max_uses),
-      valid_until = COALESCE(?, valid_until),
-      active = COALESCE(?, active)
-     WHERE UPPER(code) = ?`,
-    [
-      req.body.discountPercent,
-      req.body.discountEur,
-      req.body.maxUses,
-      req.body.validUntil,
-      req.body.active === undefined ? null : req.body.active ? 1 : 0,
-      code,
-    ]
-  )
-  await logAudit({ actorEmail: req.adminEmail, action: 'promo.update', targetType: 'promo', targetId: code })
+  const { out, errors } = promoInput(req.body || {}, { partial: true })
+  if (errors.length) return res.status(400).json({ error: errors.join('; '), errorRu: 'Проверьте поля промокода' })
+  const columns = Object.keys(out)
+  if (columns.length) {
+    await db.run(
+      `UPDATE promo_codes SET ${columns.map((c) => `${c} = ?`).join(', ')} WHERE UPPER(code) = ?`,
+      [...columns.map((c) => out[c]), code]
+    )
+  }
+  await logAudit({ actorEmail: `admin:${req.adminRole}`, action: 'promo.update', targetType: 'promo', targetId: code, meta: out })
   res.json({ ok: true })
 })
 
@@ -179,7 +197,7 @@ router.get('/feature-flags', requireAdmin('admin'), async (_req, res) => {
 
 router.put('/feature-flags', requireAdmin('admin'), async (req, res) => {
   const flags = await setFeatureFlags(req.body || {})
-  await logAudit({ actorEmail: req.adminEmail, action: 'flags.update', targetType: 'feature_flags', meta: flags })
+  await logAudit({ actorEmail: `admin:${req.adminRole}`, action: 'flags.update', targetType: 'feature_flags', meta: flags })
   res.json(flags)
 })
 
@@ -240,6 +258,7 @@ function mapPromo(row) {
     validFrom: row.valid_from,
     validUntil: row.valid_until,
     active: Boolean(row.active),
+    kind: REWARD_PREFIX.test(String(row.code)) ? 'reward' : 'campaign',
     createdAt: row.created_at,
   }
 }

@@ -32,7 +32,7 @@ async function reconcile(payment, overrides = {}) {
   })
 }
 
-async function revokePaymentAccess(db, payment, reason) {
+export async function revokePaymentAccess(db, payment, reason) {
   if (!payment) return 0
   // Codes this payment earned (next purchase, the inviter's reward) go with it.
   await cancelPaymentRewards(db, payment.id).catch((err) => console.warn('[rewards] not cancelled:', err.message))
