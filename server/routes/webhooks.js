@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { getDb } from '../db.js'
 import { constructWebhookEvent } from '../services/stripe.js'
+import { paidAmount, verifyPaddleSignature } from '../services/paddle.js'
 import { verifyCallback } from '../services/liqpay.js'
 import { verifyTributeSignature } from '../services/tribute.js'
 import { logWebhookEvent } from '../services/access.js'
@@ -40,8 +41,12 @@ async function revokePaymentAccess(db, payment, reason) {
       [new Date().toISOString(), payment.id]
     )
     await tx.run("UPDATE marketplace_orders SET status = 'refunded' WHERE payment_id = ? AND status = 'completed'", [payment.id])
+    // A refunded course closes again: its purchase row carries the provider's transaction id.
+    const course = payment.external_id
+      ? await tx.run('DELETE FROM purchases WHERE user_id = ? AND course_id = ? AND payment_id = ?', [payment.user_id, payment.course_id, payment.external_id])
+      : null
     await tx.run("UPDATE payments SET status = 'refunded' WHERE id = ? AND status = 'completed'", [payment.id])
-    return modern + Number(legacy?.changes ?? legacy?.rowCount ?? 0)
+    return modern + Number(legacy?.changes ?? legacy?.rowCount ?? 0) + Number(course?.changes ?? course?.rowCount ?? 0)
   })
 }
 
@@ -83,6 +88,66 @@ export async function handleStripeWebhook(req, res) {
     console.error('[stripe webhook]', err.message)
     await logWebhookEvent({ provider: 'stripe', eventName: 'error', status: 'error', payload: { message: err.message } })
     res.status(err.status || 400).send(`Webhook Error: ${err.message}`)
+  }
+}
+
+/**
+ * Paddle notifications. `transaction.completed` grants access once Paddle has
+ * the money; an approved full refund or a chargeback takes it back. Paddle
+ * retries until it gets a 2xx, and reconciliation is idempotent, so a repeat
+ * delivery changes nothing.
+ */
+export async function handlePaddleWebhook(req, res) {
+  const rawBody = req.body
+  if (!verifyPaddleSignature(rawBody, req.headers['paddle-signature'])) {
+    await logWebhookEvent({ provider: 'paddle', eventName: 'auth_failed', status: 'error', payload: {} })
+    return res.status(401).send('Invalid signature')
+  }
+  let event
+  try {
+    event = JSON.parse(Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody)
+  } catch {
+    return res.status(400).send('Invalid JSON')
+  }
+  const db = getDb()
+  const type = event.event_type || 'unknown'
+  const data = event.data || {}
+  try {
+    if (type === 'transaction.completed') {
+      const payment = await db.get("SELECT * FROM payments WHERE provider = 'paddle' AND external_id = ? LIMIT 1", [data.id])
+      if (!payment) {
+        await logWebhookEvent({ provider: 'paddle', eventName: type, status: 'ignored', payload: { transactionId: data.id } })
+        return res.status(200).json({ ok: true, ignored: true })
+      }
+      const result = await reconcile(payment, {
+        provider: 'paddle',
+        externalId: data.id,
+        userId: Number(data.custom_data?.user_id ?? payment.user_id),
+        productId: data.custom_data?.item_id ?? payment.course_id,
+        amount: paidAmount(data),
+        currency: String(data.currency_code || '').toUpperCase(),
+      })
+      await db.run('UPDATE checkout_contexts SET provider_reference = ? WHERE payment_id = ?', [data.id, payment.id])
+      await logWebhookEvent({ provider: 'paddle', eventName: type, status: 'ok', payload: { paymentId: payment.id, courseId: result.courseId } })
+      return res.json({ ok: true })
+    }
+    if (type === 'adjustment.created' || type === 'adjustment.updated') {
+      const reverses = (data.action === 'refund' && data.type === 'full') || data.action === 'chargeback' || data.action === 'chargeback_warning'
+      if (!reverses || data.status !== 'approved') {
+        await logWebhookEvent({ provider: 'paddle', eventName: type, status: 'ignored', payload: { action: data.action, status: data.status } })
+        return res.json({ ok: true, ignored: true })
+      }
+      const payment = await db.get("SELECT * FROM payments WHERE provider = 'paddle' AND external_id = ? LIMIT 1", [data.transaction_id])
+      const revoked = await revokePaymentAccess(db, payment, `paddle:${data.action}`)
+      await logWebhookEvent({ provider: 'paddle', eventName: type, status: payment ? 'ok' : 'ignored', payload: { paymentId: payment?.id, revoked } })
+      return res.json({ ok: true, revoked })
+    }
+    await logWebhookEvent({ provider: 'paddle', eventName: type, status: 'ignored', payload: {} })
+    res.json({ ok: true, ignored: true })
+  } catch (err) {
+    console.error('[paddle webhook]', err.message)
+    await logWebhookEvent({ provider: 'paddle', eventName: type, status: 'error', payload: { message: err.message } })
+    res.status(err.status === 409 ? 409 : 500).json({ error: err.message })
   }
 }
 

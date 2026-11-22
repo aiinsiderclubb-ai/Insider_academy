@@ -1,9 +1,10 @@
 import { Router } from 'express'
 import { getDb } from '../db.js'
 import { requireUser } from '../middleware/auth.js'
-import { config, isStripeEnabled, isLiqPayEnabled, isTributeEnabled, isPrelaunchMode } from '../config.js'
+import { config, isStripeEnabled, isLiqPayEnabled, isTributeEnabled, isPaddleEnabled, isPrelaunchMode } from '../config.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { createCheckoutSession } from '../services/stripe.js'
+import { createPaddleTransaction } from '../services/paddle.js'
 import { createPaymentPayload } from '../services/liqpay.js'
 import {
   createShopOrder,
@@ -187,6 +188,90 @@ router.post('/liqpay/marketplace', requireUser, requireMarketplaceCommerce, asyn
     })
     res.json({ ...payload, paymentId, quote })
   } catch (err) {
+    res.status(err.status || 400).json({ error: err.message })
+  }
+})
+
+/* --------------------------------- Paddle --------------------------------- */
+
+router.get('/paddle/status', (_req, res) => {
+  if (isPrelaunchMode()) return res.json({ enabled: false, prelaunch: true })
+  res.json({ enabled: isPaddleEnabled(), environment: config.paddle.env })
+})
+
+async function openPaddleTransaction(db, { paymentId, req, itemId, title, amount, licenseTier }) {
+  const transaction = await createPaddleTransaction({
+    paymentId,
+    userId: req.userId,
+    itemId,
+    title,
+    amountEur: amount,
+    licenseTier,
+  })
+  await db.run('UPDATE payments SET external_id = ? WHERE id = ?', [transaction.id, paymentId])
+  return transaction
+}
+
+/** Courses and vaults: the price we show, less a referral discount or a promo. */
+router.post('/paddle/checkout', requireUser, checkoutAvailability, async (req, res) => {
+  if (!isPaddleEnabled()) return res.status(503).json({ error: 'Paddle not configured' })
+  const db = getDb()
+  const { courseId, promoCode } = req.body
+  if (!courseId) return res.status(400).json({ error: 'courseId required' })
+  try {
+    const item = await resolveCheckoutItem(db, courseId, req.userEmail)
+    let amount = item.amount
+    let appliedPromo = null
+    if (promoCode) {
+      const { validatePromoCode } = await import('../services/promoCodes.js')
+      const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: amount })
+      if (!promo.valid) return res.status(400).json({ error: promo.error, errorRu: 'Промокод не подошёл.' })
+      amount = promo.finalEur
+      appliedPromo = promo.code
+    }
+    if (!(amount > 0)) return res.status(400).json({ error: 'Nothing to pay' })
+    const paymentId = `pdl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    await db.run(
+      `INSERT INTO payments (id, user_id, email, course_id, course_title, amount, currency, provider, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, 'EUR', 'paddle', 'pending', ?)`,
+      [paymentId, req.userId, req.userEmail, courseId, item.title, amount, new Date().toISOString()]
+    )
+    if (appliedPromo) {
+      const { rememberPromoForPayment } = await import('../services/reviewReward.js')
+      await rememberPromoForPayment(db, paymentId, appliedPromo)
+    }
+    const transaction = await openPaddleTransaction(db, { paymentId, req, itemId: courseId, title: item.title, amount })
+    const paths = checkoutPaths(item, 'paddle')
+    res.json({
+      transactionId: transaction.id,
+      amount,
+      currency: 'EUR',
+      promo: appliedPromo,
+      successUrl: publicUrl(req.body.locale, paths.success),
+    })
+  } catch (err) {
+    console.error('[paddle checkout]', err.message)
+    res.status(err.status || 502).json({ error: err.message })
+  }
+})
+
+/** Store products: price × license multiplier, from the same quote as the other providers. */
+router.post('/paddle/marketplace', requireUser, requireMarketplaceCommerce, async (req, res) => {
+  if (!isPaddleEnabled()) return res.status(503).json({ error: 'Paddle not configured' })
+  try {
+    const quote = quoteMarketplaceItem(req.body)
+    const db = getDb()
+    const paymentId = await createMarketplacePayment(db, { provider: 'paddle', req, quote })
+    const transaction = await openPaddleTransaction(db, {
+      paymentId, req, itemId: quote.productId, title: quote.title, amount: quote.amountEur, licenseTier: quote.licenseTier,
+    })
+    res.json({
+      transactionId: transaction.id,
+      quote,
+      successUrl: publicUrl(req.body.locale, '/app/library?paid=1&provider=paddle'),
+    })
+  } catch (err) {
+    console.error('[paddle marketplace]', err.message)
     res.status(err.status || 400).json({ error: err.message })
   }
 })

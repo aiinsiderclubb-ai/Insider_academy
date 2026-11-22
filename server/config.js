@@ -40,6 +40,12 @@ export const config = {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
     currency: process.env.STRIPE_CURRENCY || 'eur',
   },
+  paddle: {
+    /** `sandbox` until live verification passes, then `production`. */
+    env: process.env.PADDLE_ENV === 'production' ? 'production' : 'sandbox',
+    apiKey: process.env.PADDLE_API_KEY || '',
+    webhookSecret: process.env.PADDLE_WEBHOOK_SECRET || '',
+  },
   liqpay: {
     publicKey: process.env.LIQPAY_PUBLIC_KEY || '',
     privateKey: process.env.LIQPAY_PRIVATE_KEY || '',
@@ -114,6 +120,10 @@ export const config = {
 
 export function isStripeEnabled() {
   return Boolean(config.stripe.secretKey)
+}
+
+export function isPaddleEnabled() {
+  return Boolean(config.paddle.apiKey)
 }
 
 export function isLiqPayEnabled() {
