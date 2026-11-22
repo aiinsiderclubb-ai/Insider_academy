@@ -5,6 +5,7 @@ import { config, isStripeEnabled, isLiqPayEnabled, isTributeEnabled, isPaddleEna
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { createCheckoutSession } from '../services/stripe.js'
 import { createPaddleTransaction } from '../services/paddle.js'
+import { bestPrice } from '../services/rewards.js'
 import { createPaymentPayload } from '../services/liqpay.js'
 import {
   createShopOrder,
@@ -25,17 +26,15 @@ async function checkoutAvailability(req, res, next) {
   return prelaunchBlocked(req, res, next)
 }
 
-async function resolveCheckoutItem(db, courseId, email) {
+async function resolveCheckoutItem(db, courseId, _email) {
   const item = PAID_CATALOG.find((entry) => entry.id === courseId)
   const baseAmount = Number(item?.priceEur ?? item?.price)
   if (!item || !Number.isFinite(baseAmount) || baseAmount <= 0) {
     throw Object.assign(new Error('Unknown or non-payable catalog item'), { status: 400 })
   }
-  const discount = await db.get('SELECT percent FROM referral_discounts WHERE email = ?', [email])
-  const percent = Math.max(0, Math.min(50, Number(discount?.percent || 0)))
-  const amount = percent > 0
-    ? Math.max(0, baseAmount - Math.round((baseAmount * percent) / 100))
-    : baseAmount
+  // Discounts (promo, friend referral) are applied by the checkout through
+  // services/rewards.js; this is the list price.
+  const amount = baseAmount
   return {
     kind: VAULT_PRODUCTS.some((entry) => entry.id === courseId) ? 'vault' : 'course',
     amount,
@@ -216,19 +215,16 @@ async function openPaddleTransaction(db, { paymentId, req, itemId, title, amount
 router.post('/paddle/checkout', requireUser, checkoutAvailability, async (req, res) => {
   if (!isPaddleEnabled()) return res.status(503).json({ error: 'Paddle not configured' })
   const db = getDb()
-  const { courseId, promoCode } = req.body
+  const { courseId, promoCode, referralCode } = req.body
   if (!courseId) return res.status(400).json({ error: 'courseId required' })
   try {
     const item = await resolveCheckoutItem(db, courseId, req.userEmail)
-    let amount = item.amount
-    let appliedPromo = null
-    if (promoCode) {
-      const { validatePromoCode } = await import('../services/promoCodes.js')
-      const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: amount })
-      if (!promo.valid) return res.status(400).json({ error: promo.error, errorRu: 'Промокод не подошёл.' })
-      amount = promo.finalEur
-      appliedPromo = promo.code
+    const price = await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: courseId, amountEur: item.amount, promoCode, referralCode })
+    if (promoCode && price.promoError && price.kind !== 'promo') {
+      return res.status(400).json({ error: price.promoError, errorRu: 'Промокод не подошёл.' })
     }
+    const amount = price.finalEur
+    const appliedPromo = price.kind === 'promo' ? price.code : null
     if (!(amount > 0)) return res.status(400).json({ error: 'Nothing to pay' })
     const paymentId = `pdl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
     await db.run(
@@ -245,6 +241,8 @@ router.post('/paddle/checkout', requireUser, checkoutAvailability, async (req, r
     res.json({
       transactionId: transaction.id,
       amount,
+      baseAmount: price.baseEur,
+      discount: price.kind ? { kind: price.kind, eur: price.discountEur, percent: price.percent ?? null } : null,
       currency: 'EUR',
       promo: appliedPromo,
       successUrl: publicUrl(req.body.locale, paths.success),
@@ -259,15 +257,27 @@ router.post('/paddle/checkout', requireUser, checkoutAvailability, async (req, r
 router.post('/paddle/marketplace', requireUser, requireMarketplaceCommerce, async (req, res) => {
   if (!isPaddleEnabled()) return res.status(503).json({ error: 'Paddle not configured' })
   try {
-    const quote = quoteMarketplaceItem(req.body)
+    const listed = quoteMarketplaceItem(req.body)
     const db = getDb()
+    const { promoCode, referralCode } = req.body
+    const price = await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: listed.productId, amountEur: listed.amountEur, promoCode, referralCode })
+    if (promoCode && price.promoError && price.kind !== 'promo') {
+      return res.status(400).json({ error: price.promoError, errorRu: 'Промокод не подошёл.' })
+    }
+    const quote = { ...listed, amountEur: price.finalEur }
     const paymentId = await createMarketplacePayment(db, { provider: 'paddle', req, quote })
+    if (price.kind === 'promo') {
+      const { rememberPromoForPayment } = await import('../services/reviewReward.js')
+      await rememberPromoForPayment(db, paymentId, price.code)
+    }
     const transaction = await openPaddleTransaction(db, {
       paymentId, req, itemId: quote.productId, title: quote.title, amount: quote.amountEur, licenseTier: quote.licenseTier,
     })
     res.json({
       transactionId: transaction.id,
       quote,
+      baseAmount: price.baseEur,
+      discount: price.kind ? { kind: price.kind, eur: price.discountEur, percent: price.percent ?? null } : null,
       successUrl: publicUrl(req.body.locale, '/app/library?paid=1&provider=paddle'),
     })
   } catch (err) {

@@ -16,6 +16,7 @@ import * as sheetsTrack from '../services/sheetsTrack.js'
 import { issueEmailVerificationCode } from '../services/emailVerification.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { validateUserPassword } from '../utils/security.js'
+import { attachReferral, friendDiscountPercent, rewardsFor } from '../services/rewards.js'
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -42,7 +43,7 @@ router.get('/', async (req, res) => {
   const progress = {}
   for (const row of progressRows) progress[row.course_id] = parseJson(row.data, {})
 
-  const discountRow = await db.get('SELECT percent FROM referral_discounts WHERE email = ?', [user.email])
+  const friendDiscount = await friendDiscountPercent(db, { userId: req.userId, email: user.email })
   const reviews = prelaunch ? [] : await db.all('SELECT course_id FROM reviews WHERE user_id = ?', [req.userId])
   const streak = prelaunch
     ? { current: user.streak_count || 0, best: user.streak_count || 0 }
@@ -60,7 +61,7 @@ router.get('/', async (req, res) => {
     user: await mapUserResponse(db, user),
     purchases,
     progress,
-    discountPercent: discountRow?.percent || 0,
+    discountPercent: friendDiscount,
     streak,
     achievements,
     prelaunch,
@@ -153,30 +154,23 @@ router.put('/progress/:courseId', prelaunchBlocked, async (req, res) => {
   res.json({ ok: true, data })
 })
 
+/** Links this buyer to the friend whose code they came with (first purchase only). */
 router.post('/referral', async (req, res) => {
   const db = getDb()
-  const { referrerCode, referrerEmail } = req.body
   const user = await db.get('SELECT email FROM users WHERE id = ?', [req.userId])
-  if (referrerEmail && referrerEmail !== user.email) {
-    const exists = await db.get('SELECT id FROM referrals WHERE referred_email = ?', [user.email])
-    if (!exists) {
-      await db.run(
-        'INSERT INTO referrals (referrer_code, referrer_email, referred_email, date) VALUES (?, ?, ?, ?)',
-        [referrerCode, referrerEmail, user.email, new Date().toISOString()]
-      )
-      sheetsTrack.trackReferral({
-        referrerEmail,
-        referredEmail: user.email,
-        purchased: false,
-      }).catch(() => {})
-      const d = await db.get('SELECT percent FROM referral_discounts WHERE email = ?', [referrerEmail])
-      await db.run(
-        'INSERT INTO referral_discounts (email, percent) VALUES (?, ?) ON CONFLICT(email) DO UPDATE SET percent = excluded.percent',
-        [referrerEmail, (d?.percent || 0) + 1]
-      )
-    }
+  const code = req.body?.referralCode ?? req.body?.referrerCode
+  const result = await attachReferral(db, { userId: req.userId, email: user?.email, code })
+  if (result.attached && !result.existing && result.referral) {
+    sheetsTrack.trackReferral({ referrerEmail: result.referral.referrer_email, referredEmail: user.email, purchased: false }).catch(() => {})
   }
-  res.json({ ok: true })
+  res.json({ ok: true, attached: result.attached, reason: result.reason ?? null })
+})
+
+/** The referral link's code, who came by it, and the discount codes this person holds. */
+router.get('/rewards', async (req, res) => {
+  const db = getDb()
+  await ensurePersonalId(db, req.userId)
+  res.json(await rewardsFor(db, { userId: req.userId, email: req.userEmail }))
 })
 
 router.get('/notifications', async (req, res) => {

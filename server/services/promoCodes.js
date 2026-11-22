@@ -29,12 +29,13 @@ export async function validatePromoCode({ code, courseId, amountEur }) {
   const base = Number(amountEur) || 0
   let discountEur = 0
   if (row.discount_percent) {
-    discountEur = Math.round((base * Number(row.discount_percent)) / 100)
+    // to the cent: Paddle charges cents, and 15% of €39 is €5.85, not €6
+    discountEur = Math.round(base * Number(row.discount_percent)) / 100
   }
   if (row.discount_eur) {
     discountEur = Math.max(discountEur, Number(row.discount_eur))
   }
-  const finalEur = Math.max(0, base - discountEur)
+  const finalEur = Math.max(0, Math.round((base - discountEur) * 100) / 100)
 
   return {
     valid: true,

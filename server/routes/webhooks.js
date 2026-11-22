@@ -9,6 +9,7 @@ import { reconcilePaidPayment } from '../services/paymentFulfillment.js'
 import { config } from '../config.js'
 import { marketplaceWebhookAllowed } from '../middleware/prelaunch.js'
 import { revokeMarketplaceEntitlements } from '../services/marketplace.js'
+import { cancelPaymentRewards } from '../services/rewards.js'
 
 const router = Router()
 
@@ -33,6 +34,8 @@ async function reconcile(payment, overrides = {}) {
 
 async function revokePaymentAccess(db, payment, reason) {
   if (!payment) return 0
+  // Codes this payment earned (next purchase, the inviter's reward) go with it.
+  await cancelPaymentRewards(db, payment.id).catch((err) => console.warn('[rewards] not cancelled:', err.message))
   return db.transaction(async (tx) => {
     const modern = await revokeMarketplaceEntitlements(tx, { sourceId: payment.id, reason })
     const legacy = await tx.run(

@@ -19,8 +19,10 @@ const P = `margin:0 0 14px;font:16px/1.6 system-ui,-apple-system,sans-serif;colo
 const META = `margin:0 0 8px;font:14px/1.5 system-ui,-apple-system,sans-serif;color:${COLORS.muted}`
 
 const paragraph = (text) => `<p style="${P}">${escapeHtml(text)}</p>`
-const meta = (text) => `<p style="${META}">${escapeHtml(text)}</p>`
-const textBlock = (parts) => parts.filter(Boolean).join('\n\n')
+// Russian dates end in «г.», so a sentence ending with one must not add a second dot.
+const tidy = (text) => String(text).replace(/\.\.(\s|$)/g, '.$1')
+const meta = (text) => `<p style="${META}">${escapeHtml(tidy(text))}</p>`
+const textBlock = (parts) => parts.filter(Boolean).map(tidy).join('\n\n')
 
 /** One bordered card with its own button, so the receipt above it still reads as a receipt. */
 function offerCard({ kicker, title, text, note, href, cta }) {
@@ -59,7 +61,54 @@ function promoBlock(code, label) {
   `
 }
 
-const OWN_TEMPLATES = new Set(['purchase_thanks', 'review_reward'])
+const OWN_TEMPLATES = new Set(['purchase_thanks', 'review_reward', 'referral_reward'])
+
+/** Copy for the reward codes; kept here, next to the only emails that use it. */
+const REWARD_COPY = {
+  ru: {
+    nextLabel: 'Скидка 15% на следующую покупку',
+    nextLead: 'Спасибо за покупку! Вот код на 15% на следующий курс или товар — по одному заказу.',
+    nextUntil: (date) => `Действует до ${date}.`,
+    refSubject: 'Ваш друг купил — вам скидка 15%',
+    refTitle: 'Спасибо, что привели друга',
+    refLead: 'Человек, которого вы пригласили, сделал первую покупку. Вот ваш код на 15% — на один заказ.',
+    refFrom: (from, until) => `Код начнёт действовать ${from}, когда закончится срок возврата у друга, и будет работать до ${until}.`,
+    refHow: 'Введите код в поле «Промокод» при оплате.',
+    refCta: 'В магазин',
+    codeLabel: 'Ваш код',
+  },
+  en: {
+    nextLabel: '15% off your next purchase',
+    nextLead: 'Thank you for your purchase! Here is a 15% code for your next course or product — one order.',
+    nextUntil: (date) => `Valid until ${date}.`,
+    refSubject: 'Your friend bought — here is 15% off',
+    refTitle: 'Thank you for bringing a friend',
+    refLead: 'Someone you invited has made their first purchase. Here is your 15% code — for one order.',
+    refFrom: (from, until) => `It starts working on ${from}, when your friend's refund window closes, and lasts until ${until}.`,
+    refHow: 'Enter it in the promo code field at checkout.',
+    refCta: 'Go to the store',
+    codeLabel: 'Your code',
+  },
+  ukr: {
+    nextLabel: 'Знижка 15% на наступну покупку',
+    nextLead: 'Дякуємо за покупку! Ось код на 15% на наступний курс або товар — на одне замовлення.',
+    nextUntil: (date) => `Діє до ${date}.`,
+    refSubject: 'Ваш друг купив — вам знижка 15%',
+    refTitle: 'Дякуємо, що привели друга',
+    refLead: 'Людина, яку ви запросили, зробила першу покупку. Ось ваш код на 15% — на одне замовлення.',
+    refFrom: (from, until) => `Код почне діяти ${from}, коли закінчиться строк повернення в друга, і працюватиме до ${until}.`,
+    refHow: 'Введіть код у поле «Промокод» під час оплати.',
+    refCta: 'До магазину',
+    codeLabel: 'Ваш код',
+  },
+}
+
+function rewardDate(value, locale) {
+  const date = value ? new Date(value) : null
+  if (!date || Number.isNaN(date.getTime())) return ''
+  const dateLocale = locale === 'en' ? 'en-GB' : locale === 'ukr' ? 'uk-UA' : 'ru-RU'
+  return date.toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })
+}
 
 function renderPurchaseEmail(template, payload = {}) {
   const locale = normalizeLocale(payload.locale)
@@ -80,7 +129,13 @@ function renderPurchaseEmail(template, payload = {}) {
     subject = copy.purchase.subject(item)
     title = copy.purchase.title
     preheader = copy.purchase.offer
-    bodyHtml = `${paragraph(copy.greeting(name))}${paragraph(copy.purchase.lead)}${featureCard(item, copy.purchase.sameEmail)}${primaryButton(href, copy.purchase.cta)}${offerCard({
+    const reward = REWARD_COPY[locale] || REWARD_COPY.ru
+    const nextCode = String(payload.nextCode || '')
+    const nextUntil = rewardDate(payload.nextUntil, locale)
+    const nextHtml = nextCode
+      ? `${promoBlock(nextCode, reward.nextLabel)}${meta(reward.nextLead)}${nextUntil ? meta(reward.nextUntil(nextUntil)) : ''}`
+      : ''
+    bodyHtml = `${paragraph(copy.greeting(name))}${paragraph(copy.purchase.lead)}${featureCard(item, copy.purchase.sameEmail)}${primaryButton(href, copy.purchase.cta)}${nextHtml}${offerCard({
       kicker: copy.purchase.offerKicker,
       title: copy.purchase.offerTitle,
       text: copy.purchase.offer,
@@ -93,9 +148,20 @@ function renderPurchaseEmail(template, payload = {}) {
       copy.purchase.lead,
       item,
       href,
+      nextCode ? `${reward.nextLabel}: ${nextCode}. ${nextUntil ? reward.nextUntil(nextUntil) : ''}` : '',
       `${copy.purchase.offerKicker}. ${copy.purchase.offer} ${copy.purchase.offerHonest}`,
       reviewHref,
     ])
+  } else if (template === 'referral_reward') {
+    const reward = REWARD_COPY[locale] || REWARD_COPY.ru
+    const code = String(payload.code || '')
+    const fromText = reward.refFrom(rewardDate(payload.validFrom, locale), rewardDate(payload.validUntil, locale))
+    const href = sitePath(locale, '/store')
+    subject = reward.refSubject
+    title = reward.refTitle
+    preheader = reward.refLead
+    bodyHtml = `${paragraph(copy.greeting(name))}${paragraph(reward.refLead)}${promoBlock(code, reward.codeLabel)}${meta(fromText)}${meta(reward.refHow)}${primaryButton(href, reward.refCta)}`
+    text = textBlock([copy.greeting(name), reward.refLead, code, fromText, reward.refHow, href])
   } else {
     const code = String(payload.code || '')
     const until = payload.validUntil ? new Date(payload.validUntil) : null

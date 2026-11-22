@@ -45,10 +45,10 @@ test('the reward is ten percent off anything, for thirty days', async () => {
   const onCourse = await validatePromoCode({ code, courseId: 'ai-agent-engineer', amountEur: 79 })
   assert.equal(onCourse.valid, true)
   assert.equal(onCourse.discountPercent, REVIEW_REWARD_PERCENT)
-  assert.equal(onCourse.finalEur, 71)
+  assert.equal(onCourse.finalEur, 71.1)
   const onProduct = await validatePromoCode({ code: code.toLowerCase(), courseId: 'mp-prompt-chatgpt-vault', amountEur: 29 })
   assert.equal(onProduct.valid, true)
-  assert.equal(onProduct.finalEur, 26)
+  assert.equal(onProduct.finalEur, 26.1)
 })
 
 test('the code is spent when the payment settles, not when checkout opens', async () => {

@@ -4,6 +4,8 @@ import { fulfillMarketplaceOrder, getMarketplaceProduct } from './marketplaceCat
 import { grantMarketplaceEntitlement } from './marketplace.js'
 import { sendPurchaseThanks } from './purchaseThanks.js'
 import { consumePromoForPayment } from './reviewReward.js'
+import { rewardSettledPayment } from './rewards.js'
+import { notifyUserEmail } from './email.js'
 
 /**
  * What happens once, when money has actually arrived: the promo the checkout
@@ -12,12 +14,28 @@ import { consumePromoForPayment } from './reviewReward.js'
  */
 async function afterFirstSettlement(payment, { itemId, marketplace }) {
   await consumePromoForPayment(payment.id).catch((err) => console.warn('[promo] not consumed:', err.message))
+  // The next-purchase code for the buyer and, for a referred buyer's first
+  // purchase, the thank-you code for whoever invited them. Best-effort: a
+  // reward must never undo a fulfilled order.
+  const rewards = await rewardSettledPayment(getDb(), payment).catch((err) => {
+    console.warn('[rewards] not issued:', err.message)
+    return null
+  })
   sendPurchaseThanks({
     email: payment.email,
     itemId,
     itemTitle: payment.course_title,
     marketplace,
+    nextCode: rewards?.next?.code,
+    nextUntil: rewards?.next?.validUntil,
   })
+  if (rewards?.referrer?.created && rewards.referrer.email) {
+    notifyUserEmail(rewards.referrer.email, 'referral_reward', {
+      code: rewards.referrer.code,
+      validFrom: rewards.referrer.validFrom,
+      validUntil: rewards.referrer.validUntil,
+    }).catch((err) => console.warn('[rewards] referrer email not sent:', err.message))
+  }
 }
 
 function sameMoney(left, right) {

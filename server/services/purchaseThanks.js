@@ -8,7 +8,7 @@ import { notifyUserEmail } from './email.js'
  * ends up. It never throws: a mail server having a bad minute must not turn a
  * paid order into a failed webhook that the provider then retries.
  */
-export async function sendPurchaseThanks({ email, itemId, itemTitle, marketplace = false }) {
+export async function sendPurchaseThanks({ email, itemId, itemTitle, marketplace = false, nextCode, nextUntil }) {
   try {
     const db = getDb()
     let slug = itemId
@@ -32,6 +32,8 @@ export async function sendPurchaseThanks({ email, itemId, itemTitle, marketplace
       itemTitle: title,
       itemSlug: slug,
       itemKind: marketplace ? 'product' : 'course',
+      nextCode,
+      nextUntil,
     })
   } catch (err) {
     console.warn('[purchase-thanks] not sent:', err.message)
