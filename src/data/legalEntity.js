@@ -1,23 +1,26 @@
 /**
- * Юридические реквизиты продавца AI Insider Academy.
- * DRAFT — замените TODO полями из регистрационных документов перед открытием продаж.
+ * Реквизиты продавца AI Insider Academy: частное лицо, продажи через Paddle.com
+ * (Merchant of Record). Регистрационный и налоговый номера пусты, пока их нет.
  */
 export const LEGAL_ENTITY = {
-  draft: true,
-  legalName: 'TODO: Полное юридическое имя (например, Vladyslav Katash / GmbH / ФОП)',
-  legalNameEn: 'TODO: Full legal name',
-  registrationCountry: 'TODO: страна регистрации',
-  registrationNumber: 'TODO: Handelsregister / ЄДРПОУ / Company ID',
-  taxId: 'TODO: USt-IdNr / Steuernummer / ІПН',
-  address: 'TODO: улица, индекс, город, страна',
+  draft: false,
+  legalName: 'Vladyslav Katash',
+  legalNameEn: 'Vladyslav Katash',
+  registrationCountry: 'Катар',
+  registrationCountryEn: 'Qatar',
+  registrationNumber: '',
+  taxId: '',
+  address: '',
   emailClaims: 'info@myinsideracademy.com',
   emailPrivacy: 'info@myinsideracademy.com',
   telegram: '@vladyslavarcher',
-  bankName: 'TODO: банк',
-  iban: 'TODO: IBAN',
-  bic: 'TODO: SWIFT/BIC',
-  governingLaw: 'TODO: применимое право и суд',
-  updatedAt: '2026-09-07',
+  bankName: '',
+  iban: '',
+  bic: '',
+  governingLaw: 'Право Государства Катар',
+  governingLawEn: 'Laws of the State of Qatar',
+  merchantOfRecord: 'Paddle.com Market Limited',
+  updatedAt: '2026-11-22',
 }
 
 export function legalRequisitesBlock(lang = 'ru') {
@@ -33,22 +36,25 @@ export function legalRequisitesBlock(lang = 'ru') {
           `Вопросы до покупки и претензии: ${e.emailClaims}. Telegram: ${e.telegram}.`,
         ]
   }
+  const optional = (label, value) => (value ? [`${label}: ${value}.`] : [])
   if (lang === 'en') {
     return [
-      `Seller: ${e.legalNameEn}.`,
-      `Registration: ${e.registrationCountry}, ID ${e.registrationNumber}, Tax ${e.taxId}.`,
-      `Address: ${e.address}.`,
-      `Claims: ${e.emailClaims}. Privacy: ${e.emailPrivacy}. Telegram: ${e.telegram}.`,
-      `Bank: ${e.bankName}. IBAN: ${e.iban}. BIC: ${e.bic}.`,
-      `Governing law: ${e.governingLaw}.`,
+      `Seller: ${e.legalNameEn}, ${e.registrationCountryEn}.`,
+      ...optional('Registration', e.registrationNumber),
+      ...optional('Tax ID', e.taxId),
+      ...optional('Address', e.address),
+      `Contact: ${e.emailClaims}. Telegram: ${e.telegram}.`,
+      `Merchant of Record: ${e.merchantOfRecord}.`,
+      `Governing law: ${e.governingLawEn}.`,
     ]
   }
   return [
-    `Продавец: ${e.legalName}.`,
-    `Регистрация: ${e.registrationCountry}, номер ${e.registrationNumber}, налог ${e.taxId}.`,
-    `Адрес: ${e.address}.`,
-    `Претензии: ${e.emailClaims}. Персональные данные: ${e.emailPrivacy}. Telegram: ${e.telegram}.`,
-    `Банк: ${e.bankName}. IBAN: ${e.iban}. BIC: ${e.bic}.`,
+    `Продавец: ${e.legalName}, ${e.registrationCountry}.`,
+    ...optional('Регистрация', e.registrationNumber),
+    ...optional('Налоговый номер', e.taxId),
+    ...optional('Адрес', e.address),
+    `Контакт: ${e.emailClaims}. Telegram: ${e.telegram}.`,
+    `Продавец по заказам (Merchant of Record): ${e.merchantOfRecord}.`,
     `Применимое право: ${e.governingLaw}.`,
   ]
 }
