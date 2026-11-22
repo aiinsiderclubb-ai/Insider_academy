@@ -21,6 +21,20 @@ export const LICENSE_TIERS = {
 
 export const MARKETPLACE_SALE_ALLOWLIST = new Set(['mp-voice-beauty-salon'])
 
+/**
+ * What the store may sell. By default only the allowlist above; with
+ * MARKETPLACE_SALE=all every product that is not "coming soon", and every
+ * bundle whose products all are. Launch flips one variable, not this file.
+ */
+export function isReleasedForSale(productOrBundle) {
+  if (!productOrBundle) return false
+  if (process.env.MARKETPLACE_SALE !== 'all') return MARKETPLACE_SALE_ALLOWLIST.has(productOrBundle.id)
+  if (Array.isArray(productOrBundle.productIds)) {
+    return productOrBundle.productIds.every((id) => isReleasedForSale(MARKETPLACE_PRODUCTS.find((p) => p.id === id)))
+  }
+  return productOrBundle.availability !== 'coming_soon'
+}
+
 export const MARKETPLACE_BUNDLES = [
   {
     id: 'vault-prompt',
@@ -131,7 +145,7 @@ export function quoteMarketplaceItem({ productId, licenseTier = 'personal', enfo
   const product = getMarketplaceProduct(productId)
   const bundle = getBundle(productId)
   if (!product && !bundle) throw Object.assign(new Error('Unknown or inactive marketplace product'), { status: 404 })
-  if (enforceRelease && !MARKETPLACE_SALE_ALLOWLIST.has(product?.id || '')) {
+  if (enforceRelease && !isReleasedForSale(product || bundle)) {
     throw Object.assign(new Error('Product is not released for purchase yet'), { status: 409 })
   }
   const basePrice = product?.priceEur ?? bundle.priceEur
@@ -164,7 +178,7 @@ export async function seedMarketplaceCatalog(db) {
        metadata = excluded.metadata, updated_at = excluded.updated_at`,
       [
         product.id, product.slug, product.titleEn || product.titleRu, product.categoryId,
-        product.creatorId, product.priceEur, MARKETPLACE_SALE_ALLOWLIST.has(product.id) ? 1 : 0,
+        product.creatorId, product.priceEur, isReleasedForSale(product) ? 1 : 0,
         JSON.stringify({
           productType: product.productType,
           titleRu: product.titleRu,

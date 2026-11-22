@@ -44,17 +44,17 @@ export const VAULT_DETAILS = {
     ],
   },
   'vault-agent': {
-    heroRu: 'Архитектуры и шаблоны AI-агентов',
-    heroEn: 'AI agent architectures and templates',
+    heroRu: 'Пять готовых AI-агентов для n8n',
+    heroEn: 'Five ready AI agents for n8n',
     outcomesRu: [
-      'Support и sales agents',
-      'RAG и knowledge base',
-      'Multi-agent системы',
+      'Агент поддержки и агент продаж на сайте и в Telegram',
+      'Квалификация заявок и запись на встречи без менеджера',
+      'Ответы по вашим документам со ссылками на источник',
     ],
     outcomesEn: [
-      'Support and sales agents',
-      'RAG and knowledge bases',
-      'Multi-agent systems',
+      'A support agent and a sales agent on your site and in Telegram',
+      'Lead qualification and booking without a manager',
+      'Answers from your documents with source citations',
     ],
   },
   'vault-creator': {

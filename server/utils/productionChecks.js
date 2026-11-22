@@ -77,11 +77,13 @@ export function validateProductionConfig() {
   }
 
   if (process.env.FEATURE_MARKETPLACE_COMMERCE === 'true') {
-    if (config.storage.driver !== 's3') errors.push('Marketplace commerce requires STORAGE_DRIVER=s3 in production')
+    // Store files ship from the website (purchase-gated /downloads); S3 is only
+    // needed for assets uploaded through the API, so its absence is a warning.
+    if (config.storage.driver !== 's3') warnings.push('STORAGE_DRIVER is not s3: assets uploaded through the API stay on local disk')
     if (!process.env.DOWNLOAD_SIGNING_SECRET || process.env.DOWNLOAD_SIGNING_SECRET.length < 32) {
       errors.push('DOWNLOAD_SIGNING_SECRET must be at least 32 characters')
     }
-    if (!config.stripe.webhookSecret && !config.tribute.apiKey && !config.liqpay.privateKey) {
+    if (!config.paddle.webhookSecret && !config.stripe.webhookSecret && !config.tribute.apiKey && !config.liqpay.privateKey) {
       errors.push('Marketplace commerce requires at least one verified payment provider')
     }
   }
