@@ -120,13 +120,18 @@ export function getBundle(idOrSlug) {
   return MARKETPLACE_BUNDLES.find((item) => item.id === idOrSlug || item.slug === idOrSlug) || null
 }
 
-export function quoteMarketplaceItem({ productId, licenseTier = 'personal' }) {
+/**
+ * `enforceRelease` guards the till: only released products can be bought. A
+ * grant after a settled payment (a vault's contents, a course pack's bonuses)
+ * passes false — the money is in, so what was paid for is handed over.
+ */
+export function quoteMarketplaceItem({ productId, licenseTier = 'personal', enforceRelease = true }) {
   const license = LICENSE_TIERS[licenseTier]
   if (!license) throw Object.assign(new Error('Invalid license tier'), { status: 400 })
   const product = getMarketplaceProduct(productId)
   const bundle = getBundle(productId)
   if (!product && !bundle) throw Object.assign(new Error('Unknown or inactive marketplace product'), { status: 404 })
-  if (!MARKETPLACE_SALE_ALLOWLIST.has(product?.id || '')) {
+  if (enforceRelease && !MARKETPLACE_SALE_ALLOWLIST.has(product?.id || '')) {
     throw Object.assign(new Error('Product is not released for purchase yet'), { status: 409 })
   }
   const basePrice = product?.priceEur ?? bundle.priceEur
@@ -200,7 +205,7 @@ export async function grantMarketplaceEntitlement(db, {
   if (!userId || !['webhook', 'admin', 'bundle'].includes(sourceType)) {
     throw Object.assign(new Error('Entitlements require a verified grant source'), { status: 403 })
   }
-  const quote = quoteMarketplaceItem({ productId, licenseTier })
+  const quote = quoteMarketplaceItem({ productId, licenseTier, enforceRelease: false })
   const products = quote.itemType === 'bundle' ? getBundle(productId).productIds : [quote.productId]
   const granted = []
   for (const id of products) {
@@ -225,10 +230,11 @@ export async function grantMarketplaceEntitlement(db, {
 export async function revokeMarketplaceEntitlements(db, { sourceId, reason = 'payment_reversed' }) {
   if (!sourceId) throw Object.assign(new Error('Verified payment source required'), { status: 400 })
   const revokedAt = new Date().toISOString()
+  // A bundle's grants carry `<bundle id>:<source>`, so the suffix match takes them back too.
   const result = await db.run(
     `UPDATE entitlements SET status = 'revoked', expires_at = ?
-     WHERE source_id = ? AND status = 'active'`,
-    [revokedAt, sourceId]
+     WHERE (source_id = ? OR source_id LIKE ?) AND status = 'active'`,
+    [revokedAt, sourceId, `%:${sourceId}`]
   )
   await trackMarketplaceEvent(db, {
     eventName: 'entitlement_revoked',

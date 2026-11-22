@@ -15,6 +15,7 @@ import 'dotenv/config'
 import { courses } from '../../src/data/courses.js'
 import { VAULT_PRODUCTS } from '../../src/data/vaultProducts.js'
 import { MARKETPLACE_PRODUCTS } from '../../src/data/marketplace/products.js'
+import { COURSE_BUNDLES } from '../../src/data/coursePacks.js'
 import { config } from '../config.js'
 import { paddleList, paddleRequest, toMinor } from '../services/paddle.js'
 
@@ -31,6 +32,9 @@ export function catalogItems() {
   }
   for (const v of VAULT_PRODUCTS) {
     if (price(v) > 0 && v.availability !== 'coming_soon') items.push({ id: v.id, kind: 'vault', name: v.titleEn || v.title || v.titleRu, description: v.shortEn || v.descriptionEn || v.short || '', amount: price(v) })
+  }
+  for (const b of COURSE_BUNDLES) {
+    if (price(b) > 0) items.push({ id: b.id, kind: 'pack', name: b.titleEn || b.title, description: b.descEn || b.descRu || '', amount: price(b) })
   }
   for (const p of MARKETPLACE_PRODUCTS) {
     if (price(p) > 0 && p.availability !== 'coming_soon') items.push({ id: p.id, kind: 'store', name: p.titleEn || p.titleRu, description: p.shortEn || p.shortRu || '', amount: price(p) })

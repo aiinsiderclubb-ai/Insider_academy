@@ -37,16 +37,22 @@ async function revokePaymentAccess(db, payment, reason) {
   // Codes this payment earned (next purchase, the inviter's reward) go with it.
   await cancelPaymentRewards(db, payment.id).catch((err) => console.warn('[rewards] not cancelled:', err.message))
   return db.transaction(async (tx) => {
-    const modern = await revokeMarketplaceEntitlements(tx, { sourceId: payment.id, reason })
+    let modern = await revokeMarketplaceEntitlements(tx, { sourceId: payment.id, reason })
+    // Grants made through grantAccess (a vault's products, a pack's bonuses) carry
+    // the provider's reference rather than our payment id.
+    if (payment.external_id) {
+      modern += await revokeMarketplaceEntitlements(tx, { sourceId: `${payment.provider}:${payment.external_id}`, reason })
+    }
     const legacy = await tx.run(
       `UPDATE asset_entitlements SET status = 'revoked', expires_at = ?
        WHERE order_id IN (SELECT id FROM marketplace_orders WHERE payment_id = ?) AND status = 'active'`,
       [new Date().toISOString(), payment.id]
     )
     await tx.run("UPDATE marketplace_orders SET status = 'refunded' WHERE payment_id = ? AND status = 'completed'", [payment.id])
-    // A refunded course closes again: its purchase row carries the provider's transaction id.
+    // A refunded course closes again — every course the payment opened, a pack's
+    // included — since each purchase row carries the provider's transaction id.
     const course = payment.external_id
-      ? await tx.run('DELETE FROM purchases WHERE user_id = ? AND course_id = ? AND payment_id = ?', [payment.user_id, payment.course_id, payment.external_id])
+      ? await tx.run('DELETE FROM purchases WHERE user_id = ? AND payment_id = ?', [payment.user_id, payment.external_id])
       : null
     await tx.run("UPDATE payments SET status = 'refunded' WHERE id = ? AND status = 'completed'", [payment.id])
     return modern + Number(legacy?.changes ?? legacy?.rowCount ?? 0) + Number(course?.changes ?? course?.rowCount ?? 0)

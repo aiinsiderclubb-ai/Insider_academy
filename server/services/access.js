@@ -1,3 +1,4 @@
+import { getCourseBundle } from '../../src/data/coursePacks.js'
 import { getDb } from '../db.js'
 import * as sheetsTrack from './sheetsTrack.js'
 import {
@@ -75,6 +76,28 @@ export async function grantAccess({
       [resolvedUserId, courseId, provider, externalId]
     )
     newlyGranted = true
+  }
+
+  // A course pack opens each of its courses and hands over its bonus products.
+  const pack = getCourseBundle(courseId)
+  if (pack && resolvedUserId) {
+    for (const packCourse of pack.courseIds) {
+      const owned = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [resolvedUserId, packCourse])
+      if (!owned) {
+        await db.run(
+          'INSERT INTO purchases (user_id, course_id, payment_provider, payment_id) VALUES (?, ?, ?, ?)',
+          [resolvedUserId, packCourse, provider, externalId]
+        )
+      }
+    }
+    for (const productId of pack.bonusProductIds || []) {
+      await grantMarketplaceEntitlement(db, {
+        userId: resolvedUserId,
+        productId,
+        sourceType: 'bundle',
+        sourceId: `${courseId}:${provider}:${externalId}`,
+      })
+    }
   }
 
   if (email && newlyGranted) {

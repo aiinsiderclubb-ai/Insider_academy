@@ -49,6 +49,8 @@ export const COURSE_BUNDLES = [
     descEn: 'AI Productivity Master + AI Content Creator for work and content.',
     courseIds: ['ai-productivity-master', 'ai-content-creator'],
     includes: ['Productivity Master', 'Content Creator'],
+    /** Store products the bundle hands over with its courses, granted on payment. */
+    bonusProductIds: ['mp-prompt-chatgpt-vault', 'mp-creator-calendar', 'mp-creator-reels-pack', 'mp-creator-shorts'],
     bonusRu: [
       'ChatGPT Prompt Vault — 80 промптов',
       'Контент-календарь на 365 дней',
@@ -71,6 +73,8 @@ export const COURSE_BUNDLES = [
     descEn: 'Productivity, content and automations for freelancers.',
     courseIds: ['ai-productivity-master', 'ai-content-creator', 'ai-automation-engineer'],
     includes: ['Productivity Master', 'Content Creator', 'Automation Engineer'],
+    /** Store products the bundle hands over with its courses, granted on payment. */
+    bonusProductIds: ['mp-workflow-lead-gen', 'mp-workflow-crm', 'mp-biz-agency-proposal', 'mp-income-agency-os'],
     bonusRu: [
       'Lead Generation Workflow для n8n',
       'CRM Automation Kit для n8n',
@@ -100,6 +104,8 @@ export const COURSE_BUNDLES = [
     ],
     includes: ['Productivity Master', 'Content Creator', 'Automation Engineer', 'Agent Engineer'],
     includesEn: ['Productivity Master', 'Content Creator', 'Automation Engineer', 'Agent Engineer'],
+    /** Store products the bundle hands over with its courses, granted on payment. */
+    bonusProductIds: ['mp-workflow-lead-gen', 'mp-workflow-whatsapp', 'mp-workflow-support', 'mp-workflow-content', 'mp-workflow-crm', 'mp-mcp-claude-skills', 'mp-prompt-sales-vault', 'mp-biz-discovery', 'mp-biz-outreach-pack'],
     bonusRu: [
       '5 систем n8n: заявки, WhatsApp, поддержка, контент, CRM',
       'Claude Skills Library — 11 скиллов',

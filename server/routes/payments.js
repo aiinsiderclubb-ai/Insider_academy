@@ -15,11 +15,12 @@ import {
 import { quoteMarketplaceItem, trackMarketplaceEvent } from '../services/marketplace.js'
 import { courses as courseCatalog } from '../../src/data/courses.js'
 import { VAULT_PRODUCTS } from '../../src/data/vaultProducts.js'
+import { COURSE_BUNDLES } from '../../src/data/coursePacks.js'
 import { LEGAL_ENTITY } from '../../src/data/legalEntity.js'
 
 const router = Router()
 const LOCALES = new Set(['ru', 'ukr', 'en'])
-const PAID_CATALOG = [...courseCatalog, ...VAULT_PRODUCTS]
+const PAID_CATALOG = [...courseCatalog, ...VAULT_PRODUCTS, ...COURSE_BUNDLES]
 
 async function checkoutAvailability(req, res, next) {
   if (!isPrelaunchMode()) return next()
@@ -36,7 +37,9 @@ async function resolveCheckoutItem(db, courseId, _email) {
   // services/rewards.js; this is the list price.
   const amount = baseAmount
   return {
-    kind: VAULT_PRODUCTS.some((entry) => entry.id === courseId) ? 'vault' : 'course',
+    kind: VAULT_PRODUCTS.some((entry) => entry.id === courseId)
+      ? 'vault'
+      : COURSE_BUNDLES.some((entry) => entry.id === courseId) ? 'pack' : 'course',
     amount,
     title: item.title || item.titleRu || item.name || courseId,
     slug: item.slug || courseId,
@@ -45,6 +48,10 @@ async function resolveCheckoutItem(db, courseId, _email) {
 }
 
 function checkoutPaths(item, provider) {
+  if (item.kind === 'pack') return {
+    success: `/app/learning?paid=1&provider=${provider}`,
+    cancel: `/learn/bundles/${item.slug}?cancel=1`,
+  }
   if (item.kind === 'vault') return {
     success: `/store/${item.slug}?tab=vault&paid=1&provider=${provider}`,
     cancel: `/store/${item.slug}/buy?cancel=1`,
