@@ -2,6 +2,7 @@
 
 import { getVideoLessons } from './videoLessons.js'
 import { resolveCourseId } from './courseAliases.js'
+import { SITE_LESSON_PROGRAMS } from './siteLessonPrograms.js'
 import {
   PRODUCTIVITY_MASTER_LESSONS,
   CONTENT_CREATOR_LESSONS,
@@ -355,6 +356,12 @@ const VIDEO_COURSE_DURATIONS = {
   'ai-agency-builder': LONG,
 }
 
+// The website's current programs win over the older ones written here; an
+// API-only field such as `meta` survives the replacement.
+for (const [courseId, program] of Object.entries(SITE_LESSON_PROGRAMS)) {
+  LESSON_PROGRAMS[courseId] = { ...(LESSON_PROGRAMS[courseId] || {}), ...program }
+}
+
 let videoProgramsLoaded = false
 
 function ensureVideoPrograms() {
@@ -384,6 +391,8 @@ const LESSON_PREFIX = {
   'ai-saas-builder': 'sb',
   'ai-agent-architect': 'aa',
   'ai-agency-builder': 'agb',
+  'voice-agents': 'va',
+  'ai-for-developers': 'dev',
 }
 
 export function getLessonProgram(courseId) {
