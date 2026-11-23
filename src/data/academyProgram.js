@@ -25,7 +25,7 @@ const IMAGES = {
 
 function baseCourse({
   id, slug, title, titleEn, shortDescription, shortDescriptionEn,
-  fullDescription, fullDescriptionEn, priceEur, oldPriceEur, duration, durationEn,
+  fullDescription, fullDescriptionEn, priceEur, mentorPriceEur, oldPriceEur, duration, durationEn,
   category, categoryEn, goals, goalsEn, tools, skills, audience, audienceEn,
   finalProject, finalProjectEn, image, lessons, isFreeTrial, level = 'Basic',
   hasHomework = false, catalogHidden = false, badge, faq,
@@ -45,6 +45,8 @@ function baseCourse({
     durationEn,
     price: 0,
     priceEur: priceEur ?? 0,
+    /** The plan with assignment review and a mentor; null for free courses. */
+    mentorPriceEur: mentorPriceEur ?? null,
     oldPriceEur: oldPriceEur ?? null,
     badge: badge ?? null,
     faq: faq ?? null,
@@ -182,8 +184,8 @@ const rawAcademyCourses = [
       'ChatGPT, Claude, Gemini, Perplexity, Deep Research, документы, таблицы, встречи, продажи и персональный AI-стек. Финальный проект — ваша система продуктивности.',
     fullDescriptionEn:
       'ChatGPT, Claude, Gemini, Perplexity, Deep Research, documents, spreadsheets, meetings, sales and a personal AI stack. Capstone: your productivity system.',
-    priceEur: 29,
-    oldPriceEur: 39,
+    priceEur: 19,
+    mentorPriceEur: 39,
     duration: getLessonCountLabel('ai-productivity-master', 'ru'),
     durationEn: getLessonCountLabel('ai-productivity-master', 'en'),
     category: 'Продуктивность',
@@ -213,8 +215,8 @@ const rawAcademyCourses = [
       'Canva AI, Midjourney, Flux, Runway, Kling, Veo, Shorts/Reels и автоматизация публикаций. Итог — финальный контент-конвейер.',
     fullDescriptionEn:
       'Canva AI, Midjourney, Flux, Runway, Kling, Veo, Shorts/Reels and publishing automation. Capstone: full content pipeline.',
-    priceEur: 39,
-    oldPriceEur: 49,
+    priceEur: 24,
+    mentorPriceEur: 49,
     badge: 'new',
     level: 'Pro',
     duration: getLessonCountLabel('ai-content-creator', 'ru'),
@@ -245,8 +247,8 @@ const rawAcademyCourses = [
       'Автоматизации, Telegram/WhatsApp, CRM, AI Support Agent, ElevenLabs, Vapi, Retell и работа с клиентами.',
     fullDescriptionEn:
       'Automations, Telegram/WhatsApp, CRM, AI support agent, ElevenLabs, Vapi, Retell and client delivery.',
-    priceEur: 59,
-    oldPriceEur: 79,
+    priceEur: 29,
+    mentorPriceEur: 59,
     badge: 'trend-2026',
     level: 'Pro',
     faq: [
@@ -293,8 +295,8 @@ const rawAcademyCourses = [
       'Архитектура агентов, MCP, embeddings, vector DB, LangChain, CrewAI, LangGraph, memory и monitoring.',
     fullDescriptionEn:
       'Agent architecture, MCP, embeddings, vector DB, LangChain, CrewAI, LangGraph, memory and monitoring.',
-    priceEur: 79,
-    oldPriceEur: 99,
+    priceEur: 29,
+    mentorPriceEur: 59,
     badge: 'hit',
     level: 'Pro',
     faq: [
@@ -341,8 +343,8 @@ const rawAcademyCourses = [
       'От выбора ниши до Stripe: лендинг, аутрич, discovery calls, delivery, Lovable, Bolt, Replit и масштабирование.',
     fullDescriptionEn:
       'From niche to Stripe: landing, outreach, discovery calls, delivery, Lovable, Bolt, Replit and scaling.',
-    priceEur: 79,
-    oldPriceEur: 99,
+    priceEur: 29,
+    mentorPriceEur: 59,
     level: 'Pro',
     duration: getLessonCountLabel('ai-business-builder', 'ru'),
     durationEn: getLessonCountLabel('ai-business-builder', 'en'),

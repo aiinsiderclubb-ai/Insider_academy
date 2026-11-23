@@ -7,6 +7,7 @@ import { createCheckoutSession } from '../services/stripe.js'
 import { createPaddleTransaction } from '../services/paddle.js'
 import { createGumroadCheckout } from '../services/gumroad.js'
 import { bestPrice } from '../services/rewards.js'
+import { coursePlanFor, normalizePlan, planPrice } from '../services/coursePlan.js'
 import { createPaymentPayload } from '../services/liqpay.js'
 import {
   createShopOrder,
@@ -28,24 +29,50 @@ async function checkoutAvailability(req, res, next) {
   return prelaunchBlocked(req, res, next)
 }
 
-async function resolveCheckoutItem(db, courseId, _email) {
+/**
+ * The list price of what is being bought. A paid course comes in two plans
+ * (services/coursePlan.js): `plan` picks one, and a learner who owns the
+ * self-study plan pays only the difference for the mentor plan. Discounts
+ * (promo, friend referral) are applied later through services/rewards.js.
+ */
+async function resolveCheckoutItem(db, courseId, { plan, userId } = {}) {
   const item = PAID_CATALOG.find((entry) => entry.id === courseId)
   const baseAmount = Number(item?.priceEur ?? item?.price)
   if (!item || !Number.isFinite(baseAmount) || baseAmount <= 0) {
     throw Object.assign(new Error('Unknown or non-payable catalog item'), { status: 400 })
   }
-  // Discounts (promo, friend referral) are applied by the checkout through
-  // services/rewards.js; this is the list price.
-  const amount = baseAmount
+  const kind = VAULT_PRODUCTS.some((entry) => entry.id === courseId)
+    ? 'vault'
+    : COURSE_BUNDLES.some((entry) => entry.id === courseId) ? 'pack' : 'course'
+  const title = item.title || item.titleRu || item.name || courseId
+
+  let amount = baseAmount
+  let chosenPlan = null
+  if (kind === 'course') {
+    const current = await coursePlanFor(db, userId, courseId)
+    const wanted = normalizePlan(plan)
+    if (current === 'mentor' || (current === 'self' && wanted === 'self')) {
+      throw Object.assign(new Error('Course already owned in this plan'), { status: 409, code: 'ALREADY_OWNED' })
+    }
+    const priced = planPrice(item, wanted, current)
+    amount = priced.amount
+    chosenPlan = priced.plan
+  }
+  if (!(amount > 0)) throw Object.assign(new Error('Nothing to pay'), { status: 400 })
+
   return {
-    kind: VAULT_PRODUCTS.some((entry) => entry.id === courseId)
-      ? 'vault'
-      : COURSE_BUNDLES.some((entry) => entry.id === courseId) ? 'pack' : 'course',
+    kind,
     amount,
-    title: item.title || item.titleRu || item.name || courseId,
+    plan: chosenPlan,
+    title: chosenPlan === 'mentor' ? `${title} — с ментором` : title,
     slug: item.slug || courseId,
     currency: 'EUR',
   }
+}
+
+/** The plan rides on the payment, so access can tell the two apart once it is paid. */
+async function rememberPlan(db, paymentId, item) {
+  if (item.plan) await db.run('UPDATE payments SET plan = ? WHERE id = ?', [item.plan, paymentId])
 }
 
 function checkoutPaths(item, provider) {
@@ -223,10 +250,10 @@ async function openPaddleTransaction(db, { paymentId, req, itemId, title, amount
 router.post('/paddle/checkout', requireUser, checkoutAvailability, async (req, res) => {
   if (!isPaddleEnabled()) return res.status(503).json({ error: 'Paddle not configured' })
   const db = getDb()
-  const { courseId, promoCode, referralCode } = req.body
+  const { courseId, promoCode, referralCode, plan } = req.body
   if (!courseId) return res.status(400).json({ error: 'courseId required' })
   try {
-    const item = await resolveCheckoutItem(db, courseId, req.userEmail)
+    const item = await resolveCheckoutItem(db, courseId, { plan, userId: req.userId })
     const price = await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: courseId, amountEur: item.amount, promoCode, referralCode })
     if (promoCode && price.promoError && price.kind !== 'promo') {
       return res.status(400).json({ error: price.promoError, errorRu: 'Промокод не подошёл.' })
@@ -240,6 +267,7 @@ router.post('/paddle/checkout', requireUser, checkoutAvailability, async (req, r
        VALUES (?, ?, ?, ?, ?, ?, 'EUR', 'paddle', 'pending', ?)`,
       [paymentId, req.userId, req.userEmail, courseId, item.title, amount, new Date().toISOString()]
     )
+    await rememberPlan(db, paymentId, item)
     if (appliedPromo) {
       const { rememberPromoForPayment } = await import('../services/reviewReward.js')
       await rememberPromoForPayment(db, paymentId, appliedPromo)
@@ -252,12 +280,13 @@ router.post('/paddle/checkout', requireUser, checkoutAvailability, async (req, r
       baseAmount: price.baseEur,
       discount: price.kind ? { kind: price.kind, eur: price.discountEur, percent: price.percent ?? null } : null,
       currency: 'EUR',
+      plan: item.plan,
       promo: appliedPromo,
       successUrl: publicUrl(req.body.locale, paths.success),
     })
   } catch (err) {
     console.error('[paddle checkout]', err.message)
-    res.status(err.status || 502).json({ error: err.message })
+    res.status(err.status || 502).json({ error: err.message, code: err.code })
   }
 })
 
@@ -394,9 +423,14 @@ router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, 
   }
 
   const db = getDb()
-  const { courseId, slug, locale, promoCode } = req.body
+  const { courseId, slug, locale, promoCode, plan } = req.body
   if (!courseId) return res.status(400).json({ error: 'courseId required' })
-  const item = await resolveCheckoutItem(db, courseId, req.userEmail)
+  let item
+  try {
+    item = await resolveCheckoutItem(db, courseId, { plan, userId: req.userId })
+  } catch (err) {
+    return res.status(err.status || 400).json({ error: err.message, code: err.code })
+  }
   const courseTitle = item.title
   let amount = item.amount
   const paths = checkoutPaths(item, 'tribute')
@@ -447,6 +481,7 @@ router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, 
          VALUES (?, ?, ?, ?, ?, ?, ?, 'tribute', ?, 'pending', ?)`,
         [paymentId, req.userId, req.userEmail, courseId, courseTitle, amount, item.currency, order.uuid, new Date().toISOString()]
       )
+      await rememberPlan(db, paymentId, item)
       if (appliedPromo) {
         const { rememberPromoForPayment } = await import('../services/reviewReward.js')
         await rememberPromoForPayment(db, paymentId, appliedPromo)
@@ -458,6 +493,11 @@ router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, 
         orderUuid: order.uuid,
         mode: 'shop',
       })
+    }
+
+    if (item.plan === 'mentor') {
+      // A fixed Tribute product is priced on Tribute's side, at the self-study price.
+      return res.status(409).json({ error: 'The mentor plan needs Tribute Shop checkout (TRIBUTE_SHOP_ID)' })
     }
 
     if (!productId) {
@@ -474,6 +514,7 @@ router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, 
        VALUES (?, ?, ?, ?, ?, ?, ?, 'tribute', ?, 'pending', ?)`,
       [paymentId, req.userId, req.userEmail, courseId, courseTitle, amount, item.currency, String(productId), new Date().toISOString()]
     )
+    await rememberPlan(db, paymentId, item)
 
     return res.json({ url: payUrl, mode: 'product', productId })
   } catch (err) {
@@ -485,8 +526,13 @@ router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, 
 router.post('/stripe/checkout', requireUser, checkoutAvailability, async (req, res) => {
   if (!isStripeEnabled()) return res.status(503).json({ error: 'Stripe not configured' })
   const db = getDb()
-  const { courseId } = req.body
-  const item = await resolveCheckoutItem(db, courseId, req.userEmail)
+  const { courseId, plan } = req.body
+  let item
+  try {
+    item = await resolveCheckoutItem(db, courseId, { plan, userId: req.userId })
+  } catch (err) {
+    return res.status(err.status || 400).json({ error: err.message, code: err.code })
+  }
   const amount = item.amount
   const courseTitle = item.title
   const paymentId = `pay-${Date.now()}`
@@ -495,6 +541,7 @@ router.post('/stripe/checkout', requireUser, checkoutAvailability, async (req, r
      VALUES (?, ?, ?, ?, ?, ?, ?, 'stripe', 'pending', ?)`,
     [paymentId, req.userId, req.userEmail, courseId, courseTitle, amount, item.currency, new Date().toISOString()]
   )
+  await rememberPlan(db, paymentId, item)
   const paths = checkoutPaths(item, 'stripe')
   const session = await createCheckoutSession({
     userId: req.userId,
@@ -512,8 +559,13 @@ router.post('/stripe/checkout', requireUser, checkoutAvailability, async (req, r
 router.post('/liqpay/create', requireUser, checkoutAvailability, async (req, res) => {
   if (!isLiqPayEnabled()) return res.status(503).json({ error: 'LiqPay not configured' })
   const db = getDb()
-  const { courseId, slug, locale } = req.body
-  const item = await resolveCheckoutItem(db, courseId, req.userEmail)
+  const { courseId, slug, locale, plan } = req.body
+  let item
+  try {
+    item = await resolveCheckoutItem(db, courseId, { plan, userId: req.userId })
+  } catch (err) {
+    return res.status(err.status || 400).json({ error: err.message, code: err.code })
+  }
   const amount = item.amount
   const courseTitle = item.title
   const orderId = `lp-${Date.now()}`
@@ -522,6 +574,7 @@ router.post('/liqpay/create', requireUser, checkoutAvailability, async (req, res
      VALUES (?, ?, ?, ?, ?, ?, ?, 'liqpay', ?, 'pending', ?)`,
     [orderId, req.userId, req.userEmail, courseId, courseTitle, amount, item.currency, orderId, new Date().toISOString()]
   )
+  await rememberPlan(db, orderId, item)
   const paths = checkoutPaths(item, 'liqpay')
   const payload = createPaymentPayload({
     amount,
@@ -538,9 +591,14 @@ router.post('/demo', requireUser, checkoutAvailability, async (req, res) => {
     return res.status(404).json({ error: 'Not found' })
   }
   const db = getDb()
-  const { courseId, promoCode } = req.body
+  const { courseId, promoCode, plan } = req.body
   if (!courseId) return res.status(400).json({ error: 'courseId required' })
-  const item = await resolveCheckoutItem(db, courseId, req.userEmail)
+  let item
+  try {
+    item = await resolveCheckoutItem(db, courseId, { plan, userId: req.userId })
+  } catch (err) {
+    return res.status(err.status || 400).json({ error: err.message, code: err.code })
+  }
   const courseTitle = item.title
   let finalAmount = item.amount
   if (promoCode) {
@@ -554,6 +612,14 @@ router.post('/demo', requireUser, checkoutAvailability, async (req, res) => {
     } catch (err) {
       console.warn('[payments/demo] promo ignored:', err.message)
     }
+  }
+  if (item.plan) {
+    const demoId = `demo-${Date.now()}`
+    await db.run(
+      `INSERT INTO payments (id, user_id, email, course_id, course_title, amount, currency, provider, status, plan, created_at, completed_at)
+       VALUES (?, ?, ?, ?, ?, ?, 'EUR', 'demo', 'completed', ?, ?, ?)`,
+      [demoId, req.userId, req.userEmail, courseId, courseTitle, finalAmount, item.plan, new Date().toISOString(), new Date().toISOString()]
+    )
   }
   const exists = await db.get('SELECT id FROM purchases WHERE user_id = ? AND course_id = ?', [req.userId, courseId])
   if (!exists) {

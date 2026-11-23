@@ -85,9 +85,9 @@ test('referral 10% for the friend, 15% for the inviter after the refund window, 
     // Boris arrives by Anna's link and pays 10% less on his first purchase
     const first = await call(boris, 'POST', '/api/payments/paddle/checkout', { courseId: 'ai-productivity-master', referralCode: annaRewards.referralCode })
     assert.equal(first.status, 200, JSON.stringify(first.body))
-    assert.equal(first.body.amount, 26.1)
-    assert.deepEqual(first.body.discount, { kind: 'referral', eur: 2.9, percent: 10 })
-    assert.equal(created.at(-1).items[0].price.unit_price.amount, '2610')
+    assert.equal(first.body.amount, 17.1)
+    assert.deepEqual(first.body.discount, { kind: 'referral', eur: 1.9, percent: 10 })
+    assert.equal(created.at(-1).items[0].price.unit_price.amount, '1710')
     const firstPayment = await settle(first.body.transactionId)
 
     // Boris now holds a 15% next-purchase code; Anna a 15% code that waits out the refund window
@@ -117,7 +117,7 @@ test('referral 10% for the friend, 15% for the inviter after the refund window, 
     const carla = await user('carla')
     await db.run("INSERT INTO promo_codes (code, discount_percent, active, created_at) VALUES ('BIG50', 50, 1, ?)", [new Date().toISOString()])
     const big = await call(carla, 'POST', '/api/payments/paddle/checkout', { courseId: 'ai-productivity-master', referralCode: annaRewards.referralCode, promoCode: 'BIG50' })
-    assert.equal(big.body.amount, 14.5)
+    assert.equal(big.body.amount, 9.5)
     assert.equal(big.body.discount.kind, 'promo')
     const bad = await call(carla, 'POST', '/api/payments/paddle/checkout', { courseId: 'ai-productivity-master', promoCode: 'NOPE' })
     assert.equal(bad.status, 400)

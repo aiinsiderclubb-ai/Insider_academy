@@ -90,14 +90,14 @@ test('Paddle checkout → transaction.completed grants access once; a full refun
     assert.equal(checkout.status, 200, await checkout.clone().text())
     const opened = await checkout.json()
     assert.equal(opened.transactionId, 'txn_1')
-    assert.equal(opened.amount, 29)
+    assert.equal(opened.amount, 19)
     assert.match(opened.successUrl, /^https?:\/\/.+\/en\/learn\/.+paid=1&provider=paddle/)
 
     // the price is ours, tax included, on the catalog product — not what the client sent
     const sent = created[0]
     assert.equal(sent.auth, 'Bearer pdl_sdbx_apikey_test')
     assert.equal(sent.body.items[0].price.product_id, 'pro_course')
-    assert.equal(sent.body.items[0].price.unit_price.amount, '2900')
+    assert.equal(sent.body.items[0].price.unit_price.amount, '1900')
     assert.equal(sent.body.items[0].price.tax_mode, 'internal')
     assert.equal(sent.body.custom_data.item_id, 'ai-productivity-master')
 
@@ -114,7 +114,7 @@ test('Paddle checkout → transaction.completed grants access once; a full refun
       data: {
         id: 'txn_1', status: 'completed', currency_code: 'EUR',
         custom_data: { payment_id: payment.id, user_id: String(payment.user_id), item_id: 'ai-productivity-master' },
-        details: { totals: { grand_total: '2900', total: '2900' } },
+        details: { totals: { grand_total: '1900', total: '1900' } },
       },
     }
 

@@ -5,6 +5,7 @@
 export async function runPostgresMigrations(pool) {
   const statements = [
     "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified INTEGER DEFAULT 0",
+    'ALTER TABLE payments ADD COLUMN IF NOT EXISTS plan TEXT',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS streak_count INTEGER DEFAULT 0',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS last_activity_date TEXT',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_chat_id TEXT',

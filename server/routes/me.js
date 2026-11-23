@@ -17,6 +17,7 @@ import { issueEmailVerificationCode } from '../services/emailVerification.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { validateUserPassword } from '../utils/security.js'
 import { attachReferral, friendDiscountPercent, rewardsFor } from '../services/rewards.js'
+import { coursePlanFor, coursePlans } from '../services/coursePlan.js'
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -35,10 +36,13 @@ router.get('/', async (req, res) => {
     user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
   }
 
-  const purchases = prelaunch ? [] : await db.all(
+  const owned = prelaunch ? [] : await db.all(
     'SELECT course_id AS id, purchased_at AS purchasedAt FROM purchases WHERE user_id = ? ORDER BY purchased_at DESC',
     [req.userId]
   )
+  // Each owned course carries its plan: `self` has no assignment review or mentor.
+  const plans = owned.length ? await coursePlans(db, req.userId) : new Map()
+  const purchases = owned.map((row) => ({ ...row, plan: plans.get(row.id) || 'mentor' }))
   const progressRows = prelaunch ? [] : await db.all('SELECT course_id, data FROM progress WHERE user_id = ?', [req.userId])
   const progress = {}
   for (const row of progressRows) progress[row.course_id] = parseJson(row.data, {})
@@ -217,6 +221,14 @@ router.post('/homework', prelaunchBlocked, upload.single('file'), async (req, re
   const user = await db.get('SELECT email, name FROM users WHERE id = ?', [req.userId])
   if (!user?.email) return res.status(404).json({ error: 'User not found' })
   const { courseId, courseTitle, lessonIndex, lessonTitle, content } = req.body
+  // Review is what the mentor plan pays for; the self-study plan checks its own work.
+  if (await coursePlanFor(db, req.userId, courseId) === 'self') {
+    return res.status(403).json({
+      error: 'Assignment review is part of the mentor plan',
+      errorRu: 'Проверка домашних заданий входит в тариф с ментором.',
+      code: 'PLAN_NO_REVIEW',
+    })
+  }
   const now = new Date().toISOString()
   const existing = await db.get(
     'SELECT id FROM homework WHERE email = ? AND course_id = ? AND lesson_index = ?',
