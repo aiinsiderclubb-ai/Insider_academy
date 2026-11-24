@@ -83,14 +83,19 @@ test('Gumroad: discounted checkout link with a single-use code, signed pings gra
     const user = await db.get('SELECT id FROM users WHERE email = ?', [email])
     const owns = async (courseId) => Boolean(await db.get('SELECT 1 AS ok FROM purchases WHERE user_id = ? AND course_id = ?', [user.id, courseId]))
 
+    // a Gumroad product has one price, so the dearer mentor plan is not sold there
+    const mentor = await fetch(`${base}/api/payments/gumroad/checkout`, { method: 'POST', headers: auth, body: JSON.stringify({ courseId: 'ai-productivity-master', plan: 'mentor' }) })
+    assert.equal(mentor.status, 409)
+    assert.equal((await mentor.json()).code, 'PLAN_NOT_AVAILABLE')
+
     // 50% campaign code → the link carries a single-use Gumroad code for the difference
     await db.run("INSERT INTO promo_codes (code, discount_percent, active, created_at) VALUES ('BIG50', 50, 1, ?)", [new Date().toISOString()])
     const order = await fetch(`${base}/api/payments/gumroad/checkout`, { method: 'POST', headers: auth, body: JSON.stringify({ courseId: 'ai-productivity-master', promoCode: 'BIG50' }) }).then((r) => r.json())
-    assert.equal(order.amount, 14.5)
+    assert.equal(order.amount, 9.5)
     const link = new URL(order.checkoutUrl)
     const code = offerCodes.at(-1)
     assert.equal(code.product, 'g_course')
-    assert.equal(code.amount_off, 1450)
+    assert.equal(code.amount_off, 950)
     assert.equal(code.offer_type, 'cents')
     assert.equal(code.max_purchase_count, 1)
     assert.equal(link.pathname, `/l/ai-productivity-master/${code.name}`)

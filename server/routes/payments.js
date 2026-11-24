@@ -342,10 +342,15 @@ async function rememberGumroadCode(db, paymentId, code) {
 router.post('/gumroad/checkout', requireUser, checkoutAvailability, async (req, res) => {
   if (!isGumroadEnabled()) return res.status(503).json({ error: 'Gumroad not configured' })
   const db = getDb()
-  const { courseId, promoCode, referralCode } = req.body
+  const { courseId, plan, promoCode, referralCode } = req.body
   if (!courseId) return res.status(400).json({ error: 'courseId required' })
   try {
-    const item = await resolveCheckoutItem(db, courseId, req.userEmail)
+    const item = await resolveCheckoutItem(db, courseId, { plan, userId: req.userId })
+    /* A Gumroad product has one price and offer codes only take money off it,
+       so the dearer mentor plan (or an upgrade to it) cannot be sold there. */
+    if (item.plan === 'mentor') {
+      return res.status(409).json({ error: 'The mentor plan is not sold through Gumroad', code: 'PLAN_NOT_AVAILABLE' })
+    }
     const price = await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: courseId, amountEur: item.amount, promoCode, referralCode })
     if (promoCode && price.promoError && price.kind !== 'promo') {
       return res.status(400).json({ error: price.promoError, errorRu: 'Промокод не подошёл.' })
@@ -363,6 +368,7 @@ router.post('/gumroad/checkout', requireUser, checkoutAvailability, async (req, 
       const { rememberPromoForPayment } = await import('../services/reviewReward.js')
       await rememberPromoForPayment(db, paymentId, appliedPromo)
     }
+    await rememberPlan(db, paymentId, item)
     const checkout = await createGumroadCheckout({ paymentId, itemId: courseId, listEur: item.amount, amountEur: amount, email: req.userEmail })
     await rememberGumroadCode(db, paymentId, checkout.offerCode)
     res.json({
@@ -377,7 +383,7 @@ router.post('/gumroad/checkout', requireUser, checkoutAvailability, async (req, 
     })
   } catch (err) {
     console.error('[gumroad checkout]', err.message)
-    res.status(err.status || 502).json({ error: err.message })
+    res.status(err.status || 502).json({ error: err.message, code: err.code })
   }
 })
 
