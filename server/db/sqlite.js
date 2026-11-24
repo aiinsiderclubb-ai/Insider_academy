@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS registrations (
   email TEXT NOT NULL,
   name TEXT,
   personal_id TEXT,
+  source TEXT,
   date TEXT NOT NULL
 );
 
@@ -412,6 +413,21 @@ CREATE TABLE IF NOT EXISTS forum_posts (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS forum_posts_topic_idx ON forum_posts(topic_id, created_at);
+
+-- One row per page a visitor opened. The visitor column is a hash of address and
+-- browser salted per day, so it counts unique people within a day and cannot
+-- be followed across days or turned back into an address.
+CREATE TABLE IF NOT EXISTS page_views (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  day TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  path TEXT NOT NULL,
+  visitor TEXT NOT NULL,
+  source TEXT,
+  locale TEXT,
+  user_id INTEGER
+);
+CREATE INDEX IF NOT EXISTS page_views_day_idx ON page_views(day);
 `
 
 export function createSqliteDb() {
@@ -482,6 +498,7 @@ function migrateColumns(db) {
 
   const regCols = db.prepare('PRAGMA table_info(registrations)').all().map((c) => c.name)
   if (!regCols.includes('personal_id')) add('ALTER TABLE registrations ADD COLUMN personal_id TEXT')
+  if (!regCols.includes('source')) add('ALTER TABLE registrations ADD COLUMN source TEXT')
 
   const paymentCols = db.prepare('PRAGMA table_info(payments)').all().map((c) => c.name)
   if (paymentCols.length && !paymentCols.includes('plan')) add('ALTER TABLE payments ADD COLUMN plan TEXT')

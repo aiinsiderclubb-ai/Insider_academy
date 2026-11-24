@@ -4,6 +4,7 @@ import { getDb, parseJson } from '../db.js'
 import { nowIso } from '../db/time.js'
 import { optionalUser } from '../middleware/auth.js'
 import * as sheetsTrack from '../services/sheetsTrack.js'
+import { alertApplication } from '../services/adminAlerts.js'
 
 const router = Router()
 
@@ -77,6 +78,7 @@ router.post('/accelerator', optionalUser, async (req, res) => {
     ]
   )
 
+  alertApplication({ id, firstName: first, lastName: last, email: mail, telegram: tg, country: countryVal })
   sheetsTrack.trackApplication({
     email: mail,
     firstName: first,

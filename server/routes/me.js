@@ -18,6 +18,7 @@ import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { validateUserPassword } from '../utils/security.js'
 import { attachReferral, friendDiscountPercent, rewardsFor } from '../services/rewards.js'
 import { coursePlanFor, coursePlans } from '../services/coursePlan.js'
+import { alertHomework, escapeHtml, notifyAdmin } from '../services/adminAlerts.js'
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
@@ -248,6 +249,7 @@ router.post('/homework', prelaunchBlocked, upload.single('file'), async (req, re
     [finalId, user.email, user.name, courseId, courseTitle, Number(lessonIndex), lessonTitle,
       content || '', fileMeta.fileName, fileMeta.fileType, fileMeta.filePath, fileMeta.fileStorage, now, now]
   )
+  alertHomework({ id: finalId, email: user.email, courseTitle, lessonTitle, resubmit: Boolean(existing) })
   const uRow = await db.get('SELECT personal_id FROM users WHERE id = ?', [req.userId])
   sheetsTrack.trackHomeworkEvent({
     email: user.email,
@@ -391,11 +393,12 @@ router.post('/support', async (req, res) => {
     [id, user.id, user.email, user.name, message, 'new', date]
   )
   const supportChatId = process.env.SUPPORT_TELEGRAM_CHAT_ID || ''
+  const supportText = `📩 <b>Поддержка</b>\nОт: ${escapeHtml(user.name || user.email)}\nEmail: ${escapeHtml(user.email)}\n\n${escapeHtml(message.slice(0, 1500))}`
   if (supportChatId) {
-    sendTelegramMessage(
-      supportChatId,
-      `📩 <b>Поддержка</b>\nОт: ${user.name || user.email}\nEmail: ${user.email}\n\n${message.slice(0, 1500)}`
-    ).catch(() => {})
+    sendTelegramMessage(supportChatId, supportText).catch(() => {})
+  } else {
+    // Without a support chat of its own, support lands with the team.
+    notifyAdmin(supportText)
   }
   res.status(201).json({ id, message, status: 'new', date })
 })

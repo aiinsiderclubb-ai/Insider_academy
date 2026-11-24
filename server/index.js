@@ -11,6 +11,7 @@ import { nowIso } from './db/time.js'
 import { notifyTelegramUser } from './services/telegramNotify.js'
 import { ensureTelegramWebhook } from './services/telegramWebhookSetup.js'
 import { sendAdminDailyDigest } from './services/digest.js'
+import { runAdminDigests } from './services/adminDigest.js'
 import { processEmailQueue, processInactiveUsers } from './services/emailQueue.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -54,6 +55,9 @@ async function start() {
   setInterval(() => { processInactiveUsers().catch((e) => console.error('[inactive]', e.message)) }, 86400000)
   setInterval(() => { sendAdminDailyDigest().catch((e) => console.error('[digest]', e.message)) }, 3600000)
   sendAdminDailyDigest().catch(() => {})
+  // Telegram reports for the team: yesterday at 09:00 Zurich, the week on Mondays.
+  setInterval(() => { runAdminDigests().catch((e) => console.error('[tg-digest]', e.message)) }, 600000)
+  runAdminDigests().catch((e) => console.error('[tg-digest]', e.message))
 
   app.listen(config.port, () => {
     console.log(`LMS API v2 at http://localhost:${config.port} [${getDb().driver}]`)

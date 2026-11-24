@@ -745,14 +745,27 @@ async function buildChartData(db) {
     `SELECT ${dayExpr}, COUNT(*) AS count
      FROM registrations WHERE ${sinceFilter} GROUP BY day ORDER BY day`
   )
+  // Visits: the old counter the previous site bumped, plus unique visitors a day
+  // from page_views, which the current site reports.
   const dailyVisits = parseJson((await db.get('SELECT value FROM analytics WHERE key = ?', ['daily_visits']))?.value, {})
-  const visitDays = Object.entries(dailyVisits)
-    .filter(([day]) => day >= new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10))
+  const since = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)
+  const visitorRows = await db.all(
+    "SELECT day, COUNT(DISTINCT visitor) AS count FROM page_views GROUP BY day"
+  ).catch(() => [])
+  const byDay = new Map(Object.entries(dailyVisits).map(([day, count]) => [day, Number(count) || 0]))
+  let uniqueVisits = 0
+  for (const row of visitorRows) {
+    const count = Number(row.count) || 0
+    uniqueVisits += count
+    byDay.set(row.day, (byDay.get(row.day) || 0) + count)
+  }
+  const visitDays = [...byDay.entries()]
+    .filter(([day]) => day >= since)
     .map(([day, count]) => ({ day, count }))
     .sort((a, b) => a.day.localeCompare(b.day))
 
   const main = parseJson((await db.get('SELECT value FROM analytics WHERE key = ?', ['main']))?.value, { visits: 0 })
-  const totalVisits = main.visits || 0
+  const totalVisits = (main.visits || 0) + uniqueVisits
   const totalRegs = Number((await db.get('SELECT COUNT(*) AS c FROM registrations'))?.c || 0)
   const totalPurchases = Number((await db.get('SELECT COUNT(*) AS c FROM purchase_log'))?.c || 0)
 

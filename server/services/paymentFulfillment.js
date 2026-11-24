@@ -6,14 +6,20 @@ import { sendPurchaseThanks } from './purchaseThanks.js'
 import { consumePromoForPayment } from './reviewReward.js'
 import { rewardSettledPayment } from './rewards.js'
 import { notifyUserEmail } from './email.js'
+import { alertPurchase } from './adminAlerts.js'
 
 /**
  * What happens once, when money has actually arrived: the promo the checkout
  * was priced with is spent, and the buyer gets the thank-you. Neither may undo
  * a fulfilled order, so both are best-effort and the email is not awaited.
  */
-async function afterFirstSettlement(payment, { itemId, marketplace }) {
-  await consumePromoForPayment(payment.id).catch((err) => console.warn('[promo] not consumed:', err.message))
+async function afterFirstSettlement(payment, { itemId, marketplace, licenseTier = null }) {
+  const promoCode = await consumePromoForPayment(payment.id).catch((err) => {
+    console.warn('[promo] not consumed:', err.message)
+    return null
+  })
+  // Tell the team. Not awaited: a slow Telegram must not hold up the webhook.
+  alertPurchase(payment, { marketplace, promoCode, licenseTier })
   // The next-purchase code for the buyer and, for a referred buyer's first
   // purchase, the thank-you code for whoever invited them. Best-effort: a
   // reward must never undo a fulfilled order.
@@ -77,7 +83,7 @@ export async function reconcilePaidPayment({ payment, provider, externalId, user
     }
     if (!db.transaction) throw Object.assign(new Error('Marketplace fulfillment requires database transactions'), { status: 503 })
     const result = await db.transaction(execute)
-    await afterFirstSettlement(payment, { itemId: productId, marketplace: true })
+    await afterFirstSettlement(payment, { itemId: productId, marketplace: true, licenseTier: commerceContext.license_tier })
     return { ok: true, idempotent: payment.status === 'completed', userId, courseId: productId, marketplace: true, entitlements: result.granted }
   }
   const product = await getMarketplaceProduct(db, productId, { includeUnpublished: true })

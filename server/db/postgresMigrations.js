@@ -23,6 +23,7 @@ export async function runPostgresMigrations(pool) {
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_sub TEXT',
     "ALTER TABLE users ADD COLUMN IF NOT EXISTS locale TEXT DEFAULT 'ru'",
     'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS personal_id TEXT',
+    'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS source TEXT',
     'ALTER TABLE reviews ADD COLUMN IF NOT EXISTS contact_email TEXT',
     "ALTER TABLE reviews ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'",
     'ALTER TABLE reviews ADD COLUMN IF NOT EXISTS user_name TEXT',
@@ -130,6 +131,16 @@ export async function runPostgresMigrations(pool) {
       published_at TEXT,
       status TEXT NOT NULL DEFAULT 'drawn'
     )`,
+    `CREATE TABLE IF NOT EXISTS page_views (
+      id SERIAL PRIMARY KEY,
+      day TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      path TEXT NOT NULL,
+      visitor TEXT NOT NULL,
+      source TEXT,
+      locale TEXT,
+      user_id INTEGER
+    )`,
     `CREATE TABLE IF NOT EXISTS marketplace_products (
       id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, sku TEXT NOT NULL UNIQUE,
       status TEXT NOT NULL DEFAULT 'draft', product_type TEXT NOT NULL DEFAULT 'marketplace',
@@ -187,5 +198,6 @@ export async function runPostgresMigrations(pool) {
     'CREATE INDEX IF NOT EXISTS marketplace_orders_user_idx ON marketplace_orders(user_id, status)',
     'CREATE INDEX IF NOT EXISTS asset_entitlements_user_idx ON asset_entitlements(user_id, status)',
     'CREATE INDEX IF NOT EXISTS asset_downloads_product_idx ON asset_downloads(product_id)',
+    'CREATE INDEX IF NOT EXISTS page_views_day_idx ON page_views(day)',
   ]) await pool.query(sql).catch(() => {})
 }

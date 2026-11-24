@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { getDb, parseJson } from '../db.js'
 import { getFeatureFlags } from '../services/featureFlags.js'
+import { optionalUser } from '../middleware/auth.js'
+import { recordPageView } from '../services/pageViews.js'
 
 const router = Router()
 
@@ -44,6 +46,29 @@ router.post('/analytics/visit', async (_req, res) => {
     ['daily_visits', JSON.stringify(daily)]
   )
   res.json({ ok: true })
+})
+
+/**
+ * The site reports each page a visitor opens. Always 204: the answer is the
+ * same whether the view counted or was dropped as a bot's. The path avoids
+ * words like "analytics" and "pageview" that ad blockers drop on sight.
+ */
+router.post('/seen', optionalUser, async (req, res) => {
+  const body = req.body && typeof req.body === 'object' ? req.body : {}
+  try {
+    await recordPageView({
+      path: body.path,
+      referrer: body.referrer,
+      utmSource: body.utmSource,
+      locale: body.locale,
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+      userId: req.userId,
+    })
+  } catch (err) {
+    console.warn('[pageview]', err.message)
+  }
+  res.status(204).end()
 })
 
 router.post('/analytics/course-click', async (req, res) => {

@@ -4,10 +4,15 @@ function botToken() {
   return process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken || ''
 }
 
+/** Tests point this at a local stand-in; production always talks to Telegram. */
+function apiBase() {
+  return (process.env.TELEGRAM_API_BASE || 'https://api.telegram.org').replace(/\/$/, '')
+}
+
 export async function sendTelegramMessage(chatId, text, extra = {}) {
   const token = botToken()
   if (!token || !chatId) return false
-  const url = `https://api.telegram.org/bot${token}/sendMessage`
+  const url = `${apiBase()}/bot${token}/sendMessage`
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -19,7 +24,7 @@ export async function sendTelegramMessage(chatId, text, extra = {}) {
 export async function sendTelegramSticker(chatId, stickerFileId) {
   const token = botToken()
   if (!token || !chatId || !stickerFileId) return false
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendSticker`, {
+  const res = await fetch(`${apiBase()}/bot${token}/sendSticker`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, sticker: stickerFileId }),
@@ -36,7 +41,7 @@ export async function setWebhook(webhookUrl, secretToken) {
     drop_pending_updates: true,
   }
   if (secretToken) body.secret_token = secretToken
-  const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+  const res = await fetch(`${apiBase()}/bot${token}/setWebhook`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -47,7 +52,7 @@ export async function setWebhook(webhookUrl, secretToken) {
 export async function getWebhookInfo() {
   const token = botToken()
   if (!token) return null
-  const res = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`)
+  const res = await fetch(`${apiBase()}/bot${token}/getWebhookInfo`)
   const data = await res.json()
   return data.result || null
 }

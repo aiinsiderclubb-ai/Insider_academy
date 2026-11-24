@@ -8,6 +8,7 @@ import { courses } from '../../src/data/courses.js'
 import { SEED_REVIEWS, isApprovedSeedReview } from '../../src/data/seedReviews.js'
 import { notifyUserEmail } from '../services/email.js'
 import { issueReviewReward } from '../services/reviewReward.js'
+import { alertReview } from '../services/adminAlerts.js'
 
 const router = Router()
 
@@ -143,6 +144,7 @@ router.post(
     [id, courseId, req.userId, req.userEmail, email, displayName, ratingNum, text.trim(), new Date().toISOString()]
   )
 
+  alertReview({ id, email, courseId, rating: ratingNum, text: text.trim() })
   const u = await db.get('SELECT personal_id FROM users WHERE id = ?', [req.userId])
   sheetsTrack.trackReviewEvent({
     email: req.userEmail,

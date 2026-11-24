@@ -17,6 +17,8 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 import { rateLimitMiddleware } from '../middleware/rateLimit.js'
 import { verifyOAuthIdToken } from '../services/oauthVerify.js'
 import { hashSecurityToken, validateUserPassword } from '../utils/security.js'
+import { alertRegistration } from '../services/adminAlerts.js'
+import { normalizeSource } from '../services/trafficSource.js'
 
 const router = Router()
 
@@ -209,12 +211,14 @@ router.post('/oauth', asyncHandler(async (req, res) => {
   const name = row.name || identity.name
 
   if (isNew) {
-    await db.run('INSERT INTO registrations (id, email, name, personal_id, date) VALUES (?, ?, ?, ?, ?)', [
-      `reg-${Date.now()}`, email, name, personalId, new Date().toISOString(),
+    const source = normalizeSource(req.body.source) || null
+    await db.run('INSERT INTO registrations (id, email, name, personal_id, source, date) VALUES (?, ?, ?, ?, ?, ?)', [
+      `reg-${Date.now()}`, email, name, personalId, source, new Date().toISOString(),
     ]).catch((err) => {
       console.warn('[auth/oauth] registrations insert:', err.message)
     })
     sheetsTrack.trackUserRegistered({ personalId, userId: row.id, email, name }).catch(() => {})
+    alertRegistration({ email, name, provider, source, locale: req.body.locale ? normalizeLocale(req.body.locale) : null })
   }
 
   sheetsTrack.trackLogin({ email, personalId, userId: row.id }).catch(() => {})
@@ -271,8 +275,9 @@ router.post('/register', asyncHandler(async (req, res) => {
   const personalId = await ensurePersonalId(db, userId)
   const user = { id: userId, email, name, emailVerified: false, personalId }
 
-  await db.run('INSERT INTO registrations (id, email, name, personal_id, date) VALUES (?, ?, ?, ?, ?)', [
-    `reg-${Date.now()}`, email, name, personalId, new Date().toISOString(),
+  const source = normalizeSource(req.body.source) || null
+  await db.run('INSERT INTO registrations (id, email, name, personal_id, source, date) VALUES (?, ?, ?, ?, ?, ?)', [
+    `reg-${Date.now()}`, email, name, personalId, source, new Date().toISOString(),
   ]).catch((err) => {
     console.warn('[auth/register] registrations insert:', err.message)
   })
@@ -292,6 +297,7 @@ router.post('/register', asyncHandler(async (req, res) => {
   }
 
   sheetsTrack.trackUserRegistered({ personalId, userId, email, name }).catch(() => {})
+  alertRegistration({ email, name, provider: 'email', source, locale })
 
   res.status(201).json({
     requiresVerification: true,

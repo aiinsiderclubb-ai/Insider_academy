@@ -1,5 +1,7 @@
 import { sendTelegramMessage } from './telegram.js'
 import { consumeLinkToken, linkByPersonalId, unlinkByChatId, getBotUsername } from './telegramLink.js'
+import { isAdminChat } from './adminAlerts.js'
+import { handleAdminCommand } from './adminDigest.js'
 
 const PERSONAL_ID_RE = /^AIA-[A-Z0-9]{6}$/i
 
@@ -10,6 +12,20 @@ export async function handleTelegramUpdate(update) {
   const chatId = String(msg.chat.id)
   const text = (msg.text || '').trim()
   const username = msg.from?.username || ''
+  const command = text.split(/\s+/)[0].toLowerCase().replace(/@\S+$/, '')
+  const isGroup = ['group', 'supergroup'].includes(msg.chat.type)
+
+  // Setting up the team chat starts with learning its id.
+  if (command === '/chatid') {
+    return sendTelegramMessage(chatId, `ID этого чата: <code>${chatId}</code>\n\nДля уведомлений команды: TELEGRAM_ADMIN_CHAT_ID на Render.`)
+  }
+  if (isAdminChat(chatId)) {
+    if (await handleAdminCommand(chatId, text)) return
+    // An admin's own private chat still works as a learner's; a group does not.
+    if (isGroup) return
+  }
+  // In any other group the bot listens only for /chatid — no linking prompts to strangers.
+  if (isGroup) return
 
   if (text.startsWith('/start')) {
     const payload = (text.split(' ')[1] || '').trim()

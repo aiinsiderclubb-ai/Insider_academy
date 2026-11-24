@@ -15,6 +15,7 @@ import { config } from '../config.js'
 import { marketplaceWebhookAllowed } from '../middleware/prelaunch.js'
 import { revokeMarketplaceEntitlements } from '../services/marketplace.js'
 import { cancelPaymentRewards } from '../services/rewards.js'
+import { alertRefund, alertUnclaimedSale, alertWebhookProblem } from '../services/adminAlerts.js'
 
 const router = Router()
 
@@ -39,6 +40,13 @@ async function reconcile(payment, overrides = {}) {
 
 export async function revokePaymentAccess(db, payment, reason) {
   if (!payment) return 0
+  const wasPaid = ['completed', 'unclaimed'].includes(payment.status)
+  const revoked = await revokeAccess(db, payment, reason)
+  if (wasPaid) alertRefund(payment, reason)
+  return revoked
+}
+
+async function revokeAccess(db, payment, reason) {
   // Codes this payment earned (next purchase, the inviter's reward) go with it.
   await cancelPaymentRewards(db, payment.id).catch((err) => console.warn('[rewards] not cancelled:', err.message))
   return db.transaction(async (tx) => {
@@ -115,6 +123,7 @@ export async function handlePaddleWebhook(req, res) {
   const rawBody = req.body
   if (!verifyPaddleSignature(rawBody, req.headers['paddle-signature'])) {
     await logWebhookEvent({ provider: 'paddle', eventName: 'auth_failed', status: 'error', payload: {} })
+    alertWebhookProblem('paddle', 'auth_failed')
     return res.status(401).send('Invalid signature')
   }
   let event
@@ -160,6 +169,7 @@ export async function handlePaddleWebhook(req, res) {
     res.json({ ok: true, ignored: true })
   } catch (err) {
     console.error('[paddle webhook]', err.message)
+    if (err.status !== 409) alertWebhookProblem('paddle', 'error', err.message)
     await logWebhookEvent({ provider: 'paddle', eventName: type, status: 'error', payload: { message: err.message } })
     res.status(err.status === 409 ? 409 : 500).json({ error: err.message })
   }
@@ -209,6 +219,7 @@ export async function handleGumroadPing(req, res) {
   const rawBody = req.body
   if (!verifyGumroadSignature(rawBody, req.headers['x-gumroad-signature'])) {
     await logWebhookEvent({ provider: 'gumroad', eventName: 'auth_failed', status: 'error', payload: {} })
+    alertWebhookProblem('gumroad', 'auth_failed')
     // 2xx would drop nothing we trust; a 4xx is not retried by Gumroad.
     return res.status(401).send('Invalid signature')
   }
@@ -254,6 +265,13 @@ export async function handleGumroadPing(req, res) {
     if (!payment) payment = await adoptGumroadSale(db, ping, saleId)
     if (!payment || payment.status === 'unclaimed') {
       await logWebhookEvent({ provider: 'gumroad', eventName: kind, status: 'ignored', payload: { saleId, permalink, email: ping.email, reason: payment ? 'no_account' : 'unknown_item' } })
+      alertUnclaimedSale({
+        provider: 'gumroad',
+        saleId,
+        email: ping.email,
+        item: payment?.course_title || ping.product_name || permalink,
+        reason: payment ? 'no_account' : 'unknown_item',
+      })
       return res.json({ ok: true, ignored: true })
     }
 
@@ -270,6 +288,7 @@ export async function handleGumroadPing(req, res) {
     res.json({ ok: true })
   } catch (err) {
     console.error('[gumroad ping]', err.message)
+    if (err.status !== 409) alertWebhookProblem('gumroad', 'error', err.message)
     await logWebhookEvent({ provider: 'gumroad', eventName: kind, status: 'error', payload: { saleId, message: err.message } })
     // 500 is retried by Gumroad (1m, 3m, 10m, 1h); a mismatch is not worth retrying.
     res.status(err.status === 409 ? 200 : 500).json({ error: err.message })
