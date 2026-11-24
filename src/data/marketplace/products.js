@@ -1308,6 +1308,66 @@ personal characteristics, or relay such conditions.`,
     relatedIds: ['mp-mcp-starter-business', 'mp-prompt-chatgpt-vault'],
   }),
   product({
+    id: 'mp-mcp-motion-studio',
+    slug: 'claude-motion-studio',
+    categoryId: 'mcp-skills',
+    productType: 'agent-pack',
+    titleRu: 'Claude Motion Studio',
+    titleEn: 'Claude Motion Studio',
+    shortRu: '8 скиллов для Claude Code, Cowork и Codex и готовый проект Remotion: кинетическая типографика, промо по скриншотам, графики из CSV, субтитры по словам, анимация логотипа, монтаж под музыку. Восемь стилей; агент сам смотрит кадры, прежде чем показать.',
+    shortEn: '8 skills for Claude Code, Cowork and Codex plus a ready Remotion project: kinetic typography, promos from screenshots, charts from CSV, word-timed captions, logo stings, beat-synced edits. Eight styles; the agent checks the frames before showing you. Files are in Russian.',
+    fileTypes: ['ZIP', 'MD', 'PY', 'TSX'],
+    includedRu: ['8 скиллов в формате Agent Skills, плагин для Claude Code', 'Проект Remotion: 7 композиций и 8 стилей со шрифтами с кириллицей', 'Библиотека движений: маски, плашки, счётчики, графики, курсор, субтитры, шторки', '9 скриптов на Python без зависимостей: CSV, субтитры, SVG, доли музыки, рендер, проверка', 'Самопроверка: контактный лист кадров, безопасные зоны Reels, TikTok и Shorts, громкость', 'Инструкция: Node.js, ffmpeg, Claude Code, Cowork, Codex'],
+    includedEn: ['8 skills in the Agent Skills format, a Claude Code plugin', 'A Remotion project: 7 compositions and 8 styles with Cyrillic fonts', 'A motion library: masks, markers, counters, charts, cursor, captions, wipes', '9 dependency-free Python scripts: CSV, captions, SVG, music beats, render, review', 'Self-review: frame contact sheets, Reels/TikTok/Shorts safe zones, loudness', 'Install guide: Node.js, ffmpeg, Claude Code, Cowork, Codex'],
+    priceEur: 59,
+    coverGradient: 'linear-gradient(135deg, #ff7a1a, #0b0a09)',
+    coverIcon: '🎬',
+    screenshots: ['/marketplace/claude-motion-studio/kinetic-type.mp4', '/marketplace/claude-motion-studio/product-promo.mp4', '/marketplace/claude-motion-studio/data-story.mp4', '/marketplace/claude-motion-studio/captions-explainer.mp4', '/marketplace/claude-motion-studio/logo-sting.mp4', '/marketplace/claude-motion-studio/motion-director.mp4'],
+    videoPreview: '/marketplace/claude-motion-studio/showreel.mp4',
+    creatorId: 'creator-insider',
+    badge: 'trend-2026',
+    badges: ['trending', 'new'],
+    faqRu: [
+      { q: 'Как получить файлы после оплаты?', a: 'Сразу в личном кабинете → Marketplace → Мои загрузки.' },
+      { q: 'Можно ли использовать в коммерческих проектах?', a: 'Да, лицензия на использование в работе с клиентами включена.' },
+      { q: 'Есть ли обновления?', a: 'Да, пожизненный доступ к обновлениям в рамках продукта.' },
+      { q: 'Нужна ли лицензия Remotion?', a: 'Remotion бесплатен для частных лиц, некоммерческих организаций и компаний до трёх человек. Компаниям от четырёх человек нужна лицензия Remotion (remotion.pro) — её покупают у Remotion отдельно, в этот набор она не входит.' },
+      { q: 'Что нужно на компьютере?', a: 'Claude Code, Cowork или Codex; Node.js 18+, ffmpeg и Python 3.8+; около 1 ГБ на диске. Рендер идёт на вашем компьютере, при первом запуске нужен интернет для шрифтов. В облачной песочнице без Node.js скиллы напишут раскадровку и код, но видео не отрендерят.' },
+      { q: 'Это генерация видео нейросетью?', a: 'Нет. Видео собирается кодом из шрифтов, графики, ваших скриншотов и вашей съёмки. Поэтому текст в кадре точный, цифры совпадают с таблицей, а рендер повторяется кадр в кадр. Речь скиллы не распознают: для субтитров нужна расшифровка в SRT или JSON.' },
+    ],
+    faqEn: [
+      { q: 'How do I get files after payment?', a: 'Instantly in your account → Marketplace → My downloads.' },
+      { q: 'Can I use this commercially?', a: 'Yes, client work license is included.' },
+      { q: 'Do I get updates?', a: 'Yes, lifetime updates for this product.' },
+      { q: 'Do I need a Remotion licence?', a: 'Remotion is free for individuals, non-profits and companies of up to three people. Companies of four or more need a Remotion company licence (remotion.pro), bought from Remotion separately; it is not part of this pack.' },
+      { q: 'What do I need on my computer?', a: 'Claude Code, Cowork or Codex; Node.js 18+, ffmpeg and Python 3.8+; about 1 GB of disk. Rendering runs on your machine and needs internet the first time, for fonts. In a cloud sandbox without Node.js the skills write the storyboard and code but cannot render.' },
+      { q: 'Is this AI video generation?', a: 'No. Videos are built in code from type, graphics, your screenshots and your footage, so on-screen text is exact, numbers match the table and every render is identical. The skills do not transcribe speech: captions need a transcript as SRT or JSON.' },
+    ],
+    freePreview: {
+      type: 'prompt',
+      titleRu: 'Фрагмент скилла: история в цифрах',
+      titleEn: 'Skill excerpt: data story',
+      contentRu: `Скилл: data-story
+
+1. Проверь таблицу и посчитай изменение скриптом:
+   python3 scripts/csv_to_chart.py data.csv --highlight last --delta first:last
+2. Ячейку, которая не число, покажи пользователю — не исправляй молча.
+3. Цифру для заголовка бери из facts, не считай в уме.
+4. Столбцы — всегда от нуля; акцент — на одном столбце.
+5. Перед рендером сверь каждую цифру в кадре с facts.`,
+      contentEn: `Skill: data-story
+
+1. Check the table and compute the change with the script:
+   python3 scripts/csv_to_chart.py data.csv --highlight last --delta first:last
+2. Show the user any cell that is not a number — never fix it silently.
+3. Take the headline number from facts, not from mental arithmetic.
+4. Bars always start at zero; one bar carries the accent.
+5. Before rendering, check every number on screen against facts.`,
+    },
+    recommendsForCourses: ['ai-content-creator', 'ai-agent-engineer'],
+    relatedIds: ['mp-mcp-claude-skills', 'mp-creator-reels-pack', 'mp-creator-hooks'],
+  }),
+  product({
     id: 'mp-agent-multi-ops',
     slug: 'multi-agent-ops-team',
     categoryId: 'ai-agents',
