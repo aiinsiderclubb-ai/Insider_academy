@@ -22,7 +22,7 @@ function apiBase() {
   return GUMROAD_API
 }
 
-export async function gumroadRequest(method, path, body) {
+export async function gumroadRequest(method, path, body, attempt = 0) {
   if (!isGumroadEnabled()) throw Object.assign(new Error('Gumroad not configured'), { status: 503 })
   const res = await fetch(`${apiBase()}${path}`, {
     method,
@@ -35,6 +35,12 @@ export async function gumroadRequest(method, path, body) {
     signal: AbortSignal.timeout(20000),
   })
   const text = await res.text()
+  if (res.status === 429 && attempt < 3) {
+    // "Rate limited. Retry after 6 seconds." — wait as told (Retry-After or the message), at most 30 s
+    const seconds = Number(res.headers.get('retry-after')) || Number(text.match(/retry after (\d+)/i)?.[1]) || 5
+    await new Promise((r) => setTimeout(r, Math.min(seconds, 30) * 1000 + 250))
+    return gumroadRequest(method, path, body, attempt + 1)
+  }
   let json = null
   try {
     json = text ? JSON.parse(text) : null

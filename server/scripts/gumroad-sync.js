@@ -114,8 +114,12 @@ async function main() {
     }
     if (item.kind === 'store' && product) await ensureLicenseVariants(product, item)
     if (publish && product && !product.published && !dry) {
-      const res = await gumroadRequest('PUT', `/products/${encodeURIComponent(product.id)}/enable`)
-      if (res.product?.published) stats.published++
+      try {
+        const res = await gumroadRequest('PUT', `/products/${encodeURIComponent(product.id)}/enable`)
+        if (res.product?.published) stats.published++
+      } catch (err) {
+        console.log(`  ! not published: ${err.message}`)
+      }
     }
   }
   const wanted = new Set(items.map((i) => i.id))
