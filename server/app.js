@@ -34,6 +34,7 @@ import governanceRoutes from './routes/governance.js'
 import emailPublicRoutes from './routes/emailPublic.js'
 import { rateLimitMiddleware } from './middleware/rateLimit.js'
 import { isGoogleSheetsEnabled } from './services/googleSheets.js'
+import { validateProductionConfig } from './utils/productionChecks.js'
 import { seedVoiceAgentAssets } from './services/voiceAgentAssets.js'
 
 export async function createApp() {
@@ -132,6 +133,8 @@ export async function createApp() {
   app.use(express.urlencoded({ extended: true }))
 
   app.get('/api/health', (_req, res) => {
+    // Counts only: the messages name settings and stay in the server log.
+    const { errors, warnings } = validateProductionConfig()
     res.json({
       ok: true,
       version: '2.0.0',

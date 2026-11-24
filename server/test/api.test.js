@@ -70,6 +70,21 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   assert.equal(health.ok, true)
   assert.equal(health.db, 'sqlite')
 
+  // Production adds counts of config problems; this branch once threw a
+  // ReferenceError and answered 500 on every call.
+  const previousEnv = process.env.NODE_ENV
+  process.env.NODE_ENV = 'production'
+  try {
+    const prodHealth = await fetch(`${base}/api/health`)
+    assert.equal(prodHealth.status, 200)
+    const prodBody = await prodHealth.json()
+    assert.equal(typeof prodBody.config.warnings, 'number')
+    assert.equal(typeof prodBody.config.errors, 'number')
+  } finally {
+    if (previousEnv === undefined) delete process.env.NODE_ENV
+    else process.env.NODE_ENV = previousEnv
+  }
+
   const courses = await fetch(`${base}/api/courses`).then((r) => r.json())
   assert.ok(Array.isArray(courses) && courses.length >= 1, 'courses should be non-empty')
   for (const course of courses) {
