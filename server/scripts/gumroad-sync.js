@@ -8,6 +8,11 @@
  *   node scripts/gumroad-sync.js --publish    # also publish the products this run creates
  *   node scripts/gumroad-sync.js --publish=vault-prompt,vault-agent   # publish these existing ones
  *   node scripts/gumroad-sync.js --dry-run    # show what would change
+ *   node scripts/gumroad-sync.js --only=mp-mcp-motion-studio --publish   # touch only these items
+ *
+ * With --only the run skips everything else, including the clean-up that
+ * takes products we no longer sell off sale — Gumroad's limit of ten new
+ * products a day would otherwise make a new listing wait behind the queue.
  *
  * The product itself is a pointer: access opens in the Academy cabinet once
  * the sale reaches the API, so the receipt and the product page send buyers
@@ -16,7 +21,8 @@
 import 'dotenv/config'
 import { catalogItems } from './paddle-sync.js'
 import { LICENSE_TIERS } from '../services/marketplace.js'
-import { LICENSE_VARIANT, TIER_NAMES, gumroadProducts, gumroadRequest } from '../services/gumroad.js'
+import { courses } from '../../src/data/courses.js'
+import { GUMROAD_FREE_COURSES, LICENSE_VARIANT, TIER_NAMES, gumroadProducts, gumroadRequest } from '../services/gumroad.js'
 
 const dry = process.argv.includes('--dry-run')
 const publish = process.argv.some((arg) => arg === '--publish' || arg.startsWith('--publish='))
@@ -25,12 +31,22 @@ const publish = process.argv.some((arg) => arg === '--publish' || arg.startsWith
 const publishIds = new Set(
   (process.argv.find((arg) => arg.startsWith('--publish='))?.slice('--publish='.length) || '').split(',').filter(Boolean),
 )
+const only = new Set(
+  (process.argv.find((arg) => arg.startsWith('--only='))?.slice('--only='.length) || '').split(',').filter(Boolean),
+)
 const APP = (process.env.APP_URL || 'https://myinsideracademy.com').replace(/\/$/, '')
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const cents = (eur) => Math.round(Number(eur) * 100)
 
 function description(item) {
+  if (item.kind === 'free') {
+    return [
+      `<p>${esc(item.description || item.name)}</p>`,
+      `<p><strong>Free.</strong> The course lives on AI Insider Academy: <a href="${item.url}">${esc(item.url.replace(/^https?:\/\//, ''))}</a>. `
+        + 'Create a free account there and start the first lesson right away. Lessons are in Russian.</p>',
+    ].join('')
+  }
   return [
     `<p>${esc(item.description || item.name)}</p>`,
     '<p><strong>How you get it.</strong> Buy with the same email as your AI Insider Academy account. '
@@ -40,8 +56,20 @@ function description(item) {
   ].join('')
 }
 
-function richContent() {
+function richContent(item) {
   const text = (t) => ({ type: 'text', text: t })
+  if (item.kind === 'free') {
+    return [{
+      title: 'Start the course',
+      description: {
+        type: 'doc',
+        content: [
+          { type: 'paragraph', content: [text('The course is free on AI Insider Academy. Open it and create an account with any email:')] },
+          { type: 'paragraph', content: [{ type: 'text', text: item.url, marks: [{ type: 'link', attrs: { href: item.url } }] }] },
+        ],
+      },
+    }]
+  }
   return [{
     title: 'Open your purchase',
     description: {
@@ -57,6 +85,7 @@ function richContent() {
 
 const KIND_SUMMARY = {
   course: 'Video course with lessons, materials and homework in your Academy cabinet.',
+  free: 'Free video course on AI Insider Academy, lessons in Russian.',
   pack: 'Several courses plus bonus kits, opened together in your Academy cabinet.',
   vault: 'A set of ready-to-use kits in your Academy library.',
   store: 'Downloadable kit in your Academy library, updates included.',
@@ -83,8 +112,26 @@ async function ensureLicenseVariants(product, item) {
   }
 }
 
+/** The free courses, at 0 €, pointing at their page on the site. */
+function freeItems() {
+  return GUMROAD_FREE_COURSES.map((id) => {
+    const course = courses.find((c) => c.id === id)
+    if (!course) throw new Error(`Free course ${id} is not in src/data/courses.js`)
+    return {
+      id,
+      kind: 'free',
+      name: `${course.titleEn || course.title} — free course`,
+      description: String(course.shortEn || course.descriptionEn || course.short || '').replace(/\s+/g, ' ').slice(0, 1000),
+      amount: 0,
+      url: `${APP}/learn/${id}`,
+    }
+  })
+}
+
 async function main() {
-  const items = catalogItems()
+  const items = [...freeItems(), ...catalogItems()].filter((item) => !only.size || only.has(item.id))
+  const unknown = [...only].filter((id) => !items.some((item) => item.id === id))
+  if (unknown.length) throw new Error(`Not in the sellable catalog: ${unknown.join(', ')}`)
   const existing = await gumroadProducts({ fresh: true })
   const stats = { created: 0, updated: 0, unchanged: 0, published: 0 }
   for (const item of items) {
@@ -96,8 +143,11 @@ async function main() {
       price: cents(item.amount),
       price_currency_type: 'eur',
       custom_summary: KIND_SUMMARY[item.kind],
-      custom_receipt_text: `Access opens in your AI Insider Academy cabinet: ${APP}/app — sign in with this email.`,
-      custom_view_content_button_text: 'Open the Academy',
+      custom_receipt_text:
+        item.kind === 'free'
+          ? `Start the course on AI Insider Academy: ${item.url}`
+          : `Access opens in your AI Insider Academy cabinet: ${APP}/app — sign in with this email.`,
+      custom_view_content_button_text: item.kind === 'free' ? 'Start the course' : 'Open the Academy',
     }
     if (!product) {
       console.log(`+ ${item.id} — ${item.name} €${item.amount}`)
@@ -107,7 +157,7 @@ async function main() {
         ...fields,
         native_type: 'digital',
         custom_permalink: item.id,
-        rich_content: richContent(),
+        rich_content: richContent(item),
         draft: !publish,
       })
       product = res.product
@@ -130,7 +180,7 @@ async function main() {
     }
   }
   const wanted = new Set(items.map((i) => i.id))
-  for (const [id, product] of existing) {
+  for (const [id, product] of only.size ? [] : existing) {
     if (wanted.has(id) || !product.published) continue
     console.log(`- unpublish ${id}`)
     if (!dry) await gumroadRequest('PUT', `/products/${encodeURIComponent(product.id)}/disable`)

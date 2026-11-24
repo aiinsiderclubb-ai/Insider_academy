@@ -14,6 +14,13 @@ import { config, isGumroadEnabled } from '../config.js'
  */
 
 export const GUMROAD_API = 'https://api.gumroad.com/v2'
+
+/**
+ * Free courses listed on Gumroad at 0 € so its storefront and Discover lead
+ * people to them. The course page is the product; a "sale" of one grants
+ * nothing, because the course is already open to every account.
+ */
+export const GUMROAD_FREE_COURSES = ['ai-for-productivity', 'first-automation-n8n', 'ai-insider-accelerator']
 export const LICENSE_VARIANT = 'License'
 export const TIER_NAMES = { personal: 'Personal', client: 'Client', agency: 'Agency' }
 

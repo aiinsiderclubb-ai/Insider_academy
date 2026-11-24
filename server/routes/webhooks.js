@@ -3,7 +3,7 @@ import { getDb } from '../db.js'
 import { constructWebhookEvent } from '../services/stripe.js'
 import { paidAmount, verifyPaddleSignature } from '../services/paddle.js'
 import { verifyCallback } from '../services/liqpay.js'
-import { getGumroadSale, parsePing, tierFromVariants, verifyGumroadSignature } from '../services/gumroad.js'
+import { GUMROAD_FREE_COURSES, getGumroadSale, parsePing, tierFromVariants, verifyGumroadSignature } from '../services/gumroad.js'
 import { quoteMarketplaceItem } from '../services/marketplace.js'
 import { courses as courseCatalog } from '../../src/data/courses.js'
 import { VAULT_PRODUCTS } from '../../src/data/vaultProducts.js'
@@ -242,6 +242,10 @@ export async function handleGumroadPing(req, res) {
     }
     if (kind !== 'sale') {
       await logWebhookEvent({ provider: 'gumroad', eventName: kind, status: 'ignored', payload: { saleId } })
+      return res.json({ ok: true, ignored: true })
+    }
+    if (GUMROAD_FREE_COURSES.includes(ping.product_permalink)) {
+      await logWebhookEvent({ provider: 'gumroad', eventName: 'sale:free', status: 'ignored', payload: { saleId, permalink: ping.product_permalink } })
       return res.json({ ok: true, ignored: true })
     }
 
