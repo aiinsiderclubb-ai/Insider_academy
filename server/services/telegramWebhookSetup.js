@@ -1,5 +1,5 @@
 import { config, isTelegramEnabled } from '../config.js'
-import { setWebhook, getWebhookInfo } from './telegram.js'
+import { setWebhook, getWebhookInfo, telegramWebhookSecret } from './telegram.js'
 
 export function getTelegramWebhookUrl() {
   if (process.env.TELEGRAM_WEBHOOK_URL) {
@@ -21,7 +21,7 @@ export async function ensureTelegramWebhook() {
 
   const url = getTelegramWebhookUrl()
   try {
-    const secret = config.telegram.webhookSecret || ''
+    const secret = telegramWebhookSecret()
     const result = await setWebhook(url, secret || undefined)
     const info = await getWebhookInfo()
     console.log('[telegram] Webhook set:', url)

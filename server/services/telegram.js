@@ -1,4 +1,19 @@
+import crypto from 'crypto'
 import { config, isTelegramEnabled } from '../config.js'
+
+/**
+ * The secret Telegram sends back with every webhook call. TELEGRAM_WEBHOOK_SECRET
+ * wins; without it one is derived from JWT_SECRET, so the webhook is
+ * authenticated anyway. The same value registers the webhook at startup and
+ * checks each request, so either way the two always match.
+ */
+export function telegramWebhookSecret() {
+  const explicit = String(config.telegram.webhookSecret || process.env.TELEGRAM_WEBHOOK_SECRET || '').trim()
+  if (explicit) return explicit
+  const base = process.env.JWT_SECRET
+  if (!base) return ''
+  return crypto.createHmac('sha256', base).update('telegram-webhook').digest('hex')
+}
 
 function botToken() {
   return process.env.TELEGRAM_BOT_TOKEN || config.telegram.botToken || ''

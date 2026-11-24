@@ -3,7 +3,7 @@ import { getDb } from '../db.js'
 import { requireAdmin, requireUser } from '../middleware/auth.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { config } from '../config.js'
-import { sendTelegramMessage } from '../services/telegram.js'
+import { sendTelegramMessage, telegramWebhookSecret } from '../services/telegram.js'
 import { handleTelegramUpdate } from '../services/telegramBotHandlers.js'
 import { getTelegramWebhookUrl } from '../services/telegramWebhookSetup.js'
 import {
@@ -46,7 +46,7 @@ function requireBotSecret(req, res, next) {
 }
 
 function verifyTelegramWebhookSecret(req, res, next) {
-  const expected = config.telegram.webhookSecret
+  const expected = telegramWebhookSecret()
   if (!expected) {
     if (process.env.NODE_ENV === 'production') {
       return res.status(503).json({ error: 'Telegram webhook secret not configured' })

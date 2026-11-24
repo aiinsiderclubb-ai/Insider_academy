@@ -1,4 +1,5 @@
 import { config, isTelegramEnabled } from '../config.js'
+import { telegramWebhookSecret } from '../services/telegram.js'
 
 const LEAKED_BOT_SECRET = '0e4a1374271a72377b84dfc5191df55d62bd6b118e5eb569'
 
@@ -62,13 +63,18 @@ export function validateProductionConfig() {
   }
 
   if (isTelegramEnabled()) {
-    if (!config.telegram.webhookSecret) {
+    if (!telegramWebhookSecret()) {
       warnings.push('TELEGRAM_WEBHOOK_SECRET not set — Telegram webhook is not authenticated')
     }
-    if (isWeakSecret(config.telegram.botServiceSecret)) {
-      errors.push('TELEGRAM_BOT_SERVICE_SECRET / BOT_SERVICE_SECRET must be rotated (never commit secrets)')
-    } else if (config.telegram.botServiceSecret === LEAKED_BOT_SECRET) {
+    // The bot-service secret guards the /api/telegram/bot/* routes a separate
+    // bot service calls. With no such service and no secret those routes
+    // refuse every call, so only a configured service, or a secret that is
+    // set but weak, is a problem worth blocking startup for.
+    const botSecret = String(config.telegram.botServiceSecret || '').trim()
+    if (botSecret === LEAKED_BOT_SECRET) {
       errors.push('BOT_SERVICE_SECRET matches leaked value from git history — rotate in Render')
+    } else if ((botSecret || config.telegram.botServiceUrl) && isWeakSecret(botSecret)) {
+      errors.push('TELEGRAM_BOT_SERVICE_SECRET / BOT_SERVICE_SECRET must be rotated (never commit secrets)')
     }
   }
 

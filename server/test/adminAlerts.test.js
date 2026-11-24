@@ -86,8 +86,10 @@ test('admin chat: alerts for sign-ups, purchases and refunds, page views, report
     }
     assert.fail(`no Telegram message: ${label}\n${JSON.stringify(sent.map((m) => m.text), null, 1)}`)
   }
+  const { telegramWebhookSecret } = await import('../services/telegram.js')
+  const hook = { ...json, 'x-telegram-bot-api-secret-token': telegramWebhookSecret() }
   const tgUpdate = (chat, text) => fetch(`${base}/api/telegram/webhook`, {
-    method: 'POST', headers: json,
+    method: 'POST', headers: hook,
     body: JSON.stringify({ update_id: 1, message: { message_id: 1, chat, from: { id: 5, first_name: 'Vlad' }, text } }),
   })
 
@@ -164,6 +166,12 @@ test('admin chat: alerts for sign-ups, purchases and refunds, page views, report
     await tgUpdate({ id: -100555, type: 'group', title: 'Other' }, '/chatid')
     const idReply = await waitFor((m) => String(m.chat_id) === '-100555', '/chatid')
     assert.match(idReply.text, /-100555/)
+    // Without Telegram's secret the webhook is refused.
+    const forged = await fetch(`${base}/api/telegram/webhook`, {
+      method: 'POST', headers: json,
+      body: JSON.stringify({ update_id: 2, message: { message_id: 2, chat: { id: Number(ADMIN), type: 'supergroup' }, text: '/sales' } }),
+    })
+    assert.equal(forged.status, 401)
     // Outside the admin chat, stats stay private.
     await tgUpdate({ id: 42, type: 'private' }, '/today')
     const privateReply = await waitFor((m) => String(m.chat_id) === '42', 'private /today')
