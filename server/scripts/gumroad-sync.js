@@ -5,7 +5,8 @@
  * products get a "License" variant with one option per license tier.
  *
  *   node scripts/gumroad-sync.js              # create as drafts, update prices
- *   node scripts/gumroad-sync.js --publish    # also publish every product
+ *   node scripts/gumroad-sync.js --publish    # also publish the products this run creates
+ *   node scripts/gumroad-sync.js --publish=vault-prompt,vault-agent   # publish these existing ones
  *   node scripts/gumroad-sync.js --dry-run    # show what would change
  *
  * The product itself is a pointer: access opens in the Academy cabinet once
@@ -18,7 +19,12 @@ import { LICENSE_TIERS } from '../services/marketplace.js'
 import { LICENSE_VARIANT, TIER_NAMES, gumroadProducts, gumroadRequest } from '../services/gumroad.js'
 
 const dry = process.argv.includes('--dry-run')
-const publish = process.argv.includes('--publish')
+const publish = process.argv.some((arg) => arg === '--publish' || arg.startsWith('--publish='))
+// Products taken off sale by hand (a course still being recorded) stay off: only
+// what this run creates, or what is named in --publish=a,b, gets published.
+const publishIds = new Set(
+  (process.argv.find((arg) => arg.startsWith('--publish='))?.slice('--publish='.length) || '').split(',').filter(Boolean),
+)
 const APP = (process.env.APP_URL || 'https://myinsideracademy.com').replace(/\/$/, '')
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -83,6 +89,7 @@ async function main() {
   const stats = { created: 0, updated: 0, unchanged: 0, published: 0 }
   for (const item of items) {
     let product = existing.get(item.id)
+    const created = !product
     const fields = {
       name: item.name,
       description: description(item),
@@ -113,7 +120,7 @@ async function main() {
       stats.unchanged++
     }
     if (item.kind === 'store' && product) await ensureLicenseVariants(product, item)
-    if (publish && product && !product.published && !dry) {
+    if (publish && product && !product.published && !dry && (created || publishIds.has(item.id))) {
       try {
         const res = await gumroadRequest('PUT', `/products/${encodeURIComponent(product.id)}/enable`)
         if (res.product?.published) stats.published++

@@ -72,6 +72,11 @@ export async function gumroadProductFor(itemId) {
   let product = (await gumroadProducts()).get(itemId)
   if (!product) product = (await gumroadProducts({ fresh: true })).get(itemId)
   if (!product) throw Object.assign(new Error(`Item ${itemId} is not on Gumroad — run scripts/gumroad-sync.js`), { status: 409 })
+  // An unpublished product is off sale (a draft, or a course still being recorded): no link to a dead page.
+  if (!product.published) {
+    product = (await gumroadProducts({ fresh: true })).get(itemId) || product
+    if (!product.published) throw Object.assign(new Error(`Item ${itemId} is not on sale yet`), { status: 409, code: 'NOT_ON_SALE' })
+  }
   return product
 }
 
