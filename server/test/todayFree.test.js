@@ -46,13 +46,12 @@ test('Approved application: welcome letter, TODAYFREE gift later, first paid cou
     const approved = await call(admin, 'POST', '/api/admin/applications/app-1/approve', {})
     assert.equal(approved.status, 200, JSON.stringify(approved.body))
 
-    // the welcome letter now, the gift two hours later
+    // the welcome letter and the gift, both at once
     const letters = await db.all('SELECT template, send_after FROM email_queue WHERE email = ? ORDER BY send_after', ['nina@example.com'])
     const welcome = letters.find((l) => l.template === 'application_accepted')
     const gift = letters.find((l) => l.template === 'todayfree_offer')
     assert.ok(welcome && gift)
-    const delay = Date.parse(gift.send_after) - Date.parse(welcome.send_after)
-    assert.ok(delay > 1.9 * 3600_000 && delay < 2.1 * 3600_000, `delay ${delay}`)
+    assert.ok(Math.abs(Date.parse(gift.send_after) - Date.parse(welcome.send_after)) < 60_000)
     const { renderTemplate } = await import('../services/emailPurchase.js')
     assert.match(renderTemplate('todayfree_offer', { code: 'TODAYFREE', to: 'nina@example.com' }).html, /TODAYFREE/)
     assert.match(renderTemplate('application_accepted', { to: 'nina@example.com' }).subject, /одобрена/)
@@ -73,7 +72,7 @@ test('Approved application: welcome letter, TODAYFREE gift later, first paid cou
     // the cabinet sees the gift
     const offer = (await call(nina, 'GET', '/api/me')).body.offers.todayFree
     assert.equal(offer.code, 'TODAYFREE')
-    assert.ok(Date.parse(offer.endsAt) > Date.now() + 25 * 3600_000)
+    assert.ok(Date.parse(offer.endsAt) > Date.now() + 23 * 3600_000)
 
     // the code takes the paid course to zero for her, not for others, not for a free course
     let v = await call(nina, 'POST', '/api/promo/validate', { code: 'todayfree', courseId: 'ai-automation-engineer', amountEur: 29 })

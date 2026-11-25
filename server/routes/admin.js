@@ -677,11 +677,19 @@ async function sendWelcome(db, row) {
   const name = row.first_name || row.name || ''
   const id = await queueEmail({ to: email, template: 'application_accepted', payload: { name, locale: row.locale || 'ru' } })
   const status = await sendQueuedNow(id)
-  const gift = await db.get("SELECT id FROM email_queue WHERE lower(email) = ? AND template = 'todayfree_offer' AND status IN ('pending', 'sending', 'sent') LIMIT 1", [email])
-  if (!gift && await todayFreeWindow(db, { email })) {
-    await queueEmail({ to: email, template: 'todayfree_offer', payload: { name, locale: row.locale || 'ru', code: TODAY_FREE_CODE }, sendAfter: new Date(Date.now() + 2 * 3600_000).toISOString() })
+  // The TODAYFREE gift goes right after it: a waiting one is sent now, a missing one is created and sent.
+  let giftStatus = null
+  const sentGift = await db.get("SELECT id FROM email_queue WHERE lower(email) = ? AND template = 'todayfree_offer' AND status = 'sent' LIMIT 1", [email])
+  if (!sentGift && await todayFreeWindow(db, { email })) {
+    let gift = await db.get("SELECT id FROM email_queue WHERE lower(email) = ? AND template = 'todayfree_offer' AND status = 'pending' ORDER BY created_at DESC LIMIT 1", [email])
+    if (gift) {
+      await db.run('UPDATE email_queue SET send_after = ? WHERE id = ?', [new Date().toISOString(), gift.id])
+    } else {
+      gift = { id: await queueEmail({ to: email, template: 'todayfree_offer', payload: { name, locale: row.locale || 'ru', code: TODAY_FREE_CODE } }) }
+    }
+    giftStatus = await sendQueuedNow(gift.id)
   }
-  return { email, status, error: status === 'failed' ? (await db.get('SELECT error FROM email_queue WHERE id = ?', [id]))?.error : null }
+  return { email, status, giftStatus, error: status === 'failed' ? (await db.get('SELECT error FROM email_queue WHERE id = ?', [id]))?.error : null }
 }
 
 router.post('/applications/:id/send-welcome', requireAdmin('admin', 'moderator'), async (req, res) => {
@@ -703,8 +711,8 @@ router.post('/applications/send-missing-welcome', requireAdmin('admin', 'moderat
   const letters = await lettersFor(db, [...new Set(rows.map((r) => String(r.email || '').toLowerCase()).filter(Boolean))])
   const results = []
   for (const row of rows) {
-    const sent = letters.get(String(row.email || '').toLowerCase())?.application_accepted?.status === 'sent'
-    if (sent) continue
+    const mine = letters.get(String(row.email || '').toLowerCase())
+    if (mine?.application_accepted?.status === 'sent' && (!mine?.todayfree_offer || mine.todayfree_offer.status === 'sent' || mine.todayfree_offer.status === 'skipped')) continue
     results.push(await sendWelcome(db, row))
   }
   await logAudit({ actorEmail: `admin:${req.adminRole}`, action: 'application.send_missing_welcome', targetType: 'application', meta: { count: results.length } })

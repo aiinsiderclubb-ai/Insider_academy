@@ -1,8 +1,8 @@
 /**
  * TODAYFREE — a thank-you for an approved application.
  *
- * Approval sends a welcome letter right away and, OFFER_DELAY_HOURS later, a
- * second one with the code. The code takes the first paid course for nothing
+ * Approval sends a welcome letter and, right after it, a second one with the
+ * code (OFFER_DELAY_HOURS after approval — now none). The code takes the first paid course for nothing
  * (the self-study price comes off; during the launch window the mentor plan
  * costs the same, so it is free too). It works only for that person, only
  * until OFFER_HOURS after the second letter, only once, and only while they
@@ -11,7 +11,7 @@
 import { courses as courseCatalog } from '../../src/data/courses.js'
 
 export const TODAY_FREE_CODE = 'TODAYFREE'
-export const OFFER_DELAY_HOURS = 2
+export const OFFER_DELAY_HOURS = 0
 export const OFFER_HOURS = 24
 
 const HOUR = 3_600_000
