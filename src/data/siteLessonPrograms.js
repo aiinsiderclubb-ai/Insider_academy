@@ -173,42 +173,48 @@ export const SITE_LESSON_PROGRAMS = {
         "titleRu": "AI-помощник для почты: сортирует письма и готовит ответы, за 25 минут",
         "titleEn": "An AI email assistant that sorts mail and drafts replies, in 25 minutes",
         "descRu": "Бесплатный демо-урок. Собираем вместе в n8n.",
-        "descEn": "Free demo lesson. We build it together in n8n."
+        "descEn": "Free demo lesson. We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae1-dima.mp4"
       },
       {
         "num": 2,
         "titleRu": "n8n быстрый старт: облако или свой сервер, интерфейс",
         "titleEn": "n8n quick start: cloud or self-hosted, the interface",
         "descRu": "Собираем вместе в n8n.",
-        "descEn": "We build it together in n8n."
+        "descEn": "We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae2-dima.mp4"
       },
       {
         "num": 3,
         "titleRu": "Логика workflow: условия, циклы, ошибки",
         "titleEn": "Workflow logic: conditions, loops, errors",
         "descRu": "Собираем вместе в n8n.",
-        "descEn": "We build it together in n8n."
+        "descEn": "We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae3-dima.mp4"
       },
       {
         "num": 4,
         "titleRu": "Webhooks и API без страха",
         "titleEn": "Webhooks and APIs without fear",
         "descRu": "Собираем вместе в n8n.",
-        "descEn": "We build it together in n8n."
+        "descEn": "We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae4-dima.mp4"
       },
       {
         "num": 5,
         "titleRu": "Google Sheets как база данных",
         "titleEn": "Google Sheets as a database",
         "descRu": "Собираем вместе в n8n.",
-        "descEn": "We build it together in n8n."
+        "descEn": "We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae5-dima.mp4"
       },
       {
         "num": 6,
         "titleRu": "AI внутри workflow: классификация, извлечение данных, ответы",
         "titleEn": "AI inside a workflow: classification, extraction, replies",
         "descRu": "Собираем вместе в n8n.",
-        "descEn": "We build it together in n8n."
+        "descEn": "We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae6-dima.mp4"
       },
       {
         "num": 7,
@@ -243,7 +249,8 @@ export const SITE_LESSON_PROGRAMS = {
         "titleRu": "Работа с клиентами: бриф, оценка, сдача",
         "titleEn": "Working with clients: brief, estimate, handover",
         "descRu": "Объяснение на слайдах и примерах.",
-        "descEn": "Explained with slides and examples."
+        "descEn": "Explained with slides and examples.",
+        "videoUrl": "ai-automation-engineer/ae11-dima.mp4"
       },
       {
         "num": 12,
