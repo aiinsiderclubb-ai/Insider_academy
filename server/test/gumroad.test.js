@@ -23,7 +23,11 @@ test('Gumroad: discounted checkout link with a single-use code, signed pings gra
     req.on('end', () => {
       res.setHeader('content-type', 'application/json')
       assert.equal(req.headers.authorization, 'Bearer gumroad-test-token')
-      if (req.method === 'GET' && req.url === '/products') return res.end(JSON.stringify({ success: true, products }))
+      // Paged like Gumroad: two per page here, with a link to the next page.
+      if (req.method === 'GET' && req.url === '/products') {
+        return res.end(JSON.stringify({ success: true, products: products.slice(0, 2), next_page_url: '/v2/products?page_key=p2' }))
+      }
+      if (req.method === 'GET' && req.url === '/products?page_key=p2') return res.end(JSON.stringify({ success: true, products: products.slice(2) }))
       const code = req.url.match(/^\/products\/([^/]+)\/offer_codes$/)
       if (req.method === 'POST' && code) {
         offerCodes.push({ product: decodeURIComponent(code[1]), ...JSON.parse(raw) })

@@ -66,7 +66,15 @@ let productCache = { at: 0, map: new Map() }
 /** Our item id → Gumroad product, cached for ten minutes. */
 export async function gumroadProducts({ fresh = false } = {}) {
   if (fresh || Date.now() - productCache.at > 10 * 60 * 1000) {
-    const { products = [] } = await gumroadRequest('GET', '/products')
+    // Gumroad lists products a page at a time (ten per page) and points at the
+    // next page; stopping at the first hid every product after the tenth.
+    const products = []
+    let next = '/products'
+    for (let page = 0; next && page < 100; page++) {
+      const res = await gumroadRequest('GET', next)
+      products.push(...(res.products || []))
+      next = res.next_page_url ? String(res.next_page_url).replace(/^(?:https?:\/\/[^/]+)?\/v2(?=\/)/, '') : null
+    }
     productCache = {
       at: Date.now(),
       map: new Map(products.filter((p) => p.custom_permalink && !p.deleted).map((p) => [p.custom_permalink, p])),
