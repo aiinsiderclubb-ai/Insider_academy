@@ -21,7 +21,7 @@ export async function grantCourseAccess({
     return { ok: false, error: 'email and courseId required' }
   }
 
-  let user = await db.get('SELECT id, email FROM users WHERE email = ?', [mail])
+  let user = await db.get('SELECT id, email FROM users WHERE lower(email) = lower(?)', [mail])
   let userCreated = false
 
   if (!user) {
@@ -60,12 +60,15 @@ export async function grantCourseAccess({
       source: provider,
     }).catch(() => {})
     granted = true
-    const { notifyCourseAccessOpened } = await import('./notifications.js')
-    await notifyCourseAccessOpened(db, {
-      email: mail,
-      courseId: cid,
-      courseTitle: title,
-    })
+    // "Payment received" mail fits a purchase; an approved application gets its own letter.
+    if (provider !== 'application_accept') {
+      const { notifyCourseAccessOpened } = await import('./notifications.js')
+      await notifyCourseAccessOpened(db, {
+        email: mail,
+        courseId: cid,
+        courseTitle: title,
+      }).catch((err) => console.warn('[grantCourseAccess] notify:', err.message))
+    }
   }
 
   return { ok: true, userId: user.id, email: mail, granted, userCreated, alreadyHadAccess: !granted }

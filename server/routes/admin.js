@@ -449,6 +449,9 @@ router.post('/applications/bulk-approve', requireAdmin('admin', 'moderator'), pr
     const result = await approveAcceleratorApplication(db, row, {
       adminNote: req.body.adminNote,
       actorRole: req.adminRole,
+    }).catch((err) => {
+      console.error('[applications/bulk-approve]', id, err)
+      return { ok: false, error: err.message }
     })
     if (result.ok) {
       approved += 1
@@ -526,9 +529,11 @@ router.post('/applications/:id/reject', requireAdmin('admin', 'moderator'), asyn
   })
 
   const updated = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
+  // The approval is done; a hiccup while describing the row must not report it as failed.
+  const application = await enrichApplications(db, [updated]).then((list) => list[0]).catch(() => null)
   res.json({
     ok: true,
-    application: (await enrichApplications(db, [updated]))[0],
+    application,
     promoCreated,
     telegramSent: false,
     telegramHint: null,
@@ -581,10 +586,17 @@ router.post('/applications/:id/approve', requireAdmin('admin', 'moderator'), pre
     })
   }
 
-  const result = await approveAcceleratorApplication(db, row, {
-    adminNote: req.body.adminNote,
-    actorRole: req.adminRole,
-  })
+  let result
+  try {
+    result = await approveAcceleratorApplication(db, row, {
+      adminNote: req.body?.adminNote,
+      actorRole: req.adminRole,
+    })
+  } catch (err) {
+    // The Studio shows this text: an approval that fails says why, not just "Internal server error".
+    console.error('[applications/approve]', row.id, err)
+    return res.status(500).json({ error: err.message, errorRu: `Не удалось одобрить: ${err.message}` })
+  }
 
   if (!result.ok) {
     return res.status(400).json({ error: result.error, errorRu: result.error })

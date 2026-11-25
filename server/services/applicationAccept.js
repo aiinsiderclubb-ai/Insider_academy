@@ -34,6 +34,7 @@ export async function approveAcceleratorApplication(db, applicationRow, { adminN
     provider: 'application_accept',
   })
 
+  // Everything below tells the person about it; none of it may undo the approval.
   await createUserNotification(db, {
     email,
     type: 'application_status',
@@ -42,7 +43,7 @@ export async function approveAcceleratorApplication(db, applicationRow, { adminN
     targetPath: ACCELERATOR_COURSE_PATH,
     message: note || 'Поздравляем! Заявка на AI Accelerator одобрена. Доступ к курсу открыт.',
     reviewedAt: now,
-  })
+  }).catch((err) => console.warn('[application accept] notification:', err.message))
 
   // Two letters: the approval now, and the TODAYFREE gift a little later.
   try {
@@ -63,7 +64,7 @@ export async function approveAcceleratorApplication(db, applicationRow, { adminN
     console.warn('[application accept] mail:', err.message)
   }
 
-  sheetsTrack.trackApplication({
+  Promise.resolve().then(() => sheetsTrack.trackApplication({
     email,
     firstName: applicationRow.first_name,
     lastName: applicationRow.last_name,
@@ -73,7 +74,7 @@ export async function approveAcceleratorApplication(db, applicationRow, { adminN
     action: `админ: accepted${actorRole ? ` (${actorRole})` : ''}`,
     applicationId: applicationRow.id,
     accessGranted: true,
-  }).catch(() => {})
+  })).catch(() => {})
 
   return {
     ok: true,
