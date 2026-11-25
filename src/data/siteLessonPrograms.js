@@ -160,12 +160,12 @@ export const SITE_LESSON_PROGRAMS = {
   },
   "ai-automation-engineer": {
     "duration": {
-      "ru": "18–30 мин",
-      "en": "18–30 min"
+      "ru": "10–15 мин",
+      "en": "10–15 min"
     },
     "countLabel": {
-      "ru": "12 уроков (18–30 мин)",
-      "en": "12 lessons (18–30 min)"
+      "ru": "12 уроков (10–15 мин)",
+      "en": "12 lessons (10–15 min)"
     },
     "lessons": [
       {
@@ -174,7 +174,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "An AI email assistant that sorts mail and drafts replies, in 25 minutes",
         "descRu": "Бесплатный демо-урок. Собираем вместе в n8n.",
         "descEn": "Free demo lesson. We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae1-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae1-dima.mp4",
+        "duration": {
+          "ru": "15 мин",
+          "en": "15 min"
+        }
       },
       {
         "num": 2,
@@ -182,7 +186,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "n8n quick start: cloud or self-hosted, the interface",
         "descRu": "Собираем вместе в n8n.",
         "descEn": "We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae2-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae2-dima.mp4",
+        "duration": {
+          "ru": "15 мин",
+          "en": "15 min"
+        }
       },
       {
         "num": 3,
@@ -190,7 +198,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "Workflow logic: conditions, loops, errors",
         "descRu": "Собираем вместе в n8n.",
         "descEn": "We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae3-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae3-dima.mp4",
+        "duration": {
+          "ru": "15 мин",
+          "en": "15 min"
+        }
       },
       {
         "num": 4,
@@ -198,7 +210,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "Webhooks and APIs without fear",
         "descRu": "Собираем вместе в n8n.",
         "descEn": "We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae4-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae4-dima.mp4",
+        "duration": {
+          "ru": "14 мин",
+          "en": "14 min"
+        }
       },
       {
         "num": 5,
@@ -206,7 +222,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "Google Sheets as a database",
         "descRu": "Собираем вместе в n8n.",
         "descEn": "We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae5-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae5-dima.mp4",
+        "duration": {
+          "ru": "14 мин",
+          "en": "14 min"
+        }
       },
       {
         "num": 6,
@@ -214,7 +234,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "AI inside a workflow: classification, extraction, replies",
         "descRu": "Собираем вместе в n8n.",
         "descEn": "We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae6-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae6-dima.mp4",
+        "duration": {
+          "ru": "15 мин",
+          "en": "15 min"
+        }
       },
       {
         "num": 7,
@@ -222,7 +246,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "Messengers: WhatsApp and an AI Telegram bot",
         "descRu": "Собираем вместе в n8n.",
         "descEn": "We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae7-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae7-dima.mp4",
+        "duration": {
+          "ru": "14 мин",
+          "en": "14 min"
+        }
       },
       {
         "num": 8,
@@ -230,7 +258,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "CRM: integration and lead qualification",
         "descRu": "Собираем вместе в n8n.",
         "descEn": "We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae8-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae8-dima.mp4",
+        "duration": {
+          "ru": "14 мин",
+          "en": "14 min"
+        }
       },
       {
         "num": 9,
@@ -238,7 +270,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "An AI support agent for customers",
         "descRu": "Собираем вместе в n8n.",
         "descEn": "We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae9-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae9-dima.mp4",
+        "duration": {
+          "ru": "10 мин",
+          "en": "10 min"
+        }
       },
       {
         "num": 10,
@@ -246,7 +282,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "Reliability: multi-step and production workflows",
         "descRu": "Собираем вместе в n8n.",
         "descEn": "We build it together in n8n.",
-        "videoUrl": "ai-automation-engineer/ae10-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae10-dima.mp4",
+        "duration": {
+          "ru": "10 мин",
+          "en": "10 min"
+        }
       },
       {
         "num": 11,
@@ -254,7 +294,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "Working with clients: brief, estimate, handover",
         "descRu": "Объяснение на слайдах и примерах.",
         "descEn": "Explained with slides and examples.",
-        "videoUrl": "ai-automation-engineer/ae11-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae11-dima.mp4",
+        "duration": {
+          "ru": "10 мин",
+          "en": "10 min"
+        }
       },
       {
         "num": 12,
@@ -262,7 +306,11 @@ export const SITE_LESSON_PROGRAMS = {
         "titleEn": "Final project",
         "descRu": "Разбор на готовом примере.",
         "descEn": "Walkthrough of a finished example.",
-        "videoUrl": "ai-automation-engineer/ae12-dima.mp4"
+        "videoUrl": "ai-automation-engineer/ae12-dima.mp4",
+        "duration": {
+          "ru": "10 мин",
+          "en": "10 min"
+        }
       }
     ]
   },
