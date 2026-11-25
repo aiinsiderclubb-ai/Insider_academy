@@ -2,6 +2,7 @@ import { config } from '../config.js'
 import { copyFor, normalizeLocale } from './emailCopy.js'
 import { renderEmail, sitePath } from './emailRender.js'
 import { COLORS, emailLayout, escapeHtml, featureCard, primaryButton } from './emailTemplates.js'
+import { EXTRA_TEMPLATES, renderExtraEmail } from './emailExtra.js'
 
 /**
  * The two emails around a purchase: the thank-you with the review offer, and
@@ -195,5 +196,7 @@ function renderPurchaseEmail(template, payload = {}) {
 
 /** Renders any template: the two that live here, or everything `renderEmail` knows. */
 export function renderTemplate(template, payload = {}) {
-  return OWN_TEMPLATES.has(template) ? renderPurchaseEmail(template, payload) : renderEmail(template, payload)
+  if (OWN_TEMPLATES.has(template)) return renderPurchaseEmail(template, payload)
+  if (EXTRA_TEMPLATES.has(template)) return renderExtraEmail(template, payload)
+  return renderEmail(template, payload)
 }

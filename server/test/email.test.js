@@ -58,8 +58,9 @@ test('email templates render kit, locales and unsubscribe', async () => {
   assert.match(miss.subject, /соскучились/i)
   assert.match(miss.html, /Первый агент/)
 
+  const { renderTemplate } = await import('../services/emailPurchase.js')
   for (const id of MARKETING_TEMPLATES) {
-    const rendered = renderEmail(id, { to: 'ada@example.com', locale: 'ru' })
+    const rendered = renderTemplate(id, { to: 'ada@example.com', locale: 'ru' })
     assert.equal(rendered.marketing, true)
   }
 
