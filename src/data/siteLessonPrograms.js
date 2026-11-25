@@ -221,28 +221,32 @@ export const SITE_LESSON_PROGRAMS = {
         "titleRu": "Мессенджеры: WhatsApp и Telegram-бот с AI",
         "titleEn": "Messengers: WhatsApp and an AI Telegram bot",
         "descRu": "Собираем вместе в n8n.",
-        "descEn": "We build it together in n8n."
+        "descEn": "We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae7-dima.mp4"
       },
       {
         "num": 8,
         "titleRu": "CRM: интеграция и квалификация лидов",
         "titleEn": "CRM: integration and lead qualification",
         "descRu": "Собираем вместе в n8n.",
-        "descEn": "We build it together in n8n."
+        "descEn": "We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae8-dima.mp4"
       },
       {
         "num": 9,
         "titleRu": "AI Support Agent для клиентов",
         "titleEn": "An AI support agent for customers",
         "descRu": "Собираем вместе в n8n.",
-        "descEn": "We build it together in n8n."
+        "descEn": "We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae9-dima.mp4"
       },
       {
         "num": 10,
         "titleRu": "Надёжность: многошаговые и production-workflow",
         "titleEn": "Reliability: multi-step and production workflows",
         "descRu": "Собираем вместе в n8n.",
-        "descEn": "We build it together in n8n."
+        "descEn": "We build it together in n8n.",
+        "videoUrl": "ai-automation-engineer/ae10-dima.mp4"
       },
       {
         "num": 11,
@@ -257,7 +261,8 @@ export const SITE_LESSON_PROGRAMS = {
         "titleRu": "Финальный проект",
         "titleEn": "Final project",
         "descRu": "Разбор на готовом примере.",
-        "descEn": "Walkthrough of a finished example."
+        "descEn": "Walkthrough of a finished example.",
+        "videoUrl": "ai-automation-engineer/ae12-dima.mp4"
       }
     ]
   },
