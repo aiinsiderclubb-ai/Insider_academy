@@ -1,4 +1,5 @@
 import { getDb } from '../db.js'
+import { config } from '../config.js'
 import { sendTelegramMessage } from './telegram.js'
 import { zurichDayBounds } from './zurichTime.js'
 
@@ -53,14 +54,27 @@ async function claimOnce(key) {
   }
 }
 
+/**
+ * A link button under an alert, for the page where it is handled. Telegram
+ * refuses the whole message over a button it cannot open, so outside a public
+ * https site (local development) there is no button.
+ */
+export function studioButton(label, path) {
+  const base = String(config.appUrl || '').replace(/\/$/, '')
+  if (!/^https:\/\//.test(base)) return null
+  return { text: label, url: `${base}${path}` }
+}
+
 /** Sends `text` (Telegram HTML) to every admin chat. Never throws. */
-export async function notifyAdmin(text, { once } = {}) {
+export async function notifyAdmin(text, { once, buttons = [] } = {}) {
   const chats = adminChatIds()
   if (!chats.length || !text) return false
+  const row = buttons.filter(Boolean)
+  const extra = { disable_web_page_preview: true, ...(row.length ? { reply_markup: { inline_keyboard: [row] } } : {}) }
   try {
     if (once && !(await claimOnce(once))) return false
     const results = await Promise.all(chats.map((chatId) =>
-      sendTelegramMessage(chatId, text, { disable_web_page_preview: true }).catch(() => false)
+      sendTelegramMessage(chatId, text, extra).catch(() => false)
     ))
     return results.some(Boolean)
   } catch (err) {
@@ -189,13 +203,62 @@ export function alertWebhookProblem(provider, problem, detail = '') {
   return notifyAdmin(text, { once: `webhook:${provider}:${problem}:${period}` })
 }
 
-export function alertApplication({ id, firstName, lastName, email, telegram, country }) {
+/* The application form's answers are stored as ids; these are its Russian labels. */
+const APPLICATION_LABELS = {
+  activity: {
+    studying: 'Учится', working: 'Работает', freelance: 'Фриланс', entrepreneur: 'Свой бизнес',
+    job_seeking: 'Ищет работу', other: 'Другое',
+  },
+  experience: {
+    newbie: 'Новичок', chatgpt_simple: 'ChatGPT для простых задач', regular: 'Использует AI регулярно',
+    automations: 'Делает автоматизации или ботов', professional: 'Работает с AI профессионально',
+  },
+  interests: {
+    productivity: 'AI в работе', content: 'Контент', video: 'AI-видео', automation: 'Автоматизации',
+    chatbots: 'Чат-боты', voice: 'Голосовые роботы', agents: 'AI-агенты', vibecoding: 'Вайбкодинг',
+    sales: 'Продажа AI-услуг', undecided: 'Пока не знает',
+  },
+  source: {
+    telegram: 'Telegram', instagram: 'Instagram', tiktok: 'TikTok', youtube: 'YouTube', google: 'Google',
+    referral: 'Рекомендация', other: 'Другое',
+  },
+}
+
+const labelOf = (group, id) => APPLICATION_LABELS[group]?.[id] || id
+
+/** A Telegram handle as a link: '@name', 'name' and 't.me/name' all work. */
+function telegramLink(handle) {
+  const name = String(handle || '').trim().replace(/^https?:\/\/(www\.)?t\.me\//i, '').replace(/^@/, '')
+  if (!/^[A-Za-z0-9_]{4,32}$/.test(name)) return escapeHtml(handle)
+  return `<a href="https://t.me/${name}">@${name}</a>`
+}
+
+function excerpt(value, max) {
+  const text = String(value || '').trim().replace(/\s+/g, ' ')
+  return escapeHtml(text.length > max ? `${text.slice(0, max - 1)}…` : text)
+}
+
+export function alertApplication({
+  id, firstName, lastName, email, telegram, country, age,
+  currentActivity, aiExperience, interests = [], source, motivation, futureGoal,
+}) {
+  const list = (Array.isArray(interests) ? interests : []).map((item) => labelOf('interests', item))
   const text = [
-    '📝 <b>Новая заявка в акселератор</b>',
-    `${escapeHtml(`${firstName} ${lastName}`)} · ${escapeHtml(country)}`,
-    `${escapeHtml(email)} · ${escapeHtml(telegram)}`,
-  ].join('\n')
-  return notifyAdmin(text, { once: `application:${id}` })
+    '📝 <b>Новая заявка на «Найди своё в AI»</b>',
+    `<b>${escapeHtml(`${firstName} ${lastName}`)}</b>${age ? `, ${escapeHtml(age)}` : ''} · ${escapeHtml(country)}`,
+    `${escapeHtml(email)} · ${telegramLink(telegram)}`,
+    '',
+    currentActivity ? `💼 ${escapeHtml(labelOf('activity', currentActivity))}` : null,
+    aiExperience ? `🤖 Опыт: ${escapeHtml(labelOf('experience', aiExperience))}` : null,
+    list.length ? `🎯 ${escapeHtml(list.join(', '))}` : null,
+    source ? `📣 Узнал(а) из: ${escapeHtml(labelOf('source', source))}` : null,
+    motivation ? `\n<b>Почему хочет:</b>\n${excerpt(motivation, 600)}` : null,
+    futureGoal ? `\n<b>Цель:</b>\n${excerpt(futureGoal, 300)}` : null,
+  ].filter((line) => line !== null).join('\n')
+  return notifyAdmin(text, {
+    once: `application:${id}`,
+    buttons: [studioButton('Открыть в Studio', `/ru/studio/queue?tab=applications#app-${encodeURIComponent(id)}`)],
+  })
 }
 
 export function alertHomework({ id, email, courseTitle, lessonTitle, resubmit }) {

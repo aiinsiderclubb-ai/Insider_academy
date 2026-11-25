@@ -78,7 +78,10 @@ router.post('/accelerator', optionalUser, async (req, res) => {
     ]
   )
 
-  alertApplication({ id, firstName: first, lastName: last, email: mail, telegram: tg, country: countryVal })
+  alertApplication({
+    id, firstName: first, lastName: last, email: mail, telegram: tg, country: countryVal, age: ageNum,
+    currentActivity, aiExperience, interests, source, motivation, futureGoal,
+  })
   sheetsTrack.trackApplication({
     email: mail,
     firstName: first,

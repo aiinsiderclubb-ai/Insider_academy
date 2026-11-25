@@ -172,6 +172,29 @@ test('admin chat: alerts for sign-ups, purchases and refunds, page views, report
     await tgUpdate({ id: Number(ADMIN), type: 'supergroup', title: 'Team' }, '/sales')
     await waitFor((m) => /Последние 1 продажа/.test(m.text), '/sales')
 
+    // An application arrives with the whole questionnaire and a link to Studio.
+    config.appUrl = 'https://myinsideracademy.com'
+    const applied = await fetch(`${base}/api/applications/accelerator`, {
+      method: 'POST', headers: json,
+      body: JSON.stringify({
+        firstName: 'Ира', lastName: 'Тест', age: 27, country: 'Швейцария', telegram: '@ira_test', email: 'ira@example.com',
+        currentActivity: 'freelance', aiExperience: 'chatgpt_simple', interests: ['video', 'agents'], source: 'tiktok',
+        motivation: 'Хочу <делать> AI-видео для клиентов', futureGoal: 'Свой продакшн',
+      }),
+    })
+    assert.equal(applied.status, 201)
+    const application = await waitFor((m) => /Найди своё в AI/.test(m.text), 'application')
+    assert.match(application.text, /<b>Ира Тест<\/b>, 27 · Швейцария/)
+    assert.match(application.text, /<a href="https:\/\/t\.me\/ira_test">@ira_test<\/a>/)
+    assert.match(application.text, /💼 Фриланс/)
+    assert.match(application.text, /Опыт: ChatGPT для простых задач/)
+    assert.match(application.text, /🎯 AI-видео, AI-агенты/)
+    assert.match(application.text, /Узнал\(а\) из: TikTok/)
+    assert.match(application.text, /Хочу &lt;делать&gt; AI-видео/)
+    const button = application.reply_markup.inline_keyboard[0][0]
+    assert.equal(button.text, 'Открыть в Studio')
+    assert.match(button.url, /^https:\/\/myinsideracademy\.com\/ru\/studio\/queue\?tab=applications#app-app-/)
+
     // Chatter in the team group, and strangers' groups, get no answer.
     const before = sent.length
     await tgUpdate({ id: Number(ADMIN), type: 'supergroup', title: 'Team' }, 'привет всем')
