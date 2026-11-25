@@ -28,6 +28,8 @@ import adminGiveawaysRoutes from './adminGiveaways.js'
 import adminMarketplaceRoutes from './adminMarketplace.js'
 import adminEmailRoutes from './adminEmail.js'
 import adminStudioRoutes, { paddleWebhookUrl } from './adminStudio.js'
+import { coursePlans } from '../services/coursePlan.js'
+import adminPeopleRoutes from './adminPeople.js'
 import { logAudit } from '../services/auditLog.js'
 import { deleteUserAccount } from '../services/deleteUser.js'
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
@@ -112,6 +114,7 @@ router.use(adminOpsRoutes)
 router.use(adminGiveawaysRoutes)
 router.use(adminEmailRoutes)
 router.use(adminStudioRoutes)
+router.use(adminPeopleRoutes)
 
 router.get('/dashboard', async (req, res) => {
   const db = getDb()
@@ -142,7 +145,7 @@ router.get('/dashboard', async (req, res) => {
       )).map(mapAdminUser),
       purchases: await db.all('SELECT * FROM purchase_log ORDER BY date DESC LIMIT 500'),
       certificates: (await db.all('SELECT * FROM certificates ORDER BY date DESC LIMIT 500')).map(mapCert),
-      homework: await mapHomeworkList(hwRows),
+      homework: await withPlans(db, await mapHomeworkList(hwRows), hwRows),
       referrals: await db.all('SELECT * FROM referrals ORDER BY date DESC LIMIT 500'),
       discounts: Object.fromEntries((await db.all('SELECT email, percent FROM referral_discounts')).map((r) => [r.email, r.percent])),
       reviews: (await db.all(
@@ -817,6 +820,25 @@ function mapHw(row) {
     fileUrl: null, status: row.status, score: row.score, adminComment: row.admin_comment,
     date: row.date, updatedAt: row.updated_at,
   }
+}
+
+/**
+ * Which plan the learner holds for the course of each assignment: `mentor`,
+ * `self`, or `club`/`pro`/null when the course is not a purchase of theirs.
+ */
+async function withPlans(db, items, rows) {
+  const cache = new Map()
+  return Promise.all(items.map(async (item, index) => {
+    const email = String(rows[index]?.email || item.email || '').toLowerCase()
+    if (!cache.has(email)) {
+      const user = await db.get('SELECT id FROM users WHERE lower(email) = ?', [email])
+      cache.set(email, user ? { id: user.id, plans: await coursePlans(db, user.id), owned: new Set((await db.all('SELECT course_id FROM purchases WHERE user_id = ?', [user.id])).map((r) => r.course_id)) } : null)
+    }
+    const who = cache.get(email)
+    const courseId = item.courseId || rows[index]?.course_id
+    const plan = who && who.owned.has(courseId) ? (who.plans.get(courseId) || 'mentor') : null
+    return { ...item, userId: who?.id ?? null, plan }
+  }))
 }
 
 async function mapHomeworkList(rows = []) {

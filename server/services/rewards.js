@@ -92,7 +92,7 @@ export async function bestPrice(db, { userId, email, itemId, amountEur, promoCod
   const options = [{ kind: null, finalEur: base, discountEur: 0 }]
   let promoError = null
   if (promoCode) {
-    const promo = await validatePromoCode({ code: promoCode, courseId: itemId, amountEur: base })
+    const promo = await validatePromoCode({ code: promoCode, courseId: itemId, amountEur: base, userId, email })
     if (promo.valid) options.push({ kind: 'promo', code: promo.code, finalEur: cents(promo.finalEur), discountEur: cents(base - promo.finalEur) })
     else promoError = promo.error
   }

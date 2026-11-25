@@ -290,7 +290,7 @@ router.patch('/password', async (req, res) => {
   const hash = bcrypt.hashSync(newPassword, 10)
   const now = nowIso()
   await db.run(
-    'UPDATE users SET password_hash = ?, password_changed_at = ?, profile_updated_at = ?, token_version = COALESCE(token_version, 0) + 1 WHERE id = ?',
+    'UPDATE users SET password_hash = ?, password_changed_at = ?, profile_updated_at = ?, password_temporary = 0, token_version = COALESCE(token_version, 0) + 1 WHERE id = ?',
     [hash, now, now, req.userId]
   )
   await createUserNotification(db, {

@@ -461,9 +461,9 @@ router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, 
   let appliedPromo = null
   if (promoCode) {
     const { validatePromoCode } = await import('../services/promoCodes.js')
-    const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: amount })
+    const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: amount, userId: req.userId, email: req.userEmail })
     if (!promo.valid) {
-      return res.status(400).json({ error: promo.error, errorRu: 'Промокод не подошёл.' })
+      return res.status(400).json({ error: promo.error, errorRu: promo.errorRu || 'Промокод не подошёл.' })
     }
     if (!config.tribute.shopId) {
       return res.status(409).json({
@@ -624,7 +624,7 @@ router.post('/demo', requireUser, checkoutAvailability, async (req, res) => {
   if (promoCode) {
     try {
       const { validatePromoCode, consumePromoCode } = await import('../services/promoCodes.js')
-      const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: finalAmount })
+      const promo = await validatePromoCode({ code: promoCode, courseId, amountEur: finalAmount, userId: req.userId, email: req.userEmail })
       if (promo.valid) {
         finalAmount = promo.finalEur
         await consumePromoCode(promoCode)

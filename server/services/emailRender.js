@@ -166,6 +166,38 @@ export function renderEmail(template, payload = {}) {
     cta = copy.digest.cta
     bodyHtml = `${lines.map((line) => paragraph(line)).join('')}${primaryButton(href, cta)}`
     text = textBlock([...lines, href])
+  } else if (template === 'admin_message' || template === 'admin_news') {
+    // Written by hand in the Studio: plain text, paragraphs split on blank lines.
+    const paragraphs = String(payload.body || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+    subject = String(payload.subject || copy.brand).slice(0, 200)
+    title = subject
+    preheader = paragraphs[0]?.slice(0, 140) || subject
+    const greeting = name ? (locale === 'en' ? `Hi ${name},` : locale === 'ukr' ? `Вітаємо, ${name}!` : `Здравствуйте, ${name}!`) : ''
+    const ctaUrl = String(payload.ctaUrl || '').trim()
+    href = /^https?:\/\//.test(ctaUrl) ? ctaUrl : ctaUrl ? sitePath(locale, ctaUrl) : ''
+    cta = String(payload.ctaLabel || '').trim() || copy.openSite
+    bodyHtml = [
+      greeting ? paragraph(greeting) : '',
+      ...paragraphs.map((p) => `<p style="${P};white-space:pre-line">${escapeHtml(p)}</p>`),
+      href ? primaryButton(href, cta) : '',
+    ].join('')
+    text = textBlock([greeting, ...paragraphs, href])
+  } else if (template === 'personal_promo') {
+    const code = String(payload.code || '')
+    const discount = String(payload.discount || '')
+    const until = payload.validUntil ? new Date(payload.validUntil).toLocaleDateString(locale === 'en' ? 'en-GB' : 'ru-RU') : ''
+    href = sitePath(locale, '/learn')
+    subject = locale === 'en' ? `Your personal code: ${discount} off` : locale === 'ukr' ? `Ваш персональний промокод: −${discount}` : `Ваш персональный промокод: −${discount}`
+    title = locale === 'en' ? 'A code just for you' : locale === 'ukr' ? 'Промокод лише для вас' : 'Промокод только для вас'
+    preheader = subject
+    cta = locale === 'en' ? 'Choose a course' : locale === 'ukr' ? 'Обрати курс' : 'Выбрать курс'
+    const note = payload.note ? paragraph(String(payload.note)) : ''
+    const lead = locale === 'en'
+      ? 'It works only in your account — enter it at checkout.'
+      : locale === 'ukr' ? 'Він діє лише у вашому акаунті — введіть його під час оплати.' : 'Он работает только в вашем аккаунте — введите его при оплате.'
+    const untilLine = until ? `<p style="${META}">${escapeHtml(locale === 'en' ? `Valid until ${until}` : `Действует до ${until}`)}</p>` : ''
+    bodyHtml = `${note}${paragraph(lead)}${otpBlock(code)}${untilLine}${primaryButton(href, cta)}`
+    text = textBlock([payload.note, lead, code, until, href])
   } else {
     throw new Error(`Unknown email template: ${template}`)
   }

@@ -428,6 +428,17 @@ CREATE TABLE IF NOT EXISTS page_views (
   user_id INTEGER
 );
 CREATE INDEX IF NOT EXISTS page_views_day_idx ON page_views(day);
+CREATE TABLE IF NOT EXISTS login_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  email TEXT,
+  personal_id TEXT,
+  method TEXT,
+  ip TEXT,
+  user_agent TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS login_events_user_idx ON login_events(user_id, created_at);
 `
 
 export function createSqliteDb() {
@@ -502,6 +513,11 @@ function migrateColumns(db) {
 
   const paymentCols = db.prepare('PRAGMA table_info(payments)').all().map((c) => c.name)
   if (paymentCols.length && !paymentCols.includes('plan')) add('ALTER TABLE payments ADD COLUMN plan TEXT')
+
+  const userColsTemp = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name)
+  if (userColsTemp.length && !userColsTemp.includes('password_temporary')) add('ALTER TABLE users ADD COLUMN password_temporary INTEGER DEFAULT 0')
+  const promoCols = db.prepare('PRAGMA table_info(promo_codes)').all().map((c) => c.name)
+  if (promoCols.length && !promoCols.includes('user_ids')) add('ALTER TABLE promo_codes ADD COLUMN user_ids TEXT')
 
   const purchaseCols = db.prepare('PRAGMA table_info(purchases)').all().map((c) => c.name)
   if (purchaseCols.length && !purchaseCols.includes('payment_provider')) {

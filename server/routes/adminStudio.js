@@ -5,6 +5,8 @@ import { config, isPaddleEnabled } from '../config.js'
 import { logAudit } from '../services/auditLog.js'
 import { grantAccess } from '../services/access.js'
 import { rewardsFor } from '../services/rewards.js'
+import { coursePlans } from '../services/coursePlan.js'
+import { mapLogin } from '../services/loginLog.js'
 import { createUserNotification } from '../services/notifications.js'
 import { getMarketplaceProduct, getBundle } from '../services/marketplace.js'
 import { revokePaymentAccess } from './webhooks.js'
@@ -54,6 +56,7 @@ function mapPayment(row) {
     provider: row.provider,
     externalId: row.external_id,
     status: row.status,
+    plan: row.plan || null,
     createdAt: row.created_at,
     completedAt: row.completed_at,
   }
@@ -202,7 +205,7 @@ router.get('/users', requireAdmin('admin', 'moderator'), async (req, res) => {
     params.push(`%${q}%`, `%${q}%`, `%${q}%`)
   }
   const rows = await db.all(
-    `SELECT u.id, u.email, u.name, u.personal_id, u.email_verified, u.created_at,
+    `SELECT u.id, u.email, u.name, u.personal_id, u.email_verified, u.created_at, u.last_login_at,
        (SELECT COUNT(*) FROM purchases p WHERE p.user_id = u.id) AS purchases,
        (SELECT COALESCE(SUM(amount), 0) FROM payments pay WHERE pay.user_id = u.id AND pay.status = 'completed') AS paid
      FROM users u ${where} ORDER BY u.created_at DESC LIMIT 50`,
@@ -211,7 +214,7 @@ router.get('/users', requireAdmin('admin', 'moderator'), async (req, res) => {
   res.json({
     users: rows.map((u) => ({
       id: u.id, email: u.email, name: u.name, personalId: u.personal_id,
-      emailVerified: Boolean(u.email_verified), createdAt: u.created_at,
+      emailVerified: Boolean(u.email_verified), createdAt: u.created_at, lastLoginAt: u.last_login_at || null,
       purchases: Number(u.purchases || 0), paid: Math.round(Number(u.paid || 0) * 100) / 100,
     })),
   })
@@ -228,9 +231,15 @@ router.get('/users/:id', requireAdmin('admin', 'moderator'), async (req, res) =>
   const invited = await db.all('SELECT referred_email, referred_purchased, date FROM referrals WHERE lower(referrer_email) = lower(?) ORDER BY date DESC', [user.email])
   const support = await db.get('SELECT COUNT(*) AS c FROM support_messages WHERE user_id = ?', [user.id]).catch(() => ({ c: 0 }))
   const rewards = await rewardsFor(db, { userId: user.id, email: user.email })
+  const plans = await coursePlans(db, user.id)
+  const logins = await db.all('SELECT * FROM login_events WHERE user_id = ? ORDER BY created_at DESC LIMIT 30', [user.id]).catch(() => [])
+  const temp = await db.get('SELECT password_temporary, last_login_at FROM users WHERE id = ?', [user.id]).catch(() => null)
   res.json({
     user: { id: user.id, email: user.email, name: user.name, personalId: user.personal_id, emailVerified: Boolean(user.email_verified), createdAt: user.created_at, authProvider: user.auth_provider },
-    purchases: purchases.map((p) => ({ id: p.id, itemId: p.course_id, title: describeItem(p.course_id).title, kind: describeItem(p.course_id).kind, provider: p.payment_provider, paymentRef: p.payment_id, purchasedAt: p.purchased_at })),
+    purchases: purchases.map((p) => ({ id: p.id, itemId: p.course_id, title: describeItem(p.course_id).title, kind: describeItem(p.course_id).kind, provider: p.payment_provider, paymentRef: p.payment_id, purchasedAt: p.purchased_at, plan: Number(courseCatalog.find((c) => c.id === p.course_id)?.priceEur) > 0 ? (plans.get(p.course_id) || 'mentor') : null })),
+    logins: logins.map(mapLogin),
+    lastLoginAt: temp?.last_login_at || null,
+    passwordTemporary: Boolean(Number(temp?.password_temporary || 0)),
     entitlements: entitlements.map((e) => ({ id: e.id, productId: e.product_id, title: describeItem(e.product_id).title, licenseTier: e.license_tier, sourceType: e.source_type, sourceId: e.source_id, status: e.status, grantedAt: e.granted_at })),
     payments: payments.map(mapPayment),
     referral: {

@@ -6,6 +6,9 @@ import { nowIso } from '../db/time.js'
 import { logAudit } from '../services/auditLog.js'
 import { getFeatureFlags, setFeatureFlags } from '../services/featureFlags.js'
 import { broadcastTelegram } from '../services/telegramNotify.js'
+import { resolveAccounts } from '../services/adminAudience.js'
+import { queueEmail } from '../services/emailQueue.js'
+import { promoUserIds } from '../services/promoCodes.js'
 
 const router = Router()
 
@@ -13,8 +16,18 @@ const router = Router()
 const REWARD_PREFIX = /^(FRIEND|NEXT|THANKS)-/
 
 router.get('/promo-codes', requireAdmin('admin'), async (_req, res) => {
-  const rows = await getDb().all('SELECT * FROM promo_codes ORDER BY created_at DESC')
-  res.json(rows.map(mapPromo))
+  const db = getDb()
+  const rows = await db.all('SELECT * FROM promo_codes ORDER BY created_at DESC')
+  const ids = [...new Set(rows.flatMap((row) => promoUserIds(row)))]
+  const owners = new Map()
+  for (const id of ids) {
+    const user = await db.get('SELECT id, email, personal_id FROM users WHERE id = ?', [id])
+    if (user) owners.set(Number(user.id), { id: Number(user.id), email: user.email, personalId: user.personal_id || null })
+  }
+  res.json(rows.map((row) => ({
+    ...mapPromo(row),
+    recipients: promoUserIds(row).map((id) => owners.get(id) || { id, email: null, personalId: null }),
+  })))
 })
 
 function promoInput(body, { partial = false } = {}) {
@@ -64,15 +77,41 @@ router.post('/promo-codes', requireAdmin('admin'), async (req, res) => {
   if (errors.length) return res.status(400).json({ error: errors.join('; '), errorRu: 'Проверьте поля: нужна скидка в % или в €, лимит — целое число, даты — корректные' })
   const exists = await db.get('SELECT code FROM promo_codes WHERE UPPER(code) = ?', [code])
   if (exists) return res.status(409).json({ error: 'Code exists', errorRu: 'Такой код уже есть' })
+
+  // A personal code: only the named accounts (id, email or personal id) can use it.
+  let recipients = []
+  const rawRecipients = String(Array.isArray(req.body.recipients) ? req.body.recipients.join(' ') : req.body.recipients || '').trim()
+  if (rawRecipients) {
+    const { accounts, unknown } = await resolveAccounts(db, rawRecipients)
+    if (unknown.length) {
+      return res.status(400).json({ error: `Unknown accounts: ${unknown.join(', ')}`, errorRu: `Не найдены аккаунты: ${unknown.join(', ')}`, unknown })
+    }
+    recipients = accounts
+  }
+  const userIds = recipients.length ? JSON.stringify(recipients.map((a) => a.id)) : null
+
   await db.run(
-    `INSERT INTO promo_codes (code, discount_percent, discount_eur, course_ids, max_uses, valid_from, valid_until, active, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [code, out.discount_percent, out.discount_eur, out.course_ids, out.max_uses, out.valid_from, out.valid_until, req.body.active === false ? 0 : 1, nowIso()]
+    `INSERT INTO promo_codes (code, discount_percent, discount_eur, course_ids, max_uses, valid_from, valid_until, active, user_ids, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [code, out.discount_percent, out.discount_eur, out.course_ids, out.max_uses, out.valid_from, out.valid_until, req.body.active === false ? 0 : 1, userIds, nowIso()]
   )
-  await logAudit({ actorEmail: `admin:${req.adminRole}`, action: 'promo.create', targetType: 'promo', targetId: code, meta: { ...out } })
+  await logAudit({ actorEmail: `admin:${req.adminRole}`, action: 'promo.create', targetType: 'promo', targetId: code, meta: { ...out, recipients: recipients.map((a) => a.email) } })
   const discount = out.discount_percent ? `${out.discount_percent}%` : `€${out.discount_eur}`
-  broadcastTelegram('promo_new', { code, discount }, { prefKey: 'promo' }).catch(() => {})
-  res.status(201).json({ ok: true, code })
+  if (recipients.length) {
+    // Personal codes are not announced to the channel; the owners can get a letter.
+    if (req.body.notify) {
+      for (const person of recipients) {
+        await queueEmail({
+          to: person.email,
+          template: 'personal_promo',
+          payload: { code, discount, validUntil: out.valid_until, name: person.name || '', note: req.body.note || '', locale: req.body.locale || 'ru' },
+        })
+      }
+    }
+  } else {
+    broadcastTelegram('promo_new', { code, discount }, { prefKey: 'promo' }).catch(() => {})
+  }
+  res.status(201).json({ ok: true, code, recipients: recipients.length, notified: Boolean(req.body.notify && recipients.length) })
 })
 
 router.post('/telegram/broadcast', requireAdmin('admin'), async (req, res) => {
@@ -258,7 +297,7 @@ function mapPromo(row) {
     validFrom: row.valid_from,
     validUntil: row.valid_until,
     active: Boolean(row.active),
-    kind: REWARD_PREFIX.test(String(row.code)) ? 'reward' : 'campaign',
+    kind: REWARD_PREFIX.test(String(row.code)) ? 'reward' : promoUserIds(row).length ? 'personal' : 'campaign',
     createdAt: row.created_at,
   }
 }

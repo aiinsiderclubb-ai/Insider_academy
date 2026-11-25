@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS promo_codes (
   active INTEGER DEFAULT 1,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`).catch(() => {})
+  /* Personal codes: only these accounts may use them. */
+  await pool.query('ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS user_ids TEXT').catch(() => {})
   await pool.query(`
 CREATE TABLE IF NOT EXISTS support_messages (
   id TEXT PRIMARY KEY,

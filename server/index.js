@@ -13,6 +13,7 @@ import { ensureTelegramWebhook } from './services/telegramWebhookSetup.js'
 import { sendAdminDailyDigest } from './services/digest.js'
 import { runAdminDigests } from './services/adminDigest.js'
 import { processEmailQueue, processInactiveUsers } from './services/emailQueue.js'
+import { pruneLoginLog } from './services/loginLog.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 for (const dir of ['data', 'uploads']) {
@@ -53,6 +54,7 @@ async function start() {
   setInterval(processReminders, 60000)
   setInterval(() => { processEmailQueue().catch((e) => console.error('[email-queue]', e.message)) }, 120000)
   setInterval(() => { processInactiveUsers().catch((e) => console.error('[inactive]', e.message)) }, 86400000)
+  setInterval(() => { pruneLoginLog().catch(() => {}) }, 86400000)
   setInterval(() => { sendAdminDailyDigest().catch((e) => console.error('[digest]', e.message)) }, 3600000)
   sendAdminDailyDigest().catch(() => {})
   // Telegram reports for the team: yesterday at 09:00 Zurich, the week on Mondays.

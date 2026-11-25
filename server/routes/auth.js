@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { recordLogin } from '../services/loginLog.js'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { getDb } from '../db.js'
@@ -222,6 +223,7 @@ router.post('/oauth', asyncHandler(async (req, res) => {
   }
 
   sheetsTrack.trackLogin({ email, personalId, userId: row.id }).catch(() => {})
+  await recordLogin(req, { userId: row.id, email, personalId, method: provider })
 
   const user = {
     id: row.id,
@@ -351,6 +353,7 @@ router.post('/login', asyncHandler(async (req, res) => {
   await db.run('UPDATE users SET last_login_at = ? WHERE id = ?', [loginAt, row.id]).catch(() => {})
   const user = { id: row.id, email: row.email, name: row.name, emailVerified: Boolean(row.email_verified), personalId, tokenVersion: row.token_version }
   sheetsTrack.trackLogin({ email, personalId, userId: row.id }).catch(() => {})
+  await recordLogin(req, { userId: row.id, email: row.email, personalId, method: isTestLogin ? 'test' : 'password' })
   res.json({ token: signUserToken(user), user, lastLoginAt: loginAt })
 }))
 
@@ -379,6 +382,7 @@ router.post('/verify-email', asyncHandler(async (req, res) => {
     personalId,
     tokenVersion: userRow.token_version,
   }
+  await recordLogin(req, { userId: userRow.id, email: userRow.email, personalId, method: 'email_link' })
   res.json({ ok: true, token: signUserToken(user), user })
 }))
 
@@ -406,6 +410,7 @@ router.post('/verify-email-code', asyncHandler(async (req, res) => {
   }
   const { scheduleWelcomeSeries } = await import('../services/emailQueue.js')
   scheduleWelcomeSeries(email, userRow.name, userRow.locale).catch(() => {})
+  await recordLogin(req, { userId: userRow.id, email: userRow.email, personalId, method: 'email_code' })
   res.json({ ok: true, token: signUserToken(user), user })
 }))
 
@@ -501,7 +506,7 @@ router.post('/reset-password', asyncHandler(async (req, res) => {
   const now = nowIso()
   const hash = bcrypt.hashSync(password, 10)
   await db.run(
-    'UPDATE users SET password_hash = ?, password_changed_at = ?, token_version = COALESCE(token_version, 0) + 1 WHERE email = ?',
+    'UPDATE users SET password_hash = ?, password_changed_at = ?, password_temporary = 0, token_version = COALESCE(token_version, 0) + 1 WHERE email = ?',
     [hash, now, row.email]
   )
   // Password reset token proves email ownership; mark as verified.

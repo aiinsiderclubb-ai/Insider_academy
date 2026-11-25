@@ -24,6 +24,8 @@ export async function mapUserResponse(db, user) {
     avatarUrl,
     profileUpdatedAt: user.profile_updated_at || null,
     passwordChangedAt: user.password_changed_at || null,
+    /** Set by an admin; the cabinet asks the person to choose their own. */
+    passwordTemporary: Boolean(Number(user.password_temporary || 0)),
   }
 }
 
@@ -60,5 +62,5 @@ export async function syncUserRecords(db, oldEmail, updates = {}) {
 }
 
 export function userSelectFields() {
-  return 'id, personal_id, email, name, email_verified, telegram_chat_id, telegram_username, avatar_url, profile_updated_at, password_changed_at, token_version, last_login_at, created_at, locale'
+  return 'id, personal_id, email, name, email_verified, telegram_chat_id, telegram_username, avatar_url, profile_updated_at, password_changed_at, password_temporary, token_version, last_login_at, created_at, locale'
 }

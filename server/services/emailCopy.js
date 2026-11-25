@@ -1,6 +1,7 @@
 export const EMAIL_LOCALES = ['ru', 'ukr', 'en']
 
 export const MARKETING_TEMPLATES = new Set([
+  'admin_news',
   'welcome_1',
   'welcome_2',
   'welcome_3',
