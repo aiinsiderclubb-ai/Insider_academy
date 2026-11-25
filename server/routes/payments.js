@@ -6,7 +6,7 @@ import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { createCheckoutSession } from '../services/stripe.js'
 import { createPaddleTransaction } from '../services/paddle.js'
 import { createGumroadCheckout, gumroadProducts } from '../services/gumroad.js'
-import { launchSalePrice } from '../services/launchSale.js'
+import { launchSalePrice, mentorLaunch } from '../services/launchSale.js'
 import { bestPrice } from '../services/rewards.js'
 import { coursePlanFor, normalizePlan, planPrice } from '../services/coursePlan.js'
 import { createPaymentPayload } from '../services/liqpay.js'
@@ -69,6 +69,16 @@ async function resolveCheckoutItem(db, courseId, { plan, userId } = {}) {
     slug: item.slug || courseId,
     currency: 'EUR',
   }
+}
+
+/**
+ * True when a mentor-plan charge exceeds the course's self-study price, which
+ * is all a single-price product (Gumroad, a fixed Tribute product) can take.
+ */
+function sellsAboveListPrice(courseId, item) {
+  if (item.plan !== 'mentor') return false
+  const course = PAID_CATALOG.find((entry) => entry.id === courseId)
+  return item.amount > Number(course?.priceEur ?? 0)
 }
 
 /** The plan rides on the payment, so access can tell the two apart once it is paid. */
@@ -356,9 +366,10 @@ router.post('/gumroad/checkout', requireUser, checkoutAvailability, async (req, 
   if (!courseId) return res.status(400).json({ error: 'courseId required' })
   try {
     const item = await resolveCheckoutItem(db, courseId, { plan, userId: req.userId })
-    /* A Gumroad product has one price and offer codes only take money off it,
-       so the dearer mentor plan (or an upgrade to it) cannot be sold there. */
-    if (item.plan === 'mentor') {
+    /* A Gumroad product has one price — the self-study one — and offer codes
+       only take money off it, so the mentor plan is sold there only while it
+       costs no more than that (the launch window). */
+    if (sellsAboveListPrice(courseId, item)) {
       return res.status(409).json({ error: 'The mentor plan is not sold through Gumroad', code: 'PLAN_NOT_AVAILABLE' })
     }
     const price = await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: courseId, amountEur: item.amount, promoCode, referralCode })
@@ -515,7 +526,7 @@ router.post('/tribute/checkout', requireUser, checkoutAvailability, async (req, 
       })
     }
 
-    if (item.plan === 'mentor') {
+    if (sellsAboveListPrice(courseId, item)) {
       // A fixed Tribute product is priced on Tribute's side, at the self-study price.
       return res.status(409).json({ error: 'The mentor plan needs Tribute Shop checkout (TRIBUTE_SHOP_ID)' })
     }
@@ -604,6 +615,37 @@ router.post('/liqpay/create', requireUser, checkoutAvailability, async (req, res
     serverUrl: `${(process.env.API_PUBLIC_URL || config.appUrl.replace('5173', '3001'))}/api/webhooks/liqpay`,
   })
   res.json(payload)
+})
+
+/** What the site needs to show the launch offer on the plans. */
+router.get('/offers', (_req, res) => {
+  const window = mentorLaunch()
+  res.json({ mentorAtSelfPrice: window ? { endsAt: window.endsAt } : null })
+})
+
+/**
+ * During the launch window the mentor plan costs what self-study does, so a
+ * learner who already owns self-study moves up for nothing. Recorded as a
+ * settled zero payment with the mentor plan, like any other plan change.
+ */
+router.post('/plan-upgrade', requireUser, checkoutAvailability, async (req, res) => {
+  const db = getDb()
+  const courseId = String(req.body?.courseId || '')
+  if (!mentorLaunch()) return res.status(409).json({ error: 'The launch offer has ended', code: 'OFFER_ENDED', errorRu: 'Предложение запуска закончилось.' })
+  const course = courseCatalog.find((entry) => entry.id === courseId)
+  if (!course || !(Number(course.mentorPriceEur) > 0)) return res.status(400).json({ error: 'Unknown course' })
+  const current = await coursePlanFor(db, req.userId, courseId)
+  if (current !== 'self') {
+    return res.status(409).json({ error: current ? 'Already on the mentor plan' : 'Course not owned', code: current ? 'ALREADY_OWNED' : 'NOT_OWNED' })
+  }
+  const id = `launch-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+  const now = new Date().toISOString()
+  await db.run(
+    `INSERT INTO payments (id, user_id, email, course_id, course_title, amount, currency, provider, external_id, status, plan, created_at, completed_at)
+     VALUES (?, ?, ?, ?, ?, 0, 'EUR', 'launch', ?, 'completed', 'mentor', ?, ?)`,
+    [id, req.userId, req.userEmail, courseId, `${course.titleRu || course.title || courseId} — с ментором`, id, now, now]
+  )
+  res.json({ ok: true, plan: 'mentor' })
 })
 
 router.post('/demo', requireUser, checkoutAvailability, async (req, res) => {

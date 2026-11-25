@@ -35,6 +35,7 @@ test('referral 10% for the friend, 15% for the inviter after the refund window, 
 
   const dbPath = path.join(os.tmpdir(), `rewards-${Date.now()}.sqlite`)
   Object.assign(process.env, {
+    MENTOR_LAUNCH: '0',
     DATABASE_URL: '', LMS_TEST_DB: dbPath, UPLOADS_DIR: path.join(os.tmpdir(), 'rewards-uploads'),
     JWT_SECRET: 'rewards-test-jwt', ADMIN_JWT_SECRET: 'rewards-test-admin', ADMIN_PASSWORD: 'AdminTest-2026-Only!',
     EDITOR_PASSWORD: 'EditorTest-2026-Only!', MODERATOR_PASSWORD: 'ModeratorTest-2026!', CORS_ORIGIN: 'http://localhost:5173',

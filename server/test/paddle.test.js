@@ -49,6 +49,7 @@ test('Paddle checkout → transaction.completed grants access once; a full refun
 
   const dbPath = path.join(os.tmpdir(), `paddle-${Date.now()}.sqlite`)
   Object.assign(process.env, {
+    MENTOR_LAUNCH: '0',
     DATABASE_URL: '',
     LMS_TEST_DB: dbPath,
     UPLOADS_DIR: path.join(os.tmpdir(), 'paddle-test-uploads'),

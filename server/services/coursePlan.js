@@ -1,3 +1,5 @@
+import { mentorLaunch } from './launchSale.js'
+
 /**
  * Paid courses sell in two plans:
  *
@@ -45,9 +47,10 @@ export async function coursePlanFor(db, userId, courseId) {
  * What a course costs in a plan. Someone who already owns the self-study plan
  * and moves up to the mentor plan pays only the difference.
  */
-export function planPrice(course, plan, currentPlan = null) {
+export function planPrice(course, plan, currentPlan = null, now = Date.now()) {
   const self = Number(course?.priceEur)
-  const mentor = Number(course?.mentorPriceEur)
+  // During the launch window the mentor plan costs what self-study does.
+  const mentor = mentorLaunch(now) && Number(course?.mentorPriceEur) > 0 ? self : Number(course?.mentorPriceEur)
   if (!Number.isFinite(mentor) || mentor <= 0) return { plan: null, amount: self, upgrade: false }
   if (plan !== 'mentor') return { plan: 'self', amount: self, upgrade: false }
   if (currentPlan === 'self') return { plan: 'mentor', amount: Math.max(0, mentor - self), upgrade: true }

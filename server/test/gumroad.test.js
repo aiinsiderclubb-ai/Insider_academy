@@ -45,6 +45,7 @@ test('Gumroad: discounted checkout link with a single-use code, signed pings gra
 
   const dbPath = path.join(os.tmpdir(), `gumroad-${Date.now()}.sqlite`)
   Object.assign(process.env, {
+    MENTOR_LAUNCH: '0',
     DATABASE_URL: '', LMS_TEST_DB: dbPath, UPLOADS_DIR: path.join(os.tmpdir(), 'gumroad-uploads'),
     JWT_SECRET: 'gumroad-test-jwt', ADMIN_JWT_SECRET: 'gumroad-test-admin', ADMIN_PASSWORD: 'AdminTest-2026-Only!',
     EDITOR_PASSWORD: 'EditorTest-2026-Only!', MODERATOR_PASSWORD: 'ModeratorTest-2026!', CORS_ORIGIN: 'http://localhost:5173',
@@ -96,6 +97,13 @@ test('Gumroad: discounted checkout link with a single-use code, signed pings gra
     const mentor = await fetch(`${base}/api/payments/gumroad/checkout`, { method: 'POST', headers: auth, body: JSON.stringify({ courseId: 'ai-productivity-master', plan: 'mentor' }) })
     assert.equal(mentor.status, 409)
     assert.equal((await mentor.json()).code, 'PLAN_NOT_AVAILABLE')
+    // …except in the launch window, when it costs the same as self-study
+    process.env.MENTOR_LAUNCH = '1'
+    const launch = await fetch(`${base}/api/payments/gumroad/checkout`, { method: 'POST', headers: auth, body: JSON.stringify({ courseId: 'ai-productivity-master', plan: 'mentor' }) }).then((r) => r.json())
+    assert.equal(launch.amount, 19)
+    assert.equal((await db.get('SELECT plan FROM payments WHERE id = ?', [launch.paymentId])).plan, 'mentor')
+    await db.run('DELETE FROM payments WHERE id = ?', [launch.paymentId])
+    process.env.MENTOR_LAUNCH = '0'
 
     // 50% campaign code → the link carries a single-use Gumroad code for the difference
     await db.run("INSERT INTO promo_codes (code, discount_percent, active, created_at) VALUES ('BIG50', 50, 1, ?)", [new Date().toISOString()])

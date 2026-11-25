@@ -33,6 +33,7 @@ test('Course plans: self-study is cheaper and has no review; moving up to the me
 
   const dbPath = path.join(os.tmpdir(), `plans-${Date.now()}.sqlite`)
   Object.assign(process.env, {
+    MENTOR_LAUNCH: '0',
     DATABASE_URL: '',
     LMS_TEST_DB: dbPath,
     UPLOADS_DIR: path.join(os.tmpdir(), 'plans-test-uploads'),
@@ -130,6 +131,41 @@ test('Course plans: self-study is cheaper and has no review; moving up to the me
     await db.run('INSERT INTO purchases (user_id, course_id, payment_provider) VALUES (?, ?, ?)', [leeId, 'ai-productivity-master', 'admin'])
     assert.equal(await planOf(lee), 'mentor')
     assert.equal((await submit(lee)).status, 200)
+
+    // ---- the launch window: the mentor plan costs what self-study does
+    const { mentorLaunch, MENTOR_LAUNCH } = await import('../services/launchSale.js')
+    delete process.env.MENTOR_LAUNCH
+    assert.equal(mentorLaunch(Date.parse(MENTOR_LAUNCH.startsAt) - 1), null)
+    assert.ok(mentorLaunch(Date.parse(MENTOR_LAUNCH.startsAt)))
+    assert.equal(mentorLaunch(Date.parse(MENTOR_LAUNCH.endsAt)), null)
+    assert.equal(Date.parse(MENTOR_LAUNCH.endsAt) - Date.parse(MENTOR_LAUNCH.startsAt), 72 * 3600 * 1000)
+
+    process.env.MENTOR_LAUNCH = '1'
+    assert.equal((await call(json, 'GET', '/api/payments/offers')).body.mentorAtSelfPrice.endsAt, MENTOR_LAUNCH.endsAt)
+    const ivy = await signIn('ivy')
+    const launchMentor = await call(ivy, 'POST', '/api/payments/paddle/checkout', { courseId: 'ai-productivity-master', plan: 'mentor' })
+    assert.equal(launchMentor.body.amount, 19)
+    assert.equal(launchMentor.body.plan, 'mentor')
+
+    // someone already on self-study moves up for nothing
+    const kai = await signIn('kai')
+    const kaiSelf = await call(kai, 'POST', '/api/payments/paddle/checkout', { courseId: 'ai-productivity-master', plan: 'self' })
+    await settle(kaiSelf.body.transactionId)
+    assert.equal(await planOf(kai), 'self')
+    const free = await call(kai, 'POST', '/api/payments/plan-upgrade', { courseId: 'ai-productivity-master' })
+    assert.equal(free.status, 200, JSON.stringify(free.body))
+    assert.equal(await planOf(kai), 'mentor')
+    assert.equal((await submit(kai)).status, 200)
+    assert.equal((await call(kai, 'POST', '/api/payments/plan-upgrade', { courseId: 'ai-productivity-master' })).status, 409)
+
+    process.env.MENTOR_LAUNCH = '0'
+    assert.equal((await call(json, 'GET', '/api/payments/offers')).body.mentorAtSelfPrice, null)
+    const late = await signIn('late')
+    const lateSelf = await call(late, 'POST', '/api/payments/paddle/checkout', { courseId: 'ai-productivity-master', plan: 'self' })
+    await settle(lateSelf.body.transactionId)
+    const ended = await call(late, 'POST', '/api/payments/plan-upgrade', { courseId: 'ai-productivity-master' })
+    assert.equal(ended.status, 409)
+    assert.equal(ended.body.code, 'OFFER_ENDED')
   } finally {
     server.close()
     mock.close()
