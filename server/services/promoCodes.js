@@ -1,3 +1,4 @@
+import { isTodayFree, validateTodayFree } from './todayFree.js'
 import { getDb } from '../db.js'
 
 /** Ids of the accounts a personal code was issued to; empty for a public code. */
@@ -14,6 +15,7 @@ export async function validatePromoCode({ code, courseId, amountEur, userId = nu
   const db = getDb()
   const normalized = String(code || '').trim().toUpperCase()
   if (!normalized) return { valid: false, error: 'Code required' }
+  if (isTodayFree(normalized)) return validateTodayFree(db, { courseId, amountEur, userId, email })
 
   const row = await db.get('SELECT * FROM promo_codes WHERE UPPER(code) = ?', [normalized])
   if (!row) return { valid: false, error: 'Invalid promo code' }

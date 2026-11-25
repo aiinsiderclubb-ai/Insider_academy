@@ -166,6 +166,39 @@ export function renderEmail(template, payload = {}) {
     cta = copy.digest.cta
     bodyHtml = `${lines.map((line) => paragraph(line)).join('')}${primaryButton(href, cta)}`
     text = textBlock([...lines, href])
+  } else if (template === 'application_accepted') {
+    href = sitePath(locale, '/app/learning')
+    const en = locale === 'en'
+    const ukr = locale === 'ukr'
+    subject = en ? 'Your application is approved — you can start learning' : ukr ? 'Вашу заявку схвалено — можна вчитися' : 'Ваша заявка одобрена — можно учиться'
+    title = en ? 'You are in' : ukr ? 'Вас прийнято' : 'Вы приняты'
+    preheader = subject
+    cta = en ? 'Start learning' : ukr ? 'Почати навчання' : 'Начать обучение'
+    const greeting = name ? (en ? `Hi ${name},` : ukr ? `Вітаємо, ${name}!` : `Здравствуйте, ${name}!`) : ''
+    const lines = en
+      ? ['Your application to AI Insider Academy has been approved.', 'The programme is already open in your account — sign in with this email and start with the first lesson.']
+      : ukr
+        ? ['Вашу заявку до AI Insider Academy схвалено.', 'Програма вже відкрита у вашому кабінеті — увійдіть з цією поштою і почніть з першого уроку.']
+        : ['Ваша заявка в AI Insider Academy одобрена.', 'Программа уже открыта в вашем кабинете — войдите с этой почтой и начните с первого урока.']
+    bodyHtml = `${greeting ? paragraph(greeting) : ''}${lines.map(paragraph).join('')}${primaryButton(href, cta)}`
+    text = textBlock([greeting, ...lines, href])
+  } else if (template === 'todayfree_offer') {
+    href = sitePath(locale, '/learn')
+    const en = locale === 'en'
+    const ukr = locale === 'ukr'
+    const code = String(payload.code || 'TODAYFREE')
+    subject = en ? 'Your first paid course is on us — 24 hours' : ukr ? 'Перший платний курс — безкоштовно, 24 години' : 'Первый платный курс — бесплатно, 24 часа'
+    title = en ? 'A gift for getting in' : ukr ? 'Подарунок за вступ' : 'Подарок за поступление'
+    preheader = subject
+    cta = en ? 'Choose a course' : ukr ? 'Обрати курс' : 'Выбрать курс'
+    const greeting = name ? (en ? `Hi ${name},` : ukr ? `Вітаємо, ${name}!` : `Здравствуйте, ${name}!`) : ''
+    const lines = en
+      ? ['Pick any paid course and enter this code at checkout — the course is yours for free.', 'Sign in, open the course, choose the plan and apply the code: the button turns into “Start for free”. The code works for 24 hours and for one course.']
+      : ukr
+        ? ['Оберіть будь-який платний курс і введіть цей промокод під час оформлення — курс ваш безкоштовно.', 'Увійдіть у кабінет, відкрийте курс, оберіть тариф і застосуйте код: кнопка зміниться на «Почати безкоштовно». Код діє 24 години і на один курс.']
+        : ['Выберите любой платный курс и введите этот промокод при оформлении — курс ваш бесплатно.', 'Войдите в кабинет, откройте курс, выберите тариф и примените код: кнопка сменится на «Начать бесплатно». Код действует 24 часа и на один курс.']
+    bodyHtml = `${greeting ? paragraph(greeting) : ''}${paragraph(lines[0])}${otpBlock(code)}${paragraph(lines[1])}${primaryButton(href, cta)}`
+    text = textBlock([greeting, lines[0], code, lines[1], href])
   } else if (template === 'admin_message' || template === 'admin_news') {
     // Written by hand in the Studio: plain text, paragraphs split on blank lines.
     const paragraphs = String(payload.body || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)

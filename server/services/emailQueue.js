@@ -53,6 +53,11 @@ async function resolveSkip(row, payload) {
     if (user.last_login_at > row.created_at) return 'returned'
   }
 
+  if (row.template === 'todayfree_offer') {
+    const { todayFreeWindow } = await import('./todayFree.js')
+    if (!(await todayFreeWindow(db, { userId: user?.id ?? null, email }))) return 'offer_not_applicable'
+  }
+
   return payload.skipReason || null
 }
 

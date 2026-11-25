@@ -24,6 +24,8 @@ function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase()
 }
 
+import { todayFreeWindow } from '../services/todayFree.js'
+
 const router = Router()
 router.use(requireUser)
 
@@ -70,6 +72,8 @@ router.get('/', async (req, res) => {
     streak,
     achievements,
     prelaunch,
+    // The TODAYFREE gift while it applies to this person (approved application, nothing paid bought yet).
+    offers: { todayFree: prelaunch ? null : await todayFreeWindow(db, { userId: req.userId, email: user.email }) },
   })
 })
 

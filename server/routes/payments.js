@@ -8,6 +8,7 @@ import { createPaddleTransaction } from '../services/paddle.js'
 import { createGumroadCheckout, gumroadProducts } from '../services/gumroad.js'
 import { launchSalePrice, mentorLaunch } from '../services/launchSale.js'
 import { bestPrice } from '../services/rewards.js'
+import { isTodayFree as isTodayFreeCode } from '../services/todayFree.js'
 import { coursePlanFor, normalizePlan, planPrice } from '../services/coursePlan.js'
 import { createPaymentPayload } from '../services/liqpay.js'
 import {
@@ -615,6 +616,45 @@ router.post('/liqpay/create', requireUser, checkoutAvailability, async (req, res
     serverUrl: `${(process.env.API_PUBLIC_URL || config.appUrl.replace('5173', '3001'))}/api/webhooks/liqpay`,
   })
   res.json(payload)
+})
+
+/**
+ * An order a promo code makes free (TODAYFREE, or any 100% code): no payment
+ * service in between — the order is recorded as settled at 0 and access opens
+ * right away.
+ */
+router.post('/free', requireUser, checkoutAvailability, async (req, res) => {
+  const db = getDb()
+  const { courseId, plan, promoCode } = req.body || {}
+  if (!courseId || !promoCode) return res.status(400).json({ error: 'courseId and promoCode required' })
+  let item
+  try {
+    item = await resolveCheckoutItem(db, courseId, { plan, userId: req.userId })
+  } catch (err) {
+    return res.status(err.status || 400).json({ error: err.message, code: err.code })
+  }
+  const price = await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: courseId, amountEur: item.amount, promoCode })
+  if (price.kind !== 'promo') {
+    return res.status(400).json({ error: price.promoError || 'Promo code not applied', errorRu: 'Промокод не подошёл.' })
+  }
+  if (price.finalEur > 0) {
+    return res.status(400).json({ error: 'Not free with this code', code: 'NOT_FREE', amount: price.finalEur, errorRu: 'С этим промокодом заказ не бесплатный — оплатите остаток.' })
+  }
+  const id = `free-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+  const externalId = `${String(price.code).toUpperCase()}:${id}`
+  const now = new Date().toISOString()
+  await db.run(
+    `INSERT INTO payments (id, user_id, email, course_id, course_title, amount, currency, provider, external_id, status, plan, created_at, completed_at)
+     VALUES (?, ?, ?, ?, ?, 0, 'EUR', 'promo', ?, 'completed', ?, ?, ?)`,
+    [id, req.userId, req.userEmail, courseId, item.title, externalId, item.plan, now, now]
+  )
+  const { grantAccess } = await import('../services/access.js')
+  await grantAccess({ userId: req.userId, email: req.userEmail, courseId, courseTitle: item.title, amount: 0, provider: 'promo', externalId })
+  if (!isTodayFreeCode(price.code)) {
+    const { consumePromoCode } = await import('../services/promoCodes.js')
+    await consumePromoCode(price.code)
+  }
+  res.json({ ok: true, paymentId: id, plan: item.plan, successUrl: publicUrl(req.body.locale, checkoutPaths(item, 'promo').success) })
 })
 
 /** What the site needs to show the launch offer on the plans. */

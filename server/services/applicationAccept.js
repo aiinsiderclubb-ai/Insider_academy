@@ -44,6 +44,25 @@ export async function approveAcceleratorApplication(db, applicationRow, { adminN
     reviewedAt: now,
   })
 
+  // Two letters: the approval now, and the TODAYFREE gift a little later.
+  try {
+    const { queueEmail } = await import('./emailQueue.js')
+    const { OFFER_DELAY_HOURS, TODAY_FREE_CODE } = await import('./todayFree.js')
+    const name = applicationRow.first_name || applicationRow.name || ''
+    const locale = applicationRow.locale || 'ru'
+    await queueEmail({ to: email, template: 'application_accepted', payload: { name, locale } })
+    await queueEmail({
+      to: email,
+      template: 'todayfree_offer',
+      payload: { name, locale, code: TODAY_FREE_CODE },
+      sendAfter: new Date(Date.now() + OFFER_DELAY_HOURS * 3_600_000).toISOString(),
+    })
+    const { processEmailQueue } = await import('./emailQueue.js')
+    processEmailQueue(20).catch(() => {})
+  } catch (err) {
+    console.warn('[application accept] mail:', err.message)
+  }
+
   sheetsTrack.trackApplication({
     email,
     firstName: applicationRow.first_name,
