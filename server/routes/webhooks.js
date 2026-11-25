@@ -217,9 +217,13 @@ async function adoptGumroadSale(db, ping, saleId) {
 
 export async function handleGumroadPing(req, res) {
   const rawBody = req.body
-  if (!verifyGumroadSignature(rawBody, req.headers['x-gumroad-signature'])) {
-    await logWebhookEvent({ provider: 'gumroad', eventName: 'auth_failed', status: 'error', payload: {} })
-    alertWebhookProblem('gumroad', 'auth_failed')
+  const signature = req.headers['x-gumroad-signature']
+  if (!verifyGumroadSignature(rawBody, signature)) {
+    // Gumroad always signs its pings. A request with no signature at all is a
+    // scanner poking the URL, not a payment we lost: log it, don't page anyone.
+    // A signature that is present but wrong is what a stale secret looks like.
+    await logWebhookEvent({ provider: 'gumroad', eventName: signature ? 'auth_failed' : 'unsigned', status: 'error', payload: {} })
+    if (signature) alertWebhookProblem('gumroad', 'auth_failed')
     // 2xx would drop nothing we trust; a 4xx is not retried by Gumroad.
     return res.status(401).send('Invalid signature')
   }
