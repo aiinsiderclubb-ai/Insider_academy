@@ -15,6 +15,8 @@ import { createDownloadTicket, verifyDownloadTicket } from '../services/signedDo
 import { LEGAL_ENTITY } from '../../src/data/legalEntity.js'
 import { rateLimitMiddleware } from '../middleware/rateLimit.js'
 
+import { launchSale } from '../services/launchSale.js'
+
 const router = Router()
 
 function marketplaceEnabled() {
@@ -30,8 +32,11 @@ router.get('/catalog', optionalUser, async (_req, res) => {
   const stats = new Map(aggregateRows.map((row) => [row.product_id, {
     reviewCount: Number(row.review_count), rating: Number(Number(row.rating).toFixed(1)),
   }]))
+  const sale = launchSale()
   res.json({
     enabled: marketplaceEnabled(),
+    // The opening sale, while it runs: the site shows it and Gumroad checkout charges it.
+    sale: sale ? { priceEur: sale.priceEur, license: sale.license, endsAt: sale.endsAt } : null,
     products: getMarketplaceCatalog().map((product) => ({ ...product, ...(stats.get(product.id) || { reviewCount: 0, rating: null }) })),
     bundles: MARKETPLACE_BUNDLES,
   })

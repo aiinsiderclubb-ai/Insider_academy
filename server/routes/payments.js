@@ -6,6 +6,7 @@ import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { createCheckoutSession } from '../services/stripe.js'
 import { createPaddleTransaction } from '../services/paddle.js'
 import { createGumroadCheckout, gumroadProducts } from '../services/gumroad.js'
+import { launchSalePrice } from '../services/launchSale.js'
 import { bestPrice } from '../services/rewards.js'
 import { coursePlanFor, normalizePlan, planPrice } from '../services/coursePlan.js'
 import { createPaymentPayload } from '../services/liqpay.js'
@@ -403,8 +404,12 @@ router.post('/gumroad/marketplace', requireUser, requireMarketplaceCommerce, asy
     const listed = quoteMarketplaceItem(req.body)
     const db = getDb()
     const { promoCode, referralCode } = req.body
-    const price = await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: listed.productId, amountEur: listed.amountEur, promoCode, referralCode })
-    if (promoCode && price.promoError && price.kind !== 'promo') {
+    // The opening sale beats any code: it is already the lowest price there is.
+    const salePrice = listed.itemType === 'product' ? launchSalePrice(listed.licenseTier, listed.amountEur) : null
+    const price = salePrice !== null
+      ? { finalEur: salePrice, baseEur: listed.amountEur, kind: 'launch', discountEur: listed.amountEur - salePrice }
+      : await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: listed.productId, amountEur: listed.amountEur, promoCode, referralCode })
+    if (salePrice === null && promoCode && price.promoError && price.kind !== 'promo') {
       return res.status(400).json({ error: price.promoError, errorRu: 'Промокод не подошёл.' })
     }
     const quote = { ...listed, amountEur: price.finalEur }

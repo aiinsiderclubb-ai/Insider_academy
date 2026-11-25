@@ -124,6 +124,16 @@ test('Gumroad: discounted checkout link with a single-use code, signed pings gra
     assert.equal(paid.external_id, 's1')
 
     // a store product: the buyer switched to the Agency license on Gumroad's page — they get Agency
+    // The opening sale: a Personal license for 1 € while it runs, the difference taken off by an offer code.
+    const { launchSale } = await import('../services/launchSale.js')
+    const personal = await fetch(`${base}/api/payments/gumroad/marketplace`, { method: 'POST', headers: auth, body: JSON.stringify({ productId: 'mp-voice-beauty-salon', licenseTier: 'personal' }) }).then((r) => r.json())
+    if (launchSale()) {
+      assert.equal(personal.quote.amountEur, 1)
+      assert.equal(offerCodes.at(-1).amount_off, (personal.baseAmount - 1) * 100)
+    } else {
+      assert.equal(personal.quote.amountEur, personal.baseAmount)
+    }
+
     const storeOrder = await fetch(`${base}/api/payments/gumroad/marketplace`, { method: 'POST', headers: auth, body: JSON.stringify({ productId: 'mp-voice-beauty-salon', licenseTier: 'client' }) }).then((r) => r.json())
     assert.ok(storeOrder.checkoutUrl, JSON.stringify(storeOrder))
     assert.equal(new URL(storeOrder.checkoutUrl).searchParams.get('option'), 'Client')
