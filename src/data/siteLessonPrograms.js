@@ -529,21 +529,24 @@ export const SITE_LESSON_PROGRAMS = {
         "titleRu": "Минус час в день: AI в обычной работе",
         "titleEn": "An hour back every day: AI in everyday work",
         "descRu": "Формула промпта «Контекст → Задача → Формат → Проверка» и два сценария под себя.",
-        "descEn": "The Context → Task → Format → Check prompt formula and two workflows of your own."
+        "descEn": "The Context → Task → Format → Check prompt formula and two workflows of your own.",
+        "videoUrl": "ai-path-finder/fn2-vlad.mp4"
       },
       {
         "num": 3,
         "titleRu": "Пост из одной идеи: текст и картинка",
         "titleEn": "A post from one idea: text and image",
         "descRu": "Мини-Brand Brain и пост с визуалом для учебного бизнеса.",
-        "descEn": "A one-page Brand Brain and a post with visuals for your practice business."
+        "descEn": "A one-page Brand Brain and a post with visuals for your practice business.",
+        "videoUrl": "ai-path-finder/fn3-vlad.mp4"
       },
       {
         "num": 4,
         "titleRu": "Видео из фотографии",
         "titleEn": "Video from a photo",
         "descRu": "Короткий вертикальный ролик 9:16 из AI-клипов с текстом и музыкой.",
-        "descEn": "A short vertical 9:16 video built from AI clips, with text and music."
+        "descEn": "A short vertical 9:16 video built from AI clips, with text and music.",
+        "videoUrl": "ai-path-finder/fn4-yulia.mp4"
       },
       {
         "num": 5,
@@ -582,14 +585,16 @@ export const SITE_LESSON_PROGRAMS = {
         "titleRu": "Лендинг без программиста",
         "titleEn": "A landing page without a developer",
         "descRu": "Опубликованный одностраничный сайт с кнопкой записи в Telegram-бота.",
-        "descEn": "A published one-page site with a booking button that opens your Telegram bot."
+        "descEn": "A published one-page site with a booking button that opens your Telegram bot.",
+        "videoUrl": "ai-path-finder/fn9-yulia.mp4"
       },
       {
         "num": 10,
         "titleRu": "Как продать то, что вы собрали",
         "titleEn": "How to sell what you have built",
         "descRu": "Разбор бизнеса, предложение в одну фразу, цена, первое сообщение и план созвона.",
-        "descEn": "A business teardown, a one-line offer, a price, a first message and a call plan."
+        "descEn": "A business teardown, a one-line offer, a price, a first message and a call plan.",
+        "videoUrl": "ai-path-finder/fn10-vlad.mp4"
       },
       {
         "num": 11,
