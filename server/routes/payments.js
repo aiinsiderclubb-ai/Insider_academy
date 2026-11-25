@@ -5,7 +5,7 @@ import { config, isStripeEnabled, isLiqPayEnabled, isTributeEnabled, isPaddleEna
 import { prelaunchBlocked } from '../middleware/prelaunch.js'
 import { createCheckoutSession } from '../services/stripe.js'
 import { createPaddleTransaction } from '../services/paddle.js'
-import { createGumroadCheckout } from '../services/gumroad.js'
+import { createGumroadCheckout, gumroadProducts } from '../services/gumroad.js'
 import { bestPrice } from '../services/rewards.js'
 import { coursePlanFor, normalizePlan, planPrice } from '../services/coursePlan.js'
 import { createPaymentPayload } from '../services/liqpay.js'
@@ -325,9 +325,18 @@ router.post('/paddle/marketplace', requireUser, requireMarketplaceCommerce, asyn
 
 /* -------------------------------- Gumroad --------------------------------- */
 
-router.get('/gumroad/status', (_req, res) => {
+/**
+ * Whether Gumroad takes payments, and which of our items it has on sale —
+ * the store offers "buy" only for those. The list is Gumroad's own, cached ten
+ * minutes; if Gumroad cannot be reached it is left out rather than guessed.
+ */
+router.get('/gumroad/status', async (_req, res) => {
   if (isPrelaunchMode()) return res.json({ enabled: false, prelaunch: true })
-  res.json({ enabled: isGumroadEnabled() })
+  if (!isGumroadEnabled()) return res.json({ enabled: false })
+  const onSale = await gumroadProducts()
+    .then((map) => [...map.values()].filter((product) => product.published).map((product) => product.custom_permalink))
+    .catch(() => null)
+  res.json({ enabled: true, ...(onSale ? { onSale } : {}) })
 })
 
 async function rememberGumroadCode(db, paymentId, code) {

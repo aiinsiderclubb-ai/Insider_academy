@@ -79,6 +79,11 @@ test('Gumroad: discounted checkout link with a single-use code, signed pings gra
   }
 
   try {
+    // The store asks which items Gumroad has on sale; every page of the list counts.
+    const status = await fetch(`${base}/api/payments/gumroad/status`).then((r) => r.json())
+    assert.equal(status.enabled, true)
+    assert.deepEqual([...status.onSale].sort(), ['ai-creator-pack', 'ai-productivity-master', 'mp-voice-beauty-salon'])
+
     const email = `gr-${Date.now()}@example.com`
     const reg = await fetch(`${base}/api/auth/register`, { method: 'POST', headers: json, body: JSON.stringify({ email, password: 'SecretTest12', name: 'Gum' }) }).then((r) => r.json())
     await fetch(`${base}/api/auth/verify-email-code`, { method: 'POST', headers: json, body: JSON.stringify({ email, code: reg.devCode }) })
