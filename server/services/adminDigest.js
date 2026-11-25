@@ -6,6 +6,7 @@ import {
   collectQueue, collectStats, formatQueue, formatStats, period, periodTitle, previousPeriod, recentSales,
 } from './siteStats.js'
 import { addDays, weekStart, zurichDay, zurichParts } from './zurichTime.js'
+import { collectFunnel, formatFunnel } from './checkoutFunnel.js'
 
 /*
  * Scheduled reports to the team's Telegram chat, and the commands that ask for
@@ -72,6 +73,7 @@ const HELP = [
   '/yesterday — вчера (и сравнение с позавчера)',
   '/week — последние 7 дней',
   '/month — последние 30 дней',
+  '/funnel — воронка по оформлениям за 7 дней',
   '/sales — последние 10 продаж',
   '/queue — что ждёт проверки',
   '/chatid — id этого чата',
@@ -108,6 +110,18 @@ export async function handleAdminCommand(chatId, text) {
       const p = period(today, command === '/week' ? 7 : 30)
       const [stats, prev] = await Promise.all([collectStats(p), collectStats(previousPeriod(p))])
       await reply(formatStats(periodTitle(p, command === '/week' ? '7 дней' : '30 дней'), stats, { prev }))
+      return true
+    }
+    case '/funnel': {
+      const p = period(today, 7)
+      const funnel = await collectFunnel(p)
+      const lines = formatFunnel(funnel, { limit: 15 })
+      await reply([
+        `🧭 <b>${periodTitle(p, 'Оформления за 7 дней')}</b>`,
+        '',
+        `🧾 Открыли оформление: <b>${funnel.checkoutVisitors}</b>`,
+        ...(lines.length ? ['', ...lines] : ['', 'Пока никто не открывал оформление.']),
+      ].join('\n'))
       return true
     }
     case '/sales':

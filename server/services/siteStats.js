@@ -1,6 +1,7 @@
 import { getDb } from '../db.js'
 import { escapeHtml, formatMoney, plural } from './adminAlerts.js'
 import { addDays, ruDay, zurichDay, zurichDayBounds } from './zurichTime.js'
+import { collectFunnel, formatFunnel } from './checkoutFunnel.js'
 
 /*
  * The numbers behind the Telegram reports: who came, who signed up, who paid,
@@ -9,7 +10,7 @@ import { addDays, ruDay, zurichDay, zurichDayBounds } from './zurichTime.js'
  */
 
 const num = (value) => Number(value || 0)
-const LOCALE_PREFIX = /^\/(ru|uk|en)(?=\/|$)/
+const LOCALE_PREFIX = /^\/(ru|uk|ukr|en)(?=\/|$)/
 
 /** A period of `days` Zurich days ending with `lastDay`. */
 export function period(lastDay = zurichDay(), days = 1) {
@@ -39,7 +40,8 @@ async function topPages(db, p) {
 export async function collectStats(p, db = getDb()) {
   const days = [p.firstDay, p.lastDay]
   const range = [p.from, p.to]
-  const [views, sources, pages, regs, regSources, started, abandoned, paid, refunds, products] = await Promise.all([
+  const [funnel, views, sources, pages, regs, regSources, started, abandoned, paid, refunds, products] = await Promise.all([
+    collectFunnel(p, db),
     db.get(
       `SELECT COUNT(*) AS views, COUNT(DISTINCT day || ':' || visitor) AS visitors FROM page_views WHERE day >= ? AND day <= ?`,
       days
@@ -83,6 +85,8 @@ export async function collectStats(p, db = getDb()) {
     pages,
     registrations: num(regs?.c),
     regSources: regSources.map((r) => ({ source: r.source, count: num(r.c) })),
+    checkoutVisitors: funnel.checkoutVisitors,
+    funnel,
     checkouts: num(started?.c),
     abandoned: num(abandoned?.c),
     purchases: num(paid?.c),
@@ -152,11 +156,14 @@ export function formatStats(title, s, { prev = null, queue = null } = {}) {
     '',
     `👀 Посетители: <b>${s.visitors}</b>${delta(s.visitors, p.visitors)} · просмотров ${s.views}`,
     `👤 Регистрации: <b>${s.registrations}</b>${delta(s.registrations, p.registrations)}`,
+    `🧾 Открыли оформление: <b>${s.checkoutVisitors}</b>${delta(s.checkoutVisitors, p.checkoutVisitors)}`,
     `🛒 Начали оплату: <b>${s.checkouts}</b>${s.abandoned ? ` · не завершили ${s.abandoned}` : ''}`,
     `💰 Покупки: <b>${s.purchases}</b> · <b>${formatMoney(s.revenue)}</b>${delta(s.revenue, p.revenue, { money: true })}`,
     s.refunds ? `↩️ Возвраты: ${s.refunds} · ${formatMoney(s.refunded)}` : null,
     `📈 Конверсия: визит→регистрация ${percent(s.registrations, s.visitors)} · визит→покупка ${percent(s.purchases, s.visitors)}`,
   ]
+  const funnelLines = s.funnel ? formatFunnel(s.funnel) : []
+  if (funnelLines.length) lines.push('', ...funnelLines)
   if (s.products.length) {
     lines.push('', '🎓 <b>Продажи</b>')
     for (const item of s.products) {

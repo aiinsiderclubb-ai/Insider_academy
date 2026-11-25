@@ -107,6 +107,15 @@ test('admin chat: alerts for sign-ups, purchases and refunds, page views, report
     assert.deepEqual(rows.map((r) => [r.path, r.source]), [['/ru', 'tiktok'], ['/ru/learn', null]])
     assert.equal(rows[0].visitor, rows[1].visitor, 'one visitor across pages within a day')
 
+    // A checkout page: one alert per person, item and day, however often it is opened.
+    assert.equal((await view({ path: '/ru/learn/ai-productivity-master/buy', locale: 'ru' })).status, 204)
+    assert.equal((await view({ path: '/en/learn/ai-productivity-master/buy', locale: 'en' })).status, 204)
+    const opened = await waitFor((m) => /Открыли оформление · <b>AI Productivity Master<\/b>/.test(m.text), 'checkout alert')
+    assert.match(opened.text, /гость, не вошёл/)
+    assert.match(opened.text, /Сегодня на этом оформлении: 1/)
+    await new Promise((r) => setTimeout(r, 150))
+    assert.equal(toAdmin().filter((m) => /Открыли оформление/.test(m.text)).length, 1, 'a second look does not ping again')
+
     // Sign-up: one alert, with where they came from.
     const email = `alerts-${Date.now()}@example.com`
     const reg = await fetch(`${base}/api/auth/register`, {
@@ -153,6 +162,12 @@ test('admin chat: alerts for sign-ups, purchases and refunds, page views, report
     assert.match(today.text, /Откуда пришли<\/b>: tiktok 1/)
     assert.match(today.text, /Регистрации из<\/b>: instagram 1/)
     assert.match(today.text, /• \/learn — 1/)
+    assert.match(today.text, /Открыли оформление: <b>1<\/b>/)
+    assert.match(today.text, /AI Productivity Master: 0 → <b>1<\/b> → \d+ → <b>1<\/b>/)
+
+    await tgUpdate({ id: Number(ADMIN), type: 'supergroup', title: 'Team' }, '/funnel')
+    const funnel = await waitFor((m) => /Оформления за 7 дней/.test(m.text), '/funnel')
+    assert.match(funnel.text, /AI Productivity Master/)
 
     await tgUpdate({ id: Number(ADMIN), type: 'supergroup', title: 'Team' }, '/sales')
     await waitFor((m) => /Последние 1 продажа/.test(m.text), '/sales')

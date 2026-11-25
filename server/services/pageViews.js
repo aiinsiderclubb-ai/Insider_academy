@@ -4,6 +4,7 @@ import { config } from '../config.js'
 import { JWT_SECRET } from '../middleware/auth.js'
 import { sourceOfVisit } from './trafficSource.js'
 import { zurichDay, addDays } from './zurichTime.js'
+import { alertCheckoutView } from './checkoutFunnel.js'
 
 /*
  * Page views without cookies.
@@ -56,6 +57,8 @@ export async function recordPageView({ path, referrer, utmSource, locale, ip, us
     'INSERT INTO page_views (day, created_at, path, visitor, source, locale, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
     [day, now.toISOString(), clean, visitorHash(day, ip || '', ua), source, lang, userId ? Number(userId) : null]
   )
+  // A checkout page tells the team someone is close to buying; not awaited, the visitor does not wait on Telegram.
+  void alertCheckoutView({ path: clean, day, visitor: visitorHash(day, ip || '', ua), source, locale: lang, userId })
   return true
 }
 
