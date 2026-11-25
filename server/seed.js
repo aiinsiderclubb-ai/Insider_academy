@@ -10,9 +10,9 @@ import {
 } from '../src/data/testAccount.js'
 import { ensurePersonalId } from './services/personalId.js'
 import { SEED_REVIEWS } from '../src/data/seedReviews.js'
+// One version for the whole catalogue: bumping it reseeds the courses on the next boot.
+import { CATALOG_VERSION } from '../src/data/catalogVersion.js'
 
-/** Keep in sync with src/data/catalogVersion.js */
-const CATALOG_VERSION = 26
 
 async function getCatalogVersion(db) {
   const row = await db.get('SELECT value FROM analytics WHERE key = ?', ['catalog_version'])
