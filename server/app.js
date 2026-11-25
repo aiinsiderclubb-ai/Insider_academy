@@ -130,6 +130,11 @@ export async function createApp() {
   app.post('/api/webhooks/gumroad', express.raw({ type: () => true, limit: '1mb' }), handleGumroadPing)
 
   app.use(express.json({ limit: '2mb' }))
+  // Letters keep moving even where no timer runs: ordinary traffic nudges the queue (at most once a minute).
+  app.use((_req, _res, next) => {
+    import('./services/emailQueue.js').then(({ kickEmailQueue }) => kickEmailQueue()).catch(() => {})
+    next()
+  })
   app.use(express.urlencoded({ extended: true }))
 
   app.get('/api/health', (_req, res) => {

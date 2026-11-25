@@ -625,6 +625,92 @@ router.post('/applications/:id/approve', requireAdmin('admin', 'moderator'), pre
   })
 })
 
+/* ------------------------- approved people and their mail ------------------------ */
+
+const LETTERS = ['application_accepted', 'todayfree_offer']
+
+async function lettersFor(db, emails) {
+  const out = new Map()
+  if (!emails.length) return out
+  const rows = await db.all(
+    `SELECT id, email, template, status, error, created_at, send_after, sent_at FROM email_queue
+     WHERE template IN (${LETTERS.map(() => '?').join(',')}) AND lower(email) IN (${emails.map(() => '?').join(',')})
+     ORDER BY created_at DESC`,
+    [...LETTERS, ...emails]
+  ).catch(() => [])
+  for (const row of rows) {
+    const key = String(row.email).toLowerCase()
+    const entry = out.get(key) || {}
+    if (!entry[row.template]) {
+      entry[row.template] = {
+        id: row.id, status: row.status, sentAt: row.sent_at, sendAfter: row.send_after,
+        error: row.status === 'failed' || row.status === 'skipped' ? row.error : null,
+      }
+    }
+    out.set(key, entry)
+  }
+  return out
+}
+
+/** Everyone whose application was approved, newest first, with what their letters did. */
+router.get('/applications/accepted', requireAdmin('admin', 'moderator'), async (_req, res) => {
+  const db = getDb()
+  const rows = await db.all("SELECT * FROM accelerator_applications WHERE status = 'accepted' ORDER BY updated_at DESC LIMIT 500")
+  const apps = await enrichApplications(db, rows).catch(() => rows.map((r) => ({ id: r.id, email: r.email, firstName: r.first_name, lastName: r.last_name, status: r.status })))
+  const letters = await lettersFor(db, [...new Set(rows.map((r) => String(r.email || '').toLowerCase()).filter(Boolean))])
+  const { isEmailEnabled } = await import('../config.js')
+  res.json({
+    smtp: isEmailEnabled(),
+    people: apps.map((app, index) => ({
+      ...app,
+      approvedAt: rows[index]?.updated_at || rows[index]?.date || null,
+      letters: letters.get(String(app.email || '').toLowerCase()) || {},
+    })),
+  })
+})
+
+/** Sends (again) the approval letter to one person, now — and queues the TODAYFREE gift if it still applies and never went out. */
+async function sendWelcome(db, row) {
+  const { queueEmail, sendQueuedNow } = await import('../services/emailQueue.js')
+  const { todayFreeWindow, TODAY_FREE_CODE } = await import('../services/todayFree.js')
+  const email = String(row.email || '').trim().toLowerCase()
+  const name = row.first_name || row.name || ''
+  const id = await queueEmail({ to: email, template: 'application_accepted', payload: { name, locale: row.locale || 'ru' } })
+  const status = await sendQueuedNow(id)
+  const gift = await db.get("SELECT id FROM email_queue WHERE lower(email) = ? AND template = 'todayfree_offer' AND status IN ('pending', 'sending', 'sent') LIMIT 1", [email])
+  if (!gift && await todayFreeWindow(db, { email })) {
+    await queueEmail({ to: email, template: 'todayfree_offer', payload: { name, locale: row.locale || 'ru', code: TODAY_FREE_CODE }, sendAfter: new Date(Date.now() + 2 * 3600_000).toISOString() })
+  }
+  return { email, status, error: status === 'failed' ? (await db.get('SELECT error FROM email_queue WHERE id = ?', [id]))?.error : null }
+}
+
+router.post('/applications/:id/send-welcome', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const row = await db.get('SELECT * FROM accelerator_applications WHERE id = ?', [req.params.id])
+  if (!row) return res.status(404).json({ error: 'Not found' })
+  if (row.status !== 'accepted') return res.status(400).json({ error: 'Application is not approved', errorRu: 'Заявка ещё не одобрена' })
+  const result = await sendWelcome(db, row)
+  await logAudit({ actorEmail: `admin:${req.adminRole}`, action: 'application.send_welcome', targetType: 'application', targetId: row.id, meta: result })
+  if (result.status === 'failed') return res.status(502).json({ error: result.error, errorRu: `Письмо не ушло: ${result.error}` })
+  if (result.status === 'pending') return res.status(503).json({ error: 'SMTP is not configured', errorRu: 'Почта (SMTP) на сервере не настроена — письмо ждёт в очереди.' })
+  res.json({ ok: true, ...result })
+})
+
+/** Sends the approval letter to every approved person who has not received it yet. */
+router.post('/applications/send-missing-welcome', requireAdmin('admin', 'moderator'), async (req, res) => {
+  const db = getDb()
+  const rows = await db.all("SELECT * FROM accelerator_applications WHERE status = 'accepted' ORDER BY updated_at DESC LIMIT 500")
+  const letters = await lettersFor(db, [...new Set(rows.map((r) => String(r.email || '').toLowerCase()).filter(Boolean))])
+  const results = []
+  for (const row of rows) {
+    const sent = letters.get(String(row.email || '').toLowerCase())?.application_accepted?.status === 'sent'
+    if (sent) continue
+    results.push(await sendWelcome(db, row))
+  }
+  await logAudit({ actorEmail: `admin:${req.adminRole}`, action: 'application.send_missing_welcome', targetType: 'application', meta: { count: results.length } })
+  res.json({ ok: true, sent: results.filter((r) => r.status === 'sent').length, results })
+})
+
 router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req, res) => {
   const db = getDb()
   const { status, adminNote } = req.body

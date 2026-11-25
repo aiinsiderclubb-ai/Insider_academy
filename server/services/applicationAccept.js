@@ -51,15 +51,16 @@ export async function approveAcceleratorApplication(db, applicationRow, { adminN
     const { OFFER_DELAY_HOURS, TODAY_FREE_CODE } = await import('./todayFree.js')
     const name = applicationRow.first_name || applicationRow.name || ''
     const locale = applicationRow.locale || 'ru'
-    await queueEmail({ to: email, template: 'application_accepted', payload: { name, locale } })
+    const welcomeId = await queueEmail({ to: email, template: 'application_accepted', payload: { name, locale } })
     await queueEmail({
       to: email,
       template: 'todayfree_offer',
       payload: { name, locale, code: TODAY_FREE_CODE },
       sendAfter: new Date(Date.now() + OFFER_DELAY_HOURS * 3_600_000).toISOString(),
     })
-    const { processEmailQueue } = await import('./emailQueue.js')
-    processEmailQueue(20).catch(() => {})
+    // The approval letter goes out now, not on the next run of the queue.
+    const { sendQueuedNow } = await import('./emailQueue.js')
+    await sendQueuedNow(welcomeId).catch((err) => console.warn('[application accept] send:', err.message))
   } catch (err) {
     console.warn('[application accept] mail:', err.message)
   }

@@ -57,6 +57,19 @@ test('Approved application: welcome letter, TODAYFREE gift later, first paid cou
     assert.match(renderTemplate('todayfree_offer', { code: 'TODAYFREE', to: 'nina@example.com' }).html, /TODAYFREE/)
     assert.match(renderTemplate('application_accepted', { to: 'nina@example.com' }).subject, /одобрена/)
 
+    // the Studio lists approved people with what their letters did
+    const accepted = (await call(admin, 'GET', '/api/admin/applications/accepted')).body
+    const ninaRow = accepted.people.find((p) => p.email === 'nina@example.com')
+    assert.ok(ninaRow.letters.application_accepted)
+    assert.ok(ninaRow.letters.todayfree_offer)
+    // with no SMTP in tests the letter waits in the queue, and the button says so
+    const resend = await call(admin, 'POST', '/api/admin/applications/app-1/send-welcome', {})
+    assert.equal(resend.status, 503)
+    assert.match(resend.body.errorRu, /SMTP/)
+    assert.equal((await call(admin, 'POST', '/api/admin/applications/send-missing-welcome', {})).status, 200)
+    // the gift is not queued twice
+    assert.equal((await db.all("SELECT id FROM email_queue WHERE template = 'todayfree_offer'")).length, 1)
+
     // the cabinet sees the gift
     const offer = (await call(nina, 'GET', '/api/me')).body.offers.todayFree
     assert.equal(offer.code, 'TODAYFREE')
