@@ -287,12 +287,12 @@ router.get('/free-views', requireAdmin('admin', 'editor', 'moderator'), async (r
     if (isFree(course)) {
       const views = await viewsFor([`%/study/${slug}/%`, `%/study/${slug}`])
       const started = await db.get('SELECT COUNT(*) AS c FROM progress WHERE course_id = ?', [course.id]).catch(() => null)
-      free.push({ id: course.id, slug, title: course.title || course.titleRu || course.id, ...views, started: Number(started?.c || 0) })
+      free.push({ id: course.id, slug, title: course.titleRu || course.title || course.id, ...views, started: Number(started?.c || 0) })
     } else {
       const views = await viewsFor([`%/study/${slug}/1`])
       const progress = await db.all('SELECT user_id, data FROM progress WHERE course_id = ?', [course.id]).catch(() => [])
       const demoStarted = progress.filter((p) => parseJson(p.data, {}).demoStartedAt).length
-      demos.push({ id: course.id, slug, title: course.title || course.titleRu || course.id, ...views, started: demoStarted })
+      demos.push({ id: course.id, slug, title: course.titleRu || course.title || course.id, ...views, started: demoStarted })
     }
   }
 

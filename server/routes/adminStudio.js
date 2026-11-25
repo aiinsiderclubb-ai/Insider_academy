@@ -201,8 +201,8 @@ router.get('/users', requireAdmin('admin', 'moderator'), async (req, res) => {
   const params = []
   let where = ''
   if (q) {
-    where = 'WHERE lower(u.email) LIKE ? OR lower(COALESCE(u.name, \'\')) LIKE ? OR lower(COALESCE(u.personal_id, \'\')) LIKE ?'
-    params.push(`%${q}%`, `%${q}%`, `%${q}%`)
+    where = 'WHERE lower(u.email) LIKE ? OR lower(COALESCE(u.name, \'\')) LIKE ? OR lower(COALESCE(u.personal_id, \'\')) LIKE ? OR CAST(u.id AS TEXT) = ?'
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`, q.replace(/^#/, ''))
   }
   const rows = await db.all(
     `SELECT u.id, u.email, u.name, u.personal_id, u.email_verified, u.created_at, u.last_login_at,

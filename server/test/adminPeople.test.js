@@ -87,6 +87,12 @@ test('Studio people tools: personal promo codes, temporary password, login log, 
     r = await call(annaAuth, 'PATCH', '/api/me/password', { currentPassword: temp, newPassword: 'Annas-own-pass-2' })
     assert.equal(r.status, 200)
     assert.equal(r.body.user.passwordTemporary, false)
+    // The change signs out other sessions but hands this one a fresh token.
+    assert.equal((await call(annaAuth, 'GET', '/api/me')).status, 401)
+    assert.equal((await call({ ...json, Authorization: `Bearer ${r.body.token}` }, 'GET', '/api/me')).status, 200)
+    // Learner search finds an account by its numeric id.
+    const byId = (await call(moderator, 'GET', `/api/admin/users?q=${anna.id}`)).body.users
+    assert.ok(byId.some((u) => u.id === anna.id))
 
     // ---- plans on the learner card and in mail segments
     const pay = (id, userId, email, course, plan) => db.run(

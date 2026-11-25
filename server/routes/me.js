@@ -305,7 +305,8 @@ router.patch('/password', async (req, res) => {
     personalId: user?.personal_id,
     action: 'смена в настройках',
   }).catch(() => {})
-  res.json({ ok: true, passwordChangedAt: now, user: await mapUserResponse(db, user) })
+  // The new token version signs out every other session; this one carries on.
+  res.json({ ok: true, passwordChangedAt: now, token: signUserToken(user), user: await mapUserResponse(db, user) })
 })
 
 router.patch('/email', async (req, res) => {
