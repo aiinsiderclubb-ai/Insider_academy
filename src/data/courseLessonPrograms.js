@@ -32,7 +32,7 @@ function programFromTitles(titles, duration = PRO, countSuffix = '') {
 
 /**
  * `videoUrl` is optional and is what the player loads: a full URL, or an object
- * key in the R2 bucket (`first-automation-n8n/fn1.mp4`) that the web app turns
+ * key in the R2 bucket (`first-automation/fn1.mp4`) that the web app turns
  * into a signed, expiring link when a learner opens the lesson.
  *
  * `duration` is optional too: a recorded lesson states its own length instead of
@@ -137,7 +137,7 @@ export const LESSON_PROGRAMS = {
         'Which process to automate first',
         'Как выбрать подходящую задачу, посчитать потерю времени и понять, где автоматизация реально даст пользу.',
         'How to pick the right task, count the time it costs you and see where automation actually pays off.',
-        'first-automation-n8n/fn1.mp4',
+        'first-automation/fn1.mp4',
         minutes(13),
       ),
       lesson(
@@ -146,7 +146,7 @@ export const LESSON_PROGRAMS = {
         'Building your first AI automation',
         'Форма → n8n → AI → Google Sheets → Telegram, плюс проверка данных, намеренная ошибка и базовая отладка.',
         'Form → n8n → AI → Google Sheets → Telegram, plus data validation, a deliberate error and basic debugging.',
-        'first-automation-n8n/fn2.mp4',
+        'first-automation/fn2.mp4',
         minutes(24),
       ),
       lesson(
@@ -155,7 +155,7 @@ export const LESSON_PROGRAMS = {
         'From first automation to a real project',
         'Как превратить учебный workflow в бизнес-систему: первые клиенты, demo, выход на decision makers и что нужно для production.',
         'Turning the training workflow into a business system: first clients, demos, reaching decision makers and what production needs.',
-        'first-automation-n8n/fn3.mp4',
+        'first-automation/fn3.mp4',
         minutes(21),
       ),
     ],
