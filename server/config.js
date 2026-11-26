@@ -99,11 +99,12 @@ export const config = {
   },
   oauth: {
     google: {
-      clientId: process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '',
+      // Trimmed: a value pasted into a dashboard often carries a newline, and Google then rejects the id.
+      clientId: (process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '').trim(),
     },
     apple: {
       /** Services ID, e.g. com.aiinsider.academy.web */
-      clientId: process.env.APPLE_OAUTH_CLIENT_ID || process.env.VITE_APPLE_CLIENT_ID || '',
+      clientId: (process.env.APPLE_OAUTH_CLIENT_ID || process.env.VITE_APPLE_CLIENT_ID || '').trim(),
     },
   },
   tribute: {
