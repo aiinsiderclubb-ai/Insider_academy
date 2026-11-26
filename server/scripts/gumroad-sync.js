@@ -2,7 +2,7 @@
 /**
  * Keeps the Gumroad catalog in step with ours: one Gumroad product per
  * sellable item, its custom permalink being our item id, priced in EUR. Store
- * products get a "License" variant with one option per license tier.
+ * products are sold on the personal licence only, with no "License" variant.
  *
  *   node scripts/gumroad-sync.js              # create as drafts, update prices
  *   node scripts/gumroad-sync.js --publish    # also publish the products this run creates
@@ -20,9 +20,8 @@
  */
 import 'dotenv/config'
 import { catalogItems } from './paddle-sync.js'
-import { LICENSE_TIERS } from '../services/marketplace.js'
 import { courses } from '../../src/data/courses.js'
-import { GUMROAD_FREE_COURSES, LICENSE_VARIANT, TIER_NAMES, gumroadProducts, gumroadRequest } from '../services/gumroad.js'
+import { GUMROAD_FREE_COURSES, LICENSE_VARIANT, gumroadProducts, gumroadRequest } from '../services/gumroad.js'
 
 const dry = process.argv.includes('--dry-run')
 const publish = process.argv.some((arg) => arg === '--publish' || arg.startsWith('--publish='))
@@ -91,24 +90,16 @@ const KIND_SUMMARY = {
   store: 'Downloadable kit in your Academy library, updates included.',
 }
 
-async function ensureLicenseVariants(product, item) {
+/**
+ * Store items are sold on the personal licence only (the site offers no other),
+ * so a "License" variant left over from when Client and Agency were sold is
+ * removed — otherwise a buyer on the Gumroad page could still pick them.
+ */
+async function dropLicenseVariants(product, item) {
   const { variant_categories: categories = [] } = await gumroadRequest('GET', `/products/${encodeURIComponent(product.id)}/variant_categories`)
-  let category = categories.find((c) => c.title === LICENSE_VARIANT)
-  if (!category) {
-    if (dry) return console.log(`  + variants ${item.id}`)
-    category = (await gumroadRequest('POST', `/products/${encodeURIComponent(product.id)}/variant_categories`, { title: LICENSE_VARIANT })).variant_category
-  }
-  const base = `/products/${encodeURIComponent(product.id)}/variant_categories/${encodeURIComponent(category.id)}/variants`
-  const { variants = [] } = await gumroadRequest('GET', base)
-  for (const [tier, license] of Object.entries(LICENSE_TIERS)) {
-    const name = TIER_NAMES[tier]
-    const diff = cents(Math.round(item.amount * license.multiplier)) - cents(item.amount)
-    const existing = variants.find((v) => v.name === name)
-    if (existing && Number(existing.price_difference_cents) === diff) continue
-    console.log(`  ${existing ? '~' : '+'} ${item.id} ${name} +${diff / 100}`)
-    if (dry) continue
-    if (existing) await gumroadRequest('PUT', `${base}/${encodeURIComponent(existing.id)}`, { price_difference_cents: diff })
-    else await gumroadRequest('POST', base, { name, price_difference_cents: diff })
+  for (const category of categories.filter((c) => c.title === LICENSE_VARIANT)) {
+    console.log(`  - variants ${item.id}`)
+    if (!dry) await gumroadRequest('DELETE', `/products/${encodeURIComponent(product.id)}/variant_categories/${encodeURIComponent(category.id)}`)
   }
 }
 
@@ -169,7 +160,7 @@ async function main() {
     } else {
       stats.unchanged++
     }
-    if (item.kind === 'store' && product) await ensureLicenseVariants(product, item)
+    if (item.kind === 'store' && product) await dropLicenseVariants(product, item)
     if (publish && product && !product.published && !dry && (created || publishIds.has(item.id))) {
       try {
         const res = await gumroadRequest('PUT', `/products/${encodeURIComponent(product.id)}/enable`)
