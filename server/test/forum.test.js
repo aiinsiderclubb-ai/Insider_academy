@@ -90,21 +90,12 @@ test('forum: buyers only, questions, answers, solutions, moderation', async (t) 
   // ---- the room itself is not ----
   assert.equal((await fetch(`${base}/api/forum/topics`)).status, 401, 'guests are refused')
 
+  // ---- a confirmed account is a learner (the free courses are open to it), so it is in ----
   const outsiderAccess = await fetch(`${base}/api/forum/access`, { headers: outsider }).then((r) => r.json())
-  assert.equal(outsiderAccess.member, false)
+  assert.equal(outsiderAccess.member, true, 'free-course learners use the forum without buying')
+  assert.equal((await fetch(`${base}/api/forum/topics`, { headers: outsider })).status, 200)
 
-  const refused = await fetch(`${base}/api/forum/topics`, { headers: outsider })
-  assert.equal(refused.status, 403)
-  assert.equal((await refused.json()).code, 'not_member', 'a signed-in non-buyer gets a distinct code')
-
-  const refusedPost = await fetch(`${base}/api/forum/topics`, {
-    method: 'POST',
-    headers: outsider,
-    body: JSON.stringify({ title: 'Can I get in?', body: 'Asking without a purchase.' }),
-  })
-  assert.equal(refusedPost.status, 403, 'non-buyers cannot write either')
-
-  // ---- one purchase of anything opens it ----
+  // ---- buyers, of course ----
   await grant(askerEmail)
   await grant(helperEmail)
   const askerAccess = await fetch(`${base}/api/forum/access`, { headers: asker }).then((r) => r.json())

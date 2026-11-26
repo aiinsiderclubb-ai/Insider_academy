@@ -67,7 +67,7 @@ export const PAGES = [
   ['/store', 'marketplace: prompt packs, n8n workflows, agent templates'],
   ['/store/{product-slug}', 'one store product'],
   ['/store/tools', 'partner AI tools with discounts (SYNTX AI: promo code AIINSIDER15)'],
-  ['/community/forum', 'students-only Q&A forum (open to anyone who bought something)'],
+  ['/community/forum', 'learners-only Q&A forum (open to every account with a confirmed email — the free courses make everyone a learner)'],
   ['/community/blog', 'blog'],
   ['/community/events', 'live events and webinars'],
   ['/community/giveaways', 'giveaways'],

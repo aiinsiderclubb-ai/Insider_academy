@@ -34,9 +34,11 @@ export const LIMITS = {
 }
 
 /**
- * The forum is for people who have bought something — a course, a bundle, a
- * store product, a subscription. Every purchase path the platform records
- * lands in one of these three tables, so any active row is enough.
+ * The forum is for the Academy's learners. Every account with a confirmed
+ * email can study the free courses, so a confirmed account is a learner and
+ * gets in; buyers — a course, a bundle, a store product, a subscription — do
+ * too, through any of the purchase tables. Unconfirmed sign-ups stay out,
+ * which keeps throwaway addresses from posting.
  *
  * Each source is asked separately and a failing query only removes that
  * source: `asset_entitlements` belongs to the marketplace schema, and an
@@ -46,6 +48,7 @@ export async function isCommunityMember(db, userId) {
   if (!userId) return false
   const now = nowIso()
   const sources = [
+    ['SELECT 1 AS ok FROM users WHERE id = ? AND email_verified = 1', [userId]],
     ['SELECT 1 AS ok FROM purchases WHERE user_id = ? LIMIT 1', [userId]],
     [
       `SELECT 1 AS ok FROM entitlements
