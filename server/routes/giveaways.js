@@ -98,7 +98,7 @@ async function buildGiveawayState(db, slug, userId) {
 
   const user = userId
     ? await db.get(
-        'SELECT telegram_chat_id, telegram_username FROM users WHERE id = ?',
+        'SELECT telegram_chat_id, telegram_username, personal_id FROM users WHERE id = ?',
         [userId]
       )
     : null
@@ -128,6 +128,8 @@ async function buildGiveawayState(db, slug, userId) {
     channelSubscribed,
     ...chanceState,
     telegramChannel: meta.telegramChannel,
+    // What goes into this person's share link; a friend entering with it earns them referral chances.
+    shareCode: entry ? (user?.personal_id || `U${userId}`) : null,
     result: publishedResult ? {
       winnerTelegramUsername: publishedResult.winner_telegram_username
         ? `@${String(publishedResult.winner_telegram_username).replace(/^@/, '')}`

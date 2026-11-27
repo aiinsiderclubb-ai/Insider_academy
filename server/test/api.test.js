@@ -227,6 +227,7 @@ test('API: health, courses, blog, auth, admin', async (t) => {
   const shareData = await share.json()
   assert.equal(shareData.shared, true)
   assert.equal(shareData.chances, 4)
+  assert.ok(shareData.shareCode, 'an entrant gets a code for their share link')
   const duplicateShare = await fetch(`${base}/api/giveaways/claude-pro/share`, {
     method: 'POST', headers: userHeaders,
   })
