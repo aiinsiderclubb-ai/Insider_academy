@@ -1,6 +1,6 @@
 /*
- * The opening sale: every store product's Personal license for 1 €, for 48
- * hours from the launch. Client and Agency licenses, courses, vaults and packs
+ * The opening sale: every store product's Personal license for 1 €, from the
+ * launch to the end of its first week (Sunday 29 November, midnight Berlin). Client and Agency licenses, courses, vaults and packs
  * keep their prices. The buyer still pays on Gumroad, where the product keeps
  * its list price; a single-use offer code takes off the difference, as it does
  * for any discount.
@@ -12,7 +12,7 @@ export const LAUNCH_SALE = {
   priceEur: 1,
   license: 'personal',
   startsAt: '2026-11-25T18:00:00.000Z',
-  endsAt: '2026-11-27T19:00:00.000Z',
+  endsAt: '2026-11-29T23:00:00.000Z',
 }
 
 /** The sale while it runs, or null. */
