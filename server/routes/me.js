@@ -195,6 +195,27 @@ router.get('/rewards', async (req, res) => {
   res.json(await rewardsFor(db, { userId: req.userId, email: req.userEmail }))
 })
 
+/** The cabinet's order history: what was paid, courses and store items alike. */
+router.get('/payments', async (req, res) => {
+  if (isPrelaunchMode()) return res.json([])
+  const rows = await getDb().all(
+    `SELECT id, course_id, course_title, amount, currency, provider, status, created_at, completed_at
+     FROM payments WHERE user_id = ? AND status IN ('completed', 'refunded')
+     ORDER BY COALESCE(completed_at, created_at) DESC LIMIT 100`,
+    [req.userId]
+  )
+  res.json(rows.map((row) => ({
+    id: row.id,
+    itemId: row.course_id,
+    title: row.course_title,
+    amount: Number(row.amount) || 0,
+    currency: row.currency || 'EUR',
+    provider: row.provider,
+    status: row.status,
+    paidAt: row.completed_at || row.created_at,
+  })))
+})
+
 router.get('/notifications', async (req, res) => {
   const db = getDb()
   const rows = await db.all('SELECT * FROM notifications WHERE email = ? ORDER BY date DESC LIMIT 50', [req.userEmail])
