@@ -13,6 +13,8 @@ export const LAUNCH_SALE = {
   license: 'personal',
   startsAt: '2026-11-25T18:00:00.000Z',
   endsAt: '2026-11-29T23:00:00.000Z',
+  // Released during the sale at full price: not part of the 1 € offer.
+  excluded: ['mp-mcp-cinematic-studio'],
 }
 
 /** The sale while it runs, or null. */
@@ -24,9 +26,10 @@ export function launchSale(now = Date.now()) {
 }
 
 /** The sale price of a store product's license, or null when it is not on sale. */
-export function launchSalePrice(licenseTier, listEur, now = Date.now()) {
+export function launchSalePrice(licenseTier, listEur, now = Date.now(), productId = null) {
   const sale = launchSale(now)
   if (!sale || licenseTier !== sale.license) return null
+  if (productId && sale.excluded.includes(productId)) return null
   return sale.priceEur < Number(listEur) ? sale.priceEur : null
 }
 

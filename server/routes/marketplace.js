@@ -36,7 +36,7 @@ router.get('/catalog', optionalUser, async (_req, res) => {
   res.json({
     enabled: marketplaceEnabled(),
     // The opening sale, while it runs: the site shows it and Gumroad checkout charges it.
-    sale: sale ? { priceEur: sale.priceEur, license: sale.license, endsAt: sale.endsAt } : null,
+    sale: sale ? { priceEur: sale.priceEur, license: sale.license, endsAt: sale.endsAt, excluded: sale.excluded } : null,
     products: getMarketplaceCatalog().map((product) => ({ ...product, ...(stats.get(product.id) || { reviewCount: 0, rating: null }) })),
     bundles: MARKETPLACE_BUNDLES,
   })

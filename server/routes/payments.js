@@ -417,7 +417,7 @@ router.post('/gumroad/marketplace', requireUser, requireMarketplaceCommerce, asy
     const db = getDb()
     const { promoCode, referralCode } = req.body
     // The opening sale beats any code: it is already the lowest price there is.
-    const salePrice = listed.itemType === 'product' ? launchSalePrice(listed.licenseTier, listed.amountEur) : null
+    const salePrice = listed.itemType === 'product' ? launchSalePrice(listed.licenseTier, listed.amountEur, Date.now(), listed.productId) : null
     const price = salePrice !== null
       ? { finalEur: salePrice, baseEur: listed.amountEur, kind: 'launch', discountEur: listed.amountEur - salePrice }
       : await bestPrice(db, { userId: req.userId, email: req.userEmail, itemId: listed.productId, amountEur: listed.amountEur, promoCode, referralCode })
