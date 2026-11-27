@@ -143,7 +143,7 @@ export async function unlockLessonForUser({
 
   const slug = (await getCourseSlug(db, cid)) || courseData?.slug || cid
   const lessonTitle = lessons[idx]?.title || lessons[idx]?.titleRu || `Урок ${idx + 1}`
-  const targetPath = slug ? `/courses/${slug}?lesson=${idx}` : '/cabinet'
+  const targetPath = slug ? `/study/${slug}/${idx + 1}` : '/app'
   await createUserNotification(db, {
     email: mail,
     type: 'lesson_unlocked',

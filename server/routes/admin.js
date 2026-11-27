@@ -300,8 +300,9 @@ router.patch('/homework/:id', requireAdmin('admin', 'moderator'), prelaunchBlock
   )
   if (status && row.email) {
     const courseSlug = await getCourseSlug(db, row.course_id)
-    const lessonPart = Number.isInteger(row.lesson_index) ? `?lesson=${row.lesson_index}` : ''
-    const targetPath = courseSlug ? `/courses/${courseSlug}${lessonPart}` : '/cabinet'
+    const targetPath = courseSlug
+      ? Number.isInteger(row.lesson_index) ? `/study/${courseSlug}/${row.lesson_index + 1}` : `/learn/${courseSlug}`
+      : '/app'
     const defaultMsg = status === 'accepted'
       ? 'ДЗ принято'
       : status === 'resubmit'
@@ -407,7 +408,7 @@ router.patch('/reviews/:id', requireAdmin('admin', 'moderator'), async (req, res
         courseId: row.course_id,
         courseSlug,
         courseTitle,
-        targetPath: courseSlug ? `/courses/${courseSlug}` : '/cabinet',
+        targetPath: courseSlug ? `/learn/${courseSlug}` : '/app',
         message,
       })
     }
@@ -502,7 +503,7 @@ router.post('/applications/:id/reject', requireAdmin('admin', 'moderator'), asyn
     type: 'application_status',
     status: 'rejected',
     courseTitle: 'AI Insider Accelerator',
-    targetPath: '/courses',
+    targetPath: '/learn',
     comment: adminNote || null,
     message: adminNote || 'Заявка на AI Accelerator отклонена',
     reviewedAt: nowIso(),
@@ -749,7 +750,7 @@ router.patch('/applications/:id', requireAdmin('admin', 'moderator'), async (req
         type: 'application_status',
         status,
         courseTitle: 'AI Insider Accelerator',
-        targetPath: '/courses/ai-insider-accelerator',
+        targetPath: '/study/ai-insider-accelerator/1',
         message: adminNote ? `${statusMessages[status]}. ${adminNote}` : statusMessages[status],
         comment: adminNote?.trim() || null,
         reviewedAt: nowIso(),

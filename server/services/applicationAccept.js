@@ -6,7 +6,7 @@ import { prelaunchServiceGuard } from '../middleware/prelaunch.js'
 
 export const ACCELERATOR_COURSE_ID = 'ai-insider-accelerator'
 export const ACCELERATOR_COURSE_TITLE = 'AI Insider Accelerator'
-export const ACCELERATOR_COURSE_PATH = '/courses/ai-insider-accelerator'
+export const ACCELERATOR_COURSE_PATH = '/study/ai-insider-accelerator/1'
 
 export async function approveAcceleratorApplication(db, applicationRow, { adminNote, actorRole }) {
   const blocked = prelaunchServiceGuard()

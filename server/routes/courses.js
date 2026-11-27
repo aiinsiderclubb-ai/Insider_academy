@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { getDb, parseJson } from '../db.js'
 import { optionalUser, verifyAdminToken } from '../middleware/auth.js'
 import { areCoursesPublic, isPrelaunchMode } from '../config.js'
+import { ACCELERATOR_COURSE_ID } from '../services/applicationAccept.js'
 
 const router = Router()
 
@@ -26,8 +27,12 @@ function sanitizeCourse(course, purchasedIds) {
       lessons: course.lessons.map((lesson) => ({ ...lesson, videoUrl: null })),
     }
   }
-  if (isFreeCourse(course)) return course
   if (purchasedIds.has(course.id)) return course
+  // «Найди своё в AI» costs nothing but opens only to accepted applicants: no lesson until then.
+  if (course.id === ACCELERATOR_COURSE_ID) {
+    return { ...course, lessons: course.lessons.map((lesson) => ({ ...lesson, videoUrl: null })) }
+  }
+  if (isFreeCourse(course)) return course
   return {
     ...course,
     lessons: course.lessons.map((lesson, index) =>

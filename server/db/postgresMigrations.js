@@ -9,6 +9,7 @@ export async function runPostgresMigrations(pool) {
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS password_temporary INTEGER DEFAULT 0',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS streak_count INTEGER DEFAULT 0',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS last_activity_date TEXT',
+    'ALTER TABLE users ADD COLUMN IF NOT EXISTS streak_best INTEGER DEFAULT 0',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_chat_id TEXT',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_username TEXT',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS team_id INTEGER',

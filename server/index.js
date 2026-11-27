@@ -38,7 +38,7 @@ async function processReminders() {
         courseTitle: course.title || row.course_id,
         lessonTitle: lesson?.title,
         lessonIndex: row.lesson_index,
-        targetPath: course.slug ? `/courses/${course.slug}?lesson=${row.lesson_index}` : '/cabinet',
+        targetPath: course.slug ? `/study/${course.slug}/${Number(row.lesson_index) + 1}` : '/app',
       })
       await db.run('UPDATE lesson_reminders SET sent = 1 WHERE id = ?', [row.id])
     }

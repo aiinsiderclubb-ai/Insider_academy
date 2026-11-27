@@ -515,7 +515,7 @@ router.post('/reset-password', asyncHandler(async (req, res) => {
   await createUserNotification(db, {
     email: row.email,
     type: 'password_changed',
-    targetPath: '/account',
+    targetPath: '/app',
     message: 'Пароль успешно сброшен. Если это были не вы — срочно смените пароль и напишите в поддержку.',
   })
   const u = await db.get('SELECT personal_id FROM users WHERE email = ?', [row.email])

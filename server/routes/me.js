@@ -7,7 +7,7 @@ import { signUserToken } from '../middleware/auth.js'
 import { upload } from '../middleware/upload.js'
 import { saveUploadedFile, getFileUrl } from '../services/storage.js'
 import { isPrelaunchMode, isS3Enabled } from '../config.js'
-import { computeAchievements, updateStreak, ACHIEVEMENTS } from '../services/achievements.js'
+import { computeAchievements, readStreak, updateStreak, ACHIEVEMENTS } from '../services/achievements.js'
 import { sendTelegramMessage } from '../services/telegram.js'
 import { mapUserResponse, syncUserRecords, userSelectFields } from '../services/userProfile.js'
 import { ensurePersonalId } from '../services/personalId.js'
@@ -52,9 +52,10 @@ router.get('/', async (req, res) => {
 
   const friendDiscount = await friendDiscountPercent(db, { userId: req.userId, email: user.email })
   const reviews = prelaunch ? [] : await db.all('SELECT course_id FROM reviews WHERE user_id = ?', [req.userId])
+  // Reading the cabinet does not extend the streak; saving lesson progress does.
   const streak = prelaunch
     ? { current: user.streak_count || 0, best: user.streak_count || 0 }
-    : await updateStreak(db, req.userId)
+    : await readStreak(db, req.userId)
   const achievements = prelaunch ? [] : computeAchievements({ progress, purchases, reviews, streak })
 
   for (const a of achievements) {
@@ -94,10 +95,11 @@ router.get('/stats', async (req, res) => {
     return { courseId: row.course_id, percent: Math.min(100, total * 10) }
   })
   const user = await db.get('SELECT streak_count, last_activity_date FROM users WHERE id = ?', [req.userId])
+  const live = await readStreak(db, req.userId)
   const unlocked = await db.all('SELECT achievement_id, unlocked_at FROM user_achievements WHERE user_id = ?', [req.userId])
   res.json({
     chart,
-    streak: { current: user?.streak_count || 0, lastActivity: user?.last_activity_date },
+    streak: { current: live.current, best: live.best, lastActivity: user?.last_activity_date },
     achievements: unlocked.map((u) => ({
       ...ACHIEVEMENTS.find((a) => a.id === u.achievement_id),
       unlockedAt: u.unlocked_at,
@@ -153,7 +155,18 @@ router.post('/peer-reviews', prelaunchBlocked, async (req, res) => {
 
 router.put('/progress/:courseId', prelaunchBlocked, async (req, res) => {
   const db = getDb()
-  const data = req.body.data || {}
+  const stored = parseJson((await db.get('SELECT data FROM progress WHERE user_id = ? AND course_id = ?', [req.userId, req.params.courseId]))?.data, {})
+  const incoming = req.body.data && typeof req.body.data === 'object' ? req.body.data : {}
+  /*
+   * The learner owns what they watched; the platform owns what it granted. A
+   * client cannot accept its own homework, and a stale tab cannot wipe an
+   * acceptance or restart the demo lesson's window.
+   */
+  const data = {
+    ...incoming,
+    homeworkChecked: Array.isArray(stored.homeworkChecked) ? stored.homeworkChecked : [],
+    ...(stored.demoStartedAt ? { demoStartedAt: stored.demoStartedAt } : {}),
+  }
   await db.run(
     `INSERT INTO progress (user_id, course_id, data, updated_at) VALUES (?, ?, ?, ?)
      ON CONFLICT(user_id, course_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`,
@@ -289,7 +302,7 @@ router.patch('/password', async (req, res) => {
   if (!passwordCheck.ok) return res.status(400).json(passwordCheck)
   const row = await db.get('SELECT password_hash, email FROM users WHERE id = ?', [req.userId])
   if (!row || !bcrypt.compareSync(currentPassword, row.password_hash)) {
-    return res.status(401).json({ error: 'Current password is incorrect' })
+    return res.status(401).json({ error: 'Current password is incorrect', errorRu: 'Неверный текущий пароль' })
   }
   const hash = bcrypt.hashSync(newPassword, 10)
   const now = nowIso()
@@ -300,7 +313,7 @@ router.patch('/password', async (req, res) => {
   await createUserNotification(db, {
     email: row.email,
     type: 'password_changed',
-    targetPath: '/account',
+    targetPath: '/app',
     message: 'Пароль аккаунта изменён. Если это были не вы — срочно восстановите доступ через «Забыли пароль?».',
   })
   const user = await db.get(`SELECT ${userSelectFields()} FROM users WHERE id = ?`, [req.userId])
@@ -318,14 +331,14 @@ router.patch('/email', async (req, res) => {
   const email = normalizeEmail(req.body.email)
   const currentPassword = String(req.body.currentPassword || '')
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.status(400).json({ error: 'Invalid email' })
+    return res.status(400).json({ error: 'Invalid email', errorRu: 'Проверьте адрес почты' })
   }
   const row = await db.get(`SELECT ${userSelectFields()}, password_hash FROM users WHERE id = ?`, [req.userId])
   if (!row || !bcrypt.compareSync(currentPassword, row.password_hash)) {
-    return res.status(401).json({ error: 'Current password is incorrect' })
+    return res.status(401).json({ error: 'Current password is incorrect', errorRu: 'Неверный текущий пароль' })
   }
   const exists = await db.get('SELECT id FROM users WHERE email = ? AND id != ?', [email, req.userId])
-  if (exists) return res.status(409).json({ error: 'Email already in use' })
+  if (exists) return res.status(409).json({ error: 'Email already in use', errorRu: 'Эта почта уже занята другим аккаунтом' })
   const oldEmail = row.email
   const now = nowIso()
   await db.run(

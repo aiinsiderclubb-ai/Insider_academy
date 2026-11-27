@@ -51,12 +51,12 @@ export function getInlineKeyboard(type, data = {}, appUrl) {
   const rows = []
 
   if (type === 'homework_accepted') {
-    const path = data.nextTargetPath || data.targetPath || '/cabinet'
+    const path = data.nextTargetPath || data.targetPath || '/app'
     rows.push([{ text: '▶️ Продолжить обучение', url: link(base, path) }])
   }
 
   if (type === 'homework_resubmit') {
-    rows.push([{ text: '📝 Перейти к уроку', url: link(base, data.targetPath || '/cabinet') }])
+    rows.push([{ text: '📝 Перейти к уроку', url: link(base, data.targetPath || '/app') }])
   }
 
   if (type === 'application_accepted') {
@@ -79,7 +79,7 @@ export function getInlineKeyboard(type, data = {}, appUrl) {
     return { inline_keyboard: rows }
   }
 
-  const openPath = data.targetPath || data.nextTargetPath || '/cabinet'
+  const openPath = data.targetPath || data.nextTargetPath || '/app'
   rows.push([{ text: '📚 Открыть в Academy', url: link(base, openPath) }])
 
   if (rows.length) return { inline_keyboard: rows }
@@ -88,7 +88,7 @@ export function getInlineKeyboard(type, data = {}, appUrl) {
 
 function formatHomeworkAccepted(data, base) {
   const lessonNum = lessonNumber(data)
-  const platformUrl = link(base, data.nextTargetPath || data.targetPath || '/cabinet')
+  const platformUrl = link(base, data.nextTargetPath || data.targetPath || '/app')
   const lines = [
     `${ICONS.homework_accepted} <b>Домашнее задание принято!</b>`,
     '',
@@ -134,7 +134,7 @@ function formatHomeworkAccepted(data, base) {
 
 function formatHomeworkResubmit(data, base) {
   const lessonNum = lessonNumber(data)
-  const platformUrl = link(base, data.targetPath || '/cabinet')
+  const platformUrl = link(base, data.targetPath || '/app')
   const lines = [
     `${ICONS.homework_resubmit} <b>ДЗ отправлено на доработку</b>`,
     '',
@@ -296,7 +296,7 @@ function formatLessonReminder(data, base) {
     '',
     blockquote('Вы начали этот урок — самое время продолжить.'),
     '',
-    `<a href="${link(base, data.targetPath || '/cabinet')}">Продолжить обучение</a>`,
+    `<a href="${link(base, data.targetPath || '/app')}">Продолжить обучение</a>`,
   ].join('\n')
 }
 

@@ -487,6 +487,7 @@ function migrateColumns(db) {
   if (!cols.includes('email_verified')) add('ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0')
   if (!cols.includes('streak_count')) add('ALTER TABLE users ADD COLUMN streak_count INTEGER DEFAULT 0')
   if (!cols.includes('last_activity_date')) add('ALTER TABLE users ADD COLUMN last_activity_date TEXT')
+  if (!cols.includes('streak_best')) add('ALTER TABLE users ADD COLUMN streak_best INTEGER DEFAULT 0')
   if (!cols.includes('telegram_chat_id')) add('ALTER TABLE users ADD COLUMN telegram_chat_id TEXT')
   if (!cols.includes('team_id')) add('ALTER TABLE users ADD COLUMN team_id INTEGER')
   if (!cols.includes('stripe_customer_id')) add('ALTER TABLE users ADD COLUMN stripe_customer_id TEXT')

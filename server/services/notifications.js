@@ -29,7 +29,7 @@ export async function getNextLessonInfo(db, courseId, lessonIndex) {
     isLastLesson: false,
     nextLessonIndex: nextIdx,
     nextLessonTitle: next.title || next.titleRu || `Урок ${nextIdx + 1}`,
-    nextTargetPath: slug ? `/courses/${slug}?lesson=${nextIdx}` : '/cabinet',
+    nextTargetPath: slug ? `/study/${slug}/${nextIdx + 1}` : '/app',
   }
 }
 
